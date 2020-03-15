@@ -1,0 +1,457 @@
+#. extracted from /home/bear/work/guile/doc/guile/en/new-docstrings.texi
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2018-05-07 12:37+0300\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Generator: Translate Toolkit 2.2.5\n"
+
+#: /home/bear/work/guile/doc/guile/en/new-docstrings.texi:2
+msgid "@c module-for-docstring (guile)"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/new-docstrings.texi:10
+msgid ""
+"@deffn {Scheme Procedure} uniform-array->bytevector array\n"
+"@deffnx {C Function} scm_uniform_array_to_bytevector (array)\n"
+"Return a newly allocated bytevector whose contents\n"
+"will be copied from the uniform array @var{array}.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/new-docstrings.texi:15
+msgid ""
+"@deffn {Scheme Procedure} %start-stack id thunk\n"
+"@deffnx {C Function} scm_sys_start_stack (id, thunk)\n"
+"Call @var{thunk} on an evaluator stack tagged with @var{id}.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/new-docstrings.texi:20
+msgid ""
+"@deffn {Scheme Procedure} guardian-destroyed? guardian\n"
+"@deffnx {C Function} scm_guardian_destroyed_p (guardian)\n"
+"Return @code{#t} if @var{guardian} has been destroyed, otherwise @code{#f}.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/new-docstrings.texi:25
+msgid ""
+"@deffn {Scheme Procedure} guardian-greedy? guardian\n"
+"@deffnx {C Function} scm_guardian_greedy_p (guardian)\n"
+"Return @code{#t} if @var{guardian} is a greedy guardian, otherwise @code{#f}."
+"\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/new-docstrings.texi:32
+msgid ""
+"@deffn {Scheme Procedure} destroy-guardian! guardian\n"
+"@deffnx {C Function} scm_destroy_guardian_x (guardian)\n"
+"Destroys @var{guardian}, by making it impossible to put any more\n"
+"objects in it or get any objects from it.  It also unguards any\n"
+"objects guarded by @var{guardian}.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/new-docstrings.texi:37
+msgid ""
+"@deffn {Scheme Procedure} gc-dump\n"
+"@deffnx {C Function} scm_gc_dump ()\n"
+"Dump information about the garbage collector's internal data structures and "
+"memory usage to the standard output.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/new-docstrings.texi:42
+msgid ""
+"@deffn {Scheme Procedure} gc-disable\n"
+"@deffnx {C Function} scm_gc_disable ()\n"
+"Disables the garbage collector.  Nested calls are permitted.  GC is re-"
+"enabled once @code{gc-enable} has been called the same number of times @code"
+"{gc-disable} was called.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/new-docstrings.texi:47
+msgid ""
+"@deffn {Scheme Procedure} gc-enable\n"
+"@deffnx {C Function} scm_gc_enable ()\n"
+"Enables the garbage collector.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/new-docstrings.texi:52
+msgid ""
+"@deffn {Scheme Procedure} make-generalized-vector type len [fill]\n"
+"@deffnx {C Function} scm_make_generalized_vector (type, len, fill)\n"
+"Make a generalized vector\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/new-docstrings.texi:55
+msgid ""
+"@deffn {Scheme Procedure} set-primitive-generic! subr generic\n"
+"@deffnx {C Function} scm_set_primitive_generic_x (subr, generic)"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/new-docstrings.texi:57
+msgctxt "/home/bear/work/guile/doc/guile/en/new-docstrings.texi:57"
+msgid "@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/new-docstrings.texi:62
+msgid ""
+"@deffn {Scheme Procedure} nl-langinfo item [locale]\n"
+"@deffnx {C Function} scm_nl_langinfo (item, locale)\n"
+"Return a string denoting locale information for @var{item} in the current "
+"locale or that specified by @var{locale}.  The semantics and arguments are "
+"the same as those of the X/Open @code{nl_langinfo} function (@pxref{The "
+"Elegant and Fast Way, @code{nl_langinfo},, libc, The GNU C Library Reference "
+"Manual}).\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/new-docstrings.texi:65
+msgid ""
+"@deffn {Scheme Procedure} %warn-autocompilation-enabled\n"
+"@deffnx {C Function} scm_sys_warn_autocompilation_enabled ()"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/new-docstrings.texi:67
+msgctxt "/home/bear/work/guile/doc/guile/en/new-docstrings.texi:67"
+msgid "@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/new-docstrings.texi:74
+msgid ""
+"@deffn {Scheme Procedure} make-syncase-macro type binding\n"
+"@deffnx {C Function} scm_make_syncase_macro (type, binding)\n"
+"Return a @dfn{macro} that requires expansion by syntax-case.\n"
+"While users should not call this function, it is useful to know\n"
+"that syntax-case macros are represented as Guile primitive macros.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/new-docstrings.texi:79
+msgid ""
+"@deffn {Scheme Procedure} make-extended-syncase-macro m type binding\n"
+"@deffnx {C Function} scm_make_extended_syncase_macro (m, type, binding)\n"
+"Extend a core macro @var{m} with a syntax-case binding.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/new-docstrings.texi:84
+msgid ""
+"@deffn {Scheme Procedure} syncase-macro-type m\n"
+"@deffnx {C Function} scm_syncase_macro_type (m)\n"
+"Return the type of the macro @var{m}.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/new-docstrings.texi:89
+msgid ""
+"@deffn {Scheme Procedure} syncase-macro-binding m\n"
+"@deffnx {C Function} scm_syncase_macro_binding (m)\n"
+"Return the binding of the macro @var{m}.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/new-docstrings.texi:94
+msgid ""
+"@deffn {Scheme Procedure} memoize-expression exp\n"
+"@deffnx {C Function} scm_memoize_expression (exp)\n"
+"Memoize the expression @var{exp}.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/new-docstrings.texi:99
+msgid ""
+"@deffn {Scheme Procedure} unmemoize-expression m\n"
+"@deffnx {C Function} scm_unmemoize_expression (m)\n"
+"Unmemoize the memoized expression @var{m}.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/new-docstrings.texi:104
+msgid ""
+"@deffn {Scheme Procedure} memoized-expression-typecode m\n"
+"@deffnx {C Function} scm_memoized_expression_typecode (m)\n"
+"Return the typecode from the memoized expression @var{m}.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/new-docstrings.texi:109
+msgid ""
+"@deffn {Scheme Procedure} memoized-expression-data m\n"
+"@deffnx {C Function} scm_memoized_expression_data (m)\n"
+"Return the data from the memoized expression @var{m}.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/new-docstrings.texi:114
+msgid ""
+"@deffn {Scheme Procedure} memoized-typecode sym\n"
+"@deffnx {C Function} scm_memoized_typecode (sym)\n"
+"Return the memoized typecode corresponding to the symbol @var{sym}.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/new-docstrings.texi:119
+msgid ""
+"@deffn {Scheme Procedure} memoize-variable-access! m mod\n"
+"@deffnx {C Function} scm_memoize_variable_access_x (m, mod)\n"
+"Look up and cache the variable that @var{m} will access, returning the "
+"variable.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/new-docstrings.texi:124
+msgid ""
+"@deffn {Scheme Procedure} module-local-variable module sym\n"
+"@deffnx {C Function} scm_module_local_variable (module, sym)\n"
+"Return the variable bound to @var{sym} in @var{module}.  Return @code{#f} is "
+"@var{sym} is not bound locally in @var{module}.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/new-docstrings.texi:129
+msgid ""
+"@deffn {Scheme Procedure} module-variable module sym\n"
+"@deffnx {C Function} scm_module_variable (module, sym)\n"
+"Return the variable bound to @var{sym} in @var{module}.  This may be both a "
+"local variable or an imported variable.  Return @code{#f} is @var{sym} is "
+"not bound in @var{module}.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/new-docstrings.texi:134
+msgid ""
+"@deffn {Scheme Procedure} eval-closure-module eval_closure\n"
+"@deffnx {C Function} scm_eval_closure_module (eval_closure)\n"
+"Return the module associated with this eval closure.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/new-docstrings.texi:139
+msgid ""
+"@deffn {Scheme Procedure} module-transformer module\n"
+"@deffnx {C Function} scm_module_transformer (module)\n"
+"Returns the syntax expander for the given module.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/new-docstrings.texi:143
+msgid ""
+"@deffn {Scheme Procedure} module-public-interface module\n"
+"@deffnx {C Function} scm_module_public_interface (module)\n"
+"Return the public interface of @var{module}."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/new-docstrings.texi:146
+msgid ""
+"If @var{module} has no public interface, @code{#f} is returned.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/new-docstrings.texi:151
+msgid ""
+"@deffn {Scheme Procedure} define! sym value\n"
+"@deffnx {C Function} scm_define (sym, value)\n"
+"Define @var{sym} to be @var{value} in the current module.Returns the "
+"variable itself. Note that this is a procedure, not a macro.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/new-docstrings.texi:156
+msgid ""
+"@deffn {Scheme Procedure} module-reverse-lookup module variable\n"
+"@deffnx {C Function} scm_module_reverse_lookup (module, variable)\n"
+"Return the symbol under which @var{variable} is bound in @var{module} or "
+"@var{#f} if @var{variable} is not visible from @var{module}.  If @var{module}"
+" is @code{#f}, then the pre-module obarray is used.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/new-docstrings.texi:159
+msgid ""
+"@deffn {Scheme Procedure} cddr x\n"
+"@deffnx {C Function} scm_cddr (x)"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/new-docstrings.texi:161
+msgctxt "/home/bear/work/guile/doc/guile/en/new-docstrings.texi:161"
+msgid "@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/new-docstrings.texi:165
+msgid ""
+"@deffn {Scheme Procedure} make-promise thunk\n"
+"@deffnx {C Function} scm_make_promise (thunk)\n"
+"Create a new promise object."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/new-docstrings.texi:172
+msgid ""
+"@code{make-promise} is a procedural form of @code{delay}.\n"
+"These two expressions are equivalent:\n"
+"@lisp\n"
+"(delay @var{exp})\n"
+"(make-promise (lambda () @var{exp}))\n"
+"@end lisp"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/new-docstrings.texi:174
+msgctxt "/home/bear/work/guile/doc/guile/en/new-docstrings.texi:174"
+msgid "@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/new-docstrings.texi:179
+msgid ""
+"@deffn {Scheme Procedure} %get-stack-size\n"
+"@deffnx {C Function} scm_sys_get_stack_size ()\n"
+"Return the current thread's C stack size (in Scheme objects).\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/new-docstrings.texi:207
+msgid ""
+"@deffn {Scheme Procedure} %string-dump str\n"
+"@deffnx {C Function} scm_sys_string_dump (str)\n"
+"Returns an association list containing debugging information\n"
+"for @var{str}. The association list has the following entries.@table @code\n"
+"@item string\n"
+"The string itself.\n"
+"@item start\n"
+"The start index of the string into its stringbuf\n"
+"@item length\n"
+"The length of the string\n"
+"@item shared\n"
+"If this string is a substring, it returns its parent string.\n"
+"Otherwise, it returns @code{#f}\n"
+"@item read-only\n"
+"@code{#t} if the string is read-only\n"
+"@item stringbuf-chars\n"
+"A new string containing this string's stringbuf's characters\n"
+"@item stringbuf-length\n"
+"The number of characters in this stringbuf\n"
+"@item stringbuf-shared\n"
+"@code{#t} if this stringbuf is shared\n"
+"@item stringbuf-wide\n"
+"@code{#t} if this stringbuf's characters are stored in a\n"
+"32-bit buffer, or @code{#f} if they are stored in an 8-bit\n"
+"buffer\n"
+"@end table\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/new-docstrings.texi:230
+msgid ""
+"@deffn {Scheme Procedure} %symbol-dump sym\n"
+"@deffnx {C Function} scm_sys_symbol_dump (sym)\n"
+"Returns an association list containing debugging information\n"
+"for @var{sym}. The association list has the following entries.@table @code\n"
+"@item symbol\n"
+"The symbol itself\n"
+"@item hash\n"
+"Its hash value\n"
+"@item interned\n"
+"@code{#t} if it is an interned symbol\n"
+"@item stringbuf-chars\n"
+"A new string containing this symbols's stringbuf's characters\n"
+"@item stringbuf-length\n"
+"The number of characters in this stringbuf\n"
+"@item stringbuf-shared\n"
+"@code{#t} if this stringbuf is shared\n"
+"@item stringbuf-wide\n"
+"@code{#t} if this stringbuf's characters are stored in a\n"
+"32-bit buffer, or @code{#f} if they are stored in an 8-bit\n"
+"buffer\n"
+"@end table\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/new-docstrings.texi:235
+msgid ""
+"@deffn {Scheme Procedure} string-bytes-per-char string\n"
+"@deffnx {C Function} scm_string_bytes_per_char (string)\n"
+"Return the bytes used to represent a character in @var{string}.This will "
+"return 1 or 4.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/new-docstrings.texi:240
+msgid ""
+"@deffn {Scheme Procedure} uniform-vector-element-type v\n"
+"@deffnx {C Function} scm_uniform_vector_element_type (v)\n"
+"Return the type of the elements in the uniform vector, @var{v}.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/new-docstrings.texi:246
+msgid ""
+"@deffn {Scheme Procedure} uniform-vector-element-size v\n"
+"@deffnx {C Function} scm_uniform_vector_element_size (v)\n"
+"Return the number of bytes allocated to each element in the\n"
+"uniform vector, @var{v}.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/new-docstrings.texi:252
+msgid ""
+"@deffn {Scheme Procedure} canonicalize-path path\n"
+"@deffnx {C Function} scm_canonicalize_path (path)\n"
+"Return the canonical path of @var{path}. A canonical path has\n"
+"no @code{.} or @code{..} components, nor any repeated path\n"
+"separators (@code{/}) nor symlinks."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/new-docstrings.texi:255
+msgid ""
+"Raises an error if any component of @var{path} does not exist.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/new-docstrings.texi:261
+msgid ""
+"@deffn {Scheme Procedure} getrlimit resource\n"
+"@deffnx {C Function} scm_getrlimit (resource)\n"
+"Get a resource limit for this process. @var{resource} identifies the "
+"resource,\n"
+"either as an integer or as a symbol. For example, @code{(getrlimit 'stack)}\n"
+"gets the limits associated with @code{RLIMIT_STACK}."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/new-docstrings.texi:265
+msgid ""
+"@code{getrlimit} returns two values, the soft and the hard limit. If no\n"
+"limit is set for the resource in question, the returned limit will be "
+"@code{#f}.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/new-docstrings.texi:271
+msgid ""
+"@deffn {Scheme Procedure} setrlimit resource soft hard\n"
+"@deffnx {C Function} scm_setrlimit (resource, soft, hard)\n"
+"Set a resource limit for this process. @var{resource} identifies the "
+"resource,\n"
+"either as an integer or as a symbol. @var{soft} and @var{hard} should be "
+"integers,\n"
+"or @code{#f} to indicate no limit (i.e., @code{RLIM_INFINITY})."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/new-docstrings.texi:274
+msgid ""
+"For example, @code{(setrlimit 'stack 150000 300000)} sets the "
+"@code{RLIMIT_STACK}\n"
+"limit to 150 kilobytes, with a hard limit of 300 kB.\n"
+"@end deffn"
+msgstr ""

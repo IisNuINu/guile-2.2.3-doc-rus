@@ -1,0 +1,54 @@
+#. extracted from /home/bear/work/guile/doc/guile/en/scsh.texi
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2018-05-07 12:37+0300\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Generator: Translate Toolkit 2.2.5\n"
+
+#: /home/bear/work/guile/doc/guile/en/scsh.texi:6
+msgid ""
+"@c -*-texinfo-*-\n"
+"@c This is part of the GNU Guile Reference Manual.\n"
+"@c Copyright (C)  1996, 1997, 2000, 2001, 2002, 2003, 2004, 2010\n"
+"@c   Free Software Foundation, Inc.\n"
+"@c See the file guile.texi for copying conditions."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/scsh.texi:11
+msgid ""
+"@node The Scheme shell (scsh)\n"
+"@section The Scheme shell (scsh)\n"
+"@cindex SCSH\n"
+"@cindex Scheme Shell"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/scsh.texi:17
+msgid ""
+"An incomplete port of the Scheme shell (scsh) was once available for\n"
+"Guile as a separate package.  However this code has bitrotten\n"
+"somewhat.  The pieces are available in Guile's legacy CVS repository,\n"
+"which may be browsed at\n"
+"@url{http://cvs.savannah.gnu.org/viewvc/guile/guile-scsh/?root=guile}."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/scsh.texi:20
+msgid ""
+"For information about scsh see\n"
+"@url{http://www.scsh.net/}."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/scsh.texi:24
+msgid ""
+"This bitrotting is a bit of a shame, as there is a good deal of\n"
+"well-written Scheme code in scsh.  Adopting this code and porting it to\n"
+"current Guile should be an educational experience, in addition to\n"
+"providing something of value to Guile folks."
+msgstr ""

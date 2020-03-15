@@ -1,0 +1,335 @@
+#. extracted from /home/bear/work/guile/doc/guile/en/match.texi
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2018-05-07 12:37+0300\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Generator: Translate Toolkit 2.2.5\n"
+
+#: /home/bear/work/guile/doc/guile/en/match.texi:6
+msgid ""
+"@c -*-texinfo-*-\n"
+"@c This is part of the GNU Guile Reference Manual.\n"
+"@c Copyright (C) 2010, 2011, 2012  Free Software Foundation, Inc.\n"
+"@c See the file guile.texi for copying conditions.\n"
+"@c"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/match.texi:12
+msgid ""
+"@c The pattern syntax is taken from the documentation available in\n"
+"@c Andrew K. Wright's implementation of `match.scm', which is in the\n"
+"@c public domain.  See Guile before commit\n"
+"@c d967913f05301a35573c5d3f7217d0994bbb1016 (Thu Jun 17 2010) or\n"
+"@c <http://www.cs.indiana.edu/scheme-repository/code.match.html>."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/match.texi:15
+msgid ""
+"@c FIXME: This section is a bit rough on the edges.  The introduction\n"
+"@c could be improved, e.g., by adding examples."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/match.texi:18
+msgid ""
+"@node Pattern Matching\n"
+"@section Pattern Matching"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/match.texi:21
+msgid ""
+"@cindex pattern matching\n"
+"@cindex (ice-9 match)"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/match.texi:25
+msgid ""
+"The @code{(ice-9 match)} module provides a @dfn{pattern matcher},\n"
+"written by Alex Shinn, and compatible with Andrew K. Wright's pattern\n"
+"matcher found in many Scheme implementations."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/match.texi:33
+msgid ""
+"@cindex pattern variable\n"
+"A pattern matcher can match an object against several patterns and\n"
+"extract the elements that make it up.  Patterns can represent any Scheme\n"
+"object: lists, strings, symbols, records, etc.  They can optionally contain\n"
+"@dfn{pattern variables}.  When a matching pattern is found, an\n"
+"expression associated with the pattern is evaluated, optionally with all\n"
+"pattern variables bound to the corresponding elements of the object:"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/match.texi:41
+msgid ""
+"@example\n"
+"(let ((l '(hello (world))))\n"
+"  (match l           ;; <- the input object\n"
+"    (('hello (who))  ;; <- the pattern\n"
+"     who)))          ;; <- the expression evaluated upon matching\n"
+"@result{} world\n"
+"@end example"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/match.texi:49
+msgid ""
+"In this example, list @var{l} matches the pattern @code{('hello (who))},\n"
+"because it is a two-element list whose first element is the symbol\n"
+"@code{hello} and whose second element is a one-element list.  Here\n"
+"@var{who} is a pattern variable.  @code{match}, the pattern matcher,\n"
+"locally binds @var{who} to the value contained in this one-element\n"
+"list---i.e., the symbol @code{world}.  An error would be raised if\n"
+"@var{l} did not match the pattern."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/match.texi:51
+msgid "The same object can be matched against a simpler pattern:"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/match.texi:60
+msgid ""
+"@example\n"
+"(let ((l '(hello (world))))\n"
+"  (match l\n"
+"    ((x y)\n"
+"     (values x y))))\n"
+"@result{} hello\n"
+"@result{} (world)\n"
+"@end example"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/match.texi:64
+msgid ""
+"Here pattern @code{(x y)} matches any two-element list, regardless of\n"
+"the types of these elements.  Pattern variables @var{x} and @var{y} are\n"
+"bound to, respectively, the first and second element of @var{l}."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/match.texi:68
+msgid ""
+"Patterns can be composed, and nested.  For instance, @code{...}\n"
+"(ellipsis) means that the previous pattern may be matched zero or more\n"
+"times in a list:"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/match.texi:74
+msgid ""
+"@example\n"
+"(match lst\n"
+"  (((heads tails ...) ...)\n"
+"   heads))\n"
+"@end example"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/match.texi:81
+msgid ""
+"@noindent\n"
+"This expression returns the first element of each list within @var{lst}.\n"
+"For proper lists of proper lists, it is equivalent to @code{(map car\n"
+"lst)}.  However, it performs additional checks to make sure that\n"
+"@var{lst} and the lists therein are proper lists, as prescribed by the\n"
+"pattern, raising an error if they are not."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/match.texi:89
+msgid ""
+"Compared to hand-written code, pattern matching noticeably improves\n"
+"clarity and conciseness---no need to resort to series of @code{car} and\n"
+"@code{cdr} calls when matching lists, for instance.  It also improves\n"
+"robustness, by making sure the input @emph{completely} matches the\n"
+"pattern---conversely, hand-written code often trades robustness for\n"
+"conciseness.  And of course, @code{match} is a macro, and the code it\n"
+"expands to is just as efficient as equivalent hand-written code."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/match.texi:91
+msgid "The pattern matcher is defined as follows:"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/match.texi:97
+msgid ""
+"@deffn {Scheme Syntax} match exp clause1 clause2 @dots{}\n"
+"Match object @var{exp} against the patterns in @var{clause1}\n"
+"@var{clause2} @dots{}  in the order in which they appear.  Return the\n"
+"value produced by the first matching clause.  If no clause matches,\n"
+"throw an exception with key @code{match-error}."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/match.texi:103
+msgid ""
+"Each clause has the form @code{(pattern body1 body2 @dots{})}.  Each\n"
+"@var{pattern} must follow the syntax described below.  Each body is an\n"
+"arbitrary Scheme expression, possibly referring to pattern variables of\n"
+"@var{pattern}.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/match.texi:116
+msgid ""
+"@c FIXME: Document other forms:\n"
+"@c\n"
+"@c exp ::= ...\n"
+"@c       | (match exp clause ...)\n"
+"@c       | (match-lambda clause ...)\n"
+"@c       | (match-lambda* clause ...)\n"
+"@c       | (match-let ((pat exp) ...) body)\n"
+"@c       | (match-let* ((pat exp) ...) body)\n"
+"@c       | (match-letrec ((pat exp) ...) body)\n"
+"@c       | (match-define pat exp)\n"
+"@c\n"
+"@c clause ::= (pat body) | (pat => exp)"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/match.texi:118
+msgid "The syntax and interpretation of patterns is as follows:"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/match.texi:121
+msgid ""
+"@verbatim\n"
+"        patterns:                       matches:"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/match.texi:153
+msgid ""
+"pat ::= identifier                      anything, and binds identifier\n"
+"      | _                               anything\n"
+"      | ()                              the empty list\n"
+"      | #t                              #t\n"
+"      | #f                              #f\n"
+"      | string                          a string\n"
+"      | number                          a number\n"
+"      | character                       a character\n"
+"      | 'sexp                           an s-expression\n"
+"      | 'symbol                         a symbol (special case of s-expr)\n"
+"      | (pat_1 ... pat_n)               list of n elements\n"
+"      | (pat_1 ... pat_n . pat_{n+1})   list of n or more\n"
+"      | (pat_1 ... pat_n pat_n+1 ooo)   list of n or more, each element\n"
+"                                          of remainder must match pat_n+1\n"
+"      | #(pat_1 ... pat_n)              vector of n elements\n"
+"      | #(pat_1 ... pat_n pat_n+1 ooo)  vector of n or more, each element\n"
+"                                          of remainder must match pat_n+1\n"
+"      | #&pat                           box\n"
+"      | ($ record-name pat_1 ... pat_n) a record\n"
+"      | (= field pat)                   a ``field'' of an object\n"
+"      | (and pat_1 ... pat_n)           if all of pat_1 thru pat_n match\n"
+"      | (or pat_1 ... pat_n)            if any of pat_1 thru pat_n match\n"
+"      | (not pat_1 ... pat_n)           if all pat_1 thru pat_n don't match\n"
+"      | (? predicate pat_1 ... pat_n)   if predicate true and all of\n"
+"                                          pat_1 thru pat_n match\n"
+"      | (set! identifier)               anything, and binds setter\n"
+"      | (get! identifier)               anything, and binds getter\n"
+"      | `qp                             a quasi-pattern\n"
+"      | (identifier *** pat)            matches pat in a tree and binds\n"
+"                                        identifier to the path leading\n"
+"                                        to the object that matches pat"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/match.texi:157
+msgid ""
+"ooo ::= ...                             zero or more\n"
+"      | ___                             zero or more\n"
+"      | ..1                             1 or more"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/match.texi:159
+msgid "        quasi-patterns:                 matches:"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/match.texi:178
+msgid ""
+"qp  ::= ()                              the empty list\n"
+"      | #t                              #t\n"
+"      | #f                              #f\n"
+"      | string                          a string\n"
+"      | number                          a number\n"
+"      | character                       a character\n"
+"      | identifier                      a symbol\n"
+"      | (qp_1 ... qp_n)                 list of n elements\n"
+"      | (qp_1 ... qp_n . qp_{n+1})      list of n or more\n"
+"      | (qp_1 ... qp_n qp_n+1 ooo)      list of n or more, each element\n"
+"                                          of remainder must match qp_n+1\n"
+"      | #(qp_1 ... qp_n)                vector of n elements\n"
+"      | #(qp_1 ... qp_n qp_n+1 ooo)     vector of n or more, each element\n"
+"                                          of remainder must match qp_n+1\n"
+"      | #&qp                            box\n"
+"      | ,pat                            a pattern\n"
+"      | ,@pat                           a pattern\n"
+"@end verbatim"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/match.texi:183
+msgid ""
+"The names @code{quote}, @code{quasiquote}, @code{unquote},\n"
+"@code{unquote-splicing}, @code{?}, @code{_}, @code{$}, @code{and},\n"
+"@code{or}, @code{not}, @code{set!}, @code{get!}, @code{...}, and\n"
+"@code{___} cannot be used as pattern variables."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/match.texi:185
+msgid "Here is a more complex example:"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/match.texi:188
+msgid ""
+"@example\n"
+"(use-modules (srfi srfi-9))"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/match.texi:195
+msgid ""
+"(let ()\n"
+"  (define-record-type person\n"
+"    (make-person name friends)\n"
+"    person?\n"
+"    (name    person-name)\n"
+"    (friends person-friends))"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/match.texi:202
+msgid ""
+"  (letrec ((alice (make-person \"Alice\" (delay (list bob))))\n"
+"           (bob   (make-person \"Bob\" (delay (list alice)))))\n"
+"    (match alice\n"
+"      (($ person name (= force (($ person \"Bob\"))))\n"
+"       (list 'friend-of-bob name))\n"
+"      (_ #f))))"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/match.texi:205
+msgid ""
+"@result{} (friend-of-bob \"Alice\")\n"
+"@end example"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/match.texi:215
+msgid ""
+"@noindent\n"
+"Here the @code{$} pattern is used to match a SRFI-9 record of type\n"
+"@var{person} containing two or more slots.  The value of the first slot\n"
+"is bound to @var{name}.  The @code{=} pattern is used to apply\n"
+"@code{force} on the second slot, and then checking that the result\n"
+"matches the given pattern.  In other words, the complete pattern matches\n"
+"any @var{person} whose second slot is a promise that evaluates to a\n"
+"one-element list containing a @var{person} whose first slot is\n"
+"@code{\"Bob\"}."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/match.texi:218
+msgid ""
+"Please refer to the @code{ice-9/match.upstream.scm} file in your Guile\n"
+"installation for more details."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/match.texi:220
+msgid ""
+"Guile also comes with a pattern matcher specifically tailored to SXML\n"
+"trees, @xref{sxml-match}."
+msgstr ""

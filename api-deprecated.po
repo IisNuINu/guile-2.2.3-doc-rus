@@ -1,0 +1,94 @@
+#
+# NuINu <don't@send.my>, 2018.
+#
+#. extracted from /home/bear/work/guile/doc/guile/en/api-deprecated.texi
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2018-05-07 12:36+0300\n"
+"PO-Revision-Date: 2018-12-25 10:41+0300\n"
+"Last-Translator: NuINu <don't@send.my>\n"
+"Language-Team: Russian <don't@send.my>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Generator: Gtranslator 2.91.7\n"
+"Plural-Forms: nplurals=5; plural=n==1 ? 0 : n==2 ? 1 : n<7 ? 2 : n<11 ? 3 : "
+"4;\n"
+
+#: /home/bear/work/guile/doc/guile/en/api-deprecated.texi:6
+msgid ""
+"@c -*-texinfo-*-\n"
+"@c This is part of the GNU Guile Reference Manual.\n"
+"@c Copyright (C)  1996, 1997, 2000, 2001, 2002, 2003, 2004, 2010\n"
+"@c   Free Software Foundation, Inc.\n"
+"@c See the file guile.texi for copying conditions."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-deprecated.texi:9
+msgid ""
+"@node Deprecation\n"
+"@section Deprecation"
+msgstr ""
+"@node Неодобряемое использование(Deprecation)\n"
+"@section Deprecation"
+
+#: /home/bear/work/guile/doc/guile/en/api-deprecated.texi:13
+msgid ""
+"From time to time functions and other features of Guile become obsolete.\n"
+"Guile's @dfn{deprecation} is a mechanism that can help you cope with\n"
+"this."
+msgstr ""
+"Время от времени функции и другие элементы Guile устаревают.\n"
+"Мехнизм Неодобрения(@dfn{deprecation}) Guile может вам помочь справиться\n"
+"с этим."
+
+#: /home/bear/work/guile/doc/guile/en/api-deprecated.texi:17
+msgid ""
+"When you use a feature that is deprecated, you will likely get a warning\n"
+"message at run-time. Also, if you have a new enough toolchain, using a\n"
+"deprecated function from @code{libguile} will cause a link-time warning."
+msgstr ""
+"Когда вы используете функцию, которая устарела вы скорее всего, получите\n"
+"предупреждение во время выполнения. Кроме того, если у вас достаточно новый\n"
+"набор инструментов, использование устаревшей функции из @code{libguile}\n"
+"вызовет предупрежение во время ликовки(link-time)."
+
+#: /home/bear/work/guile/doc/guile/en/api-deprecated.texi:21
+msgid ""
+"The primary source for information about just what interfaces are\n"
+"deprecated in a given release is the file @file{NEWS}.  That file also\n"
+"documents what you should use instead of the obsoleted things."
+msgstr ""
+"Основной источник информации о том, какие интерфейсы устарели в данном "
+"релизе\n"
+"это файл @file{NEWS}.  Этот файл также документирует, что вы должны "
+"использовать\n"
+"вместо устаревшей вещи."
+
+#: /home/bear/work/guile/doc/guile/en/api-deprecated.texi:25
+msgid ""
+"The file @file{README} contains instructions on how to control the\n"
+"inclusion or removal of the deprecated features from the public API of\n"
+"Guile, and how to control the deprecation warning messages."
+msgstr ""
+"Файл @file{README} содержит инструкуии о том, как контролировать включение "
+"или\n"
+"удаление устаревшей функции из публичного API Guile, и способы управления\n"
+"устаревшими функциями с помощью предупреждающих сообщений."
+
+#: /home/bear/work/guile/doc/guile/en/api-deprecated.texi:29
+msgid ""
+"The idea behind this mechanism is that normally all deprecated\n"
+"interfaces are available, but you get feedback when compiling and\n"
+"running code that uses them, so that you can migrate to the newer APIs\n"
+"at your leisure."
+msgstr ""
+"Идея этого механизма заключается в том, что обычно все устаревшие "
+"интерфейсы\n"
+"доступны, но вы получаете обратную связь при компиляции и запуске кода, "
+"который\n"
+"их использует. так что вы можете перейти на новый APIs когда появиться "
+"свободное\n"
+"время переписать старые вызовы."

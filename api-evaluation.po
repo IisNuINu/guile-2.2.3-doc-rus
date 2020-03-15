@@ -1,0 +1,2426 @@
+#. extracted from /home/bear/work/guile/doc/guile/en/api-evaluation.texi
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2018-05-07 12:36+0300\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Generator: Translate Toolkit 2.2.5\n"
+
+#: /home/bear/work/guile/doc/guile/en/api-evaluation.texi:6
+msgid ""
+"@c -*-texinfo-*-\n"
+"@c This is part of the GNU Guile Reference Manual.\n"
+"@c Copyright (C)  1996, 1997, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2009,"
+"\n"
+"@c   2010, 2011, 2012, 2013, 2014 Free Software Foundation, Inc.\n"
+"@c See the file guile.texi for copying conditions."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-evaluation.texi:9
+msgid ""
+"@node Read/Load/Eval/Compile\n"
+"@section Reading and Evaluating Scheme Code"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-evaluation.texi:12
+msgid ""
+"This chapter describes Guile functions that are concerned with reading,\n"
+"loading, evaluating, and compiling Scheme code at run time."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-evaluation.texi:29
+msgid ""
+"@menu\n"
+"* Scheme Syntax::               Standard and extended Scheme syntax.\n"
+"* Scheme Read::                 Reading Scheme code.\n"
+"* Scheme Write::                Writing Scheme values to a port.\n"
+"* Fly Evaluation::              Procedures for on the fly evaluation.\n"
+"* Compilation::                 How to compile Scheme files and procedures.\n"
+"* Loading::                     Loading Scheme code from file.\n"
+"* Load Paths::                  Where Guile looks for code.\n"
+"* Character Encoding of Source Files:: Loading non-ASCII Scheme code from "
+"file.\n"
+"* Delayed Evaluation::          Postponing evaluation until it is needed.\n"
+"* Local Evaluation::            Evaluation in a local lexical environment.\n"
+"* Local Inclusion::             Compile-time inclusion of one file in "
+"another.\n"
+"* Sandboxed Evaluation::        Evaluation with limited capabilities.\n"
+"* REPL Servers::                Serving a REPL over a socket.\n"
+"* Cooperative REPL Servers::    REPL server for single-threaded applications."
+"\n"
+"@end menu"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-evaluation.texi:33
+msgid ""
+"@node Scheme Syntax\n"
+"@subsection Scheme Syntax: Standard and Guile Extensions"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-evaluation.texi:42
+msgid ""
+"@menu\n"
+"* Expression Syntax::\n"
+"* Comments::\n"
+"* Block Comments::\n"
+"* Case Sensitivity::\n"
+"* Keyword Syntax::\n"
+"* Reader Extensions::\n"
+"@end menu"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-evaluation.texi:46
+msgid ""
+"@node Expression Syntax\n"
+"@subsubsection Expression Syntax"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-evaluation.texi:48
+msgid "An expression to be evaluated takes one of the following forms."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-evaluation.texi:50
+msgctxt "/home/bear/work/guile/doc/guile/en/api-evaluation.texi:50"
+msgid "@table @nicode"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-evaluation.texi:54
+msgid ""
+"@item @var{symbol}\n"
+"A symbol is evaluated by dereferencing.  A binding of that symbol is\n"
+"sought and the value there used.  For example,"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-evaluation.texi:59
+msgid ""
+"@example\n"
+"(define x 123)\n"
+"x @result{} 123\n"
+"@end example"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-evaluation.texi:64
+msgid ""
+"@item (@var{proc} @var{args}@dots{})\n"
+"A parenthesised expression is a function call.  @var{proc} and each\n"
+"argument are evaluated, then the function (which @var{proc} evaluated\n"
+"to) is called with those arguments."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-evaluation.texi:67
+msgid ""
+"The order in which @var{proc} and the arguments are evaluated is\n"
+"unspecified, so be careful when using expressions with side effects."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-evaluation.texi:70
+msgid ""
+"@example\n"
+"(max 1 2 3) @result{} 3"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-evaluation.texi:74
+msgid ""
+"(define (get-some-proc)  min)\n"
+"((get-some-proc) 1 2 3) @result{} 1\n"
+"@end example"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-evaluation.texi:79
+msgid ""
+"The same sort of parenthesised form is used for a macro invocation,\n"
+"but in that case the arguments are not evaluated.  See the\n"
+"descriptions of macros for more on this (@pxref{Macros}, and\n"
+"@pxref{Syntax Rules})."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-evaluation.texi:83
+msgid ""
+"@item @var{constant}\n"
+"Number, string, character and boolean constants evaluate ``to\n"
+"themselves'', so can appear as literals."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-evaluation.texi:91
+msgid ""
+"@example\n"
+"123     @result{} 123\n"
+"99.9    @result{} 99.9\n"
+"\"hello\" @result{} \"hello\"\n"
+"#\\z     @result{} #\\z\n"
+"#t      @result{} #t\n"
+"@end example"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-evaluation.texi:94
+msgid ""
+"Note that an application must not attempt to modify literal strings,\n"
+"since they may be in read-only memory."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-evaluation.texi:103
+msgid ""
+"@item (quote @var{data})\n"
+"@itemx '@var{data}\n"
+"@findex quote\n"
+"@findex '\n"
+"Quoting is used to obtain a literal symbol (instead of a variable\n"
+"reference), a literal list (instead of a function call), or a literal\n"
+"vector.  @nicode{'} is simply a shorthand for a @code{quote} form.\n"
+"For example,"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-evaluation.texi:112
+msgid ""
+"@example\n"
+"'x                   @result{} x\n"
+"'(1 2 3)             @result{} (1 2 3)\n"
+"'#(1 (2 3) 4)        @result{} #(1 (2 3) 4)\n"
+"(quote x)            @result{} x\n"
+"(quote (1 2 3))      @result{} (1 2 3)\n"
+"(quote #(1 (2 3) 4)) @result{} #(1 (2 3) 4)\n"
+"@end example"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-evaluation.texi:116
+msgid ""
+"Note that an application must not attempt to modify literal lists or\n"
+"vectors obtained from a @code{quote} form, since they may be in\n"
+"read-only memory."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-evaluation.texi:125
+msgid ""
+"@item (quasiquote @var{data})\n"
+"@itemx `@var{data}\n"
+"@findex quasiquote\n"
+"@findex `\n"
+"Backquote quasi-quotation is like @code{quote}, but selected\n"
+"sub-expressions are evaluated.  This is a convenient way to construct\n"
+"a list or vector structure most of which is constant, but at certain\n"
+"points should have expressions substituted."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-evaluation.texi:128
+msgid ""
+"The same effect can always be had with suitable @code{list},\n"
+"@code{cons} or @code{vector} calls, but quasi-quoting is often easier."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-evaluation.texi:130
+msgctxt "/home/bear/work/guile/doc/guile/en/api-evaluation.texi:130"
+msgid "@table @nicode"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-evaluation.texi:138
+msgid ""
+"@item (unquote @var{expr})\n"
+"@itemx ,@var{expr}\n"
+"@findex unquote\n"
+"@findex ,\n"
+"Within the quasiquote @var{data}, @code{unquote} or @code{,} indicates\n"
+"an expression to be evaluated and inserted.  The comma syntax @code{,}\n"
+"is simply a shorthand for an @code{unquote} form.  For example,"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-evaluation.texi:145
+msgid ""
+"@example\n"
+"`(1 2 (* 9 9) 3 4)       @result{} (1 2 (* 9 9) 3 4)\n"
+"`(1 2 ,(* 9 9) 3 4)      @result{} (1 2 81 3 4)\n"
+"`(1 (unquote (+ 1 1)) 3) @result{} (1 2 3)\n"
+"`#(1 ,(/ 12 2))          @result{} #(1 6)\n"
+"@end example"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-evaluation.texi:155
+msgid ""
+"@item (unquote-splicing @var{expr})\n"
+"@itemx ,@@@var{expr}\n"
+"@findex unquote-splicing\n"
+"@findex ,@@\n"
+"Within the quasiquote @var{data}, @code{unquote-splicing} or\n"
+"@code{,@@} indicates an expression to be evaluated and the elements of\n"
+"the returned list inserted.  @var{expr} must evaluate to a list.  The\n"
+"``comma-at'' syntax @code{,@@} is simply a shorthand for an\n"
+"@code{unquote-splicing} form."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-evaluation.texi:163
+msgid ""
+"@example\n"
+"(define x '(2 3))\n"
+"`(1 ,x 4)                           @result{} (1 (2 3) 4)\n"
+"`(1 ,@@x 4)                         @result{} (1 2 3 4)\n"
+"`(1 (unquote-splicing (map 1+ x)))  @result{} (1 3 4)\n"
+"`#(9 ,@@x 9)                        @result{} #(9 2 3 9)\n"
+"@end example"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-evaluation.texi:169
+msgid ""
+"Notice @code{,@@} differs from plain @code{,} in the way one level of\n"
+"nesting is stripped.  For @code{,@@} the elements of a returned list\n"
+"are inserted, whereas with @code{,} it would be the list itself\n"
+"inserted.\n"
+"@end table"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-evaluation.texi:177
+msgid ""
+"@c\n"
+"@c  FIXME: What can we say about the mutability of a quasiquote\n"
+"@c  result?  R5RS doesn't seem to specify anything, though where it\n"
+"@c  says backquote without commas is the same as plain quote then\n"
+"@c  presumably the \"fixed\" portions of a quasiquote expression must be\n"
+"@c  treated as immutable.\n"
+"@c"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-evaluation.texi:179
+msgctxt "/home/bear/work/guile/doc/guile/en/api-evaluation.texi:179"
+msgid "@end table"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-evaluation.texi:183
+msgid ""
+"@node Comments\n"
+"@subsubsection Comments"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-evaluation.texi:185
+msgctxt "/home/bear/work/guile/doc/guile/en/api-evaluation.texi:185"
+msgid "@c FIXME::martin: Review me!"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-evaluation.texi:190
+msgid ""
+"Comments in Scheme source files are written by starting them with a\n"
+"semicolon character (@code{;}).  The comment then reaches up to the end\n"
+"of the line.  Comments can begin at any column, and the may be inserted\n"
+"on the same line as Scheme code."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-evaluation.texi:201
+msgid ""
+"@lisp\n"
+"; Comment\n"
+";; Comment too\n"
+"(define x 1)        ; Comment after expression\n"
+"(let ((y 1))\n"
+"  ;; Display something.\n"
+"  (display y)\n"
+";;; Comment at left margin.\n"
+"  (display (+ y 1)))\n"
+"@end lisp"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-evaluation.texi:207
+msgid ""
+"It is common to use a single semicolon for comments following\n"
+"expressions on a line, to use two semicolons for comments which are\n"
+"indented like code, and three semicolons for comments which start at\n"
+"column 0, even if they are inside an indented code block.  This\n"
+"convention is used when indenting code in Emacs' Scheme mode."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-evaluation.texi:215
+msgid ""
+"@node Block Comments\n"
+"@subsubsection Block Comments\n"
+"@cindex multiline comments\n"
+"@cindex block comments\n"
+"@cindex #!\n"
+"@cindex !#"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-evaluation.texi:217
+msgctxt "/home/bear/work/guile/doc/guile/en/api-evaluation.texi:217"
+msgid "@c FIXME::martin: Review me!"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-evaluation.texi:222
+msgid ""
+"In addition to the standard line comments defined by R5RS, Guile has\n"
+"another comment type for multiline comments, called @dfn{block\n"
+"comments}.  This type of comment begins with the character sequence\n"
+"@code{#!} and ends with the characters @code{!#}."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-evaluation.texi:228
+msgid ""
+"These comments are compatible with the block\n"
+"comments in the Scheme Shell @file{scsh} (@pxref{The Scheme shell\n"
+"(scsh)}).  The characters @code{#!} were chosen because they are the\n"
+"magic characters used in shell scripts for indicating that the name of\n"
+"the program for executing the script follows on the same line."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-evaluation.texi:230
+msgid "Thus a Guile script often starts like this."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-evaluation.texi:235
+msgid ""
+"@lisp\n"
+"#! /usr/local/bin/guile -s\n"
+"!#\n"
+"@end lisp"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-evaluation.texi:238
+msgid ""
+"More details on Guile scripting can be found in the scripting section\n"
+"(@pxref{Guile Scripting})."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-evaluation.texi:244
+msgid ""
+"@cindex R6RS block comments\n"
+"@cindex SRFI-30 block comments\n"
+"Similarly, Guile (starting from version 2.0) supports nested block\n"
+"comments as specified by R6RS and\n"
+"@url{http://srfi.schemers.org/srfi-30/srfi-30.html, SRFI-30}:"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-evaluation.texi:249
+msgid ""
+"@lisp\n"
+"(+ 1 #| this is a #| nested |# block comment |# 2)\n"
+"@result{} 3\n"
+"@end lisp"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-evaluation.texi:253
+msgid ""
+"For backward compatibility, this syntax can be overridden with\n"
+"@code{read-hash-extend} (@pxref{Reader Extensions,\n"
+"@code{read-hash-extend}})."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-evaluation.texi:260
+msgid ""
+"There is one special case where the contents of a comment can actually\n"
+"affect the interpretation of code.  When a character encoding\n"
+"declaration, such as @code{coding: utf-8} appears in one of the first\n"
+"few lines of a source file, it indicates to Guile's default reader\n"
+"that this source code file is not ASCII.  For details see @ref{Character\n"
+"Encoding of Source Files}."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-evaluation.texi:265
+msgid ""
+"@node Case Sensitivity\n"
+"@subsubsection Case Sensitivity\n"
+"@cindex fold-case\n"
+"@cindex no-fold-case"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-evaluation.texi:267
+msgctxt "/home/bear/work/guile/doc/guile/en/api-evaluation.texi:267"
+msgid "@c FIXME::martin: Review me!"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-evaluation.texi:270
+msgid ""
+"Scheme as defined in R5RS is not case sensitive when reading symbols.\n"
+"Guile, on the contrary is case sensitive by default, so the identifiers"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-evaluation.texi:275
+msgid ""
+"@lisp\n"
+"guile-whuzzy\n"
+"Guile-Whuzzy\n"
+"@end lisp"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-evaluation.texi:277
+msgid "are the same in R5RS Scheme, but are different in Guile."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-evaluation.texi:281
+msgid ""
+"It is possible to turn off case sensitivity in Guile by setting the\n"
+"reader option @code{case-insensitive}.  For more information on reader\n"
+"options, @xref{Scheme Read}."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-evaluation.texi:285
+msgctxt "/home/bear/work/guile/doc/guile/en/api-evaluation.texi:285"
+msgid ""
+"@lisp\n"
+"(read-enable 'case-insensitive)\n"
+"@end lisp"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-evaluation.texi:289
+msgid ""
+"It is also possible to disable (or enable) case sensitivity within a\n"
+"single file by placing the reader directives @code{#!fold-case} (or\n"
+"@code{#!no-fold-case}) within the file itself."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-evaluation.texi:292
+msgid ""
+"@node Keyword Syntax\n"
+"@subsubsection Keyword Syntax"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-evaluation.texi:296
+msgid ""
+"@node Reader Extensions\n"
+"@subsubsection Reader Extensions"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-evaluation.texi:305
+msgid ""
+"@deffn {Scheme Procedure} read-hash-extend chr proc\n"
+"@deffnx {C Function} scm_read_hash_extend (chr, proc)\n"
+"Install the procedure @var{proc} for reading expressions\n"
+"starting with the character sequence @code{#} and @var{chr}.\n"
+"@var{proc} will be called with two arguments:  the character\n"
+"@var{chr} and the port to read further data from. The object\n"
+"returned will be the return value of @code{read}. \n"
+"Passing @code{#f} for @var{proc} will remove a previous setting. "
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-evaluation.texi:307
+msgid "@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-evaluation.texi:311
+msgid ""
+"@node Scheme Read\n"
+"@subsection Reading Scheme Code"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-evaluation.texi:319
+msgid ""
+"@rnindex read\n"
+"@deffn {Scheme Procedure} read [port]\n"
+"@deffnx {C Function} scm_read (port)\n"
+"Read an s-expression from the input port @var{port}, or from\n"
+"the current input port if @var{port} is not specified.\n"
+"Any whitespace before the next token is discarded.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-evaluation.texi:322
+msgid ""
+"The behaviour of Guile's Scheme reader can be modified by manipulating\n"
+"its read options."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-evaluation.texi:331
+msgid ""
+"@cindex options - read\n"
+"@cindex read options\n"
+"@deffn {Scheme Procedure} read-options [setting]\n"
+"Display the current settings of the global read options.  If\n"
+"@var{setting} is omitted, only a short form of the current read options\n"
+"is printed.  Otherwise if @var{setting} is the symbol @code{help}, a\n"
+"complete options description is displayed.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-evaluation.texi:334
+msgid ""
+"The set of available options, and their default values, may be had by\n"
+"invoking @code{read-options} at the prompt."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-evaluation.texi:350
+msgid ""
+"@smalllisp\n"
+"scheme@@(guile-user)> (read-options)\n"
+"(square-brackets keywords #f positions)\n"
+"scheme@@(guile-user)> (read-options 'help)\n"
+"copy              no    Copy source code expressions.\n"
+"positions         yes   Record positions of source code expressions.\n"
+"case-insensitive  no    Convert symbols to lower case.\n"
+"keywords          #f    Style of keyword recognition: #f, 'prefix or "
+"'postfix.\n"
+"r6rs-hex-escapes  no    Use R6RS variable-length character and string hex "
+"escapes.\n"
+"square-brackets   yes   Treat `[' and `]' as parentheses, for R6RS "
+"compatibility.\n"
+"hungry-eol-escapes no   In strings, consume leading whitespace after an\n"
+"                        escaped end-of-line.\n"
+"curly-infix       no    Support SRFI-105 curly infix expressions.\n"
+"r7rs-symbols      no    Support R7RS |...| symbol notation.\n"
+"@end smalllisp"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-evaluation.texi:360
+msgid ""
+"Note that Guile also includes a preliminary mechanism for setting read\n"
+"options on a per-port basis.  For instance, the @code{case-insensitive}\n"
+"read option is set (or unset) on the port when the reader encounters the\n"
+"@code{#!fold-case} or @code{#!no-fold-case} reader directives.\n"
+"Similarly, the @code{#!curly-infix} reader directive sets the\n"
+"@code{curly-infix} read option on the port, and\n"
+"@code{#!curly-infix-and-bracket-lists} sets @code{curly-infix} and\n"
+"unsets @code{square-brackets} on the port (@pxref{SRFI-105}).  There is\n"
+"currently no other way to access or set the per-port read options."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-evaluation.texi:364
+msgid ""
+"The boolean options may be toggled with @code{read-enable} and\n"
+"@code{read-disable}. The non-boolean @code{keywords} option must be set\n"
+"using @code{read-set!}."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-evaluation.texi:370
+msgid ""
+"@deffn {Scheme Procedure} read-enable option-name\n"
+"@deffnx {Scheme Procedure} read-disable option-name\n"
+"@deffnx {Scheme Syntax} read-set! option-name value\n"
+"Modify the read options.  @code{read-enable} should be used with boolean\n"
+"options and switches them on, @code{read-disable} switches them off."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-evaluation.texi:375
+msgid ""
+"@code{read-set!} can be used to set an option to a specific value.  Due\n"
+"to historical oddities, it is a macro that expects an unquoted option\n"
+"name.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-evaluation.texi:378
+msgid ""
+"For example, to make @code{read} fold all symbols to their lower case\n"
+"(perhaps for compatibility with older Scheme code), you can enter:"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-evaluation.texi:382
+msgctxt "/home/bear/work/guile/doc/guile/en/api-evaluation.texi:382"
+msgid ""
+"@lisp\n"
+"(read-enable 'case-insensitive)\n"
+"@end lisp"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-evaluation.texi:385
+msgid ""
+"For more information on the effect of the @code{r6rs-hex-escapes} and\n"
+"@code{hungry-eol-escapes} options, see (@pxref{String Syntax})."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-evaluation.texi:388
+msgid ""
+"For more information on the @code{r7rs-symbols} option, see\n"
+"(@pxref{Symbol Read Syntax})."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-evaluation.texi:392
+msgid ""
+"@node Scheme Write\n"
+"@subsection Writing Scheme Values"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-evaluation.texi:395
+msgid ""
+"Any scheme value may be written to a port. Not all values may be read\n"
+"back in (@pxref{Scheme Read}), however."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-evaluation.texi:401
+msgid ""
+"@rnindex write\n"
+"@rnindex print\n"
+"@deffn {Scheme Procedure} write obj [port]\n"
+"Send a representation of @var{obj} to @var{port} or to the current\n"
+"output port if not given."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-evaluation.texi:407
+msgid ""
+"The output is designed to be machine readable, and can be read back\n"
+"with @code{read} (@pxref{Scheme Read}).  Strings are printed in\n"
+"double quotes, with escapes if necessary, and characters are printed in\n"
+"@samp{#\\} notation.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-evaluation.texi:412
+msgid ""
+"@rnindex display\n"
+"@deffn {Scheme Procedure} display obj [port]\n"
+"Send a representation of @var{obj} to @var{port} or to the current\n"
+"output port if not given."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-evaluation.texi:418
+msgid ""
+"The output is designed for human readability, it differs from\n"
+"@code{write} in that strings are printed without double quotes and\n"
+"escapes, and characters are printed as per @code{write-char}, not in\n"
+"@samp{#\\} form.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-evaluation.texi:421
+msgid ""
+"As was the case with the Scheme reader, there are a few options that\n"
+"affect the behavior of the Scheme printer."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-evaluation.texi:430
+msgid ""
+"@cindex options - print\n"
+"@cindex print options\n"
+"@deffn {Scheme Procedure} print-options [setting]\n"
+"Display the current settings of the read options.  If @var{setting} is\n"
+"omitted, only a short form of the current read options is\n"
+"printed. Otherwise if @var{setting} is the symbol @code{help}, a\n"
+"complete options description is displayed.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-evaluation.texi:433
+msgid ""
+"The set of available options, and their default values, may be had by\n"
+"invoking @code{print-options} at the prompt."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-evaluation.texi:451
+msgid ""
+"@smalllisp\n"
+"scheme@@(guile-user)> (print-options)\n"
+"(quote-keywordish-symbols reader highlight-suffix \"@}\" highlight-prefix \""
+"@{\")\n"
+"scheme@@(guile-user)> (print-options 'help)\n"
+"highlight-prefix          @{       The string to print before highlighted "
+"values.\n"
+"highlight-suffix          @}       The string to print after highlighted "
+"values.\n"
+"quote-keywordish-symbols  reader  How to print symbols that have a colon\n"
+"                                  as their first or last character. The\n"
+"                                  value '#f' does not quote the colons;\n"
+"                                  '#t' quotes them; 'reader' quotes them\n"
+"                                  when the reader option 'keywords' is\n"
+"                                  not '#f'.\n"
+"escape-newlines           yes     Render newlines as \\n"
+" when printing\n"
+"                                  using `write'. \n"
+"r7rs-symbols              no      Escape symbols using R7RS |...| symbol\n"
+"                                  notation.\n"
+"@end smalllisp"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-evaluation.texi:453
+msgid "These options may be modified with the print-set! syntax."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-evaluation.texi:458
+msgid ""
+"@deffn {Scheme Syntax} print-set! option-name value\n"
+"Modify the print options.  Due to historical oddities, @code{print-set!}\n"
+"is a macro that expects an unquoted option name.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-evaluation.texi:462
+msgid ""
+"@node Fly Evaluation\n"
+"@subsection Procedures for On the Fly Evaluation"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-evaluation.texi:466
+msgid ""
+"Scheme has the lovely property that its expressions may be represented\n"
+"as data.  The @code{eval} procedure takes a Scheme datum and evaluates\n"
+"it as code."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-evaluation.texi:479
+msgid ""
+"@rnindex eval\n"
+"@c ARGFIXME environment/environment specifier\n"
+"@deffn {Scheme Procedure} eval exp module_or_state\n"
+"@deffnx {C Function} scm_eval (exp, module_or_state)\n"
+"Evaluate @var{exp}, a list representing a Scheme expression,\n"
+"in the top-level environment specified by @var{module_or_state}.\n"
+"While @var{exp} is evaluated (using @code{primitive-eval}),\n"
+"@var{module_or_state} is made the current module.  The current module\n"
+"is reset to its previous value when @code{eval} returns.\n"
+"XXX - dynamic states.\n"
+"Example: (eval '(+ 1 2) (interaction-environment))\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-evaluation.texi:489
+msgid ""
+"@rnindex interaction-environment\n"
+"@deffn {Scheme Procedure} interaction-environment\n"
+"@deffnx {C Function} scm_interaction_environment ()\n"
+"Return a specifier for the environment that contains\n"
+"implementation--defined bindings, typically a superset of those\n"
+"listed in the report.  The intent is that this procedure will\n"
+"return the environment in which the implementation would\n"
+"evaluate expressions dynamically typed by the user.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-evaluation.texi:491
+msgid "@xref{Environments}, for other environments."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-evaluation.texi:498
+msgid ""
+"One does not always receive code as Scheme data, of course, and this is\n"
+"especially the case for Guile's other language implementations\n"
+"(@pxref{Other Languages}).  For the case in which all you have is a\n"
+"string, we have @code{eval-string}.  There is a legacy version of this\n"
+"procedure in the default environment, but you really want the one from\n"
+"@code{(ice-9 eval-string)}, so load it up:"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-evaluation.texi:502
+msgid ""
+"@example\n"
+"(use-modules (ice-9 eval-string))\n"
+"@end example"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-evaluation.texi:510
+msgid ""
+"@deffn {Scheme Procedure} eval-string string [#:module=#f] [#:file=#f] @\n"
+"                          [#:line=#f] [#:column=#f] @\n"
+"                          [#:lang=(current-language)] @\n"
+"                          [#:compile?=#f]\n"
+"Parse @var{string} according to the current language, normally Scheme.\n"
+"Evaluate or compile the expressions it contains, in order, returning the\n"
+"last expression."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-evaluation.texi:514
+msgid ""
+"If the @var{module} keyword argument is set, save a module excursion\n"
+"(@pxref{Module System Reflection}) and set the current module to\n"
+"@var{module} before evaluation."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-evaluation.texi:518
+msgid ""
+"The @var{file}, @var{line}, and @var{column} keyword arguments can be\n"
+"used to indicate that the source string begins at a particular source\n"
+"location."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-evaluation.texi:523
+msgid ""
+"Finally, @var{lang} is a language, defaulting to the current language,\n"
+"and the expression is compiled if @var{compile?} is true or there is no\n"
+"evaluator for the given language.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-evaluation.texi:529
+msgid ""
+"@deffn {C Function} scm_eval_string (string)\n"
+"@deffnx {C Function} scm_eval_string_in_module (string, module)\n"
+"These C bindings call @code{eval-string} from @code{(ice-9\n"
+"eval-string)}, evaluating within @var{module} or the current module.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-evaluation.texi:534
+msgid ""
+"@deftypefn {C Function} SCM scm_c_eval_string (const char *string)\n"
+"@code{scm_eval_string}, but taking a C string in locale encoding instead\n"
+"of an @code{SCM}.\n"
+"@end deftypefn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-evaluation.texi:544
+msgid ""
+"@deffn {Scheme Procedure} apply proc arg @dots{} arglst\n"
+"@deffnx {C Function} scm_apply_0 (proc, arglst)\n"
+"@deffnx {C Function} scm_apply_1 (proc, arg1, arglst)\n"
+"@deffnx {C Function} scm_apply_2 (proc, arg1, arg2, arglst)\n"
+"@deffnx {C Function} scm_apply_3 (proc, arg1, arg2, arg3, arglst)\n"
+"@deffnx {C Function} scm_apply (proc, arg, rest)\n"
+"@rnindex apply\n"
+"Call @var{proc} with arguments @var{arg} @dots{} and the\n"
+"elements of the @var{arglst} list."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-evaluation.texi:551
+msgid ""
+"@code{scm_apply} takes parameters corresponding to a Scheme level\n"
+"@code{(lambda (proc arg1 . rest) ...)}.  So @var{arg1} and all but the\n"
+"last element of the @var{rest} list make up @var{arg} @dots{}, and the\n"
+"last element of @var{rest} is the @var{arglst} list.  Or if @var{rest}\n"
+"is the empty list @code{SCM_EOL} then there's no @var{arg} @dots{}, and\n"
+"(@var{arg1}) is the @var{arglst}."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-evaluation.texi:555
+msgid ""
+"@var{arglst} is not modified, but the @var{rest} list passed to\n"
+"@code{scm_apply} is modified.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-evaluation.texi:568
+msgid ""
+"@deffn {C Function} scm_call_0 (proc)\n"
+"@deffnx {C Function} scm_call_1 (proc, arg1)\n"
+"@deffnx {C Function} scm_call_2 (proc, arg1, arg2)\n"
+"@deffnx {C Function} scm_call_3 (proc, arg1, arg2, arg3)\n"
+"@deffnx {C Function} scm_call_4 (proc, arg1, arg2, arg3, arg4)\n"
+"@deffnx {C Function} scm_call_5 (proc, arg1, arg2, arg3, arg4, arg5)\n"
+"@deffnx {C Function} scm_call_6 (proc, arg1, arg2, arg3, arg4, arg5, arg6)\n"
+"@deffnx {C Function} scm_call_7 (proc, arg1, arg2, arg3, arg4, arg5, arg6, "
+"arg7)\n"
+"@deffnx {C Function} scm_call_8 (proc, arg1, arg2, arg3, arg4, arg5, arg6, "
+"arg7, arg8)\n"
+"@deffnx {C Function} scm_call_9 (proc, arg1, arg2, arg3, arg4, arg5, arg6, "
+"arg7, arg8, arg9)\n"
+"Call @var{proc} with the given arguments.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-evaluation.texi:572
+msgid ""
+"@deffn {C Function} scm_call (proc, ...)\n"
+"Call @var{proc} with any number of arguments.  The argument list must be\n"
+"terminated by @code{SCM_UNDEFINED}.  For example:"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-evaluation.texi:580
+msgid ""
+"@example\n"
+"scm_call (scm_c_public_ref (\"guile\", \"+\"),\n"
+"          scm_from_int (1),\n"
+"          scm_from_int (2),\n"
+"          SCM_UNDEFINED);\n"
+"@end example\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-evaluation.texi:586
+msgid ""
+"@deffn {C Function} scm_call_n (proc, argv, nargs)\n"
+"Call @var{proc} with the array of arguments @var{argv}, as a\n"
+"@code{SCM*}.  The length of the arguments should be passed in\n"
+"@var{nargs}, as a @code{size_t}.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-evaluation.texi:592
+msgid ""
+"@deffn {Scheme Procedure} primitive-eval exp\n"
+"@deffnx {C Function} scm_primitive_eval (exp)\n"
+"Evaluate @var{exp} in the top-level environment specified by\n"
+"the current module.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-evaluation.texi:596
+msgid ""
+"@node Compilation\n"
+"@subsection Compiling Scheme Code"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-evaluation.texi:602
+msgid ""
+"The @code{eval} procedure directly interprets the S-expression\n"
+"representation of Scheme. An alternate strategy for evaluation is to\n"
+"determine ahead of time what computations will be necessary to\n"
+"evaluate the expression, and then use that recipe to produce the\n"
+"desired results. This is known as @dfn{compilation}."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-evaluation.texi:609
+msgid ""
+"While it is possible to compile simple Scheme expressions such as\n"
+"@code{(+ 2 2)} or even @code{\"Hello world!\"}, compilation is most\n"
+"interesting in the context of procedures. Compiling a lambda expression\n"
+"produces a compiled procedure, which is just like a normal procedure\n"
+"except typically much faster, because it can bypass the generic\n"
+"interpreter."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-evaluation.texi:612
+msgid ""
+"Functions from system modules in a Guile installation are normally\n"
+"compiled already, so they load and run quickly."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-evaluation.texi:620
+msgid ""
+"@cindex automatic compilation\n"
+"Note that well-written Scheme programs will not typically call the\n"
+"procedures in this section, for the same reason that it is often bad\n"
+"taste to use @code{eval}.  By default, Guile automatically compiles any\n"
+"files it encounters that have not been compiled yet (@pxref{Invoking\n"
+"Guile, @code{--auto-compile}}).  The compiler can also be invoked\n"
+"explicitly from the shell as @code{guild compile foo.scm}."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-evaluation.texi:627
+msgid ""
+"(Why are calls to @code{eval} and @code{compile} usually in bad taste?\n"
+"Because they are limited, in that they can only really make sense for\n"
+"top-level expressions. Also, most needs for ``compile-time''\n"
+"computation are fulfilled by macros and closures. Of course one good\n"
+"counterexample is the REPL itself, or any code that reads expressions\n"
+"from a port.)"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-evaluation.texi:636
+msgid ""
+"Automatic compilation generally works transparently, without any need\n"
+"for user intervention.  However Guile does not yet do proper dependency\n"
+"tracking, so that if file @file{@var{a}.scm} uses macros from\n"
+"@file{@var{b}.scm}, and @var{@var{b}.scm} changes, @code{@var{a}.scm}\n"
+"would not be automatically recompiled.  To forcibly invalidate the\n"
+"auto-compilation cache, pass the @code{--fresh-auto-compile} option to\n"
+"Guile, or set the @code{GUILE_AUTO_COMPILE} environment variable to\n"
+"@code{fresh} (instead of to @code{0} or @code{1})."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-evaluation.texi:640
+msgid ""
+"For more information on the compiler itself, see @ref{Compiling to the\n"
+"Virtual Machine}. For information on the virtual machine, see @ref{A\n"
+"Virtual Machine for Guile}."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-evaluation.texi:643
+msgid ""
+"The command-line interface to Guile's compiler is the @command{guild\n"
+"compile} command:"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-evaluation.texi:648
+msgid ""
+"@deffn {Command} {guild compile} [@option{option}...] @var{file}...\n"
+"Compile @var{file}, a source file, and store bytecode in the compilation "
+"cache\n"
+"or in the file specified by the @option{-o} option.  The following options "
+"are\n"
+"available:"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-evaluation.texi:650
+msgid "@table @option"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-evaluation.texi:654
+msgid ""
+"@item -L @var{dir}\n"
+"@itemx --load-path=@var{dir}\n"
+"Add @var{dir} to the front of the module load path."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-evaluation.texi:660
+msgid ""
+"@item -o @var{ofile}\n"
+"@itemx --output=@var{ofile}\n"
+"Write output bytecode to @var{ofile}.  By convention, bytecode file\n"
+"names end in @code{.go}.  When @option{-o} is omitted, the output file\n"
+"name is as for @code{compile-file} (see below)."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-evaluation.texi:669
+msgid ""
+"@item -W @var{warning}\n"
+"@itemx --warn=@var{warning}\n"
+"@cindex warnings, compiler\n"
+"Emit warnings of type @var{warning}; use @code{--warn=help} for a list\n"
+"of available warnings and their description.  Currently recognized\n"
+"warnings include @code{unused-variable}, @code{unused-toplevel},\n"
+"@code{unbound-variable}, @code{arity-mismatch}, @code{format},\n"
+"@code{duplicate-case-datum}, and @code{bad-case-datum}."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-evaluation.texi:674
+msgid ""
+"@item -f @var{lang}\n"
+"@itemx --from=@var{lang}\n"
+"Use @var{lang} as the source language of @var{file}.  If this option is "
+"omitted,\n"
+"@code{scheme} is assumed."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-evaluation.texi:679
+msgid ""
+"@item -t @var{lang}\n"
+"@itemx --to=@var{lang}\n"
+"Use @var{lang} as the target language of @var{file}.  If this option is "
+"omitted,\n"
+"@code{rtl} is assumed."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-evaluation.texi:686
+msgid ""
+"@item -T @var{target}\n"
+"@itemx --target=@var{target}\n"
+"Produce code for @var{target} instead of @var{%host-type} (@pxref{Build\n"
+"Config, %host-type}).  Target must be a valid GNU triplet, such as\n"
+"@code{armv5tel-unknown-linux-gnueabi} (@pxref{Specifying Target\n"
+"Triplets,,, autoconf, GNU Autoconf Manual})."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-evaluation.texi:688
+msgctxt "/home/bear/work/guile/doc/guile/en/api-evaluation.texi:688"
+msgid "@end table"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-evaluation.texi:693
+msgid ""
+"Each @var{file} is assumed to be UTF-8-encoded, unless it contains a\n"
+"coding declaration as recognized by @code{file-encoding}\n"
+"(@pxref{Character Encoding of Source Files}).\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-evaluation.texi:696
+msgid ""
+"The compiler can also be invoked directly by Scheme code using the "
+"procedures\n"
+"below:"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-evaluation.texi:703
+msgid ""
+"@deffn {Scheme Procedure} compile exp [#:env=#f] @\n"
+"                          [#:from=(current-language)] @\n"
+"                          [#:to=value] [#:opts=()]\n"
+"Compile the expression @var{exp} in the environment @var{env}. If\n"
+"@var{exp} is a procedure, the result will be a compiled procedure;\n"
+"otherwise @code{compile} is mostly equivalent to @code{eval}."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-evaluation.texi:707
+msgid ""
+"For a discussion of languages and compiler options, @xref{Compiling to\n"
+"the Virtual Machine}.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-evaluation.texi:714
+msgid ""
+"@deffn {Scheme Procedure} compile-file file [#:output-file=#f] @\n"
+"                          [#:from=(current-language)] [#:to='rtl] @\n"
+"                          [#:env=(default-environment from)] @\n"
+"                          [#:opts='()] @\n"
+"                          [#:canonicalization='relative]\n"
+"Compile the file named @var{file}."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-evaluation.texi:718
+msgid ""
+"Output will be written to a @var{output-file}.   If you do not supply an\n"
+"output file name, output is written to a file in the cache directory, as\n"
+"computed by @code{(compiled-file-name @var{file})}."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-evaluation.texi:722
+msgid ""
+"@var{from} and @var{to} specify the source and target languages.\n"
+"@xref{Compiling to the Virtual Machine}, for more information on these\n"
+"options, and on @var{env} and @var{opts}."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-evaluation.texi:726
+msgid ""
+"As with @command{guild compile}, @var{file} is assumed to be\n"
+"UTF-8-encoded unless it contains a coding declaration.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-evaluation.texi:730
+msgid ""
+"@deffn {Scheme Procedure} compiled-file-name file\n"
+"Compute a cached location for a compiled version of a Scheme file named\n"
+"@var{file}."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-evaluation.texi:739
+msgid ""
+"This file will usually be below the @file{$HOME/.cache/guile/ccache}\n"
+"directory, depending on the value of the @env{XDG_CACHE_HOME}\n"
+"environment variable.  The intention is that @code{compiled-file-name}\n"
+"provides a fallback location for caching auto-compiled files.  If you\n"
+"want to place a compile file in the @code{%load-compiled-path}, you\n"
+"should pass the @var{output-file} option to @code{compile-file},\n"
+"explicitly.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-evaluation.texi:745
+msgid ""
+"@defvr {Scheme Variable} %auto-compilation-options\n"
+"This variable contains the options passed to the @code{compile-file}\n"
+"procedure when auto-compiling source files.  By default, it enables\n"
+"useful compilation warnings.  It can be customized from @file{~/.guile}.\n"
+"@end defvr"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-evaluation.texi:748
+msgid ""
+"@node Loading\n"
+"@subsection Loading Scheme Code from File"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-evaluation.texi:753
+msgid ""
+"@rnindex load\n"
+"@deffn {Scheme Procedure} load filename [reader]\n"
+"Load @var{filename} and evaluate its contents in the top-level\n"
+"environment."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-evaluation.texi:758
+msgid ""
+"@var{reader} if provided should be either @code{#f}, or a procedure with\n"
+"the signature @code{(lambda (port) @dots{})} which reads the next\n"
+"expression from @var{port}.  If @var{reader} is @code{#f} or absent,\n"
+"Guile's built-in @code{read} procedure is used (@pxref{Scheme Read})."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-evaluation.texi:764
+msgid ""
+"The @var{reader} argument takes effect by setting the value of the\n"
+"@code{current-reader} fluid (see below) before loading the file, and\n"
+"restoring its previous value when loading is complete.  The Scheme code\n"
+"inside @var{filename} can itself change the current reader procedure on\n"
+"the fly by setting @code{current-reader} fluid."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-evaluation.texi:769
+msgid ""
+"If the variable @code{%load-hook} is defined, it should be bound to a\n"
+"procedure that will be called before any code is loaded.  See\n"
+"documentation for @code{%load-hook} later in this section.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-evaluation.texi:772
+msgid ""
+"@deffn {Scheme Procedure} load-compiled filename\n"
+"Load the compiled file named @var{filename}."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-evaluation.texi:777
+msgid ""
+"Compiling a source file (@pxref{Read/Load/Eval/Compile}) and then\n"
+"calling @code{load-compiled} on the resulting file is equivalent to\n"
+"calling @code{load} on the source file.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-evaluation.texi:787
+msgid ""
+"@deffn {Scheme Procedure} primitive-load filename\n"
+"@deffnx {C Function} scm_primitive_load (filename)\n"
+"Load the file named @var{filename} and evaluate its contents in the\n"
+"top-level environment.  @var{filename} must either be a full pathname or\n"
+"be a pathname relative to the current directory.  If the variable\n"
+"@code{%load-hook} is defined, it should be bound to a procedure that\n"
+"will be called before any code is loaded.  See the documentation for\n"
+"@code{%load-hook} later in this section.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-evaluation.texi:792
+msgid ""
+"@deftypefn {C Function} SCM scm_c_primitive_load (const char *filename)\n"
+"@code{scm_primitive_load}, but taking a C string instead of an\n"
+"@code{SCM}.\n"
+"@end deftypefn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-evaluation.texi:800
+msgid ""
+"@defvar current-reader\n"
+"@code{current-reader} holds the read procedure that is currently being\n"
+"used by the above loading procedures to read expressions (from the file\n"
+"that they are loading).  @code{current-reader} is a fluid, so it has an\n"
+"independent value in each dynamic root and should be read and set using\n"
+"@code{fluid-ref} and @code{fluid-set!} (@pxref{Fluids and Dynamic\n"
+"States})."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-evaluation.texi:806
+msgid ""
+"Changing @code{current-reader} is typically useful to introduce local\n"
+"syntactic changes, such that code following the @code{fluid-set!} call\n"
+"is read using the newly installed reader.  The @code{current-reader}\n"
+"change should take place at evaluation time when the code is evaluated,\n"
+"or at compilation time when the code is compiled:"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-evaluation.texi:812
+msgid ""
+"@findex eval-when\n"
+"@example\n"
+"(eval-when (compile eval)\n"
+"  (fluid-set! current-reader my-own-reader))\n"
+"@end example"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-evaluation.texi:816
+msgid ""
+"The @code{eval-when} form above ensures that the @code{current-reader}\n"
+"change occurs at the right time.\n"
+"@end defvar"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-evaluation.texi:823
+msgid ""
+"@defvar %load-hook\n"
+"A procedure to be called @code{(%load-hook @var{filename})} whenever a\n"
+"file is loaded, or @code{#f} for no such call.  @code{%load-hook} is\n"
+"used by all of the loading functions (@code{load} and\n"
+"@code{primitive-load}, and @code{load-from-path} and\n"
+"@code{primitive-load-path} documented in the next section)."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-evaluation.texi:825
+msgid "For example an application can set this to show what's loaded,"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-evaluation.texi:833
+msgid ""
+"@example\n"
+"(set! %load-hook (lambda (filename)\n"
+"                   (format #t \"Loading ~a ...\\n"
+"\" filename)))\n"
+"(load-from-path \"foo.scm\")\n"
+"@print{} Loading /usr/local/share/guile/site/foo.scm ...\n"
+"@end example\n"
+"@end defvar"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-evaluation.texi:839
+msgid ""
+"@deffn {Scheme Procedure} current-load-port\n"
+"@deffnx {C Function} scm_current_load_port ()\n"
+"Return the current-load-port.\n"
+"The load port is used internally by @code{primitive-load}.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-evaluation.texi:842
+msgid ""
+"@node Load Paths\n"
+"@subsection Load Paths"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-evaluation.texi:846
+msgid ""
+"The procedure in the previous section look for Scheme code in the file\n"
+"system at specific location.  Guile also has some procedures to search\n"
+"the load path for code."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-evaluation.texi:854
+msgid ""
+"@defvar %load-path\n"
+"List of directories which should be searched for Scheme modules and\n"
+"libraries.  When Guile starts up, @code{%load-path} is initialized to\n"
+"the default load path @code{(list (%library-dir) (%site-dir)\n"
+"(%global-site-dir) (%package-data-dir))}.  The @env{GUILE_LOAD_PATH}\n"
+"environment variable can be used to prepend or append additional\n"
+"directories (@pxref{Environment Variables})."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-evaluation.texi:858
+msgid ""
+"@xref{Build Config}, for more on @code{%site-dir} and related\n"
+"procedures.\n"
+"@end defvar"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-evaluation.texi:864
+msgid ""
+"@deffn {Scheme Procedure} load-from-path filename\n"
+"Similar to @code{load}, but searches for @var{filename} in the load\n"
+"paths. Preferentially loads a compiled version of the file, if it is\n"
+"available and up-to-date.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-evaluation.texi:866
+msgid "A user can extend the load path by calling @code{add-to-load-path}."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-evaluation.texi:870
+msgid ""
+"@deffn {Scheme Syntax} add-to-load-path dir\n"
+"Add @var{dir} to the load path.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-evaluation.texi:873
+msgid ""
+"For example, a script might include this form to add the directory that\n"
+"it is in to the load path:"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-evaluation.texi:877
+msgid ""
+"@example\n"
+"(add-to-load-path (dirname (current-filename)))\n"
+"@end example"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-evaluation.texi:881
+msgid ""
+"It's better to use @code{add-to-load-path} than to modify\n"
+"@code{%load-path} directly, because @code{add-to-load-path} takes care\n"
+"of modifying the path both at compile-time and at run-time."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-evaluation.texi:889
+msgid ""
+"@deffn {Scheme Procedure} primitive-load-path filename [exception-on-not-"
+"found]\n"
+"@deffnx {C Function} scm_primitive_load_path (filename)\n"
+"Search @code{%load-path} for the file named @var{filename} and\n"
+"load it into the top-level environment.  If @var{filename} is a\n"
+"relative pathname and is not found in the list of search paths,\n"
+"an error is signalled.  Preferentially loads a compiled version of the\n"
+"file, if it is available and up-to-date."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-evaluation.texi:897
+msgid ""
+"If @var{filename} is a relative pathname and is not found in the list of\n"
+"search paths, one of three things may happen, depending on the optional\n"
+"second argument, @var{exception-on-not-found}.  If it is @code{#f},\n"
+"@code{#f} will be returned.  If it is a procedure, it will be called\n"
+"with no arguments.  (This allows a distinction to be made between\n"
+"exceptions raised by loading a file, and exceptions related to the\n"
+"loader itself.)  Otherwise an error is signalled."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-evaluation.texi:902
+msgid ""
+"For compatibility with Guile 1.8 and earlier, the C function takes only\n"
+"one argument, which can be either a string (the file name) or an\n"
+"argument list.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-evaluation.texi:912
+msgid ""
+"@deffn {Scheme Procedure} %search-load-path filename\n"
+"@deffnx {C Function} scm_sys_search_load_path (filename)\n"
+"Search @code{%load-path} for the file named @var{filename}, which must\n"
+"be readable by the current user.  If @var{filename} is found in the list\n"
+"of paths to search or is an absolute pathname, return its full pathname.\n"
+"Otherwise, return @code{#f}.  Filenames may have any of the optional\n"
+"extensions in the @code{%load-extensions} list; @code{%search-load-path}\n"
+"will try each extension automatically.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-evaluation.texi:919
+msgid ""
+"@defvar %load-extensions\n"
+"A list of default file extensions for files containing Scheme code.\n"
+"@code{%search-load-path} tries each of these extensions when looking for\n"
+"a file to load.  By default, @code{%load-extensions} is bound to the\n"
+"list @code{(\"\" \".scm\")}.\n"
+"@end defvar"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-evaluation.texi:925
+msgid ""
+"As mentioned above, when Guile searches the @code{%load-path} for a\n"
+"source file, it will also search the @code{%load-compiled-path} for a\n"
+"corresponding compiled file.  If the compiled file is as new or newer\n"
+"than the source file, it will be loaded instead of the source file,\n"
+"using @code{load-compiled}."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-evaluation.texi:933
+msgid ""
+"@defvar %load-compiled-path\n"
+"Like @code{%load-path}, but for compiled files.  By default, this path\n"
+"has two entries: one for compiled files from Guile itself, and one for\n"
+"site packages.  The @env{GUILE_LOAD_COMPILED_PATH} environment variable\n"
+"can be used to prepend or append additional directories\n"
+"(@pxref{Environment Variables}).\n"
+"@end defvar"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-evaluation.texi:940
+msgid ""
+"When @code{primitive-load-path} searches the @code{%load-compiled-path}\n"
+"for a corresponding compiled file for a relative path it does so by\n"
+"appending @code{.go} to the relative path.  For example, searching for\n"
+"@code{ice-9/popen} could find\n"
+"@code{/usr/lib/guile/2.2/ccache/ice-9/popen.go}, and use it instead of\n"
+"@code{/usr/share/guile/2.2/ice-9/popen.scm}."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-evaluation.texi:945
+msgid ""
+"If @code{primitive-load-path} does not find a corresponding @code{.go}\n"
+"file in the @code{%load-compiled-path}, or the @code{.go} file is out of\n"
+"date, it will search for a corresponding auto-compiled file in the\n"
+"fallback path, possibly creating one if one does not exist."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-evaluation.texi:950
+msgid ""
+"@xref{Installing Site Packages}, for more on how to correctly install\n"
+"site packages.  @xref{Modules and the File System}, for more on the\n"
+"relationship between load paths and modules.  @xref{Compilation}, for\n"
+"more on the fallback path and auto-compilation."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-evaluation.texi:953
+msgid ""
+"Finally, there are a couple of helper procedures for general path\n"
+"manipulation."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-evaluation.texi:960
+msgid ""
+"@deffn {Scheme Procedure} parse-path path [tail]\n"
+"@deffnx {C Function} scm_parse_path (path, tail)\n"
+"Parse @var{path}, which is expected to be a colon-separated string, into\n"
+"a list and return the resulting list with @var{tail} appended. If\n"
+"@var{path} is @code{#f}, @var{tail} is returned.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-evaluation.texi:969
+msgid ""
+"@deffn {Scheme Procedure} parse-path-with-ellipsis path base\n"
+"@deffnx {C Function} scm_parse_path_with_ellipsis (path, base)\n"
+"Parse @var{path}, which is expected to be a colon-separated string, into\n"
+"a list and return the resulting list with @var{base} (a list) spliced in\n"
+"place of the @code{...} path component, if present, or else @var{base}\n"
+"is added to the end.  If @var{path} is @code{#f}, @var{base} is\n"
+"returned.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-evaluation.texi:981
+msgid ""
+"@deffn {Scheme Procedure} search-path path filename [extensions [require-"
+"exts?]]\n"
+"@deffnx {C Function} scm_search_path (path, filename, rest)\n"
+"Search @var{path} for a directory containing a file named\n"
+"@var{filename}. The file must be readable, and not a directory.  If we\n"
+"find one, return its full filename; otherwise, return @code{#f}.  If\n"
+"@var{filename} is absolute, return it unchanged.  If given,\n"
+"@var{extensions} is a list of strings; for each directory in @var{path},\n"
+"we search for @var{filename} concatenated with each @var{extension}.  If\n"
+"@var{require-exts?}  is true, require that the returned file name have\n"
+"one of the given extensions; if @var{require-exts?} is not given, it\n"
+"defaults to @code{#f}."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-evaluation.texi:985
+msgid ""
+"For compatibility with Guile 1.8 and earlier, the C function takes only\n"
+"three arguments.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-evaluation.texi:989
+msgid ""
+"@node Character Encoding of Source Files\n"
+"@subsection Character Encoding of Source Files"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-evaluation.texi:1000
+msgid ""
+"@cindex source file encoding\n"
+"@cindex primitive-load\n"
+"@cindex load\n"
+"Scheme source code files are usually encoded in ASCII or UTF-8, but the\n"
+"built-in reader can interpret other character encodings as well.  When\n"
+"Guile loads Scheme source code, it uses the @code{file-encoding}\n"
+"procedure (described below) to try to guess the encoding of the file.\n"
+"In the absence of any hints, UTF-8 is assumed.  One way to provide a\n"
+"hint about the encoding of a source file is to place a coding\n"
+"declaration in the top 500 characters of the file."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-evaluation.texi:1006
+msgid ""
+"A coding declaration has the form @code{coding: XXXXXX}, where\n"
+"@code{XXXXXX} is the name of a character encoding in which the source\n"
+"code file has been encoded.  The coding declaration must appear in a\n"
+"scheme comment.  It can either be a semicolon-initiated comment, or the\n"
+"first block @code{#!} comment in the file."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-evaluation.texi:1014
+msgid ""
+"The name of the character encoding in the coding declaration is\n"
+"typically lower case and containing only letters, numbers, and hyphens,\n"
+"as recognized by @code{set-port-encoding!} (@pxref{Ports,\n"
+"@code{set-port-encoding!}}).  Common examples of character encoding\n"
+"names are @code{utf-8} and @code{iso-8859-1},\n"
+"@url{http://www.iana.org/assignments/character-sets, as defined by\n"
+"IANA}.  Thus, the coding declaration is mostly compatible with Emacs."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-evaluation.texi:1022
+msgid ""
+"However, there are some differences in encoding names recognized by\n"
+"Emacs and encoding names defined by IANA, the latter being essentially a\n"
+"subset of the former.  For instance, @code{latin-1} is a valid encoding\n"
+"name for Emacs, but it's not according to the IANA standard, which Guile\n"
+"follows; instead, you should use @code{iso-8859-1}, which is both\n"
+"understood by Emacs and dubbed by IANA (IANA writes it uppercase but\n"
+"Emacs wants it lowercase and Guile is case insensitive.)"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-evaluation.texi:1030
+msgid ""
+"For source code, only a subset of all possible character encodings can\n"
+"be interpreted by the built-in source code reader.  Only those\n"
+"character encodings in which ASCII text appears unmodified can be\n"
+"used.  This includes @code{UTF-8} and @code{ISO-8859-1} through\n"
+"@code{ISO-8859-15}.  The multi-byte character encodings @code{UTF-16}\n"
+"and @code{UTF-32} may not be used because they are not compatible with\n"
+"ASCII."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-evaluation.texi:1043
+msgid ""
+"@cindex read\n"
+"@cindex encoding\n"
+"@cindex port encoding\n"
+"@findex set-port-encoding!\n"
+"There might be a scenario in which one would want to read non-ASCII\n"
+"code from a port, such as with the function @code{read}, instead of\n"
+"with @code{load}.  If the port's character encoding is the same as the\n"
+"encoding of the code to be read by the port, not other special\n"
+"handling is necessary.  The port will automatically do the character\n"
+"encoding conversion.  The functions @code{setlocale} or by\n"
+"@code{set-port-encoding!} are used to set port encodings\n"
+"(@pxref{Ports})."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-evaluation.texi:1053
+msgid ""
+"If a port is used to read code of unknown character encoding, it can\n"
+"accomplish this in three steps.  First, the character encoding of the\n"
+"port should be set to ISO-8859-1 using @code{set-port-encoding!}.\n"
+"Then, the procedure @code{file-encoding}, described below, is used to\n"
+"scan for a coding declaration when reading from the port.  As a side\n"
+"effect, it rewinds the port after its scan is complete. After that,\n"
+"the port's character encoding should be set to the encoding returned\n"
+"by @code{file-encoding}, if any, again by using\n"
+"@code{set-port-encoding!}.  Then the code can be read as normal."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-evaluation.texi:1056
+msgid ""
+"Alternatively, one can use the @code{#:guess-encoding} keyword argument\n"
+"of @code{open-file} and related procedures.  @xref{File Ports}."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-evaluation.texi:1063
+msgid ""
+"@deffn {Scheme Procedure} file-encoding port\n"
+"@deffnx {C Function} scm_file_encoding (port)\n"
+"Attempt to scan the first few hundred bytes from the @var{port} for\n"
+"hints about its character encoding.  Return a string containing the\n"
+"encoding name or @code{#f} if the encoding cannot be determined.  The\n"
+"port is rewound."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-evaluation.texi:1070
+msgid ""
+"Currently, the only supported method is to look for an Emacs-like\n"
+"character coding declaration (@pxref{Recognize Coding, how Emacs\n"
+"recognizes file encoding,, emacs, The GNU Emacs Reference Manual}).  The\n"
+"coding declaration is of the form @code{coding: XXXXX} and must appear\n"
+"in a Scheme comment.  Additional heuristics may be added in the future.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-evaluation.texi:1076
+msgid ""
+"@node Delayed Evaluation\n"
+"@subsection Delayed Evaluation\n"
+"@cindex delayed evaluation\n"
+"@cindex promises"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-evaluation.texi:1080
+msgid ""
+"Promises are a convenient way to defer a calculation until its result\n"
+"is actually needed, and to run such a calculation only once.  Also\n"
+"@pxref{SRFI-45}."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-evaluation.texi:1086
+msgid ""
+"@deffn syntax delay expr\n"
+"@rnindex delay\n"
+"Return a promise object which holds the given @var{expr} expression,\n"
+"ready to be evaluated by a later @code{force}.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-evaluation.texi:1091
+msgid ""
+"@deffn {Scheme Procedure} promise? obj\n"
+"@deffnx {C Function} scm_promise_p (obj)\n"
+"Return true if @var{obj} is a promise.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-evaluation.texi:1099
+msgid ""
+"@rnindex force\n"
+"@deffn {Scheme Procedure} force p\n"
+"@deffnx {C Function} scm_force (p)\n"
+"Return the value obtained from evaluating the @var{expr} in the given\n"
+"promise @var{p}.  If @var{p} has previously been forced then its\n"
+"@var{expr} is not evaluated again, instead the value obtained at that\n"
+"time is simply returned."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-evaluation.texi:1107
+msgid ""
+"During a @code{force}, an @var{expr} can call @code{force} again on\n"
+"its own promise, resulting in a recursive evaluation of that\n"
+"@var{expr}.  The first evaluation to return gives the value for the\n"
+"promise.  Higher evaluations run to completion in the normal way, but\n"
+"their results are ignored, @code{force} always returns the first\n"
+"value.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-evaluation.texi:1111
+msgid ""
+"@node Local Evaluation\n"
+"@subsection Local Evaluation"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-evaluation.texi:1115
+msgid ""
+"Guile includes a facility to capture a lexical environment, and later\n"
+"evaluate a new expression within that environment.  This code is\n"
+"implemented in a module."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-evaluation.texi:1119
+msgid ""
+"@example\n"
+"(use-modules (ice-9 local-eval))\n"
+"@end example"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-evaluation.texi:1124
+msgid ""
+"@deffn syntax the-environment\n"
+"Captures and returns a lexical environment for use with\n"
+"@code{local-eval} or @code{local-compile}.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-evaluation.texi:1131
+msgid ""
+"@deffn {Scheme Procedure} local-eval exp env\n"
+"@deffnx {C Function} scm_local_eval (exp, env)\n"
+"@deffnx {Scheme Procedure} local-compile exp env [opts=()]\n"
+"Evaluate or compile the expression @var{exp} in the lexical environment\n"
+"@var{env}.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-evaluation.texi:1134
+msgid ""
+"Here is a simple example, illustrating that it is the variable\n"
+"that gets captured, not just its value at one point in time."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-evaluation.texi:1144
+msgid ""
+"@example\n"
+"(define e (let ((x 100)) (the-environment)))\n"
+"(define fetch-x (local-eval '(lambda () x) e))\n"
+"(fetch-x)\n"
+"@result{} 100\n"
+"(local-eval '(set! x 42) e)\n"
+"(fetch-x)\n"
+"@result{} 42\n"
+"@end example"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-evaluation.texi:1148
+msgid ""
+"While @var{exp} is evaluated within the lexical environment of\n"
+"@code{(the-environment)}, it has the dynamic environment of the call to\n"
+"@code{local-eval}."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-evaluation.texi:1151
+msgid ""
+"@code{local-eval} and @code{local-compile} can only evaluate\n"
+"expressions, not definitions."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-evaluation.texi:1157
+msgid ""
+"@example\n"
+"(local-eval '(define foo 42)\n"
+"            (let ((x 100)) (the-environment)))\n"
+"@result{} syntax error: definition in expression context\n"
+"@end example"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-evaluation.texi:1165
+msgid ""
+"Note that the current implementation of @code{(the-environment)} only\n"
+"captures ``normal'' lexical bindings, and pattern variables bound by\n"
+"@code{syntax-case}.  It does not currently capture local syntax\n"
+"transformers bound by @code{let-syntax}, @code{letrec-syntax} or\n"
+"non-top-level @code{define-syntax} forms.  Any attempt to reference such\n"
+"captured syntactic keywords via @code{local-eval} or\n"
+"@code{local-compile} produces an error."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-evaluation.texi:1169
+msgid ""
+"@node Local Inclusion\n"
+"@subsection Local Inclusion"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-evaluation.texi:1174
+msgid ""
+"This section has discussed various means of linking Scheme code\n"
+"together: fundamentally, loading up files at run-time using @code{load}\n"
+"and @code{load-compiled}.  Guile provides another option to compose\n"
+"parts of programs together at expansion-time instead of at run-time."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-evaluation.texi:1179
+msgid ""
+"@deffn {Scheme Syntax} include file-name\n"
+"Open @var{file-name}, at expansion-time, and read the Scheme forms that\n"
+"it contains, splicing them into the location of the @code{include},\n"
+"within a @code{begin}."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-evaluation.texi:1183
+msgid ""
+"If @var{file-name} is a relative path, it is searched for relative to\n"
+"the path that contains the file that the @code{include} form appears in.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-evaluation.texi:1189
+msgid ""
+"If you are a C programmer, if @code{load} in Scheme is like\n"
+"@code{dlopen} in C, consider @code{include} to be like the C\n"
+"preprocessor's @code{#include}.  When you use @code{include}, it is as\n"
+"if the contents of the included file were typed in instead of the\n"
+"@code{include} form."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-evaluation.texi:1194
+msgid ""
+"Because the code is included at compile-time, it is available to the\n"
+"macroexpander.  Syntax definitions in the included file are available to\n"
+"later code in the form in which the @code{include} appears, without the\n"
+"need for @code{eval-when}.  (@xref{Eval When}.)"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-evaluation.texi:1201
+msgid ""
+"For the same reason, compiling a form that uses @code{include} results\n"
+"in one compilation unit, composed of multiple files.  Loading the\n"
+"compiled file is one @code{stat} operation for the compilation unit,\n"
+"instead of @code{2*@var{n}} in the case of @code{load} (once for each\n"
+"loaded source file, and once each corresponding compiled file, in the\n"
+"best case)."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-evaluation.texi:1207
+msgid ""
+"Unlike @code{load}, @code{include} also works within nested lexical\n"
+"contexts.  It so happens that the optimizer works best within a lexical\n"
+"context, because all of the uses of bindings in a lexical context are\n"
+"visible, so composing files by including them within a @code{(let ()\n"
+"...)} can sometimes lead to important speed improvements."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-evaluation.texi:1212
+msgid ""
+"On the other hand, @code{include} does have all the disadvantages of\n"
+"early binding: once the code with the @code{include} is compiled, no\n"
+"change to the included file is reflected in the future behavior of the\n"
+"including form."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-evaluation.texi:1219
+msgid ""
+"Also, the particular form of @code{include}, which requires an absolute\n"
+"path, or a path relative to the current directory at compile-time, is\n"
+"not very amenable to compiling the source in one place, but then\n"
+"installing the source to another place.  For this reason, Guile provides\n"
+"another form, @code{include-from-path}, which looks for the source file\n"
+"to include within a load path."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-evaluation.texi:1225
+msgid ""
+"@deffn {Scheme Syntax} include-from-path file-name\n"
+"Like @code{include}, but instead of expecting @code{file-name} to be an\n"
+"absolute file name, it is expected to be a relative path to search in\n"
+"the @code{%load-path}.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-evaluation.texi:1230
+msgid ""
+"@code{include-from-path} is more useful when you want to install all of\n"
+"the source files for a package (as you should!).  It makes it possible\n"
+"to evaluate an installed file from source, instead of relying on the\n"
+"@code{.go} file being up to date."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-evaluation.texi:1233
+msgid ""
+"@node Sandboxed Evaluation\n"
+"@subsection Sandboxed Evaluation"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-evaluation.texi:1240
+msgid ""
+"Sometimes you would like to evaluate code that comes from an untrusted\n"
+"party.  The safest way to do this is to buy a new computer, evaluate the\n"
+"code on that computer, then throw the machine away.  However if you are\n"
+"unwilling to take this simple approach, Guile does include a limited\n"
+"``sandbox'' facility that can allow untrusted code to be evaluated with\n"
+"some confidence."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-evaluation.texi:1242
+msgid "To use the sandboxed evaluator, load its module:"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-evaluation.texi:1246
+msgid ""
+"@example\n"
+"(use-modules (ice-9 sandbox))\n"
+"@end example"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-evaluation.texi:1249
+msgid ""
+"Guile's sandboxing facility starts with the ability to restrict the time\n"
+"and space used by a piece of code."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-evaluation.texi:1256
+msgid ""
+"@deffn {Scheme Procedure} call-with-time-limit limit thunk limit-reached\n"
+"Call @var{thunk}, but cancel it if @var{limit} seconds of wall-clock\n"
+"time have elapsed.  If the computation is cancelled, call\n"
+"@var{limit-reached} in tail position.  @var{thunk} must not disable\n"
+"interrupts or prevent an abort via a @code{dynamic-wind} unwind handler.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-evaluation.texi:1262
+msgid ""
+"@deffn {Scheme Procedure} call-with-allocation-limit limit thunk limit-"
+"reached\n"
+"Call @var{thunk}, but cancel it if @var{limit} bytes have been\n"
+"allocated.  If the computation is cancelled, call @var{limit-reached} in\n"
+"tail position.  @var{thunk} must not disable interrupts or prevent an\n"
+"abort via a @code{dynamic-wind} unwind handler."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-evaluation.texi:1266
+msgid ""
+"This limit applies to both stack and heap allocation.  The computation\n"
+"will not be aborted before @var{limit} bytes have been allocated, but\n"
+"for the heap allocation limit, the check may be postponed until the next "
+"garbage collection."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-evaluation.texi:1271
+msgid ""
+"Note that as a current shortcoming, the heap size limit applies to all\n"
+"threads; concurrent allocation by other unrelated threads counts towards\n"
+"the allocation limit.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-evaluation.texi:1277
+msgid ""
+"@deffn {Scheme Procedure} call-with-time-and-allocation-limits time-limit "
+"allocation-limit thunk\n"
+"Invoke @var{thunk} in a dynamic extent in which its execution is limited\n"
+"to @var{time-limit} seconds of wall-clock time, and its allocation to\n"
+"@var{allocation-limit} bytes.  @var{thunk} must not disable interrupts\n"
+"or prevent an abort via a @code{dynamic-wind} unwind handler."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-evaluation.texi:1283
+msgid ""
+"If successful, return all values produced by invoking @var{thunk}.  Any\n"
+"uncaught exception thrown by the thunk will propagate out.  If the time\n"
+"or allocation limit is exceeded, an exception will be thrown to the\n"
+"@code{limit-exceeded} key.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-evaluation.texi:1289
+msgid ""
+"The time limit and stack limit are both very precise, but the heap limit\n"
+"only gets checked asynchronously, after a garbage collection.  In\n"
+"particular, if the heap is already very large, the number of allocated\n"
+"bytes between garbage collections will be large, and therefore the\n"
+"precision of the check is reduced."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-evaluation.texi:1301
+msgid ""
+"Additionally, due to the mechanism used by the allocation limit (the\n"
+"@code{after-gc-hook}), large single allocations like @code{(make-vector\n"
+"#e1e7)} are only detected after the allocation completes, even if the\n"
+"allocation itself causes garbage collection.  It's possible therefore\n"
+"for user code to not only exceed the allocation limit set, but also to\n"
+"exhaust all available memory, causing out-of-memory conditions at any\n"
+"allocation site.  Failure to allocate memory in Guile itself should be\n"
+"safe and cause an exception to be thrown, but most systems are not\n"
+"designed to handle @code{malloc} failures.  An allocation failure may\n"
+"therefore exercise unexpected code paths in your system, so it is a\n"
+"weakness of the sandbox (and therefore an interesting point of attack)."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-evaluation.texi:1303
+msgid "The main sandbox interface is @code{eval-in-sandbox}."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-evaluation.texi:1313
+msgid ""
+"@deffn {Scheme Procedure} eval-in-sandbox exp [#:time-limit 0.1] @\n"
+"                          [#:allocation-limit #e10e6] @\n"
+"                          [#:bindings all-pure-bindings] @\n"
+"                          [#:module (make-sandbox-module bindings)] @\n"
+"                          [#:sever-module? #t]\n"
+"Evaluate the Scheme expression @var{exp} within an isolated\n"
+"\"sandbox\".  Limit its execution to @var{time-limit} seconds of\n"
+"wall-clock time, and limit its allocation to @var{allocation-limit}\n"
+"bytes."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-evaluation.texi:1318
+msgid ""
+"The evaluation will occur in @var{module}, which defaults to the result\n"
+"of calling @code{make-sandbox-module} on @var{bindings}, which itself\n"
+"defaults to @code{all-pure-bindings}.  This is the core of the\n"
+"sandbox: creating a scope for the expression that is @dfn{safe}."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-evaluation.texi:1323
+msgid ""
+"A safe sandbox module has two characteristics.  Firstly, it will not\n"
+"allow the expression being evaluated to avoid being cancelled due to\n"
+"time or allocation limits.  This ensures that the expression terminates\n"
+"in a timely fashion."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-evaluation.texi:1328
+msgid ""
+"Secondly, a safe sandbox module will prevent the evaluation from\n"
+"receiving information from previous evaluations, or from affecting\n"
+"future evaluations.  All combinations of binding sets exported by\n"
+"@code{(ice-9 sandbox)} form safe sandbox modules."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-evaluation.texi:1341
+msgid ""
+"The @var{bindings} should be given as a list of import sets.  One import\n"
+"set is a list whose car names an interface, like @code{(ice-9 q)}, and\n"
+"whose cdr is a list of imports.  An import is either a bare symbol or a\n"
+"pair of @code{(@var{out} . @var{in})}, where @var{out} and @var{in} are\n"
+"both symbols and denote the name under which a binding is exported from\n"
+"the module, and the name under which to make the binding available,\n"
+"respectively.  Note that @var{bindings} is only used as an input to the\n"
+"default initializer for the @var{module} argument; if you pass\n"
+"@code{#:module}, @var{bindings} is unused.  If @var{sever-module?} is\n"
+"true (the default), the module will be unlinked from the global module\n"
+"tree after the evaluation returns, to allow @var{mod} to be\n"
+"garbage-collected."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-evaluation.texi:1347
+msgid ""
+"If successful, return all values produced by @var{exp}.  Any uncaught\n"
+"exception thrown by the expression will propagate out.  If the time or\n"
+"allocation limit is exceeded, an exception will be thrown to the\n"
+"@code{limit-exceeded} key.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-evaluation.texi:1351
+msgid ""
+"Constructing a safe sandbox module is tricky in general.  Guile defines\n"
+"an easy way to construct safe modules from predefined sets of bindings.\n"
+"Before getting to that interface, here are some general notes on safety."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-evaluation.texi:1367
+msgid ""
+"@enumerate\n"
+"@item The time and allocation limits rely on the ability to interrupt\n"
+"and cancel a computation.  For this reason, no binding included in a\n"
+"sandbox module should be able to indefinitely postpone interrupt\n"
+"handling, nor should a binding be able to prevent an abort.  In practice\n"
+"this second consideration means that @code{dynamic-wind} should not be\n"
+"included in any binding set.\n"
+"@item The time and allocation limits apply only to the\n"
+"@code{eval-in-sandbox} call.  If the call returns a procedure which is\n"
+"later called, no limit is ``automatically'' in place.  Users of\n"
+"@code{eval-in-sandbox} have to be very careful to reimpose limits when\n"
+"calling procedures that escape from sandboxes.\n"
+"@item Similarly, the dynamic environment of the @code{eval-in-sandbox}\n"
+"call is not necessarily in place when any procedure that escapes from\n"
+"the sandbox is later called."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-evaluation.texi:1376
+msgid ""
+"This detail prevents us from exposing @code{primitive-eval} to the\n"
+"sandbox, for two reasons.  The first is that it's possible for legacy\n"
+"code to forge references to any binding, if the\n"
+"@code{allow-legacy-syntax-objects?} parameter is true.  The default for\n"
+"this parameter is true; @pxref{Syntax Transformer Helpers} for the\n"
+"details.  The parameter is bound to @code{#f} for the duration of the\n"
+"@code{eval-in-sandbox} call itself, but that will not be in place during\n"
+"calls to escaped procedures."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-evaluation.texi:1381
+msgid ""
+"The second reason we don't expose @code{primitive-eval} is that\n"
+"@code{primitive-eval} implicitly works in the current module, which for\n"
+"an escaped procedure will probably be different than the module that is\n"
+"current for the @code{eval-in-sandbox} call itself."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-evaluation.texi:1393
+msgid ""
+"The common denominator here is that if an interface exposed to the\n"
+"sandbox relies on dynamic environments, it is easy to mistakenly grant\n"
+"the sandboxed procedure additional capabilities in the form of bindings\n"
+"that it should not have access to.  For this reason, the default sets of\n"
+"predefined bindings do not depend on any dynamically scoped value.\n"
+"@item Mutation may allow a sandboxed evaluation to break some invariant\n"
+"in users of data supplied to it.  A lot of code culturally doesn't\n"
+"expect mutation, but if you hand mutable data to a sandboxed evaluation\n"
+"and you also grant mutating capabilities to that evaluation, then the\n"
+"sandboxed code may indeed mutate that data.  The default set of bindings\n"
+"to the sandbox do not include any mutating primitives."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-evaluation.texi:1409
+msgid ""
+"Relatedly, @code{set!} may allow a sandbox to mutate a primitive,\n"
+"invalidating many system-wide invariants.  Guile is currently quite\n"
+"permissive when it comes to imported bindings and mutability.  Although\n"
+"@code{set!} to a module-local or lexically bound variable would be fine,\n"
+"we don't currently have an easy way to disallow @code{set!} to an\n"
+"imported binding, so currently no binding set includes @code{set!}.\n"
+"@item Mutation may allow a sandboxed evaluation to keep state, or\n"
+"make a communication mechanism with other code.  On the one hand this\n"
+"sounds cool, but on the other hand maybe this is part of your threat\n"
+"model.  Again, the default set of bindings doesn't include mutating\n"
+"primitives, preventing sandboxed evaluations from keeping state.\n"
+"@item The sandbox should probably not be able to open a network\n"
+"connection, or write to a file, or open a file from disk.  The default\n"
+"binding set includes no interaction with the operating system.\n"
+"@end enumerate"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-evaluation.texi:1413
+msgid ""
+"If you, dear reader, find the above discussion interesting, you will\n"
+"enjoy Jonathan Rees' dissertation, ``A Security Kernel Based on the\n"
+"Lambda Calculus''."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-evaluation.texi:1418
+msgid ""
+"@defvr {Scheme Variable} all-pure-bindings\n"
+"All ``pure'' bindings that together form a safe subset of those bindings\n"
+"available by default to Guile user code.\n"
+"@end defvr"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-evaluation.texi:1424
+msgid ""
+"@defvr {Scheme Variable} all-pure-and-impure-bindings\n"
+"Like @code{all-pure-bindings}, but additionally including mutating\n"
+"primitives like @code{vector-set!}.  This set is still safe in the sense\n"
+"mentioned above, with the caveats about mutation.\n"
+"@end defvr"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-evaluation.texi:1459
+msgid ""
+"The components of these composite sets are as follows:\n"
+"@defvr {Scheme Variable} alist-bindings\n"
+"@defvrx {Scheme Variable} array-bindings\n"
+"@defvrx {Scheme Variable} bit-bindings\n"
+"@defvrx {Scheme Variable} bitvector-bindings\n"
+"@defvrx {Scheme Variable} char-bindings\n"
+"@defvrx {Scheme Variable} char-set-bindings\n"
+"@defvrx {Scheme Variable} clock-bindings\n"
+"@defvrx {Scheme Variable} core-bindings\n"
+"@defvrx {Scheme Variable} error-bindings\n"
+"@defvrx {Scheme Variable} fluid-bindings\n"
+"@defvrx {Scheme Variable} hash-bindings\n"
+"@defvrx {Scheme Variable} iteration-bindings\n"
+"@defvrx {Scheme Variable} keyword-bindings\n"
+"@defvrx {Scheme Variable} list-bindings\n"
+"@defvrx {Scheme Variable} macro-bindings\n"
+"@defvrx {Scheme Variable} nil-bindings\n"
+"@defvrx {Scheme Variable} number-bindings\n"
+"@defvrx {Scheme Variable} pair-bindings\n"
+"@defvrx {Scheme Variable} predicate-bindings\n"
+"@defvrx {Scheme Variable} procedure-bindings\n"
+"@defvrx {Scheme Variable} promise-bindings\n"
+"@defvrx {Scheme Variable} prompt-bindings\n"
+"@defvrx {Scheme Variable} regexp-bindings\n"
+"@defvrx {Scheme Variable} sort-bindings\n"
+"@defvrx {Scheme Variable} srfi-4-bindings\n"
+"@defvrx {Scheme Variable} string-bindings\n"
+"@defvrx {Scheme Variable} symbol-bindings\n"
+"@defvrx {Scheme Variable} unspecified-bindings\n"
+"@defvrx {Scheme Variable} variable-bindings\n"
+"@defvrx {Scheme Variable} vector-bindings\n"
+"@defvrx {Scheme Variable} version-bindings\n"
+"The components of @code{all-pure-bindings}.\n"
+"@end defvr"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-evaluation.texi:1474
+msgid ""
+"@defvr {Scheme Variable} mutating-alist-bindings\n"
+"@defvrx {Scheme Variable} mutating-array-bindings\n"
+"@defvrx {Scheme Variable} mutating-bitvector-bindings\n"
+"@defvrx {Scheme Variable} mutating-fluid-bindings\n"
+"@defvrx {Scheme Variable} mutating-hash-bindings\n"
+"@defvrx {Scheme Variable} mutating-list-bindings\n"
+"@defvrx {Scheme Variable} mutating-pair-bindings\n"
+"@defvrx {Scheme Variable} mutating-sort-bindings\n"
+"@defvrx {Scheme Variable} mutating-srfi-4-bindings\n"
+"@defvrx {Scheme Variable} mutating-string-bindings\n"
+"@defvrx {Scheme Variable} mutating-variable-bindings\n"
+"@defvrx {Scheme Variable} mutating-vector-bindings\n"
+"The additional components of @code{all-pure-and-impure-bindings}.\n"
+"@end defvr"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-evaluation.texi:1477
+msgid ""
+"Finally, what do you do with a binding set?  What is a binding set\n"
+"anyway?  @code{make-sandbox-module} is here for you."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-evaluation.texi:1480
+msgid ""
+"@deffn {Scheme Procedure} make-sandbox-module bindings\n"
+"Return a fresh module that only contains @var{bindings}."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-evaluation.texi:1489
+msgid ""
+"The @var{bindings} should be given as a list of import sets.  One import\n"
+"set is a list whose car names an interface, like @code{(ice-9 q)}, and\n"
+"whose cdr is a list of imports.  An import is either a bare symbol or a\n"
+"pair of @code{(@var{out} . @var{in})}, where @var{out} and @var{in} are\n"
+"both symbols and denote the name under which a binding is exported from\n"
+"the module, and the name under which to make the binding available,\n"
+"respectively.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-evaluation.texi:1493
+msgid ""
+"So you see that binding sets are just lists, and\n"
+"@code{all-pure-and-impure-bindings} is really just the result of\n"
+"appending all of the component binding sets."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-evaluation.texi:1497
+msgid ""
+"@node REPL Servers\n"
+"@subsection REPL Servers"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-evaluation.texi:1499
+msgid "@cindex REPL server"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-evaluation.texi:1504
+msgid ""
+"The procedures in this section are provided by\n"
+"@lisp\n"
+"(use-modules (system repl server))\n"
+"@end lisp"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-evaluation.texi:1508
+msgid ""
+"When an application is written in Guile, it is often convenient to\n"
+"allow the user to be able to interact with it by evaluating Scheme\n"
+"expressions in a REPL."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-evaluation.texi:1513
+msgid ""
+"The procedures of this module allow you to spawn a @dfn{REPL server},\n"
+"which permits interaction over a local or TCP connection.  Guile itself\n"
+"uses them internally to implement the @option{--listen} switch,\n"
+"@ref{Command-line Options}."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-evaluation.texi:1521
+msgid ""
+"@deffn {Scheme Procedure} make-tcp-server-socket [#:host=#f] @\n"
+"                          [#:addr] [#:port=37146]\n"
+"Return a stream socket bound to a given address @var{addr} and port\n"
+"number @var{port}. If the @var{host} is given, and @var{addr} is not,\n"
+"then the @var{host} string is converted to an address.  If neither is\n"
+"given, we use the loopback address.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-evaluation.texi:1525
+msgid ""
+"@deffn {Scheme Procedure} make-unix-domain-server-socket [#:path=\"/tmp"
+"/guile-socket\"]\n"
+"Return a UNIX domain socket, bound to a given @var{path}.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-evaluation.texi:1532
+msgid ""
+"@deffn {Scheme Procedure} run-server [server-socket]\n"
+"@deffnx {Scheme Procedure} spawn-server [server-socket]\n"
+"Create and run a REPL, making it available over the given\n"
+"@var{server-socket}.  If @var{server-socket} is not provided, it\n"
+"defaults to the socket created by calling @code{make-tcp-server-socket}\n"
+"with no arguments."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-evaluation.texi:1536
+msgid ""
+"@code{run-server} runs the server in the current thread, whereas\n"
+"@code{spawn-server} runs the server in a new thread.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-evaluation.texi:1539
+msgid ""
+"@deffn {Scheme Procedure} stop-server-and-clients!\n"
+"Closes the connection on all running server sockets."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-evaluation.texi:1544
+msgid ""
+"Please note that in the current implementation, the REPL threads are\n"
+"cancelled without unwinding their stacks.  If any of them are holding\n"
+"mutexes or are within a critical section, the results are unspecified.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-evaluation.texi:1547
+msgid ""
+"@node Cooperative REPL Servers\n"
+"@subsection Cooperative REPL Servers"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-evaluation.texi:1549
+msgid "@cindex Cooperative REPL server"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-evaluation.texi:1554
+msgid ""
+"The procedures in this section are provided by\n"
+"@lisp\n"
+"(use-modules (system repl coop-server))\n"
+"@end lisp"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-evaluation.texi:1561
+msgid ""
+"Whereas ordinary REPL servers run in their own threads (@pxref{REPL\n"
+"Servers}), sometimes it is more convenient to provide REPLs that run at\n"
+"specified times within an existing thread, for example in programs\n"
+"utilizing an event loop or in single-threaded programs.  This allows for\n"
+"safe access and mutation of a program's data structures from the REPL,\n"
+"without concern for thread synchronization."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-evaluation.texi:1567
+msgid ""
+"Although the REPLs are run in the thread that calls\n"
+"@code{spawn-coop-repl-server} and @code{poll-coop-repl-server},\n"
+"dedicated threads are spawned so that the calling thread is not blocked.\n"
+"The spawned threads read input for the REPLs and to listen for new\n"
+"connections."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-evaluation.texi:1573
+msgid ""
+"Cooperative REPL servers must be polled periodically to evaluate any\n"
+"pending expressions by calling @code{poll-coop-repl-server} with the\n"
+"object returned from @code{spawn-coop-repl-server}.  The thread that\n"
+"calls @code{poll-coop-repl-server} will be blocked for as long as the\n"
+"expression takes to be evaluated or if the debugger is entered."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-evaluation.texi:1581
+msgid ""
+"@deffn {Scheme Procedure} spawn-coop-repl-server [server-socket]\n"
+"Create and return a new cooperative REPL server object, and spawn a new\n"
+"thread to listen for connections on @var{server-socket}.  Proper\n"
+"functioning of the REPL server requires that\n"
+"@code{poll-coop-repl-server} be called periodically on the returned\n"
+"server object.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-evaluation.texi:1588
+msgid ""
+"@deffn {Scheme Procedure} poll-coop-repl-server coop-server\n"
+"Poll the cooperative REPL server @var{coop-server} and apply a pending\n"
+"operation if there is one, such as evaluating an expression typed at the\n"
+"REPL prompt.  This procedure must be called from the same thread that\n"
+"called @code{spawn-coop-repl-server}.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-evaluation.texi:1591
+msgid ""
+"@c Local Variables:\n"
+"@c TeX-master: \"guile.texi\"\n"
+"@c End:"
+msgstr ""

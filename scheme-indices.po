@@ -1,0 +1,41 @@
+#. extracted from /home/bear/work/guile/doc/guile/en/scheme-indices.texi
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2018-05-07 12:37+0300\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Generator: Translate Toolkit 2.2.5\n"
+
+#: /home/bear/work/guile/doc/guile/en/scheme-indices.texi:6
+msgid ""
+"@c -*-texinfo-*-\n"
+"@c This is part of the GNU Guile Reference Manual.\n"
+"@c Copyright (C)  1996, 1997, 2000, 2001, 2002, 2003, 2004\n"
+"@c   Free Software Foundation, Inc.\n"
+"@c See the file guile.texi for copying conditions."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/scheme-indices.texi:10
+msgid ""
+"@page\n"
+"@node R5RS Index\n"
+"@unnumbered R5RS Index"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/scheme-indices.texi:12
+msgid "@printindex rn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/scheme-indices.texi:16
+msgid ""
+"@c Local Variables:\n"
+"@c TeX-master: \"guile.texi\"\n"
+"@c End:"
+msgstr ""

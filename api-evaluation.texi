@@ -1,0 +1,1577 @@
+@c -*-texinfo-*-
+@c This is part of the GNU Guile Reference Manual.
+@c Copyright (C)  1996, 1997, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2009,
+@c   2010, 2011, 2012, 2013, 2014 Free Software Foundation, Inc.
+@c See the file guile.texi for copying conditions.
+
+@node Read/Load/Eval/Compile
+@section Reading and Evaluating Scheme Code
+
+This chapter describes Guile functions that are concerned with reading,
+loading, evaluating, and compiling Scheme code at run time.
+
+@menu
+* Scheme Syntax::               Standard and extended Scheme syntax.
+* Scheme Read::                 Reading Scheme code.
+* Scheme Write::                Writing Scheme values to a port.
+* Fly Evaluation::              Procedures for on the fly evaluation.
+* Compilation::                 How to compile Scheme files and procedures.
+* Loading::                     Loading Scheme code from file.
+* Load Paths::                  Where Guile looks for code.
+* Character Encoding of Source Files:: Loading non-ASCII Scheme code from file.
+* Delayed Evaluation::          Postponing evaluation until it is needed.
+* Local Evaluation::            Evaluation in a local lexical environment.
+* Local Inclusion::             Compile-time inclusion of one file in another.
+* Sandboxed Evaluation::        Evaluation with limited capabilities.
+* REPL Servers::                Serving a REPL over a socket.
+* Cooperative REPL Servers::    REPL server for single-threaded applications.
+@end menu
+
+@node Scheme Syntax
+@subsection Scheme Syntax: Standard and Guile Extensions
+
+@menu
+* Expression Syntax::
+* Comments::
+* Block Comments::
+* Case Sensitivity::
+* Keyword Syntax::
+* Reader Extensions::
+@end menu
+
+@node Expression Syntax
+@subsubsection Expression Syntax
+
+An expression to be evaluated takes one of the following forms.
+
+@table @nicode
+
+@item @var{symbol}
+A symbol is evaluated by dereferencing.  A binding of that symbol is
+sought and the value there used.  For example,
+
+@example
+(define x 123)
+x @result{} 123
+@end example
+
+@item (@var{proc} @var{args}@dots{})
+A parenthesised expression is a function call.  @var{proc} and each
+argument are evaluated, then the function (which @var{proc} evaluated
+to) is called with those arguments.
+
+The order in which @var{proc} and the arguments are evaluated is
+unspecified, so be careful when using expressions with side effects.
+
+@example
+(max 1 2 3) @result{} 3
+
+(define (get-some-proc)  min)
+((get-some-proc) 1 2 3) @result{} 1
+@end example
+
+The same sort of parenthesised form is used for a macro invocation,
+but in that case the arguments are not evaluated.  See the
+descriptions of macros for more on this (@pxref{Macros}, and
+@pxref{Syntax Rules}).
+
+@item @var{constant}
+Number, string, character and boolean constants evaluate ``to
+themselves'', so can appear as literals.
+
+@example
+123     @result{} 123
+99.9    @result{} 99.9
+"hello" @result{} "hello"
+#\z     @result{} #\z
+#t      @result{} #t
+@end example
+
+Note that an application must not attempt to modify literal strings,
+since they may be in read-only memory.
+
+@item (quote @var{data})
+@itemx '@var{data}
+@findex quote
+@findex '
+Quoting is used to obtain a literal symbol (instead of a variable
+reference), a literal list (instead of a function call), or a literal
+vector.  @nicode{'} is simply a shorthand for a @code{quote} form.
+For example,
+
+@example
+'x                   @result{} x
+'(1 2 3)             @result{} (1 2 3)
+'#(1 (2 3) 4)        @result{} #(1 (2 3) 4)
+(quote x)            @result{} x
+(quote (1 2 3))      @result{} (1 2 3)
+(quote #(1 (2 3) 4)) @result{} #(1 (2 3) 4)
+@end example
+
+Note that an application must not attempt to modify literal lists or
+vectors obtained from a @code{quote} form, since they may be in
+read-only memory.
+
+@item (quasiquote @var{data})
+@itemx `@var{data}
+@findex quasiquote
+@findex `
+Backquote quasi-quotation is like @code{quote}, but selected
+sub-expressions are evaluated.  This is a convenient way to construct
+a list or vector structure most of which is constant, but at certain
+points should have expressions substituted.
+
+The same effect can always be had with suitable @code{list},
+@code{cons} or @code{vector} calls, but quasi-quoting is often easier.
+
+@table @nicode
+
+@item (unquote @var{expr})
+@itemx ,@var{expr}
+@findex unquote
+@findex ,
+Within the quasiquote @var{data}, @code{unquote} or @code{,} indicates
+an expression to be evaluated and inserted.  The comma syntax @code{,}
+is simply a shorthand for an @code{unquote} form.  For example,
+
+@example
+`(1 2 (* 9 9) 3 4)       @result{} (1 2 (* 9 9) 3 4)
+`(1 2 ,(* 9 9) 3 4)      @result{} (1 2 81 3 4)
+`(1 (unquote (+ 1 1)) 3) @result{} (1 2 3)
+`#(1 ,(/ 12 2))          @result{} #(1 6)
+@end example
+
+@item (unquote-splicing @var{expr})
+@itemx ,@@@var{expr}
+@findex unquote-splicing
+@findex ,@@
+Within the quasiquote @var{data}, @code{unquote-splicing} or
+@code{,@@} indicates an expression to be evaluated and the elements of
+the returned list inserted.  @var{expr} must evaluate to a list.  The
+``comma-at'' syntax @code{,@@} is simply a shorthand for an
+@code{unquote-splicing} form.
+
+@example
+(define x '(2 3))
+`(1 ,x 4)                           @result{} (1 (2 3) 4)
+`(1 ,@@x 4)                         @result{} (1 2 3 4)
+`(1 (unquote-splicing (map 1+ x)))  @result{} (1 3 4)
+`#(9 ,@@x 9)                        @result{} #(9 2 3 9)
+@end example
+
+Notice @code{,@@} differs from plain @code{,} in the way one level of
+nesting is stripped.  For @code{,@@} the elements of a returned list
+are inserted, whereas with @code{,} it would be the list itself
+inserted.
+@end table
+
+@c
+@c  FIXME: What can we say about the mutability of a quasiquote
+@c  result?  R5RS doesn't seem to specify anything, though where it
+@c  says backquote without commas is the same as plain quote then
+@c  presumably the "fixed" portions of a quasiquote expression must be
+@c  treated as immutable.
+@c
+
+@end table
+
+@node Comments
+@subsubsection Comments
+
+@c FIXME::martin: Review me!
+
+Comments in Scheme source files are written by starting them with a
+semicolon character (@code{;}).  The comment then reaches up to the end
+of the line.  Comments can begin at any column, and the may be inserted
+on the same line as Scheme code.
+
+@lisp
+; Comment
+;; Comment too
+(define x 1)        ; Comment after expression
+(let ((y 1))
+  ;; Display something.
+  (display y)
+;;; Comment at left margin.
+  (display (+ y 1)))
+@end lisp
+
+It is common to use a single semicolon for comments following
+expressions on a line, to use two semicolons for comments which are
+indented like code, and three semicolons for comments which start at
+column 0, even if they are inside an indented code block.  This
+convention is used when indenting code in Emacs' Scheme mode.
+
+@node Block Comments
+@subsubsection Block Comments
+@cindex multiline comments
+@cindex block comments
+@cindex #!
+@cindex !#
+
+@c FIXME::martin: Review me!
+
+In addition to the standard line comments defined by R5RS, Guile has
+another comment type for multiline comments, called @dfn{block
+comments}.  This type of comment begins with the character sequence
+@code{#!} and ends with the characters @code{!#}.
+
+These comments are compatible with the block
+comments in the Scheme Shell @file{scsh} (@pxref{The Scheme shell
+(scsh)}).  The characters @code{#!} were chosen because they are the
+magic characters used in shell scripts for indicating that the name of
+the program for executing the script follows on the same line.
+
+Thus a Guile script often starts like this.
+
+@lisp
+#! /usr/local/bin/guile -s
+!#
+@end lisp
+
+More details on Guile scripting can be found in the scripting section
+(@pxref{Guile Scripting}).
+
+@cindex R6RS block comments
+@cindex SRFI-30 block comments
+Similarly, Guile (starting from version 2.0) supports nested block
+comments as specified by R6RS and
+@url{http://srfi.schemers.org/srfi-30/srfi-30.html, SRFI-30}:
+
+@lisp
+(+ 1 #| this is a #| nested |# block comment |# 2)
+@result{} 3
+@end lisp
+
+For backward compatibility, this syntax can be overridden with
+@code{read-hash-extend} (@pxref{Reader Extensions,
+@code{read-hash-extend}}).
+
+There is one special case where the contents of a comment can actually
+affect the interpretation of code.  When a character encoding
+declaration, such as @code{coding: utf-8} appears in one of the first
+few lines of a source file, it indicates to Guile's default reader
+that this source code file is not ASCII.  For details see @ref{Character
+Encoding of Source Files}.
+
+@node Case Sensitivity
+@subsubsection Case Sensitivity
+@cindex fold-case
+@cindex no-fold-case
+
+@c FIXME::martin: Review me!
+
+Scheme as defined in R5RS is not case sensitive when reading symbols.
+Guile, on the contrary is case sensitive by default, so the identifiers
+
+@lisp
+guile-whuzzy
+Guile-Whuzzy
+@end lisp
+
+are the same in R5RS Scheme, but are different in Guile.
+
+It is possible to turn off case sensitivity in Guile by setting the
+reader option @code{case-insensitive}.  For more information on reader
+options, @xref{Scheme Read}.
+
+@lisp
+(read-enable 'case-insensitive)
+@end lisp
+
+It is also possible to disable (or enable) case sensitivity within a
+single file by placing the reader directives @code{#!fold-case} (or
+@code{#!no-fold-case}) within the file itself.
+
+@node Keyword Syntax
+@subsubsection Keyword Syntax
+
+@node Reader Extensions
+@subsubsection Reader Extensions
+
+@deffn {Scheme Procedure} read-hash-extend chr proc
+@deffnx {C Function} scm_read_hash_extend (chr, proc)
+Install the procedure @var{proc} for reading expressions
+starting with the character sequence @code{#} and @var{chr}.
+@var{proc} will be called with two arguments:  the character
+@var{chr} and the port to read further data from. The object
+returned will be the return value of @code{read}. 
+Passing @code{#f} for @var{proc} will remove a previous setting. 
+
+@end deffn
+
+@node Scheme Read
+@subsection Reading Scheme Code
+
+@rnindex read
+@deffn {Scheme Procedure} read [port]
+@deffnx {C Function} scm_read (port)
+Read an s-expression from the input port @var{port}, or from
+the current input port if @var{port} is not specified.
+Any whitespace before the next token is discarded.
+@end deffn
+
+The behaviour of Guile's Scheme reader can be modified by manipulating
+its read options.
+
+@cindex options - read
+@cindex read options
+@deffn {Scheme Procedure} read-options [setting]
+Display the current settings of the global read options.  If
+@var{setting} is omitted, only a short form of the current read options
+is printed.  Otherwise if @var{setting} is the symbol @code{help}, a
+complete options description is displayed.
+@end deffn
+
+The set of available options, and their default values, may be had by
+invoking @code{read-options} at the prompt.
+
+@smalllisp
+scheme@@(guile-user)> (read-options)
+(square-brackets keywords #f positions)
+scheme@@(guile-user)> (read-options 'help)
+copy              no    Copy source code expressions.
+positions         yes   Record positions of source code expressions.
+case-insensitive  no    Convert symbols to lower case.
+keywords          #f    Style of keyword recognition: #f, 'prefix or 'postfix.
+r6rs-hex-escapes  no    Use R6RS variable-length character and string hex escapes.
+square-brackets   yes   Treat `[' and `]' as parentheses, for R6RS compatibility.
+hungry-eol-escapes no   In strings, consume leading whitespace after an
+                        escaped end-of-line.
+curly-infix       no    Support SRFI-105 curly infix expressions.
+r7rs-symbols      no    Support R7RS |...| symbol notation.
+@end smalllisp
+
+Note that Guile also includes a preliminary mechanism for setting read
+options on a per-port basis.  For instance, the @code{case-insensitive}
+read option is set (or unset) on the port when the reader encounters the
+@code{#!fold-case} or @code{#!no-fold-case} reader directives.
+Similarly, the @code{#!curly-infix} reader directive sets the
+@code{curly-infix} read option on the port, and
+@code{#!curly-infix-and-bracket-lists} sets @code{curly-infix} and
+unsets @code{square-brackets} on the port (@pxref{SRFI-105}).  There is
+currently no other way to access or set the per-port read options.
+
+The boolean options may be toggled with @code{read-enable} and
+@code{read-disable}. The non-boolean @code{keywords} option must be set
+using @code{read-set!}.
+
+@deffn {Scheme Procedure} read-enable option-name
+@deffnx {Scheme Procedure} read-disable option-name
+@deffnx {Scheme Syntax} read-set! option-name value
+Modify the read options.  @code{read-enable} should be used with boolean
+options and switches them on, @code{read-disable} switches them off.
+
+@code{read-set!} can be used to set an option to a specific value.  Due
+to historical oddities, it is a macro that expects an unquoted option
+name.
+@end deffn
+
+For example, to make @code{read} fold all symbols to their lower case
+(perhaps for compatibility with older Scheme code), you can enter:
+
+@lisp
+(read-enable 'case-insensitive)
+@end lisp
+
+For more information on the effect of the @code{r6rs-hex-escapes} and
+@code{hungry-eol-escapes} options, see (@pxref{String Syntax}).
+
+For more information on the @code{r7rs-symbols} option, see
+(@pxref{Symbol Read Syntax}).
+
+@node Scheme Write
+@subsection Writing Scheme Values
+
+Any scheme value may be written to a port. Not all values may be read
+back in (@pxref{Scheme Read}), however.
+
+@rnindex write
+@rnindex print
+@deffn {Scheme Procedure} write obj [port]
+Send a representation of @var{obj} to @var{port} or to the current
+output port if not given.
+
+The output is designed to be machine readable, and can be read back
+with @code{read} (@pxref{Scheme Read}).  Strings are printed in
+double quotes, with escapes if necessary, and characters are printed in
+@samp{#\} notation.
+@end deffn
+
+@rnindex display
+@deffn {Scheme Procedure} display obj [port]
+Send a representation of @var{obj} to @var{port} or to the current
+output port if not given.
+
+The output is designed for human readability, it differs from
+@code{write} in that strings are printed without double quotes and
+escapes, and characters are printed as per @code{write-char}, not in
+@samp{#\} form.
+@end deffn
+
+As was the case with the Scheme reader, there are a few options that
+affect the behavior of the Scheme printer.
+
+@cindex options - print
+@cindex print options
+@deffn {Scheme Procedure} print-options [setting]
+Display the current settings of the read options.  If @var{setting} is
+omitted, only a short form of the current read options is
+printed. Otherwise if @var{setting} is the symbol @code{help}, a
+complete options description is displayed.
+@end deffn
+
+The set of available options, and their default values, may be had by
+invoking @code{print-options} at the prompt.
+
+@smalllisp
+scheme@@(guile-user)> (print-options)
+(quote-keywordish-symbols reader highlight-suffix "@}" highlight-prefix "@{")
+scheme@@(guile-user)> (print-options 'help)
+highlight-prefix          @{       The string to print before highlighted values.
+highlight-suffix          @}       The string to print after highlighted values.
+quote-keywordish-symbols  reader  How to print symbols that have a colon
+                                  as their first or last character. The
+                                  value '#f' does not quote the colons;
+                                  '#t' quotes them; 'reader' quotes them
+                                  when the reader option 'keywords' is
+                                  not '#f'.
+escape-newlines           yes     Render newlines as \n when printing
+                                  using `write'. 
+r7rs-symbols              no      Escape symbols using R7RS |...| symbol
+                                  notation.
+@end smalllisp
+
+These options may be modified with the print-set! syntax.
+
+@deffn {Scheme Syntax} print-set! option-name value
+Modify the print options.  Due to historical oddities, @code{print-set!}
+is a macro that expects an unquoted option name.
+@end deffn
+
+@node Fly Evaluation
+@subsection Procedures for On the Fly Evaluation
+
+Scheme has the lovely property that its expressions may be represented
+as data.  The @code{eval} procedure takes a Scheme datum and evaluates
+it as code.
+
+@rnindex eval
+@c ARGFIXME environment/environment specifier
+@deffn {Scheme Procedure} eval exp module_or_state
+@deffnx {C Function} scm_eval (exp, module_or_state)
+Evaluate @var{exp}, a list representing a Scheme expression,
+in the top-level environment specified by @var{module_or_state}.
+While @var{exp} is evaluated (using @code{primitive-eval}),
+@var{module_or_state} is made the current module.  The current module
+is reset to its previous value when @code{eval} returns.
+XXX - dynamic states.
+Example: (eval '(+ 1 2) (interaction-environment))
+@end deffn
+
+@rnindex interaction-environment
+@deffn {Scheme Procedure} interaction-environment
+@deffnx {C Function} scm_interaction_environment ()
+Return a specifier for the environment that contains
+implementation--defined bindings, typically a superset of those
+listed in the report.  The intent is that this procedure will
+return the environment in which the implementation would
+evaluate expressions dynamically typed by the user.
+@end deffn
+
+@xref{Environments}, for other environments.
+
+One does not always receive code as Scheme data, of course, and this is
+especially the case for Guile's other language implementations
+(@pxref{Other Languages}).  For the case in which all you have is a
+string, we have @code{eval-string}.  There is a legacy version of this
+procedure in the default environment, but you really want the one from
+@code{(ice-9 eval-string)}, so load it up:
+
+@example
+(use-modules (ice-9 eval-string))
+@end example
+
+@deffn {Scheme Procedure} eval-string string [#:module=#f] [#:file=#f] @
+                          [#:line=#f] [#:column=#f] @
+                          [#:lang=(current-language)] @
+                          [#:compile?=#f]
+Parse @var{string} according to the current language, normally Scheme.
+Evaluate or compile the expressions it contains, in order, returning the
+last expression.
+
+If the @var{module} keyword argument is set, save a module excursion
+(@pxref{Module System Reflection}) and set the current module to
+@var{module} before evaluation.
+
+The @var{file}, @var{line}, and @var{column} keyword arguments can be
+used to indicate that the source string begins at a particular source
+location.
+
+Finally, @var{lang} is a language, defaulting to the current language,
+and the expression is compiled if @var{compile?} is true or there is no
+evaluator for the given language.
+@end deffn
+
+@deffn {C Function} scm_eval_string (string)
+@deffnx {C Function} scm_eval_string_in_module (string, module)
+These C bindings call @code{eval-string} from @code{(ice-9
+eval-string)}, evaluating within @var{module} or the current module.
+@end deffn
+
+@deftypefn {C Function} SCM scm_c_eval_string (const char *string)
+@code{scm_eval_string}, but taking a C string in locale encoding instead
+of an @code{SCM}.
+@end deftypefn
+
+@deffn {Scheme Procedure} apply proc arg @dots{} arglst
+@deffnx {C Function} scm_apply_0 (proc, arglst)
+@deffnx {C Function} scm_apply_1 (proc, arg1, arglst)
+@deffnx {C Function} scm_apply_2 (proc, arg1, arg2, arglst)
+@deffnx {C Function} scm_apply_3 (proc, arg1, arg2, arg3, arglst)
+@deffnx {C Function} scm_apply (proc, arg, rest)
+@rnindex apply
+Call @var{proc} with arguments @var{arg} @dots{} and the
+elements of the @var{arglst} list.
+
+@code{scm_apply} takes parameters corresponding to a Scheme level
+@code{(lambda (proc arg1 . rest) ...)}.  So @var{arg1} and all but the
+last element of the @var{rest} list make up @var{arg} @dots{}, and the
+last element of @var{rest} is the @var{arglst} list.  Or if @var{rest}
+is the empty list @code{SCM_EOL} then there's no @var{arg} @dots{}, and
+(@var{arg1}) is the @var{arglst}.
+
+@var{arglst} is not modified, but the @var{rest} list passed to
+@code{scm_apply} is modified.
+@end deffn
+
+@deffn {C Function} scm_call_0 (proc)
+@deffnx {C Function} scm_call_1 (proc, arg1)
+@deffnx {C Function} scm_call_2 (proc, arg1, arg2)
+@deffnx {C Function} scm_call_3 (proc, arg1, arg2, arg3)
+@deffnx {C Function} scm_call_4 (proc, arg1, arg2, arg3, arg4)
+@deffnx {C Function} scm_call_5 (proc, arg1, arg2, arg3, arg4, arg5)
+@deffnx {C Function} scm_call_6 (proc, arg1, arg2, arg3, arg4, arg5, arg6)
+@deffnx {C Function} scm_call_7 (proc, arg1, arg2, arg3, arg4, arg5, arg6, arg7)
+@deffnx {C Function} scm_call_8 (proc, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8)
+@deffnx {C Function} scm_call_9 (proc, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9)
+Call @var{proc} with the given arguments.
+@end deffn
+
+@deffn {C Function} scm_call (proc, ...)
+Call @var{proc} with any number of arguments.  The argument list must be
+terminated by @code{SCM_UNDEFINED}.  For example:
+
+@example
+scm_call (scm_c_public_ref ("guile", "+"),
+          scm_from_int (1),
+          scm_from_int (2),
+          SCM_UNDEFINED);
+@end example
+@end deffn
+
+@deffn {C Function} scm_call_n (proc, argv, nargs)
+Call @var{proc} with the array of arguments @var{argv}, as a
+@code{SCM*}.  The length of the arguments should be passed in
+@var{nargs}, as a @code{size_t}.
+@end deffn
+
+@deffn {Scheme Procedure} primitive-eval exp
+@deffnx {C Function} scm_primitive_eval (exp)
+Evaluate @var{exp} in the top-level environment specified by
+the current module.
+@end deffn
+
+@node Compilation
+@subsection Compiling Scheme Code
+
+The @code{eval} procedure directly interprets the S-expression
+representation of Scheme. An alternate strategy for evaluation is to
+determine ahead of time what computations will be necessary to
+evaluate the expression, and then use that recipe to produce the
+desired results. This is known as @dfn{compilation}.
+
+While it is possible to compile simple Scheme expressions such as
+@code{(+ 2 2)} or even @code{"Hello world!"}, compilation is most
+interesting in the context of procedures. Compiling a lambda expression
+produces a compiled procedure, which is just like a normal procedure
+except typically much faster, because it can bypass the generic
+interpreter.
+
+Functions from system modules in a Guile installation are normally
+compiled already, so they load and run quickly.
+
+@cindex automatic compilation
+Note that well-written Scheme programs will not typically call the
+procedures in this section, for the same reason that it is often bad
+taste to use @code{eval}.  By default, Guile automatically compiles any
+files it encounters that have not been compiled yet (@pxref{Invoking
+Guile, @code{--auto-compile}}).  The compiler can also be invoked
+explicitly from the shell as @code{guild compile foo.scm}.
+
+(Why are calls to @code{eval} and @code{compile} usually in bad taste?
+Because they are limited, in that they can only really make sense for
+top-level expressions. Also, most needs for ``compile-time''
+computation are fulfilled by macros and closures. Of course one good
+counterexample is the REPL itself, or any code that reads expressions
+from a port.)
+
+Automatic compilation generally works transparently, without any need
+for user intervention.  However Guile does not yet do proper dependency
+tracking, so that if file @file{@var{a}.scm} uses macros from
+@file{@var{b}.scm}, and @var{@var{b}.scm} changes, @code{@var{a}.scm}
+would not be automatically recompiled.  To forcibly invalidate the
+auto-compilation cache, pass the @code{--fresh-auto-compile} option to
+Guile, or set the @code{GUILE_AUTO_COMPILE} environment variable to
+@code{fresh} (instead of to @code{0} or @code{1}).
+
+For more information on the compiler itself, see @ref{Compiling to the
+Virtual Machine}. For information on the virtual machine, see @ref{A
+Virtual Machine for Guile}.
+
+The command-line interface to Guile's compiler is the @command{guild
+compile} command:
+
+@deffn {Command} {guild compile} [@option{option}...] @var{file}...
+Compile @var{file}, a source file, and store bytecode in the compilation cache
+or in the file specified by the @option{-o} option.  The following options are
+available:
+
+@table @option
+
+@item -L @var{dir}
+@itemx --load-path=@var{dir}
+Add @var{dir} to the front of the module load path.
+
+@item -o @var{ofile}
+@itemx --output=@var{ofile}
+Write output bytecode to @var{ofile}.  By convention, bytecode file
+names end in @code{.go}.  When @option{-o} is omitted, the output file
+name is as for @code{compile-file} (see below).
+
+@item -W @var{warning}
+@itemx --warn=@var{warning}
+@cindex warnings, compiler
+Emit warnings of type @var{warning}; use @code{--warn=help} for a list
+of available warnings and their description.  Currently recognized
+warnings include @code{unused-variable}, @code{unused-toplevel},
+@code{unbound-variable}, @code{arity-mismatch}, @code{format},
+@code{duplicate-case-datum}, and @code{bad-case-datum}.
+
+@item -f @var{lang}
+@itemx --from=@var{lang}
+Use @var{lang} as the source language of @var{file}.  If this option is omitted,
+@code{scheme} is assumed.
+
+@item -t @var{lang}
+@itemx --to=@var{lang}
+Use @var{lang} as the target language of @var{file}.  If this option is omitted,
+@code{rtl} is assumed.
+
+@item -T @var{target}
+@itemx --target=@var{target}
+Produce code for @var{target} instead of @var{%host-type} (@pxref{Build
+Config, %host-type}).  Target must be a valid GNU triplet, such as
+@code{armv5tel-unknown-linux-gnueabi} (@pxref{Specifying Target
+Triplets,,, autoconf, GNU Autoconf Manual}).
+
+@end table
+
+Each @var{file} is assumed to be UTF-8-encoded, unless it contains a
+coding declaration as recognized by @code{file-encoding}
+(@pxref{Character Encoding of Source Files}).
+@end deffn
+
+The compiler can also be invoked directly by Scheme code using the procedures
+below:
+
+@deffn {Scheme Procedure} compile exp [#:env=#f] @
+                          [#:from=(current-language)] @
+                          [#:to=value] [#:opts=()]
+Compile the expression @var{exp} in the environment @var{env}. If
+@var{exp} is a procedure, the result will be a compiled procedure;
+otherwise @code{compile} is mostly equivalent to @code{eval}.
+
+For a discussion of languages and compiler options, @xref{Compiling to
+the Virtual Machine}.
+@end deffn
+
+@deffn {Scheme Procedure} compile-file file [#:output-file=#f] @
+                          [#:from=(current-language)] [#:to='rtl] @
+                          [#:env=(default-environment from)] @
+                          [#:opts='()] @
+                          [#:canonicalization='relative]
+Compile the file named @var{file}.
+
+Output will be written to a @var{output-file}.   If you do not supply an
+output file name, output is written to a file in the cache directory, as
+computed by @code{(compiled-file-name @var{file})}.
+
+@var{from} and @var{to} specify the source and target languages.
+@xref{Compiling to the Virtual Machine}, for more information on these
+options, and on @var{env} and @var{opts}.
+
+As with @command{guild compile}, @var{file} is assumed to be
+UTF-8-encoded unless it contains a coding declaration.
+@end deffn
+
+@deffn {Scheme Procedure} compiled-file-name file
+Compute a cached location for a compiled version of a Scheme file named
+@var{file}.
+
+This file will usually be below the @file{$HOME/.cache/guile/ccache}
+directory, depending on the value of the @env{XDG_CACHE_HOME}
+environment variable.  The intention is that @code{compiled-file-name}
+provides a fallback location for caching auto-compiled files.  If you
+want to place a compile file in the @code{%load-compiled-path}, you
+should pass the @var{output-file} option to @code{compile-file},
+explicitly.
+@end deffn
+
+@defvr {Scheme Variable} %auto-compilation-options
+This variable contains the options passed to the @code{compile-file}
+procedure when auto-compiling source files.  By default, it enables
+useful compilation warnings.  It can be customized from @file{~/.guile}.
+@end defvr
+
+@node Loading
+@subsection Loading Scheme Code from File
+
+@rnindex load
+@deffn {Scheme Procedure} load filename [reader]
+Load @var{filename} and evaluate its contents in the top-level
+environment.
+
+@var{reader} if provided should be either @code{#f}, or a procedure with
+the signature @code{(lambda (port) @dots{})} which reads the next
+expression from @var{port}.  If @var{reader} is @code{#f} or absent,
+Guile's built-in @code{read} procedure is used (@pxref{Scheme Read}).
+
+The @var{reader} argument takes effect by setting the value of the
+@code{current-reader} fluid (see below) before loading the file, and
+restoring its previous value when loading is complete.  The Scheme code
+inside @var{filename} can itself change the current reader procedure on
+the fly by setting @code{current-reader} fluid.
+
+If the variable @code{%load-hook} is defined, it should be bound to a
+procedure that will be called before any code is loaded.  See
+documentation for @code{%load-hook} later in this section.
+@end deffn
+
+@deffn {Scheme Procedure} load-compiled filename
+Load the compiled file named @var{filename}.
+
+Compiling a source file (@pxref{Read/Load/Eval/Compile}) and then
+calling @code{load-compiled} on the resulting file is equivalent to
+calling @code{load} on the source file.
+@end deffn
+
+@deffn {Scheme Procedure} primitive-load filename
+@deffnx {C Function} scm_primitive_load (filename)
+Load the file named @var{filename} and evaluate its contents in the
+top-level environment.  @var{filename} must either be a full pathname or
+be a pathname relative to the current directory.  If the variable
+@code{%load-hook} is defined, it should be bound to a procedure that
+will be called before any code is loaded.  See the documentation for
+@code{%load-hook} later in this section.
+@end deffn
+
+@deftypefn {C Function} SCM scm_c_primitive_load (const char *filename)
+@code{scm_primitive_load}, but taking a C string instead of an
+@code{SCM}.
+@end deftypefn
+
+@defvar current-reader
+@code{current-reader} holds the read procedure that is currently being
+used by the above loading procedures to read expressions (from the file
+that they are loading).  @code{current-reader} is a fluid, so it has an
+independent value in each dynamic root and should be read and set using
+@code{fluid-ref} and @code{fluid-set!} (@pxref{Fluids and Dynamic
+States}).
+
+Changing @code{current-reader} is typically useful to introduce local
+syntactic changes, such that code following the @code{fluid-set!} call
+is read using the newly installed reader.  The @code{current-reader}
+change should take place at evaluation time when the code is evaluated,
+or at compilation time when the code is compiled:
+
+@findex eval-when
+@example
+(eval-when (compile eval)
+  (fluid-set! current-reader my-own-reader))
+@end example
+
+The @code{eval-when} form above ensures that the @code{current-reader}
+change occurs at the right time.
+@end defvar
+
+@defvar %load-hook
+A procedure to be called @code{(%load-hook @var{filename})} whenever a
+file is loaded, or @code{#f} for no such call.  @code{%load-hook} is
+used by all of the loading functions (@code{load} and
+@code{primitive-load}, and @code{load-from-path} and
+@code{primitive-load-path} documented in the next section).
+
+For example an application can set this to show what's loaded,
+
+@example
+(set! %load-hook (lambda (filename)
+                   (format #t "Loading ~a ...\n" filename)))
+(load-from-path "foo.scm")
+@print{} Loading /usr/local/share/guile/site/foo.scm ...
+@end example
+@end defvar
+
+@deffn {Scheme Procedure} current-load-port
+@deffnx {C Function} scm_current_load_port ()
+Return the current-load-port.
+The load port is used internally by @code{primitive-load}.
+@end deffn
+
+@node Load Paths
+@subsection Load Paths
+
+The procedure in the previous section look for Scheme code in the file
+system at specific location.  Guile also has some procedures to search
+the load path for code.
+
+@defvar %load-path
+List of directories which should be searched for Scheme modules and
+libraries.  When Guile starts up, @code{%load-path} is initialized to
+the default load path @code{(list (%library-dir) (%site-dir)
+(%global-site-dir) (%package-data-dir))}.  The @env{GUILE_LOAD_PATH}
+environment variable can be used to prepend or append additional
+directories (@pxref{Environment Variables}).
+
+@xref{Build Config}, for more on @code{%site-dir} and related
+procedures.
+@end defvar
+
+@deffn {Scheme Procedure} load-from-path filename
+Similar to @code{load}, but searches for @var{filename} in the load
+paths. Preferentially loads a compiled version of the file, if it is
+available and up-to-date.
+@end deffn
+
+A user can extend the load path by calling @code{add-to-load-path}.
+
+@deffn {Scheme Syntax} add-to-load-path dir
+Add @var{dir} to the load path.
+@end deffn
+
+For example, a script might include this form to add the directory that
+it is in to the load path:
+
+@example
+(add-to-load-path (dirname (current-filename)))
+@end example
+
+It's better to use @code{add-to-load-path} than to modify
+@code{%load-path} directly, because @code{add-to-load-path} takes care
+of modifying the path both at compile-time and at run-time.
+
+@deffn {Scheme Procedure} primitive-load-path filename [exception-on-not-found]
+@deffnx {C Function} scm_primitive_load_path (filename)
+Search @code{%load-path} for the file named @var{filename} and
+load it into the top-level environment.  If @var{filename} is a
+relative pathname and is not found in the list of search paths,
+an error is signalled.  Preferentially loads a compiled version of the
+file, if it is available and up-to-date.
+
+If @var{filename} is a relative pathname and is not found in the list of
+search paths, one of three things may happen, depending on the optional
+second argument, @var{exception-on-not-found}.  If it is @code{#f},
+@code{#f} will be returned.  If it is a procedure, it will be called
+with no arguments.  (This allows a distinction to be made between
+exceptions raised by loading a file, and exceptions related to the
+loader itself.)  Otherwise an error is signalled.
+
+For compatibility with Guile 1.8 and earlier, the C function takes only
+one argument, which can be either a string (the file name) or an
+argument list.
+@end deffn
+
+@deffn {Scheme Procedure} %search-load-path filename
+@deffnx {C Function} scm_sys_search_load_path (filename)
+Search @code{%load-path} for the file named @var{filename}, which must
+be readable by the current user.  If @var{filename} is found in the list
+of paths to search or is an absolute pathname, return its full pathname.
+Otherwise, return @code{#f}.  Filenames may have any of the optional
+extensions in the @code{%load-extensions} list; @code{%search-load-path}
+will try each extension automatically.
+@end deffn
+
+@defvar %load-extensions
+A list of default file extensions for files containing Scheme code.
+@code{%search-load-path} tries each of these extensions when looking for
+a file to load.  By default, @code{%load-extensions} is bound to the
+list @code{("" ".scm")}.
+@end defvar
+
+As mentioned above, when Guile searches the @code{%load-path} for a
+source file, it will also search the @code{%load-compiled-path} for a
+corresponding compiled file.  If the compiled file is as new or newer
+than the source file, it will be loaded instead of the source file,
+using @code{load-compiled}.
+
+@defvar %load-compiled-path
+Like @code{%load-path}, but for compiled files.  By default, this path
+has two entries: one for compiled files from Guile itself, and one for
+site packages.  The @env{GUILE_LOAD_COMPILED_PATH} environment variable
+can be used to prepend or append additional directories
+(@pxref{Environment Variables}).
+@end defvar
+
+When @code{primitive-load-path} searches the @code{%load-compiled-path}
+for a corresponding compiled file for a relative path it does so by
+appending @code{.go} to the relative path.  For example, searching for
+@code{ice-9/popen} could find
+@code{/usr/lib/guile/2.2/ccache/ice-9/popen.go}, and use it instead of
+@code{/usr/share/guile/2.2/ice-9/popen.scm}.
+
+If @code{primitive-load-path} does not find a corresponding @code{.go}
+file in the @code{%load-compiled-path}, or the @code{.go} file is out of
+date, it will search for a corresponding auto-compiled file in the
+fallback path, possibly creating one if one does not exist.
+
+@xref{Installing Site Packages}, for more on how to correctly install
+site packages.  @xref{Modules and the File System}, for more on the
+relationship between load paths and modules.  @xref{Compilation}, for
+more on the fallback path and auto-compilation.
+
+Finally, there are a couple of helper procedures for general path
+manipulation.
+
+@deffn {Scheme Procedure} parse-path path [tail]
+@deffnx {C Function} scm_parse_path (path, tail)
+Parse @var{path}, which is expected to be a colon-separated string, into
+a list and return the resulting list with @var{tail} appended. If
+@var{path} is @code{#f}, @var{tail} is returned.
+@end deffn
+
+@deffn {Scheme Procedure} parse-path-with-ellipsis path base
+@deffnx {C Function} scm_parse_path_with_ellipsis (path, base)
+Parse @var{path}, which is expected to be a colon-separated string, into
+a list and return the resulting list with @var{base} (a list) spliced in
+place of the @code{...} path component, if present, or else @var{base}
+is added to the end.  If @var{path} is @code{#f}, @var{base} is
+returned.
+@end deffn
+
+@deffn {Scheme Procedure} search-path path filename [extensions [require-exts?]]
+@deffnx {C Function} scm_search_path (path, filename, rest)
+Search @var{path} for a directory containing a file named
+@var{filename}. The file must be readable, and not a directory.  If we
+find one, return its full filename; otherwise, return @code{#f}.  If
+@var{filename} is absolute, return it unchanged.  If given,
+@var{extensions} is a list of strings; for each directory in @var{path},
+we search for @var{filename} concatenated with each @var{extension}.  If
+@var{require-exts?}  is true, require that the returned file name have
+one of the given extensions; if @var{require-exts?} is not given, it
+defaults to @code{#f}.
+
+For compatibility with Guile 1.8 and earlier, the C function takes only
+three arguments.
+@end deffn
+
+@node Character Encoding of Source Files
+@subsection Character Encoding of Source Files
+
+@cindex source file encoding
+@cindex primitive-load
+@cindex load
+Scheme source code files are usually encoded in ASCII or UTF-8, but the
+built-in reader can interpret other character encodings as well.  When
+Guile loads Scheme source code, it uses the @code{file-encoding}
+procedure (described below) to try to guess the encoding of the file.
+In the absence of any hints, UTF-8 is assumed.  One way to provide a
+hint about the encoding of a source file is to place a coding
+declaration in the top 500 characters of the file.
+
+A coding declaration has the form @code{coding: XXXXXX}, where
+@code{XXXXXX} is the name of a character encoding in which the source
+code file has been encoded.  The coding declaration must appear in a
+scheme comment.  It can either be a semicolon-initiated comment, or the
+first block @code{#!} comment in the file.
+
+The name of the character encoding in the coding declaration is
+typically lower case and containing only letters, numbers, and hyphens,
+as recognized by @code{set-port-encoding!} (@pxref{Ports,
+@code{set-port-encoding!}}).  Common examples of character encoding
+names are @code{utf-8} and @code{iso-8859-1},
+@url{http://www.iana.org/assignments/character-sets, as defined by
+IANA}.  Thus, the coding declaration is mostly compatible with Emacs.
+
+However, there are some differences in encoding names recognized by
+Emacs and encoding names defined by IANA, the latter being essentially a
+subset of the former.  For instance, @code{latin-1} is a valid encoding
+name for Emacs, but it's not according to the IANA standard, which Guile
+follows; instead, you should use @code{iso-8859-1}, which is both
+understood by Emacs and dubbed by IANA (IANA writes it uppercase but
+Emacs wants it lowercase and Guile is case insensitive.)
+
+For source code, only a subset of all possible character encodings can
+be interpreted by the built-in source code reader.  Only those
+character encodings in which ASCII text appears unmodified can be
+used.  This includes @code{UTF-8} and @code{ISO-8859-1} through
+@code{ISO-8859-15}.  The multi-byte character encodings @code{UTF-16}
+and @code{UTF-32} may not be used because they are not compatible with
+ASCII.
+
+@cindex read
+@cindex encoding
+@cindex port encoding
+@findex set-port-encoding!
+There might be a scenario in which one would want to read non-ASCII
+code from a port, such as with the function @code{read}, instead of
+with @code{load}.  If the port's character encoding is the same as the
+encoding of the code to be read by the port, not other special
+handling is necessary.  The port will automatically do the character
+encoding conversion.  The functions @code{setlocale} or by
+@code{set-port-encoding!} are used to set port encodings
+(@pxref{Ports}).
+
+If a port is used to read code of unknown character encoding, it can
+accomplish this in three steps.  First, the character encoding of the
+port should be set to ISO-8859-1 using @code{set-port-encoding!}.
+Then, the procedure @code{file-encoding}, described below, is used to
+scan for a coding declaration when reading from the port.  As a side
+effect, it rewinds the port after its scan is complete. After that,
+the port's character encoding should be set to the encoding returned
+by @code{file-encoding}, if any, again by using
+@code{set-port-encoding!}.  Then the code can be read as normal.
+
+Alternatively, one can use the @code{#:guess-encoding} keyword argument
+of @code{open-file} and related procedures.  @xref{File Ports}.
+
+@deffn {Scheme Procedure} file-encoding port
+@deffnx {C Function} scm_file_encoding (port)
+Attempt to scan the first few hundred bytes from the @var{port} for
+hints about its character encoding.  Return a string containing the
+encoding name or @code{#f} if the encoding cannot be determined.  The
+port is rewound.
+
+Currently, the only supported method is to look for an Emacs-like
+character coding declaration (@pxref{Recognize Coding, how Emacs
+recognizes file encoding,, emacs, The GNU Emacs Reference Manual}).  The
+coding declaration is of the form @code{coding: XXXXX} and must appear
+in a Scheme comment.  Additional heuristics may be added in the future.
+@end deffn
+
+@node Delayed Evaluation
+@subsection Delayed Evaluation
+@cindex delayed evaluation
+@cindex promises
+
+Promises are a convenient way to defer a calculation until its result
+is actually needed, and to run such a calculation only once.  Also
+@pxref{SRFI-45}.
+
+@deffn syntax delay expr
+@rnindex delay
+Return a promise object which holds the given @var{expr} expression,
+ready to be evaluated by a later @code{force}.
+@end deffn
+
+@deffn {Scheme Procedure} promise? obj
+@deffnx {C Function} scm_promise_p (obj)
+Return true if @var{obj} is a promise.
+@end deffn
+
+@rnindex force
+@deffn {Scheme Procedure} force p
+@deffnx {C Function} scm_force (p)
+Return the value obtained from evaluating the @var{expr} in the given
+promise @var{p}.  If @var{p} has previously been forced then its
+@var{expr} is not evaluated again, instead the value obtained at that
+time is simply returned.
+
+During a @code{force}, an @var{expr} can call @code{force} again on
+its own promise, resulting in a recursive evaluation of that
+@var{expr}.  The first evaluation to return gives the value for the
+promise.  Higher evaluations run to completion in the normal way, but
+their results are ignored, @code{force} always returns the first
+value.
+@end deffn
+
+@node Local Evaluation
+@subsection Local Evaluation
+
+Guile includes a facility to capture a lexical environment, and later
+evaluate a new expression within that environment.  This code is
+implemented in a module.
+
+@example
+(use-modules (ice-9 local-eval))
+@end example
+
+@deffn syntax the-environment
+Captures and returns a lexical environment for use with
+@code{local-eval} or @code{local-compile}.
+@end deffn
+
+@deffn {Scheme Procedure} local-eval exp env
+@deffnx {C Function} scm_local_eval (exp, env)
+@deffnx {Scheme Procedure} local-compile exp env [opts=()]
+Evaluate or compile the expression @var{exp} in the lexical environment
+@var{env}.
+@end deffn
+
+Here is a simple example, illustrating that it is the variable
+that gets captured, not just its value at one point in time.
+
+@example
+(define e (let ((x 100)) (the-environment)))
+(define fetch-x (local-eval '(lambda () x) e))
+(fetch-x)
+@result{} 100
+(local-eval '(set! x 42) e)
+(fetch-x)
+@result{} 42
+@end example
+
+While @var{exp} is evaluated within the lexical environment of
+@code{(the-environment)}, it has the dynamic environment of the call to
+@code{local-eval}.
+
+@code{local-eval} and @code{local-compile} can only evaluate
+expressions, not definitions.
+
+@example
+(local-eval '(define foo 42)
+            (let ((x 100)) (the-environment)))
+@result{} syntax error: definition in expression context
+@end example
+
+Note that the current implementation of @code{(the-environment)} only
+captures ``normal'' lexical bindings, and pattern variables bound by
+@code{syntax-case}.  It does not currently capture local syntax
+transformers bound by @code{let-syntax}, @code{letrec-syntax} or
+non-top-level @code{define-syntax} forms.  Any attempt to reference such
+captured syntactic keywords via @code{local-eval} or
+@code{local-compile} produces an error.
+
+@node Local Inclusion
+@subsection Local Inclusion
+
+This section has discussed various means of linking Scheme code
+together: fundamentally, loading up files at run-time using @code{load}
+and @code{load-compiled}.  Guile provides another option to compose
+parts of programs together at expansion-time instead of at run-time.
+
+@deffn {Scheme Syntax} include file-name
+Open @var{file-name}, at expansion-time, and read the Scheme forms that
+it contains, splicing them into the location of the @code{include},
+within a @code{begin}.
+
+If @var{file-name} is a relative path, it is searched for relative to
+the path that contains the file that the @code{include} form appears in.
+@end deffn
+
+If you are a C programmer, if @code{load} in Scheme is like
+@code{dlopen} in C, consider @code{include} to be like the C
+preprocessor's @code{#include}.  When you use @code{include}, it is as
+if the contents of the included file were typed in instead of the
+@code{include} form.
+
+Because the code is included at compile-time, it is available to the
+macroexpander.  Syntax definitions in the included file are available to
+later code in the form in which the @code{include} appears, without the
+need for @code{eval-when}.  (@xref{Eval When}.)
+
+For the same reason, compiling a form that uses @code{include} results
+in one compilation unit, composed of multiple files.  Loading the
+compiled file is one @code{stat} operation for the compilation unit,
+instead of @code{2*@var{n}} in the case of @code{load} (once for each
+loaded source file, and once each corresponding compiled file, in the
+best case).
+
+Unlike @code{load}, @code{include} also works within nested lexical
+contexts.  It so happens that the optimizer works best within a lexical
+context, because all of the uses of bindings in a lexical context are
+visible, so composing files by including them within a @code{(let ()
+...)} can sometimes lead to important speed improvements.
+
+On the other hand, @code{include} does have all the disadvantages of
+early binding: once the code with the @code{include} is compiled, no
+change to the included file is reflected in the future behavior of the
+including form.
+
+Also, the particular form of @code{include}, which requires an absolute
+path, or a path relative to the current directory at compile-time, is
+not very amenable to compiling the source in one place, but then
+installing the source to another place.  For this reason, Guile provides
+another form, @code{include-from-path}, which looks for the source file
+to include within a load path.
+
+@deffn {Scheme Syntax} include-from-path file-name
+Like @code{include}, but instead of expecting @code{file-name} to be an
+absolute file name, it is expected to be a relative path to search in
+the @code{%load-path}.
+@end deffn
+
+@code{include-from-path} is more useful when you want to install all of
+the source files for a package (as you should!).  It makes it possible
+to evaluate an installed file from source, instead of relying on the
+@code{.go} file being up to date.
+
+@node Sandboxed Evaluation
+@subsection Sandboxed Evaluation
+
+Sometimes you would like to evaluate code that comes from an untrusted
+party.  The safest way to do this is to buy a new computer, evaluate the
+code on that computer, then throw the machine away.  However if you are
+unwilling to take this simple approach, Guile does include a limited
+``sandbox'' facility that can allow untrusted code to be evaluated with
+some confidence.
+
+To use the sandboxed evaluator, load its module:
+
+@example
+(use-modules (ice-9 sandbox))
+@end example
+
+Guile's sandboxing facility starts with the ability to restrict the time
+and space used by a piece of code.
+
+@deffn {Scheme Procedure} call-with-time-limit limit thunk limit-reached
+Call @var{thunk}, but cancel it if @var{limit} seconds of wall-clock
+time have elapsed.  If the computation is cancelled, call
+@var{limit-reached} in tail position.  @var{thunk} must not disable
+interrupts or prevent an abort via a @code{dynamic-wind} unwind handler.
+@end deffn
+
+@deffn {Scheme Procedure} call-with-allocation-limit limit thunk limit-reached
+Call @var{thunk}, but cancel it if @var{limit} bytes have been
+allocated.  If the computation is cancelled, call @var{limit-reached} in
+tail position.  @var{thunk} must not disable interrupts or prevent an
+abort via a @code{dynamic-wind} unwind handler.
+
+This limit applies to both stack and heap allocation.  The computation
+will not be aborted before @var{limit} bytes have been allocated, but
+for the heap allocation limit, the check may be postponed until the next garbage collection.
+
+Note that as a current shortcoming, the heap size limit applies to all
+threads; concurrent allocation by other unrelated threads counts towards
+the allocation limit.
+@end deffn
+
+@deffn {Scheme Procedure} call-with-time-and-allocation-limits time-limit allocation-limit thunk
+Invoke @var{thunk} in a dynamic extent in which its execution is limited
+to @var{time-limit} seconds of wall-clock time, and its allocation to
+@var{allocation-limit} bytes.  @var{thunk} must not disable interrupts
+or prevent an abort via a @code{dynamic-wind} unwind handler.
+
+If successful, return all values produced by invoking @var{thunk}.  Any
+uncaught exception thrown by the thunk will propagate out.  If the time
+or allocation limit is exceeded, an exception will be thrown to the
+@code{limit-exceeded} key.
+@end deffn
+
+The time limit and stack limit are both very precise, but the heap limit
+only gets checked asynchronously, after a garbage collection.  In
+particular, if the heap is already very large, the number of allocated
+bytes between garbage collections will be large, and therefore the
+precision of the check is reduced.
+
+Additionally, due to the mechanism used by the allocation limit (the
+@code{after-gc-hook}), large single allocations like @code{(make-vector
+#e1e7)} are only detected after the allocation completes, even if the
+allocation itself causes garbage collection.  It's possible therefore
+for user code to not only exceed the allocation limit set, but also to
+exhaust all available memory, causing out-of-memory conditions at any
+allocation site.  Failure to allocate memory in Guile itself should be
+safe and cause an exception to be thrown, but most systems are not
+designed to handle @code{malloc} failures.  An allocation failure may
+therefore exercise unexpected code paths in your system, so it is a
+weakness of the sandbox (and therefore an interesting point of attack).
+
+The main sandbox interface is @code{eval-in-sandbox}.
+
+@deffn {Scheme Procedure} eval-in-sandbox exp [#:time-limit 0.1] @
+                          [#:allocation-limit #e10e6] @
+                          [#:bindings all-pure-bindings] @
+                          [#:module (make-sandbox-module bindings)] @
+                          [#:sever-module? #t]
+Evaluate the Scheme expression @var{exp} within an isolated
+"sandbox".  Limit its execution to @var{time-limit} seconds of
+wall-clock time, and limit its allocation to @var{allocation-limit}
+bytes.
+
+The evaluation will occur in @var{module}, which defaults to the result
+of calling @code{make-sandbox-module} on @var{bindings}, which itself
+defaults to @code{all-pure-bindings}.  This is the core of the
+sandbox: creating a scope for the expression that is @dfn{safe}.
+
+A safe sandbox module has two characteristics.  Firstly, it will not
+allow the expression being evaluated to avoid being cancelled due to
+time or allocation limits.  This ensures that the expression terminates
+in a timely fashion.
+
+Secondly, a safe sandbox module will prevent the evaluation from
+receiving information from previous evaluations, or from affecting
+future evaluations.  All combinations of binding sets exported by
+@code{(ice-9 sandbox)} form safe sandbox modules.
+
+The @var{bindings} should be given as a list of import sets.  One import
+set is a list whose car names an interface, like @code{(ice-9 q)}, and
+whose cdr is a list of imports.  An import is either a bare symbol or a
+pair of @code{(@var{out} . @var{in})}, where @var{out} and @var{in} are
+both symbols and denote the name under which a binding is exported from
+the module, and the name under which to make the binding available,
+respectively.  Note that @var{bindings} is only used as an input to the
+default initializer for the @var{module} argument; if you pass
+@code{#:module}, @var{bindings} is unused.  If @var{sever-module?} is
+true (the default), the module will be unlinked from the global module
+tree after the evaluation returns, to allow @var{mod} to be
+garbage-collected.
+
+If successful, return all values produced by @var{exp}.  Any uncaught
+exception thrown by the expression will propagate out.  If the time or
+allocation limit is exceeded, an exception will be thrown to the
+@code{limit-exceeded} key.
+@end deffn
+
+Constructing a safe sandbox module is tricky in general.  Guile defines
+an easy way to construct safe modules from predefined sets of bindings.
+Before getting to that interface, here are some general notes on safety.
+
+@enumerate
+@item The time and allocation limits rely on the ability to interrupt
+and cancel a computation.  For this reason, no binding included in a
+sandbox module should be able to indefinitely postpone interrupt
+handling, nor should a binding be able to prevent an abort.  In practice
+this second consideration means that @code{dynamic-wind} should not be
+included in any binding set.
+@item The time and allocation limits apply only to the
+@code{eval-in-sandbox} call.  If the call returns a procedure which is
+later called, no limit is ``automatically'' in place.  Users of
+@code{eval-in-sandbox} have to be very careful to reimpose limits when
+calling procedures that escape from sandboxes.
+@item Similarly, the dynamic environment of the @code{eval-in-sandbox}
+call is not necessarily in place when any procedure that escapes from
+the sandbox is later called.
+
+This detail prevents us from exposing @code{primitive-eval} to the
+sandbox, for two reasons.  The first is that it's possible for legacy
+code to forge references to any binding, if the
+@code{allow-legacy-syntax-objects?} parameter is true.  The default for
+this parameter is true; @pxref{Syntax Transformer Helpers} for the
+details.  The parameter is bound to @code{#f} for the duration of the
+@code{eval-in-sandbox} call itself, but that will not be in place during
+calls to escaped procedures.
+
+The second reason we don't expose @code{primitive-eval} is that
+@code{primitive-eval} implicitly works in the current module, which for
+an escaped procedure will probably be different than the module that is
+current for the @code{eval-in-sandbox} call itself.
+
+The common denominator here is that if an interface exposed to the
+sandbox relies on dynamic environments, it is easy to mistakenly grant
+the sandboxed procedure additional capabilities in the form of bindings
+that it should not have access to.  For this reason, the default sets of
+predefined bindings do not depend on any dynamically scoped value.
+@item Mutation may allow a sandboxed evaluation to break some invariant
+in users of data supplied to it.  A lot of code culturally doesn't
+expect mutation, but if you hand mutable data to a sandboxed evaluation
+and you also grant mutating capabilities to that evaluation, then the
+sandboxed code may indeed mutate that data.  The default set of bindings
+to the sandbox do not include any mutating primitives.
+
+Relatedly, @code{set!} may allow a sandbox to mutate a primitive,
+invalidating many system-wide invariants.  Guile is currently quite
+permissive when it comes to imported bindings and mutability.  Although
+@code{set!} to a module-local or lexically bound variable would be fine,
+we don't currently have an easy way to disallow @code{set!} to an
+imported binding, so currently no binding set includes @code{set!}.
+@item Mutation may allow a sandboxed evaluation to keep state, or
+make a communication mechanism with other code.  On the one hand this
+sounds cool, but on the other hand maybe this is part of your threat
+model.  Again, the default set of bindings doesn't include mutating
+primitives, preventing sandboxed evaluations from keeping state.
+@item The sandbox should probably not be able to open a network
+connection, or write to a file, or open a file from disk.  The default
+binding set includes no interaction with the operating system.
+@end enumerate
+
+If you, dear reader, find the above discussion interesting, you will
+enjoy Jonathan Rees' dissertation, ``A Security Kernel Based on the
+Lambda Calculus''.
+
+@defvr {Scheme Variable} all-pure-bindings
+All ``pure'' bindings that together form a safe subset of those bindings
+available by default to Guile user code.
+@end defvr
+
+@defvr {Scheme Variable} all-pure-and-impure-bindings
+Like @code{all-pure-bindings}, but additionally including mutating
+primitives like @code{vector-set!}.  This set is still safe in the sense
+mentioned above, with the caveats about mutation.
+@end defvr
+
+The components of these composite sets are as follows:
+@defvr {Scheme Variable} alist-bindings
+@defvrx {Scheme Variable} array-bindings
+@defvrx {Scheme Variable} bit-bindings
+@defvrx {Scheme Variable} bitvector-bindings
+@defvrx {Scheme Variable} char-bindings
+@defvrx {Scheme Variable} char-set-bindings
+@defvrx {Scheme Variable} clock-bindings
+@defvrx {Scheme Variable} core-bindings
+@defvrx {Scheme Variable} error-bindings
+@defvrx {Scheme Variable} fluid-bindings
+@defvrx {Scheme Variable} hash-bindings
+@defvrx {Scheme Variable} iteration-bindings
+@defvrx {Scheme Variable} keyword-bindings
+@defvrx {Scheme Variable} list-bindings
+@defvrx {Scheme Variable} macro-bindings
+@defvrx {Scheme Variable} nil-bindings
+@defvrx {Scheme Variable} number-bindings
+@defvrx {Scheme Variable} pair-bindings
+@defvrx {Scheme Variable} predicate-bindings
+@defvrx {Scheme Variable} procedure-bindings
+@defvrx {Scheme Variable} promise-bindings
+@defvrx {Scheme Variable} prompt-bindings
+@defvrx {Scheme Variable} regexp-bindings
+@defvrx {Scheme Variable} sort-bindings
+@defvrx {Scheme Variable} srfi-4-bindings
+@defvrx {Scheme Variable} string-bindings
+@defvrx {Scheme Variable} symbol-bindings
+@defvrx {Scheme Variable} unspecified-bindings
+@defvrx {Scheme Variable} variable-bindings
+@defvrx {Scheme Variable} vector-bindings
+@defvrx {Scheme Variable} version-bindings
+The components of @code{all-pure-bindings}.
+@end defvr
+
+@defvr {Scheme Variable} mutating-alist-bindings
+@defvrx {Scheme Variable} mutating-array-bindings
+@defvrx {Scheme Variable} mutating-bitvector-bindings
+@defvrx {Scheme Variable} mutating-fluid-bindings
+@defvrx {Scheme Variable} mutating-hash-bindings
+@defvrx {Scheme Variable} mutating-list-bindings
+@defvrx {Scheme Variable} mutating-pair-bindings
+@defvrx {Scheme Variable} mutating-sort-bindings
+@defvrx {Scheme Variable} mutating-srfi-4-bindings
+@defvrx {Scheme Variable} mutating-string-bindings
+@defvrx {Scheme Variable} mutating-variable-bindings
+@defvrx {Scheme Variable} mutating-vector-bindings
+The additional components of @code{all-pure-and-impure-bindings}.
+@end defvr
+
+Finally, what do you do with a binding set?  What is a binding set
+anyway?  @code{make-sandbox-module} is here for you.
+
+@deffn {Scheme Procedure} make-sandbox-module bindings
+Return a fresh module that only contains @var{bindings}.
+
+The @var{bindings} should be given as a list of import sets.  One import
+set is a list whose car names an interface, like @code{(ice-9 q)}, and
+whose cdr is a list of imports.  An import is either a bare symbol or a
+pair of @code{(@var{out} . @var{in})}, where @var{out} and @var{in} are
+both symbols and denote the name under which a binding is exported from
+the module, and the name under which to make the binding available,
+respectively.
+@end deffn
+
+So you see that binding sets are just lists, and
+@code{all-pure-and-impure-bindings} is really just the result of
+appending all of the component binding sets.
+
+@node REPL Servers
+@subsection REPL Servers
+
+@cindex REPL server
+
+The procedures in this section are provided by
+@lisp
+(use-modules (system repl server))
+@end lisp
+
+When an application is written in Guile, it is often convenient to
+allow the user to be able to interact with it by evaluating Scheme
+expressions in a REPL.
+
+The procedures of this module allow you to spawn a @dfn{REPL server},
+which permits interaction over a local or TCP connection.  Guile itself
+uses them internally to implement the @option{--listen} switch,
+@ref{Command-line Options}.
+
+@deffn {Scheme Procedure} make-tcp-server-socket [#:host=#f] @
+                          [#:addr] [#:port=37146]
+Return a stream socket bound to a given address @var{addr} and port
+number @var{port}. If the @var{host} is given, and @var{addr} is not,
+then the @var{host} string is converted to an address.  If neither is
+given, we use the loopback address.
+@end deffn
+
+@deffn {Scheme Procedure} make-unix-domain-server-socket [#:path="/tmp/guile-socket"]
+Return a UNIX domain socket, bound to a given @var{path}.
+@end deffn
+
+@deffn {Scheme Procedure} run-server [server-socket]
+@deffnx {Scheme Procedure} spawn-server [server-socket]
+Create and run a REPL, making it available over the given
+@var{server-socket}.  If @var{server-socket} is not provided, it
+defaults to the socket created by calling @code{make-tcp-server-socket}
+with no arguments.
+
+@code{run-server} runs the server in the current thread, whereas
+@code{spawn-server} runs the server in a new thread.
+@end deffn
+
+@deffn {Scheme Procedure} stop-server-and-clients!
+Closes the connection on all running server sockets.
+
+Please note that in the current implementation, the REPL threads are
+cancelled without unwinding their stacks.  If any of them are holding
+mutexes or are within a critical section, the results are unspecified.
+@end deffn
+
+@node Cooperative REPL Servers
+@subsection Cooperative REPL Servers
+
+@cindex Cooperative REPL server
+
+The procedures in this section are provided by
+@lisp
+(use-modules (system repl coop-server))
+@end lisp
+
+Whereas ordinary REPL servers run in their own threads (@pxref{REPL
+Servers}), sometimes it is more convenient to provide REPLs that run at
+specified times within an existing thread, for example in programs
+utilizing an event loop or in single-threaded programs.  This allows for
+safe access and mutation of a program's data structures from the REPL,
+without concern for thread synchronization.
+
+Although the REPLs are run in the thread that calls
+@code{spawn-coop-repl-server} and @code{poll-coop-repl-server},
+dedicated threads are spawned so that the calling thread is not blocked.
+The spawned threads read input for the REPLs and to listen for new
+connections.
+
+Cooperative REPL servers must be polled periodically to evaluate any
+pending expressions by calling @code{poll-coop-repl-server} with the
+object returned from @code{spawn-coop-repl-server}.  The thread that
+calls @code{poll-coop-repl-server} will be blocked for as long as the
+expression takes to be evaluated or if the debugger is entered.
+
+@deffn {Scheme Procedure} spawn-coop-repl-server [server-socket]
+Create and return a new cooperative REPL server object, and spawn a new
+thread to listen for connections on @var{server-socket}.  Proper
+functioning of the REPL server requires that
+@code{poll-coop-repl-server} be called periodically on the returned
+server object.
+@end deffn
+
+@deffn {Scheme Procedure} poll-coop-repl-server coop-server
+Poll the cooperative REPL server @var{coop-server} and apply a pending
+operation if there is one, such as evaluating an expression typed at the
+REPL prompt.  This procedure must be called from the same thread that
+called @code{spawn-coop-repl-server}.
+@end deffn
+
+@c Local Variables:
+@c TeX-master: "guile.texi"
+@c End:

@@ -1,0 +1,104 @@
+#. extracted from /home/bear/work/guile/doc/guile/en/curried.texi
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2018-05-07 12:37+0300\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Generator: Translate Toolkit 2.2.5\n"
+
+#: /home/bear/work/guile/doc/guile/en/curried.texi:5
+msgid ""
+"@c -*-texinfo-*-\n"
+"@c This is part of the GNU Guile Reference Manual.\n"
+"@c Copyright (C) 2012 Free Software Foundation, Inc.\n"
+"@c See the file guile.texi for copying conditions."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/curried.texi:8
+msgid ""
+"@node Curried Definitions\n"
+"@section Curried Definitions"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/curried.texi:15
+msgid ""
+"The macros in this section are provided by\n"
+"@lisp\n"
+"(use-modules (ice-9 curried-definitions))\n"
+"@end lisp\n"
+"@noindent\n"
+"and replace those provided by default."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/curried.texi:20
+msgid ""
+"Prior to Guile 2.0, Guile provided a type of definition known colloquially\n"
+"as a ``curried definition''. The idea is to extend the syntax of\n"
+"@code{define} so that you can conveniently define procedures that return\n"
+"procedures, up to any desired depth."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/curried.texi:33
+msgid ""
+"For example,\n"
+"@example\n"
+"(define ((foo x) y)\n"
+"  (list x y))\n"
+"@end example\n"
+"is a convenience form of\n"
+"@example\n"
+"(define foo\n"
+"  (lambda (x)\n"
+"    (lambda (y)\n"
+"      (list x y))))\n"
+"@end example"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/curried.texi:37
+msgid ""
+"@deffn {Scheme Syntax} define (@dots{} (name args @dots{}) @dots{}) body "
+"@dots{}\n"
+"@deffnx {Scheme Syntax} define* (@dots{} (name args @dots{}) @dots{}) body "
+"@dots{}\n"
+"@deffnx {Scheme Syntax} define-public (@dots{} (name args @dots{}) @dots{}) "
+"body @dots{}"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/curried.texi:43
+msgid ""
+"Create a top level variable @var{name} bound to the procedure with\n"
+"parameter list @var{args}. If @var{name} is itself a formal parameter\n"
+"list, then a higher order procedure is created using that\n"
+"formal-parameter list, and returning a procedure that has parameter list\n"
+"@var{args}. This nesting may occur to arbitrary depth."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/curried.texi:49
+msgid ""
+"@code{define*} is similar but the formal parameter lists take additional\n"
+"options as described in @ref{lambda* and define*}. For example,\n"
+"@example\n"
+"(define* ((foo #:keys (bar 'baz) (quux 'zot)) frotz #:rest rest)\n"
+"  (list bar quux frotz rest))"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/curried.texi:53
+msgid ""
+"((foo #:quux 'foo) 1 2 3 4 5)\n"
+"@result{} (baz foo 1 (2 3 4 5))\n"
+"@end example"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/curried.texi:56
+msgid ""
+"@code{define-public} is similar to @code{define} but it also adds\n"
+"@var{name} to the list of exported bindings of the current module.\n"
+"@end deffn"
+msgstr ""

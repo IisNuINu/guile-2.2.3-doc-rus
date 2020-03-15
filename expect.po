@@ -1,0 +1,236 @@
+#. extracted from /home/bear/work/guile/doc/guile/en/expect.texi
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2018-05-07 12:37+0300\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Generator: Translate Toolkit 2.2.5\n"
+
+#: /home/bear/work/guile/doc/guile/en/expect.texi:6
+msgid ""
+"@c -*-texinfo-*-\n"
+"@c This is part of the GNU Guile Reference Manual.\n"
+"@c Copyright (C)  1996, 1997, 2000, 2001, 2002, 2003, 2004\n"
+"@c   Free Software Foundation, Inc.\n"
+"@c See the file guile.texi for copying conditions."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/expect.texi:9
+msgid ""
+"@node Expect\n"
+"@section Expect"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/expect.texi:11
+msgid "The macros in this section are made available with:"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/expect.texi:15
+msgid ""
+"@lisp\n"
+"(use-modules (ice-9 expect))\n"
+"@end lisp"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/expect.texi:22
+msgid ""
+"@code{expect} is a macro for selecting actions based on the output from\n"
+"a port.  The name comes from a tool of similar functionality by Don Libes.\n"
+"Actions can be taken when a particular string is matched, when a timeout\n"
+"occurs, or when end-of-file is seen on the port.  The @code{expect} macro\n"
+"is described below; @code{expect-strings} is a front-end to @code{expect}\n"
+"based on regexec (see the regular expression documentation)."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/expect.texi:31
+msgid ""
+"@defmac expect-strings clause @dots{}\n"
+"By default, @code{expect-strings} will read from the current input port.\n"
+"The first term in each clause consists of an expression evaluating to\n"
+"a string pattern (regular expression).  As characters\n"
+"are read one-by-one from the port, they are accumulated in a buffer string\n"
+"which is matched against each of the patterns.  When a\n"
+"pattern matches, the remaining expression(s) in\n"
+"the clause are evaluated and the value of the last is returned.  For example:"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/expect.texi:40
+msgid ""
+"@lisp\n"
+"(with-input-from-file \"/etc/passwd\"\n"
+"  (lambda ()\n"
+"    (expect-strings\n"
+"      (\"^nobody\" (display \"Got a nobody user.\\n"
+"\")\n"
+"                 (display \"That's no problem.\\n"
+"\"))\n"
+"      (\"^daemon\" (display \"Got a daemon user.\\n"
+"\")))))\n"
+"@end lisp"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/expect.texi:44
+msgid ""
+"The regular expression is compiled with the @code{REG_NEWLINE} flag, so\n"
+"that the ^ and $ anchors will match at any newline, not just at the start\n"
+"and end of the string."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/expect.texi:46
+msgid "There are two other ways to write a clause:"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/expect.texi:51
+msgid ""
+"The expression(s) to evaluate\n"
+"can be omitted, in which case the result of the regular expression match\n"
+"(converted to strings, as obtained from regexec with match-pick set to \"\")"
+"\n"
+"will be returned if the pattern matches."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/expect.texi:55
+msgid ""
+"The symbol @code{=>} can be used to indicate that the expression is a\n"
+"procedure which will accept the result of a successful regular expression\n"
+"match.  E.g.,"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/expect.texi:63
+msgid ""
+"@lisp\n"
+"(\"^daemon\" => write)\n"
+"(\"^d(aemon)\" => (lambda args (for-each write args)))\n"
+"(\"^da(em)on\" => (lambda (all sub)\n"
+"                  (write all) (newline)\n"
+"                  (write sub) (newline)))\n"
+"@end lisp"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/expect.texi:66
+msgid ""
+"The order of the substrings corresponds to the order in which the\n"
+"opening brackets occur."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/expect.texi:73
+msgid ""
+"A number of variables can be used to control the behaviour\n"
+"of @code{expect} (and @code{expect-strings}).\n"
+"Most have default top-level bindings to the value @code{#f}, \n"
+"which produces the default behaviour.\n"
+"They can be redefined at the\n"
+"top level or locally bound in a form enclosing the expect expression."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/expect.texi:100
+msgid ""
+"@table @code\n"
+"@item expect-port\n"
+"A port to read characters from, instead of the current input port.\n"
+"@item expect-timeout\n"
+"@code{expect} will terminate after this number of\n"
+"seconds, returning @code{#f} or the value returned by expect-timeout-proc.\n"
+"@item expect-timeout-proc\n"
+"A procedure called if timeout occurs.  The procedure takes a single argument:"
+"\n"
+"the accumulated string.\n"
+"@item expect-eof-proc\n"
+"A procedure called if end-of-file is detected on the input port.  The\n"
+"procedure takes a single argument: the accumulated string.\n"
+"@item expect-char-proc\n"
+"A procedure to be called every time a character is read from the\n"
+"port.  The procedure takes a single argument: the character which was read.\n"
+"@item expect-strings-compile-flags\n"
+"Flags to be used when compiling a regular expression, which are passed\n"
+"to @code{make-regexp} @xref{Regexp Functions}.  The default value\n"
+"is @code{regexp/newline}.\n"
+"@item expect-strings-exec-flags\n"
+"Flags to be used when executing a regular expression, which are\n"
+"passed to regexp-exec @xref{Regexp Functions}.\n"
+"The default value is @code{regexp/noteol}, which prevents @code{$}\n"
+"from matching the end of the string while it is still accumulating,\n"
+"but still allows it to match after a line break or at the end of file.\n"
+"@end table"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/expect.texi:102
+msgid "Here's an example using all of the variables:"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/expect.texi:117
+msgid ""
+"@smalllisp\n"
+"(let ((expect-port (open-input-file \"/etc/passwd\"))\n"
+"      (expect-timeout 1)\n"
+"      (expect-timeout-proc\n"
+"        (lambda (s) (display \"Times up!\\n"
+"\")))\n"
+"      (expect-eof-proc\n"
+"        (lambda (s) (display \"Reached the end of the file!\\n"
+"\")))\n"
+"      (expect-char-proc display)\n"
+"      (expect-strings-compile-flags (logior regexp/newline regexp/icase))\n"
+"      (expect-strings-exec-flags 0))\n"
+"   (expect-strings\n"
+"     (\"^nobody\"  (display \"Got a nobody user\\n"
+"\"))))\n"
+"@end smalllisp\n"
+"@end defmac"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/expect.texi:127
+msgid ""
+"@defmac expect clause @dots{}\n"
+"@code{expect} is used in the same way as @code{expect-strings},\n"
+"but tests are specified not as patterns, but as procedures.  The\n"
+"procedures are called in turn after each character is read from the\n"
+"port, with two arguments: the value of the accumulated string and\n"
+"a flag to indicate whether end-of-file has been reached.  The flag\n"
+"will usually be @code{#f}, but if end-of-file is reached, the procedures\n"
+"are called an additional time with the final accumulated string and\n"
+"@code{#t}."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/expect.texi:129
+msgid "The test is successful if the procedure returns a non-false value."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/expect.texi:133
+msgid ""
+"If the @code{=>} syntax is used, then if the test succeeds it must return\n"
+"a list containing the arguments to be provided to the corresponding\n"
+"expression."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/expect.texi:136
+msgid ""
+"In the following example, a string will only be matched at the beginning\n"
+"of the file:"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/expect.texi:143
+msgid ""
+"@lisp\n"
+"(let ((expect-port (open-input-file \"/etc/passwd\")))\n"
+"  (expect\n"
+"     ((lambda (s eof?) (string=? s \"fnord!\"))\n"
+"        (display \"Got a nobody user!\\n"
+"\"))))\n"
+"@end lisp"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/expect.texi:147
+msgid ""
+"The control variables described for @code{expect-strings} also\n"
+"influence the behaviour of @code{expect}, with the exception of \n"
+"variables whose names begin with @code{expect-strings-}.\n"
+"@end defmac"
+msgstr ""

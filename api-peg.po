@@ -1,0 +1,1624 @@
+#
+# NuINu <don't@send.my>, 2019.
+#
+#. extracted from /home/bear/work/guile/doc/guile/en/api-peg.texi
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2018-05-07 12:36+0300\n"
+"PO-Revision-Date: 2019-03-06 11:00+0300\n"
+"Last-Translator: NuINu <don't@send.my>\n"
+"Language-Team: Russian <don't@send.my>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Generator: Gtranslator 2.91.7\n"
+"Plural-Forms: nplurals=5; plural=n==1 ? 0 : n==2 ? 1 : n<7 ? 2 : n<11 ? 3 : "
+"4;\n"
+
+#: /home/bear/work/guile/doc/guile/en/api-peg.texi:6
+msgid ""
+"@c -*-texinfo-*-\n"
+"@c This is part of the GNU Guile Reference Manual.\n"
+"@c Copyright (C) 2006, 2010, 2011\n"
+"@c   Free Software Foundation, Inc.\n"
+"@c See the file guile.texi for copying conditions."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-peg.texi:9
+msgid ""
+"@node PEG Parsing\n"
+"@section PEG Parsing"
+msgstr ""
+"@node PEG Parsing\n"
+"@section Разбор(Parsing) PEG "
+
+#: /home/bear/work/guile/doc/guile/en/api-peg.texi:15
+msgid ""
+"Parsing Expression Grammars (PEGs) are a way of specifying formal\n"
+"languages for text processing.  They can be used either for matching\n"
+"(like regular expressions) or for building recursive descent parsers\n"
+"(like lex/yacc).  Guile uses a superset of PEG syntax that allows more\n"
+"control over what information is preserved during parsing."
+msgstr ""
+"Разбор граматических выражений(Parsing Expression Grammars --- PEG) \n"
+"это спобоб укзания формальных языков для обработки текстов.  Их можно\n"
+"использовать либо для сопоставления (подобно регулярным выраженям),\n"
+"либо для построения парсеров рекурсивного спуска (таких как lex/yacc).\n"
+"Guile использует расширенный синтаксис PEG, который позволяет получить\n"
+"больший контролироль над тем, какая информация сохраняется при разборе."
+
+#: /home/bear/work/guile/doc/guile/en/api-peg.texi:19
+msgid ""
+"Wikipedia has a clear and concise introduction to PEGs if you want to\n"
+"familiarize yourself with the syntax:\n"
+"@url{http://en.wikipedia.org/wiki/Parsing_expression_grammar}."
+msgstr ""
+"Wikipedia имеет четкое и краткое введение в PEGs если вы хотите "
+"ознакомиться\n"
+"с его синтаксисом(есть также ее перевод на русском, там же):\n"
+"@url{http://en.wikipedia.org/wiki/Parsing_expression_grammar}."
+
+#: /home/bear/work/guile/doc/guile/en/api-peg.texi:26
+msgid ""
+"The @code{(ice-9 peg)} module works by compiling PEGs down to lambda\n"
+"expressions.  These can either be stored in variables at compile-time by\n"
+"the define macros (@code{define-peg-pattern} and\n"
+"@code{define-peg-string-patterns}) or calculated explicitly at runtime\n"
+"with the compile functions (@code{compile-peg-pattern} and\n"
+"@code{peg-string-compile})."
+msgstr ""
+"Модуль @code{(ice-9 peg)} работает путем компиляцииg PEGs до лямбда "
+"выражений.\n"
+"Они могут быть сохранены в переменных во время компиляции с помощью\n"
+"макросов (@code{define-peg-pattern} и @code{define-peg-string-patterns}) \n"
+"или вычислелны явно во время выполнения с функциями компиляции\n"
+"(@code{compile-peg-pattern} и @code{peg-string-compile})."
+
+#: /home/bear/work/guile/doc/guile/en/api-peg.texi:31
+msgid ""
+"They can then be used for either parsing (@code{match-pattern}) or "
+"searching\n"
+"(@code{search-for-pattern}).  For convenience, @code{search-for-pattern}\n"
+"also takes pattern literals in case you want to inline a simple search\n"
+"(people often use regular expressions this way)."
+msgstr ""
+"Затем их можно использовать либо для разбора (@code{match-pattern}) либо\n"
+"для поиска (@code{search-for-pattern}).  Для удобства, @code{search-for-"
+"pattern}\n"
+"также принимает образцы литералов в случае, если вы хотите встроить простой "
+"поиск\n"
+"(люди часто используют регулярные выражения таким образом)."
+
+#: /home/bear/work/guile/doc/guile/en/api-peg.texi:34
+msgid ""
+"The rest of this documentation consists of a syntax reference, an API\n"
+"reference, and a tutorial."
+msgstr ""
+"Остальная часть этой документации, состоит из ссылок на синтаксис,\n"
+"сссылок на  API и обучения."
+
+#: /home/bear/work/guile/doc/guile/en/api-peg.texi:41
+msgid ""
+"@menu\n"
+"* PEG Syntax Reference::\n"
+"* PEG API Reference::\n"
+"* PEG Tutorial::\n"
+"* PEG Internals::\n"
+"@end menu"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-peg.texi:44
+msgid ""
+"@node PEG Syntax Reference\n"
+"@subsection PEG Syntax Reference"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-peg.texi:46
+msgid "@subsubheading Normal PEG Syntax:"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-peg.texi:51
+msgid ""
+"@deftp {PEG Pattern} sequence a b\n"
+"Parses @var{a}.  If this succeeds, continues to parse @var{b} from the\n"
+"end of the text parsed as @var{a}.  Succeeds if both @var{a} and\n"
+"@var{b} succeed."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-peg.texi:53
+msgid "@code{\"a b\"}"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-peg.texi:56
+msgid ""
+"@code{(and a b)}\n"
+"@end deftp"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-peg.texi:60
+msgid ""
+"@deftp {PEG Pattern} {ordered choice} a b\n"
+"Parses @var{a}.  If this fails, backtracks and parses @var{b}.\n"
+"Succeeds if either @var{a} or @var{b} succeeds."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-peg.texi:62
+msgid "@code{\"a/b\"}"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-peg.texi:65
+msgid ""
+"@code{(or a b)}\n"
+"@end deftp"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-peg.texi:70
+msgid ""
+"@deftp {PEG Pattern} {zero or more} a\n"
+"Parses @var{a} as many times in a row as it can, starting each @var{a}\n"
+"at the end of the text parsed by the previous @var{a}.  Always\n"
+"succeeds."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-peg.texi:72
+msgid "@code{\"a*\"}"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-peg.texi:75
+msgid ""
+"@code{(* a)}\n"
+"@end deftp"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-peg.texi:80
+msgid ""
+"@deftp {PEG Pattern} {one or more} a\n"
+"Parses @var{a} as many times in a row as it can, starting each @var{a}\n"
+"at the end of the text parsed by the previous @var{a}.  Succeeds if at\n"
+"least one @var{a} was parsed."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-peg.texi:82
+msgid "@code{\"a+\"}"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-peg.texi:85
+msgid ""
+"@code{(+ a)}\n"
+"@end deftp"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-peg.texi:88
+msgid ""
+"@deftp {PEG Pattern} optional a\n"
+"Tries to parse @var{a}.  Succeeds if @var{a} succeeds."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-peg.texi:90
+msgid "@code{\"a?\"}"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-peg.texi:93
+msgid ""
+"@code{(? a)}\n"
+"@end deftp"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-peg.texi:97
+msgid ""
+"@deftp {PEG Pattern} {followed by} a\n"
+"Makes sure it is possible to parse @var{a}, but does not actually parse\n"
+"it.  Succeeds if @var{a} would succeed."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-peg.texi:99
+msgid "@code{\"&a\"}"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-peg.texi:102
+msgid ""
+"@code{(followed-by a)}\n"
+"@end deftp"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-peg.texi:106
+msgid ""
+"@deftp {PEG Pattern} {not followed by} a\n"
+"Makes sure it is impossible to parse @var{a}, but does not actually\n"
+"parse it.  Succeeds if @var{a} would fail."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-peg.texi:108
+msgid "@code{\"!a\"}"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-peg.texi:111
+msgid ""
+"@code{(not-followed-by a)}\n"
+"@end deftp"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-peg.texi:114
+msgid ""
+"@deftp {PEG Pattern} {string literal} ``abc''\n"
+"Parses the string @var{\"abc\"}.  Succeeds if that parsing succeeds."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-peg.texi:116
+msgid "@code{\"'abc'\"}"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-peg.texi:119
+msgid ""
+"@code{\"abc\"}\n"
+"@end deftp"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-peg.texi:123
+msgid ""
+"@deftp {PEG Pattern} {any character}\n"
+"Parses any single character.  Succeeds unless there is no more text to\n"
+"be parsed."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-peg.texi:125
+msgid "@code{\".\"}"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-peg.texi:128
+msgid ""
+"@code{peg-any}\n"
+"@end deftp"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-peg.texi:132
+msgid ""
+"@deftp {PEG Pattern} {character class} a b\n"
+"Alternative syntax for ``Ordered Choice @var{a} @var{b}'' if @var{a} and\n"
+"@var{b} are characters."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-peg.texi:134
+msgid "@code{\"[ab]\"}"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-peg.texi:137
+msgid ""
+"@code{(or \"a\" \"b\")}\n"
+"@end deftp"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-peg.texi:140
+msgid ""
+"@deftp {PEG Pattern} {range of characters} a z\n"
+"Parses any character falling between @var{a} and @var{z}."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-peg.texi:142
+msgid "@code{\"[a-z]\"}"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-peg.texi:145
+msgid ""
+"@code{(range #\\a #\\z)}\n"
+"@end deftp"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-peg.texi:147
+msgctxt "/home/bear/work/guile/doc/guile/en/api-peg.texi:147"
+msgid "Example:"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-peg.texi:151
+msgid ""
+"@example\n"
+"\"(a !b / c &d*) 'e'+\"\n"
+"@end example"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-peg.texi:153
+msgid "Would be:"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-peg.texi:161
+msgid ""
+"@lisp\n"
+"(and\n"
+" (or\n"
+"  (and a (not-followed-by b))\n"
+"  (and c (followed-by (* d))))\n"
+" (+ \"e\"))\n"
+"@end lisp"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-peg.texi:163
+msgid "@subsubheading Extended Syntax"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-peg.texi:165
+msgid "There is some extra syntax for S-expressions."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-peg.texi:169
+msgid ""
+"@deftp {PEG Pattern} ignore a\n"
+"Ignore the text matching @var{a}\n"
+"@end deftp"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-peg.texi:173
+msgid ""
+"@deftp {PEG Pattern} capture a\n"
+"Capture the text matching @var{a}.\n"
+"@end deftp"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-peg.texi:177
+msgid ""
+"@deftp {PEG Pattern} peg a\n"
+"Embed the PEG pattern @var{a} using string syntax.\n"
+"@end deftp"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-peg.texi:179
+msgctxt "/home/bear/work/guile/doc/guile/en/api-peg.texi:179"
+msgid "Example:"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-peg.texi:183
+msgid ""
+"@example\n"
+"\"!a / 'b'\"\n"
+"@end example"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-peg.texi:185
+msgid "Is equivalent to"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-peg.texi:189
+msgid ""
+"@lisp\n"
+"(or (peg \"!a\") \"b\")\n"
+"@end lisp"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-peg.texi:191
+msgid "and"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-peg.texi:195
+msgid ""
+"@lisp\n"
+"(or (not-followed-by a) \"b\")\n"
+"@end lisp"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-peg.texi:198
+msgid ""
+"@node PEG API Reference\n"
+"@subsection PEG API Reference"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-peg.texi:200
+msgid "@subsubheading Define Macros"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-peg.texi:209
+msgid ""
+"The most straightforward way to define a PEG is by using one of the\n"
+"define macros (both of these macroexpand into @code{define}\n"
+"expressions).  These macros bind parsing functions to variables.  These\n"
+"parsing functions may be invoked by @code{match-pattern} or\n"
+"@code{search-for-pattern}, which return a PEG match record.  Raw data can "
+"be\n"
+"retrieved from this record with the PEG match deconstructor functions.\n"
+"More complicated (and perhaps enlightening) examples can be found in the\n"
+"tutorial."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-peg.texi:221
+msgid ""
+"@deffn {Scheme Macro} define-peg-string-patterns peg-string\n"
+"Defines all the nonterminals in the PEG @var{peg-string}.  More\n"
+"precisely, @code{define-peg-string-patterns} takes a superset of PEGs.  A "
+"normal PEG\n"
+"has a @code{<-} between the nonterminal and the pattern.\n"
+"@code{define-peg-string-patterns} uses this symbol to determine what "
+"information it\n"
+"should propagate up the parse tree.  The normal @code{<-} propagates the\n"
+"matched text up the parse tree, @code{<--} propagates the matched text\n"
+"up the parse tree tagged with the name of the nonterminal, and @code{<}\n"
+"discards that matched text and propagates nothing up the parse tree.\n"
+"Also, nonterminals may consist of any alphanumeric character or a ``-''\n"
+"character (in normal PEGs nonterminals can only be alphabetic)."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-peg.texi:240
+msgid ""
+"For example, if we:\n"
+"@lisp\n"
+"(define-peg-string-patterns \n"
+"  \"as <- 'a'+\n"
+"bs <- 'b'+\n"
+"as-or-bs <- as/bs\")\n"
+"(define-peg-string-patterns \n"
+"  \"as-tag <-- 'a'+\n"
+"bs-tag <-- 'b'+\n"
+"as-or-bs-tag <-- as-tag/bs-tag\")\n"
+"@end lisp\n"
+"Then:\n"
+"@lisp\n"
+"(match-pattern as-or-bs \"aabbcc\") @result{}\n"
+"#<peg start: 0 end: 2 string: aabbcc tree: aa>\n"
+"(match-pattern as-or-bs-tag \"aabbcc\") @result{}\n"
+"#<peg start: 0 end: 2 string: aabbcc tree: (as-or-bs-tag (as-tag aa))>\n"
+"@end lisp"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-peg.texi:245
+msgctxt "/home/bear/work/guile/doc/guile/en/api-peg.texi:245"
+msgid ""
+"Note that in doing this, we have bound 6 variables at the toplevel\n"
+"(@var{as}, @var{bs}, @var{as-or-bs}, @var{as-tag}, @var{bs-tag}, and\n"
+"@var{as-or-bs-tag}).\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-peg.texi:250
+msgid ""
+"@deffn {Scheme Macro} define-peg-pattern name capture-type peg-sexp\n"
+"Defines a single nonterminal @var{name}.  @var{capture-type} determines\n"
+"how much information is passed up the parse tree.  @var{peg-sexp} is a\n"
+"PEG in S-expression form."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-peg.texi:252
+msgid "Possible values for capture-type:"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-peg.texi:262
+msgid ""
+"@table @code\n"
+"@item all\n"
+"passes the matched text up the parse tree tagged with the name of the\n"
+"nonterminal.\n"
+"@item body\n"
+"passes the matched text up the parse tree.\n"
+"@item none\n"
+"passes nothing up the parse tree.\n"
+"@end table"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-peg.texi:279
+msgid ""
+"For Example, if we:\n"
+"@lisp\n"
+"(define-peg-pattern as body (+ \"a\"))\n"
+"(define-peg-pattern bs body (+ \"b\"))\n"
+"(define-peg-pattern as-or-bs body (or as bs))\n"
+"(define-peg-pattern as-tag all (+ \"a\"))\n"
+"(define-peg-pattern bs-tag all (+ \"b\"))\n"
+"(define-peg-pattern as-or-bs-tag all (or as-tag bs-tag))\n"
+"@end lisp\n"
+"Then:\n"
+"@lisp\n"
+"(match-pattern as-or-bs \"aabbcc\") @result{} \n"
+"#<peg start: 0 end: 2 string: aabbcc tree: aa>\n"
+"(match-pattern as-or-bs-tag \"aabbcc\") @result{} \n"
+"#<peg start: 0 end: 2 string: aabbcc tree: (as-or-bs-tag (as-tag aa))>\n"
+"@end lisp"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-peg.texi:284
+msgctxt "/home/bear/work/guile/doc/guile/en/api-peg.texi:284"
+msgid ""
+"Note that in doing this, we have bound 6 variables at the toplevel\n"
+"(@var{as}, @var{bs}, @var{as-or-bs}, @var{as-tag}, @var{bs-tag}, and\n"
+"@var{as-or-bs-tag}).\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-peg.texi:288
+msgid ""
+"@subsubheading Compile Functions\n"
+"It is sometimes useful to be able to compile anonymous PEG patterns at\n"
+"runtime.  These functions let you do that using either syntax."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-peg.texi:294
+msgid ""
+"@deffn {Scheme Procedure} peg-string-compile peg-string capture-type\n"
+"Compiles the PEG pattern in @var{peg-string} propagating according to\n"
+"@var{capture-type} (capture-type can be any of the values from\n"
+"@code{define-peg-pattern}).\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-peg.texi:301
+msgid ""
+"@deffn {Scheme Procedure} compile-peg-pattern peg-sexp capture-type\n"
+"Compiles the PEG pattern in @var{peg-sexp} propagating according to\n"
+"@var{capture-type} (capture-type can be any of the values from\n"
+"@code{define-peg-pattern}).\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-peg.texi:305
+msgid ""
+"The functions return syntax objects, which can be useful if you want to\n"
+"use them in macros. If all you want is to define a new nonterminal, you\n"
+"can do the following:"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-peg.texi:310
+msgid ""
+"@lisp\n"
+"(define exp '(+ \"a\"))\n"
+"(define as (compile (compile-peg-pattern exp 'body)))\n"
+"@end lisp"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-peg.texi:312
+msgid "You can use this nonterminal with all of the regular PEG functions:"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-peg.texi:317
+msgid ""
+"@lisp\n"
+"(match-pattern as \"aaaaa\") @result{}\n"
+"#<peg start: 0 end: 5 string: bbbbb tree: bbbbb>\n"
+"@end lisp"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-peg.texi:319
+msgid "@subsubheading Parsing & Matching Functions"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-peg.texi:327
+msgid ""
+"For our purposes, ``parsing'' means parsing a string into a tree\n"
+"starting from the first character, while ``matching'' means searching\n"
+"through the string for a substring.  In practice, the only difference\n"
+"between the two functions is that @code{match-pattern} gives up if it can't\n"
+"find a valid substring starting at index 0 and @code{search-for-pattern} "
+"keeps\n"
+"looking.  They are both equally capable of ``parsing'' and ``matching''\n"
+"given those constraints."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-peg.texi:332
+msgid ""
+"@deffn {Scheme Procedure} match-pattern nonterm string \n"
+"Parses @var{string} using the PEG stored in @var{nonterm}.  If no match\n"
+"was found, @code{match-pattern} returns false.  If a match was found, a PEG\n"
+"match record is returned."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-peg.texi:335
+msgid ""
+"The @code{capture-type} argument to @code{define-peg-pattern} allows you to\n"
+"choose what information to hold on to while parsing.  The options are:"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-peg.texi:344
+msgid ""
+"@table @code\n"
+"@item all\n"
+"tag the matched text with the nonterminal\n"
+"@item body\n"
+"just the matched text\n"
+"@item none\n"
+"nothing\n"
+"@end table"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-peg.texi:349
+msgid ""
+"@lisp\n"
+"(define-peg-pattern as all (+ \"a\"))\n"
+"(match-pattern as \"aabbcc\") @result{} \n"
+"#<peg start: 0 end: 2 string: aabbcc tree: (as aa)>"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-peg.texi:353
+msgid ""
+"(define-peg-pattern as body (+ \"a\"))\n"
+"(match-pattern as \"aabbcc\") @result{} \n"
+"#<peg start: 0 end: 2 string: aabbcc tree: aa>"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-peg.texi:357
+msgid ""
+"(define-peg-pattern as none (+ \"a\"))\n"
+"(match-pattern as \"aabbcc\") @result{} \n"
+"#<peg start: 0 end: 2 string: aabbcc tree: ()>"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-peg.texi:363
+msgid ""
+"(define-peg-pattern bs body (+ \"b\"))\n"
+"(match-pattern bs \"aabbcc\") @result{} \n"
+"#f\n"
+"@end lisp\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-peg.texi:371
+msgid ""
+"@deffn {Scheme Macro} search-for-pattern nonterm-or-peg string\n"
+"Searches through @var{string} looking for a matching subexpression.\n"
+"@var{nonterm-or-peg} can either be a nonterminal or a literal PEG\n"
+"pattern.  When a literal PEG pattern is provided, @code{search-for-pattern} "
+"works\n"
+"very similarly to the regular expression searches many hackers are used\n"
+"to.  If no match was found, @code{search-for-pattern} returns false.  If a "
+"match\n"
+"was found, a PEG match record is returned."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-peg.texi:380
+msgid ""
+"@lisp\n"
+"(define-peg-pattern as body (+ \"a\"))\n"
+"(search-for-pattern as \"aabbcc\") @result{} \n"
+"#<peg start: 0 end: 2 string: aabbcc tree: aa>\n"
+"(search-for-pattern (+ \"a\") \"aabbcc\") @result{} \n"
+"#<peg start: 0 end: 2 string: aabbcc tree: aa>\n"
+"(search-for-pattern \"'a'+\" \"aabbcc\") @result{} \n"
+"#<peg start: 0 end: 2 string: aabbcc tree: aa>"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-peg.texi:384
+msgid ""
+"(define-peg-pattern as all (+ \"a\"))\n"
+"(search-for-pattern as \"aabbcc\") @result{} \n"
+"#<peg start: 0 end: 2 string: aabbcc tree: (as aa)>"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-peg.texi:392
+msgid ""
+"(define-peg-pattern bs body (+ \"b\"))\n"
+"(search-for-pattern bs \"aabbcc\") @result{} \n"
+"#<peg start: 2 end: 4 string: aabbcc tree: bb>\n"
+"(search-for-pattern (+ \"b\") \"aabbcc\") @result{} \n"
+"#<peg start: 2 end: 4 string: aabbcc tree: bb>\n"
+"(search-for-pattern \"'b'+\" \"aabbcc\") @result{} \n"
+"#<peg start: 2 end: 4 string: aabbcc tree: bb>"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-peg.texi:402
+msgid ""
+"(define-peg-pattern zs body (+ \"z\"))\n"
+"(search-for-pattern zs \"aabbcc\") @result{} \n"
+"#f\n"
+"(search-for-pattern (+ \"z\") \"aabbcc\") @result{} \n"
+"#f\n"
+"(search-for-pattern \"'z'+\" \"aabbcc\") @result{} \n"
+"#f\n"
+"@end lisp\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-peg.texi:407
+msgid ""
+"@subsubheading PEG Match Records\n"
+"The @code{match-pattern} and @code{search-for-pattern} functions both return "
+"PEG\n"
+"match records.  Actual information can be extracted from these with the\n"
+"following functions."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-peg.texi:412
+msgid ""
+"@deffn {Scheme Procedure} peg:string match-record\n"
+"Returns the original string that was parsed in the creation of\n"
+"@code{match-record}.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-peg.texi:418
+msgid ""
+"@deffn {Scheme Procedure} peg:start match-record\n"
+"Returns the index of the first parsed character in the original string\n"
+"(from @code{peg:string}).  If this is the same as @code{peg:end},\n"
+"nothing was parsed.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-peg.texi:424
+msgid ""
+"@deffn {Scheme Procedure} peg:end match-record\n"
+"Returns one more than the index of the last parsed character in the\n"
+"original string (from @code{peg:string}).  If this is the same as\n"
+"@code{peg:start}, nothing was parsed.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-peg.texi:430
+msgid ""
+"@deffn {Scheme Procedure} peg:substring match-record\n"
+"Returns the substring parsed by @code{match-record}.  This is equivalent to\n"
+"@code{(substring (peg:string match-record) (peg:start match-record) (peg:"
+"end\n"
+"match-record))}.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-peg.texi:434
+msgid ""
+"@deffn {Scheme Procedure} peg:tree match-record\n"
+"Returns the tree parsed by @code{match-record}.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-peg.texi:439
+msgid ""
+"@deffn {Scheme Procedure} peg-record? match-record\n"
+"Returns true if @code{match-record} is a PEG match record, or false\n"
+"otherwise.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-peg.texi:443
+msgid ""
+"Example:\n"
+"@lisp\n"
+"(define-peg-pattern bs all (peg \"'b'+\"))"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-peg.texi:446
+msgid ""
+"(search-for-pattern bs \"aabbcc\") @result{}\n"
+"#<peg start: 2 end: 4 string: aabbcc tree: (bs bb)>"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-peg.texi:461
+msgid ""
+"(let ((pm (search-for-pattern bs \"aabbcc\")))\n"
+"   `((string ,(peg:string pm))\n"
+"     (start ,(peg:start pm))\n"
+"     (end ,(peg:end pm))\n"
+"     (substring ,(peg:substring pm))\n"
+"     (tree ,(peg:tree pm))\n"
+"     (record? ,(peg-record? pm)))) @result{}\n"
+"((string \"aabbcc\")\n"
+" (start 2)\n"
+" (end 4)\n"
+" (substring \"bb\")\n"
+" (tree (bs \"bb\"))\n"
+" (record? #t))\n"
+"@end lisp"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-peg.texi:463
+msgid "@subsubheading Miscellaneous"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-peg.texi:469
+msgid ""
+"@deffn {Scheme Procedure} context-flatten tst lst\n"
+"Takes a predicate @var{tst} and a list @var{lst}.  Flattens @var{lst}\n"
+"until all elements are either atoms or satisfy @var{tst}.  If @var{lst}\n"
+"itself satisfies @var{tst}, @code{(list lst)} is returned (this is a\n"
+"flat list whose only element satisfies @var{tst})."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-peg.texi:476
+msgid ""
+"@lisp\n"
+"(context-flatten (lambda (x) (and (number? (car x)) (= (car x) 1))) '(2 2 (1 "
+"1 (2 2)) (2 2 (1 1)))) @result{} \n"
+"(2 2 (1 1 (2 2)) 2 2 (1 1))\n"
+"(context-flatten (lambda (x) (and (number? (car x)) (= (car x) 1))) '(1 1 (1 "
+"1 (2 2)) (2 2 (1 1)))) @result{} \n"
+"((1 1 (1 1 (2 2)) (2 2 (1 1))))\n"
+"@end lisp"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-peg.texi:479
+msgctxt "/home/bear/work/guile/doc/guile/en/api-peg.texi:479"
+msgid ""
+"If you're wondering why this is here, take a look at the tutorial.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-peg.texi:489
+msgid ""
+"@deffn {Scheme Procedure} keyword-flatten terms lst\n"
+"A less general form of @code{context-flatten}.  Takes a list of terminal\n"
+"atoms @code{terms} and flattens @var{lst} until all elements are either\n"
+"atoms, or lists which have an atom from @code{terms} as their first\n"
+"element.\n"
+"@lisp\n"
+"(keyword-flatten '(a b) '(c a b (a c) (b c) (c (b a) (c a)))) @result{}\n"
+"(c a b (a c) (b c) c (b a) c a)\n"
+"@end lisp"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-peg.texi:492
+msgctxt "/home/bear/work/guile/doc/guile/en/api-peg.texi:492"
+msgid ""
+"If you're wondering why this is here, take a look at the tutorial.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-peg.texi:495
+msgid ""
+"@node PEG Tutorial\n"
+"@subsection PEG Tutorial"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-peg.texi:498
+msgid ""
+"@subsubheading Parsing /etc/passwd\n"
+"This example will show how to parse /etc/passwd using PEGs."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-peg.texi:500
+msgid "First we define an example /etc/passwd file:"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-peg.texi:511
+msgid ""
+"@lisp\n"
+"(define *etc-passwd*\n"
+"  \"root:x:0:0:root:/root:/bin/bash\n"
+"daemon:x:1:1:daemon:/usr/sbin:/bin/sh\n"
+"bin:x:2:2:bin:/bin:/bin/sh\n"
+"sys:x:3:3:sys:/dev:/bin/sh\n"
+"nobody:x:65534:65534:nobody:/nonexistent:/bin/sh\n"
+"messagebus:x:103:107::/var/run/dbus:/bin/false\n"
+"\")\n"
+"@end lisp"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-peg.texi:514
+msgid ""
+"As a first pass at this, we might want to have all the entries in\n"
+"/etc/passwd in a list."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-peg.texi:522
+msgid ""
+"Doing this with string-based PEG syntax would look like this:\n"
+"@lisp\n"
+"(define-peg-string-patterns\n"
+"  \"passwd <- entry* !.\n"
+"entry <-- (! NL .)* NL*\n"
+"NL < '\\n'\")\n"
+"@end lisp"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-peg.texi:527
+msgid ""
+"A @code{passwd} file is 0 or more entries (@code{entry*}) until the end\n"
+"of the file (@code{!.} (@code{.} is any character, so @code{!.} means\n"
+"``not anything'')).  We want to capture the data in the nonterminal\n"
+"@code{passwd}, but not tag it with the name, so we use @code{<-}."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-peg.texi:531
+msgid ""
+"An entry is a series of 0 or more characters that aren't newlines\n"
+"(@code{(! NL .)*}) followed by 0 or more newlines (@code{NL*}).  We want\n"
+"to tag all the entries with @code{entry}, so we use @code{<--}."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-peg.texi:535
+msgid ""
+"A newline is just a literal newline (@code{'\\n'}).  We don't want a\n"
+"bunch of newlines cluttering up the output, so we use @code{<} to throw\n"
+"away the captured data."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-peg.texi:543
+msgid ""
+"Here is the same PEG defined using S-expressions:\n"
+"@lisp\n"
+"(define-peg-pattern passwd body (and (* entry) (not-followed-by peg-any)))\n"
+"(define-peg-pattern entry all (and (* (and (not-followed-by NL) peg-any))\n"
+"\t\t\t       (* NL)))\n"
+"(define-peg-pattern NL none \"\\n\")\n"
+"@end lisp"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-peg.texi:554
+msgid ""
+"Obviously this is much more verbose.  On the other hand, it's more\n"
+"explicit, and thus easier to build automatically.  However, there are\n"
+"some tricks that make S-expressions easier to use in some cases.  One is\n"
+"the @code{ignore} keyword; the string syntax has no way to say ``throw\n"
+"away this text'' except breaking it out into a separate nonterminal.\n"
+"For instance, to throw away the newlines we had to define @code{NL}.  In\n"
+"the S-expression syntax, we could have simply written @code{(ignore\n"
+"\"\\n\")}.  Also, for the cases where string syntax is really much cleaner,\n"
+"the @code{peg} keyword can be used to embed string syntax in\n"
+"S-expression syntax.  For instance, we could have written:"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-peg.texi:558
+msgid ""
+"@lisp\n"
+"(define-peg-pattern passwd body (peg \"entry* !.\"))\n"
+"@end lisp"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-peg.texi:561
+msgid ""
+"However we define it, parsing @code{*etc-passwd*} with the @code{passwd}\n"
+"nonterminal yields the same results:"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-peg.texi:571
+msgid ""
+"@lisp\n"
+"(peg:tree (match-pattern passwd *etc-passwd*)) @result{}\n"
+"((entry \"root:x:0:0:root:/root:/bin/bash\")\n"
+" (entry \"daemon:x:1:1:daemon:/usr/sbin:/bin/sh\")\n"
+" (entry \"bin:x:2:2:bin:/bin:/bin/sh\")\n"
+" (entry \"sys:x:3:3:sys:/dev:/bin/sh\")\n"
+" (entry \"nobody:x:65534:65534:nobody:/nonexistent:/bin/sh\")\n"
+" (entry \"messagebus:x:103:107::/var/run/dbus:/bin/false\"))\n"
+"@end lisp"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-peg.texi:573
+msgid "However, here is something to be wary of:"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-peg.texi:578
+msgid ""
+"@lisp\n"
+"(peg:tree (match-pattern passwd \"one entry\")) @result{}\n"
+"(entry \"one entry\")\n"
+"@end lisp"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-peg.texi:588
+msgid ""
+"By default, the parse trees generated by PEGs are compressed as much as\n"
+"possible without losing information.  It may not look like this is what\n"
+"you want at first, but uncompressed parse trees are an enormous headache\n"
+"(there's no easy way to predict how deep particular lists will nest,\n"
+"there are empty lists littered everywhere, etc. etc.).  One side-effect\n"
+"of this, however, is that sometimes the compressor is too aggressive.\n"
+"No information is discarded when @code{((entry \"one entry\"))} is\n"
+"compressed to @code{(entry \"one entry\")}, but in this particular case it\n"
+"probably isn't what we want."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-peg.texi:597
+msgid ""
+"There are two functions for easily dealing with this:\n"
+"@code{keyword-flatten} and @code{context-flatten}.  The\n"
+"@code{keyword-flatten} function takes a list of keywords and a list to\n"
+"flatten, then tries to coerce the list such that the first element of\n"
+"all sublists is one of the keywords.  The @code{context-flatten}\n"
+"function is similar, but instead of a list of keywords it takes a\n"
+"predicate that should indicate whether a given sublist is good enough\n"
+"(refer to the API reference for more details)."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-peg.texi:610
+msgid ""
+"What we want here is @code{keyword-flatten}.\n"
+"@lisp\n"
+"(keyword-flatten '(entry) (peg:tree (match-pattern passwd *etc-passwd*))) "
+"@result{}\n"
+"((entry \"root:x:0:0:root:/root:/bin/bash\")\n"
+" (entry \"daemon:x:1:1:daemon:/usr/sbin:/bin/sh\")\n"
+" (entry \"bin:x:2:2:bin:/bin:/bin/sh\")\n"
+" (entry \"sys:x:3:3:sys:/dev:/bin/sh\")\n"
+" (entry \"nobody:x:65534:65534:nobody:/nonexistent:/bin/sh\")\n"
+" (entry \"messagebus:x:103:107::/var/run/dbus:/bin/false\"))\n"
+"(keyword-flatten '(entry) (peg:tree (match-pattern passwd \"one entry\"))) "
+"@result{}\n"
+"((entry \"one entry\"))\n"
+"@end lisp"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-peg.texi:615
+msgid ""
+"Of course, this is a somewhat contrived example.  In practice we would\n"
+"probably just tag the @code{passwd} nonterminal to remove the ambiguity\n"
+"(using either the @code{all} keyword for S-expressions or the @code{<--}\n"
+"symbol for strings).."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-peg.texi:630
+msgid ""
+"@lisp\n"
+"(define-peg-pattern tag-passwd all (peg \"entry* !.\"))\n"
+"(peg:tree (match-pattern tag-passwd *etc-passwd*)) @result{}\n"
+"(tag-passwd\n"
+"  (entry \"root:x:0:0:root:/root:/bin/bash\")\n"
+"  (entry \"daemon:x:1:1:daemon:/usr/sbin:/bin/sh\")\n"
+"  (entry \"bin:x:2:2:bin:/bin:/bin/sh\")\n"
+"  (entry \"sys:x:3:3:sys:/dev:/bin/sh\")\n"
+"  (entry \"nobody:x:65534:65534:nobody:/nonexistent:/bin/sh\")\n"
+"  (entry \"messagebus:x:103:107::/var/run/dbus:/bin/false\"))\n"
+"(peg:tree (match-pattern tag-passwd \"one entry\"))\n"
+"(tag-passwd \n"
+"  (entry \"one entry\"))\n"
+"@end lisp"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-peg.texi:639
+msgid ""
+"If you're ever uncertain about the potential results of parsing\n"
+"something, remember the two absolute rules:\n"
+"@enumerate\n"
+"@item\n"
+"No parsing information will ever be discarded.\n"
+"@item\n"
+"There will never be any lists with fewer than 2 elements.\n"
+"@end enumerate"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-peg.texi:643
+msgid ""
+"For the purposes of (1), \"parsing information\" means things tagged with\n"
+"the @code{any} keyword or the @code{<--} symbol.  Plain strings will be\n"
+"concatenated."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-peg.texi:646
+msgid ""
+"Let's extend this example a bit more and actually pull some useful\n"
+"information out of the passwd file:"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-peg.texi:665
+msgid ""
+"@lisp\n"
+"(define-peg-string-patterns\n"
+"  \"passwd <-- entry* !.\n"
+"entry <-- login C pass C uid C gid C nameORcomment C homedir C shell NL*\n"
+"login <-- text\n"
+"pass <-- text\n"
+"uid <-- [0-9]*\n"
+"gid <-- [0-9]*\n"
+"nameORcomment <-- text\n"
+"homedir <-- path\n"
+"shell <-- path\n"
+"path <-- (SLASH pathELEMENT)*\n"
+"pathELEMENT <-- (!NL !C  !'/' .)*\n"
+"text <- (!NL !C  .)*\n"
+"C < ':'\n"
+"NL < '\\n'\n"
+"SLASH < '/'\")\n"
+"@end lisp"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-peg.texi:716
+msgid ""
+"This produces rather pretty parse trees:\n"
+"@lisp\n"
+"(passwd\n"
+"  (entry (login \"root\")\n"
+"         (pass \"x\")\n"
+"         (uid \"0\")\n"
+"         (gid \"0\")\n"
+"         (nameORcomment \"root\")\n"
+"         (homedir (path (pathELEMENT \"root\")))\n"
+"         (shell (path (pathELEMENT \"bin\") (pathELEMENT \"bash\"))))\n"
+"  (entry (login \"daemon\")\n"
+"         (pass \"x\")\n"
+"         (uid \"1\")\n"
+"         (gid \"1\")\n"
+"         (nameORcomment \"daemon\")\n"
+"         (homedir\n"
+"           (path (pathELEMENT \"usr\") (pathELEMENT \"sbin\")))\n"
+"         (shell (path (pathELEMENT \"bin\") (pathELEMENT \"sh\"))))\n"
+"  (entry (login \"bin\")\n"
+"         (pass \"x\")\n"
+"         (uid \"2\")\n"
+"         (gid \"2\")\n"
+"         (nameORcomment \"bin\")\n"
+"         (homedir (path (pathELEMENT \"bin\")))\n"
+"         (shell (path (pathELEMENT \"bin\") (pathELEMENT \"sh\"))))\n"
+"  (entry (login \"sys\")\n"
+"         (pass \"x\")\n"
+"         (uid \"3\")\n"
+"         (gid \"3\")\n"
+"         (nameORcomment \"sys\")\n"
+"         (homedir (path (pathELEMENT \"dev\")))\n"
+"         (shell (path (pathELEMENT \"bin\") (pathELEMENT \"sh\"))))\n"
+"  (entry (login \"nobody\")\n"
+"         (pass \"x\")\n"
+"         (uid \"65534\")\n"
+"         (gid \"65534\")\n"
+"         (nameORcomment \"nobody\")\n"
+"         (homedir (path (pathELEMENT \"nonexistent\")))\n"
+"         (shell (path (pathELEMENT \"bin\") (pathELEMENT \"sh\"))))\n"
+"  (entry (login \"messagebus\")\n"
+"         (pass \"x\")\n"
+"         (uid \"103\")\n"
+"         (gid \"107\")\n"
+"         nameORcomment\n"
+"         (homedir\n"
+"           (path (pathELEMENT \"var\")\n"
+"                 (pathELEMENT \"run\")\n"
+"                 (pathELEMENT \"dbus\")))\n"
+"         (shell (path (pathELEMENT \"bin\") (pathELEMENT \"false\")))))\n"
+"@end lisp"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-peg.texi:723
+msgid ""
+"Notice that when there's no entry in a field (e.g. @code{nameORcomment}\n"
+"for messagebus) the symbol is inserted.  This is the ``don't throw away\n"
+"any information'' rule---we succesfully matched a @code{nameORcomment}\n"
+"of 0 characters (since we used @code{*} when defining it).  This is\n"
+"usually what you want, because it allows you to e.g. use @code{list-ref}\n"
+"to pull out elements (since they all have known offsets)."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-peg.texi:729
+msgid ""
+"If you'd prefer not to have symbols for empty matches, you can replace\n"
+"the @code{*} with a @code{+} and add a @code{?} after the\n"
+"@code{nameORcomment} in @code{entry}.  Then it will try to parse 1 or\n"
+"more characters, fail (inserting nothing into the parse tree), but\n"
+"continue because it didn't have to match the nameORcomment to continue."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-peg.texi:732
+msgid "@subsubheading Embedding Arithmetic Expressions"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-peg.texi:734
+msgid "We can parse simple mathematical expressions with the following PEG:"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-peg.texi:743
+msgid ""
+"@lisp\n"
+"(define-peg-string-patterns\n"
+"  \"expr <- sum\n"
+"sum <-- (product ('+' / '-') sum) / product\n"
+"product <-- (value ('*' / '/') product) / value\n"
+"value <-- number / '(' expr ')'\n"
+"number <-- [0-9]+\")\n"
+"@end lisp"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-peg.texi:766
+msgid ""
+"Then:\n"
+"@lisp\n"
+"(peg:tree (match-pattern expr \"1+1/2*3+(1+1)/2\")) @result{}\n"
+"(sum (product (value (number \"1\")))\n"
+"     \"+\"\n"
+"     (sum (product\n"
+"            (value (number \"1\"))\n"
+"            \"/\"\n"
+"            (product\n"
+"              (value (number \"2\"))\n"
+"              \"*\"\n"
+"              (product (value (number \"3\")))))\n"
+"          \"+\"\n"
+"          (sum (product\n"
+"                 (value \"(\"\n"
+"                        (sum (product (value (number \"1\")))\n"
+"                             \"+\"\n"
+"                             (sum (product (value (number \"1\")))))\n"
+"                        \")\")\n"
+"                 \"/\"\n"
+"                 (product (value (number \"2\")))))))\n"
+"@end lisp"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-peg.texi:772
+msgid ""
+"There is very little wasted effort in this PEG.  The @code{number}\n"
+"nonterminal has to be tagged because otherwise the numbers might run\n"
+"together with the arithmetic expressions during the string concatenation\n"
+"stage of parse-tree compression (the parser will see ``1'' followed by\n"
+"``/'' and decide to call it ``1/'').  When in doubt, tag."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-peg.texi:774
+msgid "It is very easy to turn these parse trees into lisp expressions:"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-peg.texi:782
+msgid ""
+"@lisp\n"
+"(define (parse-sum sum left . rest)\n"
+"  (if (null? rest)\n"
+"      (apply parse-product left)\n"
+"      (list (string->symbol (car rest))\n"
+"\t    (apply parse-product left)\n"
+"\t    (apply parse-sum (cadr rest)))))"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-peg.texi:789
+msgid ""
+"(define (parse-product product left . rest)\n"
+"  (if (null? rest)\n"
+"      (apply parse-value left)\n"
+"      (list (string->symbol (car rest))\n"
+"\t    (apply parse-value left)\n"
+"\t    (apply parse-product (cadr rest)))))"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-peg.texi:794
+msgid ""
+"(define (parse-value value first . rest)\n"
+"  (if (null? rest)\n"
+"      (string->number (cadr first))\n"
+"      (apply parse-sum (car rest))))"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-peg.texi:797
+msgid ""
+"(define parse-expr parse-sum)\n"
+"@end lisp"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-peg.texi:800
+msgid ""
+"(Notice all these functions look very similar; for a more complicated\n"
+"PEG, it would be worth abstracting.)"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-peg.texi:806
+msgid ""
+"Then:\n"
+"@lisp\n"
+"(apply parse-expr (peg:tree (match-pattern expr \"1+1/2*3+(1+1)/2\"))) "
+"@result{}\n"
+"(+ 1 (+ (/ 1 (* 2 3)) (/ (+ 1 1) 2)))\n"
+"@end lisp"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-peg.texi:809
+msgid ""
+"But wait!  The associativity is wrong!  Where it says @code{(/ 1 (* 2\n"
+"3))}, it should say @code{(* (/ 1 2) 3)}."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-peg.texi:817
+msgid ""
+"It's tempting to try replacing e.g. @code{\"sum <-- (product ('+' / '-')\n"
+"sum) / product\"} with @code{\"sum <-- (sum ('+' / '-') product) /\n"
+"product\"}, but this is a Bad Idea.  PEGs don't support left recursion.\n"
+"To see why, imagine what the parser will do here.  When it tries to\n"
+"parse @code{sum}, it first has to try and parse @code{sum}.  But to do\n"
+"that, it first has to try and parse @code{sum}.  This will continue\n"
+"until the stack gets blown off."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-peg.texi:822
+msgid ""
+"So how does one parse left-associative binary operators with PEGs?\n"
+"Honestly, this is one of their major shortcomings.  There's no\n"
+"general-purpose way of doing this, but here the repetition operators are\n"
+"a good choice:"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-peg.texi:825
+msgid ""
+"@lisp\n"
+"(use-modules (srfi srfi-1))"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-peg.texi:832
+msgid ""
+"(define-peg-string-patterns\n"
+"  \"expr <- sum\n"
+"sum <-- (product ('+' / '-'))* product\n"
+"product <-- (value ('*' / '/'))* value\n"
+"value <-- number / '(' expr ')'\n"
+"number <-- [0-9]+\")"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-peg.texi:857
+msgid ""
+";; take a deep breath...\n"
+"(define (make-left-parser next-func)\n"
+"  (lambda (sum first . rest) ;; general form, comments below assume\n"
+"    ;; that we're dealing with a sum expression\n"
+"    (if (null? rest) ;; form (sum (product ...))\n"
+"      (apply next-func first)\n"
+"      (if (string? (cadr first));; form (sum ((product ...) \"+\") "
+"(product ...))\n"
+"\t  (list (string->symbol (cadr first))\n"
+"\t\t(apply next-func (car first))\n"
+"\t\t(apply next-func (car rest)))\n"
+"          ;; form (sum (((product ...) \"+\") ((product ...) \"+\")) "
+"(product ...))\n"
+"\t  (car \n"
+"\t   (reduce ;; walk through the list and build a left-associative tree\n"
+"\t    (lambda (l r)\n"
+"\t      (list (list (cadr r) (car r) (apply next-func (car l)))\n"
+"\t\t    (string->symbol (cadr l))))\n"
+"\t    'ignore\n"
+"\t    (append ;; make a list of all the products\n"
+"             ;; the first one should be pre-parsed\n"
+"\t     (list (list (apply next-func (caar first))\n"
+"\t\t\t (string->symbol (cadar first))))\n"
+"\t     (cdr first)\n"
+"             ;; the last one has to be added in\n"
+"\t     (list (append rest '(\"done\"))))))))))"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-peg.texi:866
+msgid ""
+"(define (parse-value value first . rest)\n"
+"  (if (null? rest)\n"
+"      (string->number (cadr first))\n"
+"      (apply parse-sum (car rest))))\n"
+"(define parse-product (make-left-parser parse-value))\n"
+"(define parse-sum (make-left-parser parse-product))\n"
+"(define parse-expr parse-sum)\n"
+"@end lisp"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-peg.texi:872
+msgid ""
+"Then:\n"
+"@lisp\n"
+"(apply parse-expr (peg:tree (match-pattern expr \"1+1/2*3+(1+1)/2\"))) "
+"@result{}\n"
+"(+ (+ 1 (* (/ 1 2) 3)) (/ (+ 1 1) 2))\n"
+"@end lisp"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-peg.texi:878
+msgid ""
+"As you can see, this is much uglier (it could be made prettier by using\n"
+"@code{context-flatten}, but the way it's written above makes it clear\n"
+"how we deal with the three ways the zero-or-more @code{*} expression can\n"
+"parse).  Fortunately, most of the time we can get away with only using\n"
+"right-associativity."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-peg.texi:880
+msgid "@subsubheading Simplified Functions"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-peg.texi:883
+msgid ""
+"For a more tantalizing example, consider the following grammar that\n"
+"parses (highly) simplified C functions:"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-peg.texi:902
+msgid ""
+"@lisp\n"
+"(define-peg-string-patterns\n"
+"  \"cfunc <-- cSP ctype cSP cname cSP cargs cLB cSP cbody cRB\n"
+"ctype <-- cidentifier\n"
+"cname <-- cidentifier\n"
+"cargs <-- cLP (! (cSP cRP) carg cSP (cCOMMA / cRP) cSP)* cSP\n"
+"carg <-- cSP ctype cSP cname\n"
+"cbody <-- cstatement *\n"
+"cidentifier <- [a-zA-z][a-zA-Z0-9_]*\n"
+"cstatement <-- (!';'.)*cSC cSP\n"
+"cSC < ';'\n"
+"cCOMMA < ','\n"
+"cLP < '('\n"
+"cRP < ')'\n"
+"cLB < '@{'\n"
+"cRB < '@}'\n"
+"cSP < [ \\t\\n]*\")\n"
+"@end lisp"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-peg.texi:912
+msgid ""
+"Then:\n"
+"@lisp\n"
+"(match-pattern cfunc \"int square(int a) @{ return a*a;@}\") @result{}\n"
+"(32\n"
+" (cfunc (ctype \"int\")\n"
+"        (cname \"square\")\n"
+"        (cargs (carg (ctype \"int\") (cname \"a\")))\n"
+"        (cbody (cstatement \"return a*a\"))))\n"
+"@end lisp"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-peg.texi:924
+msgid ""
+"And:\n"
+"@lisp\n"
+"(match-pattern cfunc \"int mod(int a, int b) @{ int c = a/b;return a-b*c; "
+"@}\") @result{}\n"
+"(52\n"
+" (cfunc (ctype \"int\")\n"
+"        (cname \"mod\")\n"
+"        (cargs (carg (ctype \"int\") (cname \"a\"))\n"
+"               (carg (ctype \"int\") (cname \"b\")))\n"
+"        (cbody (cstatement \"int c = a/b\")\n"
+"               (cstatement \"return a- b*c\"))))\n"
+"@end lisp"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-peg.texi:930
+msgid ""
+"By wrapping all the @code{carg} nonterminals in a @code{cargs}\n"
+"nonterminal, we were able to remove any ambiguity in the parsing\n"
+"structure and avoid having to call @code{context-flatten} on the output\n"
+"of @code{match-pattern}.  We used the same trick with the @code{cstatement}\n"
+"nonterminals, wrapping them in a @code{cbody} nonterminal."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-peg.texi:936
+msgid ""
+"The whitespace nonterminal @code{cSP} used here is a (very) useful\n"
+"instantiation of a common pattern for matching syntactically irrelevant\n"
+"information.  Since it's tagged with @code{<} and ends with @code{*} it\n"
+"won't clutter up the parse trees (all the empty lists will be discarded\n"
+"during the compression step) and it will never cause parsing to fail."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-peg.texi:939
+msgid ""
+"@node PEG Internals\n"
+"@subsection PEG Internals"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-peg.texi:946
+msgid ""
+"A PEG parser takes a string as input and attempts to parse it as a given\n"
+"nonterminal. The key idea of the PEG implementation is that every\n"
+"nonterminal is just a function that takes a string as an argument and\n"
+"attempts to parse that string as its nonterminal. The functions always\n"
+"start from the beginning, but a parse is considered successful if there\n"
+"is material left over at the end."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-peg.texi:951
+msgid ""
+"This makes it easy to model different PEG parsing operations. For\n"
+"instance, consider the PEG grammar @code{\"ab\"}, which could also be\n"
+"written @code{(and \"a\" \"b\")}. It matches the string ``ab''. Here's how\n"
+"that might be implemented in the PEG style:"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-peg.texi:957
+msgid ""
+"@lisp\n"
+"(define (match-and-a-b str)\n"
+"  (match-a str)\n"
+"  (match-b str))\n"
+"@end lisp"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-peg.texi:961
+msgid ""
+"As you can see, the use of functions provides an easy way to model\n"
+"sequencing. In a similar way, one could model @code{(or a b)} with\n"
+"something like the following:"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-peg.texi:966
+msgid ""
+"@lisp\n"
+"(define (match-or-a-b str)\n"
+"  (or (match-a str) (match-b str)))\n"
+"@end lisp"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-peg.texi:971
+msgid ""
+"Here the semantics of a PEG @code{or} expression map naturally onto\n"
+"Scheme's @code{or} operator. This function will attempt to run\n"
+"@code{(match-a str)}, and return its result if it succeeds. Otherwise it\n"
+"will run @code{(match-b str)}."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-peg.texi:974
+msgid ""
+"Of course, the code above wouldn't quite work. We need some way for the\n"
+"parsing functions to communicate. The actual interface used is below."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-peg.texi:976
+msgid "@subsubheading Parsing Function Interface"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-peg.texi:982
+msgid ""
+"A parsing function takes three arguments - a string, the length of that\n"
+"string, and the position in that string it should start parsing at. In\n"
+"effect, the parsing functions pass around substrings in pieces - the\n"
+"first argument is a buffer of characters, and the second two give a\n"
+"range within that buffer that the parsing function should look at."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-peg.texi:988
+msgid ""
+"Parsing functions return either #f, if they failed to match their\n"
+"nonterminal, or a list whose first element must be an integer\n"
+"representing the final position in the string they matched and whose cdr\n"
+"can be any other data the function wishes to return, or '() if it\n"
+"doesn't have any more data."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-peg.texi:993
+msgid ""
+"The one caveat is that if the extra data it returns is a list, any\n"
+"adjacent strings in that list will be appended by @code{match-pattern}. For\n"
+"instance, if a parsing function returns @code{(13 (\"a\" \"b\" \"c\"))},\n"
+"@code{match-pattern} will take @code{(13 (\"abc\"))} as its value."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-peg.texi:996
+msgid ""
+"For example, here is a function to match ``ab'' using the actual\n"
+"interface."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-peg.texi:1003
+msgid ""
+"@lisp\n"
+"(define (match-a-b str len pos)\n"
+"   (and (<= (+ pos 2) len)\n"
+"        (string= str \"ab\" pos (+ pos 2))\n"
+"        (list (+ pos 2) '()))) ; we return no extra information\n"
+"@end lisp"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-peg.texi:1006
+msgid ""
+"The above function can be used to match a string by running\n"
+"@code{(match-pattern match-a-b \"ab\")}."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-peg.texi:1008
+msgid "@subsubheading Code Generators and Extensible Syntax"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-peg.texi:1011
+msgid ""
+"PEG expressions, such as those in a @code{define-peg-pattern} form, are\n"
+"interpreted internally in two steps."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-peg.texi:1014
+msgid ""
+"First, any string PEG is expanded into an s-expression PEG by the code\n"
+"in the @code{(ice-9 peg string-peg)} module."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-peg.texi:1019
+msgid ""
+"Then, then s-expression PEG that results is compiled into a parsing\n"
+"function by the @code{(ice-9 peg codegen)} module. In particular, the\n"
+"function @code{compile-peg-pattern} is called on the s-expression. It then\n"
+"decides what to do based on the form it is passed."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-peg.texi:1027
+msgid ""
+"The PEG syntax can be expanded by providing @code{compile-peg-pattern} more\n"
+"options for what to do with its forms. The extended syntax will be\n"
+"associated with a symbol, for instance @code{my-parsing-form}, and will\n"
+"be called on all PEG expressions of the form\n"
+"@lisp\n"
+"(my-parsing-form ...)\n"
+"@end lisp"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-peg.texi:1032
+msgid ""
+"The parsing function should take two arguments. The first will be a\n"
+"syntax object containing a list with all of the arguments to the form\n"
+"(but not the form's name), and the second will be the\n"
+"@code{capture-type} argument that is passed to @code{define-peg-pattern}."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-peg.texi:1037
+msgid ""
+"New functions can be registered by calling @code{(add-peg-compiler!\n"
+"symbol function)}, where @code{symbol} is the symbol that will indicate\n"
+"a form of this type and @code{function} is the code generating function\n"
+"described above. The function @code{add-peg-compiler!} is exported from\n"
+"the @code{(ice-9 peg codegen)} module."
+msgstr ""

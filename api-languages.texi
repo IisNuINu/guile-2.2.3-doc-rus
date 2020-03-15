@@ -1,0 +1,273 @@
+@c -*-texinfo-*-
+@c This is part of the GNU Guile Reference Manual.
+@c Copyright (C)  1996, 1997, 2000, 2001, 2002, 2003, 2004, 2010
+@c   Free Software Foundation, Inc.
+@c See the file guile.texi for copying conditions.
+
+@node Other Languages
+@section Support for Other Languages
+
+In addition to Scheme, a user may write a Guile program in an increasing
+number of other languages. Currently supported languages include Emacs
+Lisp and ECMAScript.
+
+Guile is still fundamentally a Scheme, but it tries to support a wide
+variety of language building-blocks, so that other languages can be
+implemented on top of Guile. This allows users to write or extend
+applications in languages other than Scheme, too. This section describes
+the languages that have been implemented.
+
+(For details on how to implement a language, @xref{Compiling to the
+Virtual Machine}.)
+
+@menu
+* Using Other Languages::       How to use other languages.
+* Emacs Lisp::                  The dialect of Lisp used in Emacs.
+* ECMAScript::                  As seen on television.
+@end menu
+
+@node Using Other Languages
+@subsection Using Other Languages
+
+There are currently only two ways to access other languages from within
+Guile: at the REPL, and programmatically, via @code{compile},
+@code{read-and-compile}, and @code{compile-file}.
+
+The REPL is Guile's command prompt (@pxref{Using Guile Interactively}).
+The REPL has a concept of the ``current language'', which defaults to
+Scheme. The user may change that language, via the meta-command
+@code{,language}.
+
+For example, the following meta-command enables Emacs Lisp input:
+
+@example
+scheme@@(guile-user)> ,language elisp
+Happy hacking with Emacs Lisp!  To switch back, type `,L scheme'.
+elisp@@(guile-user)> (eq 1 2)
+$1 = #nil
+@end example
+
+Each language has its short name: for example, @code{elisp}, for Elisp.
+The same short name may be used to compile source code programmatically,
+via @code{compile}:
+
+@example
+elisp@@(guile-user)> ,L scheme
+Happy hacking with Guile Scheme!  To switch back, type `,L elisp'.
+scheme@@(guile-user)> (compile '(eq 1 2) #:from 'elisp)
+$2 = #nil
+@end example
+
+Granted, as the input to @code{compile} is a datum, this works best for
+Lispy languages, which have a straightforward datum representation.
+Other languages that need more parsing are better dealt with as strings.
+
+The easiest way to deal with syntax-heavy language is with files, via
+@code{compile-file} and friends. However it is possible to invoke a
+language's reader on a port, and then compile the resulting expression
+(which is a datum at that point). For more information,
+@xref{Compilation}.
+
+For more details on introspecting aspects of different languages,
+@xref{Compiler Tower}.
+
+@node Emacs Lisp
+@subsection Emacs Lisp
+
+Emacs Lisp (Elisp) is a dynamically-scoped Lisp dialect used in the
+Emacs editor. @xref{top,,Overview,elisp,Emacs Lisp}, for more
+information on Emacs Lisp.
+
+We hope that eventually Guile's implementation of Elisp will be good
+enough to replace Emacs' own implementation of Elisp. For that reason,
+we have thought long and hard about how to support the various features
+of Elisp in a performant and compatible manner.
+
+Readers familiar with Emacs Lisp might be curious about how exactly
+these various Elisp features are supported in Guile. The rest of this
+section focuses on addressing these concerns of the Elisp elect.
+
+@menu
+* Nil::                         A third boolean.
+* Dynamic Binding::             Threadsafe bindings with fluids.
+* Other Elisp Features::        Miscellany.
+@end menu
+
+@node Nil
+@subsubsection Nil
+
+@code{nil} in ELisp is an amalgam of Scheme's @code{#f} and @code{'()}.
+It is false, and it is the end-of-list; thus it is a boolean, and a list
+as well.
+
+Guile has chosen to support @code{nil} as a separate value, distinct
+from @code{#f} and @code{'()}. This allows existing Scheme and Elisp
+code to maintain their current semantics. @code{nil}, which in Elisp
+would just be written and read as @code{nil}, in Scheme has the external
+representation @code{#nil}.
+
+This decision to have @code{nil} as a low-level distinct value
+facilitates interoperability between the two languages. Guile has chosen
+to have Scheme deal with @code{nil} as follows:
+
+@example
+(boolean? #nil) @result{} #t
+(not #nil) @result{} #t
+(null? #nil) @result{} #t
+@end example
+
+And in C, one has:
+
+@example
+scm_is_bool (SCM_ELISP_NIL) @result{} 1
+scm_is_false (SCM_ELISP_NIL) @result{} 1
+scm_is_null (SCM_ELISP_NIL) @result{} 1
+@end example
+
+In this way, a version of @code{fold} written in Scheme can correctly
+fold a function written in Elisp (or in fact any other language) over a
+nil-terminated list, as Elisp makes. The converse holds as well; a
+version of @code{fold} written in Elisp can fold over a
+@code{'()}-terminated list, as made by Scheme.
+
+On a low level, the bit representations for @code{#f}, @code{#t},
+@code{nil}, and @code{'()} are made in such a way that they differ by
+only one bit, and so a test for, for example, @code{#f}-or-@code{nil}
+may be made very efficiently. See @code{libguile/boolean.h}, for more
+information.
+
+@subsubheading Equality
+
+Since Scheme's @code{equal?} must be transitive, and @code{'()}
+is not @code{equal?} to @code{#f}, to Scheme @code{nil} is not
+@code{equal?} to @code{#f} or @code{'()}.
+
+@example
+(eq? #f '()) @result{} #f
+(eq? #nil '()) @result{} #f
+(eq? #nil #f) @result{} #f
+(eqv? #f '()) @result{} #f
+(eqv? #nil '()) @result{} #f
+(eqv? #nil #f) @result{} #f
+(equal? #f '()) @result{} #f
+(equal? #nil '()) @result{} #f
+(equal? #nil #f) @result{} #f
+@end example
+
+However, in Elisp, @code{'()}, @code{#f}, and @code{nil} are all
+@code{equal} (though not @code{eq}).
+
+@example
+(defvar f (make-scheme-false))
+(defvar eol (make-scheme-null))
+(eq f eol) @result{} nil
+(eq nil eol) @result{} nil
+(eq nil f) @result{} nil
+(equal f eol) @result{} t
+(equal nil eol) @result{} t
+(equal nil f) @result{} t
+@end example
+
+These choices facilitate interoperability between Elisp and Scheme code,
+but they are not perfect. Some code that is correct standard Scheme is
+not correct in the presence of a second false and null value. For
+example:
+
+@example
+(define (truthiness x)
+  (if (eq? x #f)
+      #f
+      #t))
+@end example
+
+This code seems to be meant to test a value for truth, but now that
+there are two false values, @code{#f} and @code{nil}, it is no longer
+correct.
+
+Similarly, there is the loop:
+
+@example
+(define (my-length l)
+  (let lp ((l l) (len 0))
+    (if (eq? l '())
+        len
+        (lp (cdr l) (1+ len)))))
+@end example
+
+Here, @code{my-length} will raise an error if @var{l} is a
+@code{nil}-terminated list.
+
+Both of these examples are correct standard Scheme, but, depending on
+what they really want to do, they are not correct Guile Scheme.
+Correctly written, they would test the @emph{properties} of falsehood or
+nullity, not the individual members of that set. That is to say, they
+should use @code{not} or @code{null?} to test for falsehood or nullity,
+not @code{eq?} or @code{memv} or the like.
+
+Fortunately, using @code{not} and @code{null?} is in good style, so all
+well-written standard Scheme programs are correct, in Guile Scheme.
+
+Here are correct versions of the above examples:
+
+@example
+(define (truthiness* x)
+  (if (not x)
+      #f
+      #t))
+;; or: (define (t* x) (not (not x)))
+;; or: (define (t** x) x)
+
+(define (my-length* l)
+  (let lp ((l l) (len 0))
+    (if (null? l)
+        len
+        (lp (cdr l) (1+ len)))))
+@end example
+
+This problem has a mirror-image case in Elisp:
+
+@example
+(defun my-falsep (x)
+  (if (eq x nil)
+      t
+      nil))
+@end example
+
+Guile can warn when compiling code that has equality comparisons with
+@code{#f}, @code{'()}, or @code{nil}. @xref{Compilation}, for details.
+
+@node Dynamic Binding
+@subsubsection Dynamic Binding
+
+In contrast to Scheme, which uses ``lexical scoping'', Emacs Lisp scopes
+its variables dynamically. Guile supports dynamic scoping with its
+``fluids'' facility. @xref{Fluids and Dynamic States}, for more
+information.
+
+@node Other Elisp Features
+@subsubsection Other Elisp Features
+
+Buffer-local and mode-local variables should be mentioned here, along
+with buckybits on characters, Emacs primitive data types, the
+Lisp-2-ness of Elisp, and other things. Contributions to the
+documentation are most welcome!
+
+@node ECMAScript
+@subsection ECMAScript
+
+@url{http://www.ecma-international.org/publications/files/ECMA-ST/Ecma-262.pdf,ECMAScript}
+was not the first non-Schemey language implemented by Guile, but it was
+the first implemented for Guile's bytecode compiler. The goal was to
+support ECMAScript version 3.1, a relatively small language, but the
+implementor was completely irresponsible and got distracted by other
+things before finishing the standard library, and even some bits of the
+syntax. So, ECMAScript does deserve a mention in the manual, but it
+doesn't deserve an endorsement until its implementation is completed,
+perhaps by some more responsible hacker.
+
+In the meantime, the charitable user might investigate such invocations
+as @code{,L ecmascript} and @code{cat test-suite/tests/ecmascript.test}.
+
+@c Local Variables:
+@c TeX-master: "guile.texi"
+@c End:

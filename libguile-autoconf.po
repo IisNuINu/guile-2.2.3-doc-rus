@@ -1,0 +1,345 @@
+#
+# NuINu <don't@send.my>, 2019.
+#
+#. extracted from /home/bear/work/guile/doc/guile/en/libguile-autoconf.texi
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2018-05-07 12:37+0300\n"
+"PO-Revision-Date: 2019-03-05 15:34+0300\n"
+"Last-Translator: NuINu <don't@send.my>\n"
+"Language-Team: Russian <don't@send.my>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Generator: Gtranslator 2.91.7\n"
+"Plural-Forms: nplurals=5; plural=n==1 ? 0 : n==2 ? 1 : n<7 ? 2 : n<11 ? 3 : "
+"4;\n"
+
+#: /home/bear/work/guile/doc/guile/en/libguile-autoconf.texi:6
+msgid ""
+"@c -*-texinfo-*-\n"
+"@c This is part of the GNU Guile Reference Manual.\n"
+"@c Copyright (C)  1996, 1997, 2000, 2001, 2002, 2003, 2004, 2009, 2011\n"
+"@c   Free Software Foundation, Inc.\n"
+"@c See the file guile.texi for copying conditions."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/libguile-autoconf.texi:10
+msgid ""
+"@page\n"
+"@node Autoconf Support\n"
+"@section Autoconf Support"
+msgstr ""
+"@page\n"
+"@node Autoconf Support\n"
+"@section Поддержка Autoconf"
+
+#: /home/bear/work/guile/doc/guile/en/libguile-autoconf.texi:13
+msgid ""
+"Autoconf, a part of the GNU build system, makes it easy for users to\n"
+"build your package.  This section documents Guile's Autoconf support."
+msgstr ""
+"Autoconf, часть системы сборки GNU, облегчает пользователям сборку вашего "
+"пакета.\n"
+"В данном разделе описана поддержка Guile Autoconf."
+
+#: /home/bear/work/guile/doc/guile/en/libguile-autoconf.texi:19
+msgid ""
+"@menu\n"
+"* Autoconf Background::         Why use autoconf?\n"
+"* Autoconf Macros::             The GUILE_* macros.\n"
+"* Using Autoconf Macros::       How to use them, plus examples.\n"
+"@end menu"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/libguile-autoconf.texi:23
+msgid ""
+"@node Autoconf Background\n"
+"@subsection Autoconf Background"
+msgstr ""
+"@node Autoconf Background\n"
+"@subsection Autoconf Background"
+
+#: /home/bear/work/guile/doc/guile/en/libguile-autoconf.texi:29
+msgid ""
+"As explained in the @cite{GNU Autoconf Manual}, any package needs\n"
+"configuration at build-time (@pxref{Top, ,Introduction,autoconf,The GNU\n"
+"Autoconf Manual}).  If your package uses Guile (or uses a package that\n"
+"in turn uses Guile), you probably need to know what specific Guile\n"
+"features are available and details about them."
+msgstr ""
+"Как объясняется в руководстве @cite{GNU Autoconf Manual}, любой пакет "
+"требует\n"
+"настроки во время сборки (@pxref{Top, ,Introduction,autoconf,The GNU\n"
+"Autoconf Manual}).  Если ваш пакет использует Guile (или использует пакет,\n"
+"который в свою очередь использует Guile), вам вероятно, нужно знать, какие \n"
+"конкретно Guile функции доступны и подробности о них."
+
+#: /home/bear/work/guile/doc/guile/en/libguile-autoconf.texi:34
+msgid ""
+"The way to do this is to write feature tests and arrange for their "
+"execution\n"
+"by the @file{configure} script, typically by adding the tests to\n"
+"@file{configure.ac}, and running @code{autoconf} to create "
+"@file{configure}.\n"
+"Users of your package then run @file{configure} in the normal way."
+msgstr ""
+"Способ сделать это - написать функциональные тесты и организовать их "
+"выполнение\n"
+"в конфигурационном скрипте @file{configure}, как правило надо добавить тесты "
+"в\n"
+"@file{configure.ac}, и запустить @code{autoconf} для создания "
+"@file{configure}.\n"
+"Затем пользователи вашего пакета запускают @file{configure} обычным способом."
+
+#: /home/bear/work/guile/doc/guile/en/libguile-autoconf.texi:41
+msgid ""
+"Macros are a way to make common feature tests easy to express.\n"
+"Autoconf provides a wide range of macros \n"
+"(@pxref{Existing Tests,,,autoconf,The GNU Autoconf Manual}), \n"
+"and Guile installation provides Guile-specific tests in the areas of:\n"
+"program detection, compilation flags reporting, and Scheme module\n"
+"checks."
+msgstr ""
+"Макросы это способ сделать тестирование общих функций простым выражением.\n"
+"Autoconf предоставляет широкий спектр макросов \n"
+"(@pxref{Existing Tests,,,autoconf,The GNU Autoconf Manual}), \n"
+"и установка Guile обеспечивает специфичные для Guile тесты в следующих\n"
+"областях: обнаружение программ, сообщение о флагах компиляции, и\n"
+"проверку модулей Scheme."
+
+#: /home/bear/work/guile/doc/guile/en/libguile-autoconf.texi:45
+msgid ""
+"@node Autoconf Macros\n"
+"@subsection Autoconf Macros"
+msgstr ""
+"@node Autoconf Macros\n"
+"@subsection Макросы Autoconf"
+
+#: /home/bear/work/guile/doc/guile/en/libguile-autoconf.texi:52
+msgid ""
+"As mentioned earlier in this chapter, Guile supports parallel\n"
+"installation, and uses @code{pkg-config} to let the user choose which\n"
+"version of Guile they are interested in.  @code{pkg-config} has its own\n"
+"set of Autoconf macros that are probably installed on most every\n"
+"development system.  The most useful of these macros is\n"
+"@code{PKG_CHECK_MODULES}."
+msgstr ""
+"Как упоминалось ранее в этой главе, Guile поддерживает параллельную "
+"установку\n"
+"и использует @code{pkg-config} позволяющий пользователю выбирать, какая "
+"версия\n"
+"Guile ему интересна.  @code{pkg-config} имеет свой собственный набор "
+"макросов\n"
+"Autoconf, которые, вероятно, установлены на большинстве систем "
+"разработчиков.\n"
+"Наиболее полезным из этих макросов является\n"
+"@code{PKG_CHECK_MODULES}."
+
+#: /home/bear/work/guile/doc/guile/en/libguile-autoconf.texi:54
+msgid "@findex PKG_CHECK_MODULES"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/libguile-autoconf.texi:58
+msgid ""
+"@example\n"
+"PKG_CHECK_MODULES([GUILE], [guile-@value{EFFECTIVE-VERSION}])\n"
+"@end example"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/libguile-autoconf.texi:62
+msgid ""
+"This example looks for Guile and sets the @code{GUILE_CFLAGS} and\n"
+"@code{GUILE_LIBS} variables accordingly, or prints an error and exits if\n"
+"Guile was not found."
+msgstr ""
+"Этот пример ищет Guile и устанавливает переменные @code{GUILE_CFLAGS} и\n"
+"@code{GUILE_LIBS} соответственно, или печатает ошибку и выходит, если\n"
+"Guile не был найден."
+
+#: /home/bear/work/guile/doc/guile/en/libguile-autoconf.texi:66
+msgid ""
+"Guile comes with additional Autoconf macros providing more information,\n"
+"installed as @file{@var{prefix}/share/aclocal/guile.m4}.  Their names\n"
+"all begin with @code{GUILE_}."
+msgstr ""
+"Guile поставляется с дополнительными макросами Autoconf, предоставляющими\n"
+"дополнительную информацию, установленными в \n"
+"@file{@var{prefix}/share/aclocal/guile.m4}.  Их имена начинаются с\n"
+"@code{GUILE_}."
+
+#: /home/bear/work/guile/doc/guile/en/libguile-autoconf.texi:69
+msgid ""
+"@c see Makefile.am\n"
+"@include autoconf-macros.texi"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/libguile-autoconf.texi:73
+msgid ""
+"@node Using Autoconf Macros\n"
+"@subsection Using Autoconf Macros"
+msgstr ""
+"@node Using Autoconf Macros\n"
+"@subsection Использоание Макросов Autoconf"
+
+#: /home/bear/work/guile/doc/guile/en/libguile-autoconf.texi:79
+msgid ""
+"Using the autoconf macros is straightforward: Add the macro \"calls"
+"\" (actually\n"
+"instantiations) to @file{configure.ac}, run @code{aclocal}, and finally,\n"
+"run @code{autoconf}.  If your system doesn't have guile.m4 installed, place\n"
+"the desired macro definitions (@code{AC_DEFUN} forms) in @file{acinclude."
+"m4},\n"
+"and @code{aclocal} will do the right thing."
+msgstr ""
+"Использовать макросы autoconf очень просто: Добавьте \"вызовы\" макросов "
+"(на\n"
+"самом деле экземпляров) в  @file{configure.ac}, запустите @code{aclocal}, и "
+"наконец,\n"
+"запустите @code{autoconf}.  Если в вашей системе не установлен guile.m4, "
+"поместите\n"
+"нужные определения макросов (формы @code{AC_DEFUN}) в @file{acinclude.m4},\n"
+"и @code{aclocal} будет делать правильные вещи."
+
+#: /home/bear/work/guile/doc/guile/en/libguile-autoconf.texi:83
+msgid ""
+"Some of the macros can be used inside normal shell constructs: @code{if "
+"foo ;\n"
+"then GUILE_BAZ ; fi}, but this is not guaranteed.  It's probably a good "
+"idea\n"
+"to instantiate macros at top-level."
+msgstr ""
+"Некоторые макросы могут использоваться внутри обычной командной оболочки: "
+"@code{if foo ;\n"
+"then GUILE_BAZ ; fi}, но это не гарантировано.  Вероятно хорошей идеей будет "
+"создание\n"
+"экземпляра макросов на верхнем уровне."
+
+#: /home/bear/work/guile/doc/guile/en/libguile-autoconf.texi:85
+msgid "We now include two examples, one simple and one complicated."
+msgstr "Теперь мы включим два примера, один простой и один сложный."
+
+#: /home/bear/work/guile/doc/guile/en/libguile-autoconf.texi:90
+msgid ""
+"The first example is for a package that uses libguile, and thus needs to\n"
+"know how to compile and link against it.  So we use\n"
+"@code{PKG_CHECK_MODULES} to set the vars @code{GUILE_CFLAGS} and\n"
+"@code{GUILE_LIBS}, which are automatically substituted in the Makefile."
+msgstr ""
+"Первый пример для пакета, который использует libguile, и следовательно\n"
+"должен знать, как компилировать и связывать с ней.  Поэтому мы используем\n"
+"@code{PKG_CHECK_MODULES} чтобы установить переменные @code{GUILE_CFLAGS} и\n"
+"@code{GUILE_LIBS}, которые автоматически подставляются в Makefile."
+
+#: /home/bear/work/guile/doc/guile/en/libguile-autoconf.texi:93
+msgctxt "/home/bear/work/guile/doc/guile/en/libguile-autoconf.texi:93"
+msgid ""
+"@example\n"
+"In configure.ac:"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/libguile-autoconf.texi:95
+msgid "  PKG_CHECK_MODULES([GUILE], [guile-@value{EFFECTIVE-VERSION}])"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/libguile-autoconf.texi:97
+msgctxt "/home/bear/work/guile/doc/guile/en/libguile-autoconf.texi:97"
+msgid "In Makefile.in:"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/libguile-autoconf.texi:100
+msgid ""
+"  GUILE_CFLAGS  = @@GUILE_CFLAGS@@\n"
+"  GUILE_LIBS = @@GUILE_LIBS@@"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/libguile-autoconf.texi:106
+msgid ""
+"  myprog.o: myprog.c\n"
+"          $(CC) -o $@ $(GUILE_CFLAGS) $<\n"
+"  myprog: myprog.o\n"
+"          $(CC) -o $@ $< $(GUILE_LIBS)\n"
+"@end example"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/libguile-autoconf.texi:111
+msgid ""
+"The second example is for a package of Guile Scheme modules that uses an\n"
+"external program and other Guile Scheme modules (some might call this a "
+"\"pure\n"
+"scheme\" package).  So we use the @code{GUILE_SITE_DIR} macro, a regular\n"
+"@code{AC_PATH_PROG} macro, and the @code{GUILE_MODULE_AVAILABLE} macro."
+msgstr ""
+"Второй пример для пакета модулей Guile Scheme, который использует внешюю \n"
+"программу и другие модули Guile Scheme (некоторые могут назвать это пактом\n"
+"\"чистой scheme\"). Поэтому мы используем макрос the @code{GUILE_SITE_DIR},\n"
+"обычный макрос @code{AC_PATH_PROG}, и макрос @code{GUILE_MODULE_AVAILABLE}."
+
+#: /home/bear/work/guile/doc/guile/en/libguile-autoconf.texi:114
+msgctxt "/home/bear/work/guile/doc/guile/en/libguile-autoconf.texi:114"
+msgid ""
+"@example\n"
+"In configure.ac:"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/libguile-autoconf.texi:116
+msgid "  GUILE_SITE_DIR"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/libguile-autoconf.texi:118
+msgid "  probably_wont_work=\"\""
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/libguile-autoconf.texi:123
+msgid ""
+"  # pgtype pgtable\n"
+"  GUILE_MODULE_AVAILABLE(have_guile_pg, (database postgres))\n"
+"  test $have_guile_pg = no &&\n"
+"      probably_wont_work=\"(my pgtype) (my pgtable) $probably_wont_work\""
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/libguile-autoconf.texi:128
+msgid ""
+"  # gpgutils\n"
+"  AC_PATH_PROG(GNUPG,gpg)\n"
+"  test x\"$GNUPG\" = x &&\n"
+"      probably_wont_work=\"(my gpgutils) $probably_wont_work\""
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/libguile-autoconf.texi:141
+msgid ""
+"  if test ! \"$probably_wont_work\" = \"\" ; then\n"
+"      p=\"         ***\"\n"
+"      echo\n"
+"      echo \"$p\"\n"
+"      echo \"$p NOTE:\"\n"
+"      echo \"$p The following modules probably won't work:\"\n"
+"      echo \"$p   $probably_wont_work\"\n"
+"      echo \"$p They can be installed anyway, and will work if their\"\n"
+"      echo \"$p dependencies are installed later.  Please see README.\"\n"
+"      echo \"$p\"\n"
+"      echo\n"
+"  fi"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/libguile-autoconf.texi:143
+msgctxt "/home/bear/work/guile/doc/guile/en/libguile-autoconf.texi:143"
+msgid "In Makefile.in:"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/libguile-autoconf.texi:145
+msgid "  instdir = @@GUILE_SITE@@/my"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/libguile-autoconf.texi:149
+msgid ""
+"  install:\n"
+"        $(INSTALL) my/*.scm $(instdir)\n"
+"@end example"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/libguile-autoconf.texi:151
+msgid "@c autoconf.texi ends here"
+msgstr ""

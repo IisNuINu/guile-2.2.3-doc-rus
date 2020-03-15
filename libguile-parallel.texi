@@ -1,0 +1,82 @@
+@c -*-texinfo-*-
+@c This is part of the GNU Guile Reference Manual.
+@c Copyright (C)  1996, 1997, 2000, 2001, 2002, 2003, 2004, 2005, 2010, 2011,
+@c   2013-2014 Free Software Foundation, Inc.
+@c See the file guile.texi for copying conditions.
+
+@node Parallel Installations
+@section Параллельная(Независимая) инсталяция
+
+@cindex pkg-config
+@cindex effective version
+
+Guile обеспечивает надежные гарантии стабильности API и ABI для стабильной
+версии, так что если пользователь пишет программу для Guile версии 2.2.3,
+она будет совместима с некоторыми будущими версиями 2.2.7.  В этом случае,
+мы говорим, что 2.2 является эффективной версией(@dfn{effective version}),
+состоящей из главной и второстепенной версии, в этом случае 2 и 2.
+
+Пользователи могут устанавиливать несколько эффективных версий Guile, 
+с заголовками для каждой из них, библиотеками и файлами Scheme в 
+своих собственных каталогах. Это обеспечивает необходимую стабильность
+гарантий для пользователей, а также позволяет разработчикам Guile развивать
+язык и его реализацию.
+
+Тем не менее, паралельная инсталяция имеет и скрытую сторону, поскольку
+пользователи должны знать какую версию Guile необходимо использовать, когда
+они повторно создают приложения с Guile.  Guile решает эту проблему установкой
+файла для чтения утилитой @code{pkg-config}, инструмент для опроса установленных
+пакетов по имени. Guile кодирует версию в имени для pkg-config, чтобы пользователи
+могли в зависимости от ситуации обращаться к  @code{guile-2.0} или @code{guile-2.2}.
+
+Например, для эффективной версии @value{EFFECTIVE-VERSION}, вы будете
+вызывать пакет @code{pkg-config --cflags --libs guile-@value{EFFECTIVE-VERSION}},
+чтобы получить флаги компиляции и связывания. необходимые для ссылки на версию
+@value{EFFECTIVE-VERSION} Guile.  Обычно вы запускаете @code{pkg-config} на этапе
+конфигурации вашей программы и используете полученную информацию в  Makefile.
+
+Файл @code{pkg-config} Guile @file{guile-@value{EFFECTIVE-VERSION}.pc}, 
+определяет дополнительные полезные  переменные: 
+
+
+@table @code
+@item sitedir
+@cindex @code{sitedir}
+Каталог по умолчанию, в котором Guile ищет исходны код Scheme и 
+скомпилированные файлы (@pxref{Installing Site Packages, %site-dir}).  
+Запустите  @command{pkg-config guile-@value{EFFECTIVE-VERSION} --variable=sitedir}
+чтобы увидет его значение.  @xref{Autoconf Macros, GUILE_SITE_DIR}, для дополнительной
+информации о том как использовать его с Autoconf.
+
+@item extensiondir
+@cindex @code{extensiondir}
+Каталог по умолчанию, где Guile ищет расширения---т.е., разделяемые
+библиотеки предоставляющие дополнительрные функции (@pxref{Modules and
+Extensions}).  Запустите @command{pkg-config guile-@value{EFFECTIVE-VERSION}
+--variable=extensiondir}, чтобы увидеть его значение.
+
+@item guile
+@itemx guild
+@cindex program name transformations, dealing with
+Абсолютное имя файла @command{guile} и @command{guild}
+commands@footnote{Переменные @code{guile} и @code{guild} определенные начиная
+с версии Guile 2.0.12.}.  запустите @command{pkg-config
+guile-@value{EFFECTIVE-VERSION} --variable=guile} или
+@code{--variable=guild} чтобы увидеть его значение.
+
+Эти переменные позволяют пользователям обрабатывать преобразование имен
+программ, которые можно указать при настройке Guile с именем
+@code{--program-transform-name}, @code{--program-suffix}, или
+@code{--program-prefix} (@pxref{Transformation Options,,, autoconf, GNU
+Autoconf Manual}).
+@end table
+
+@noindent
+См справочник man по @code{pkg-config}, для получения дополнительной 
+информации или веб сайт, @url{http://pkg-config.freedesktop.org/}.
+@xref{Autoconf Support}, для получения дополнительной информации о
+проверке Guile из файла @code{configure.ac}.
+
+@c Local Variables:
+@c TeX-master: "guile.texi"
+@c End:

@@ -1,0 +1,957 @@
+#. extracted from /home/bear/work/guile/doc/guile/en/api-i18n.texi
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2018-05-07 12:36+0300\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Generator: Translate Toolkit 2.2.5\n"
+
+#: /home/bear/work/guile/doc/guile/en/api-i18n.texi:6
+msgid ""
+"@c -*-texinfo-*-\n"
+"@c This is part of the GNU Guile Reference Manual.\n"
+"@c Copyright (C)  1996, 1997, 2000, 2001, 2002, 2003, 2004, 2006, 2007,\n"
+"@c   2009, 2010, 2017 Free Software Foundation, Inc.\n"
+"@c See the file guile.texi for copying conditions."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-i18n.texi:9
+msgid ""
+"@node Internationalization\n"
+"@section Support for Internationalization"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-i18n.texi:12
+msgid ""
+"@cindex internationalization\n"
+"@cindex i18n"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-i18n.texi:20
+msgid ""
+"Guile provides internationalization@footnote{For concision and style,\n"
+"programmers often like to refer to internationalization as ``i18n''.}\n"
+"support for Scheme programs in two ways.  First, procedures to\n"
+"manipulate text and data in a way that conforms to particular cultural\n"
+"conventions (i.e., in a ``locale-dependent'' way) are provided in the\n"
+"@code{(ice-9 i18n)}.  Second, Guile allows the use of GNU\n"
+"@code{gettext} to translate program message strings."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-i18n.texi:29
+msgid ""
+"@menu\n"
+"* i18n Introduction::             Introduction to Guile's i18n support.\n"
+"* Text Collation::                Sorting strings and characters.\n"
+"* Character Case Mapping::        Case mapping.\n"
+"* Number Input and Output::       Parsing and printing numbers.\n"
+"* Accessing Locale Information::  Detailed locale information.\n"
+"* Gettext Support::               Translating message strings.\n"
+"@end menu"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-i18n.texi:33
+msgid ""
+"@node i18n Introduction, Text Collation, Internationalization, "
+"Internationalization\n"
+"@subsection Internationalization with Guile"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-i18n.texi:36
+msgid ""
+"In order to make use of the functions described thereafter, the\n"
+"@code{(ice-9 i18n)} module must be imported in the usual way:"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-i18n.texi:40
+msgid ""
+"@example\n"
+"(use-modules (ice-9 i18n))\n"
+"@end example"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-i18n.texi:42
+msgid "@cindex cultural conventions"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-i18n.texi:49
+msgid ""
+"The @code{(ice-9 i18n)} module provides procedures to manipulate text\n"
+"and other data in a way that conforms to the cultural conventions\n"
+"chosen by the user.  Each region of the world or language has its own\n"
+"customs to, for instance, represent real numbers, classify characters,\n"
+"collate text, etc.  All these aspects comprise the so-called\n"
+"``cultural conventions'' of that region or language."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-i18n.texi:52
+msgid ""
+"@cindex locale\n"
+"@cindex locale category"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-i18n.texi:60
+msgid ""
+"Computer systems typically refer to a set of cultural conventions as a\n"
+"@dfn{locale}.  For each particular aspect that comprise those cultural\n"
+"conventions, a @dfn{locale category} is defined.  For instance, the\n"
+"way characters are classified is defined by the @code{LC_CTYPE}\n"
+"category, while the language in which program messages are issued to\n"
+"the user is defined by the @code{LC_MESSAGES} category\n"
+"(@pxref{Locales, General Locale Information} for details)."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-i18n.texi:62
+msgid "@cindex locale object"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-i18n.texi:70
+msgid ""
+"The procedures provided by this module allow the development of\n"
+"programs that adapt automatically to any locale setting.  As we will\n"
+"see later, many of these procedures can optionally take a @dfn{locale\n"
+"object} argument.  This additional argument defines the locale\n"
+"settings that must be followed by the invoked procedure.  When it is\n"
+"omitted, then the current locale settings of the process are followed\n"
+"(@pxref{Locales, @code{setlocale}})."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-i18n.texi:73
+msgid ""
+"The following procedures allow the manipulation of such locale\n"
+"objects."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-i18n.texi:83
+msgid ""
+"@deffn {Scheme Procedure} make-locale category-list locale-name [base-locale]"
+"\n"
+"@deffnx {C Function} scm_make_locale (category_list, locale_name, "
+"base_locale)\n"
+"Return a reference to a data structure representing a set of locale\n"
+"datasets.  @var{locale-name} should be a string denoting a particular\n"
+"locale (e.g., @code{\"aa_DJ\"}) and @var{category-list} should be either\n"
+"a list of locale categories or a single category as used with\n"
+"@code{setlocale} (@pxref{Locales, @code{setlocale}}).  Optionally, if\n"
+"@code{base-locale} is passed, it should be a locale object denoting\n"
+"settings for categories not listed in @var{category-list}."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-i18n.texi:89
+msgid ""
+"The following invocation creates a locale object that combines the use\n"
+"of Swedish for messages and character classification with the\n"
+"default settings for the other categories (i.e., the settings of the\n"
+"default @code{C} locale which usually represents conventions in use in\n"
+"the USA):"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-i18n.texi:93
+msgid ""
+"@example\n"
+"(make-locale (list LC_MESSAGES LC_CTYPE) \"sv_SE\")\n"
+"@end example"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-i18n.texi:96
+msgid ""
+"The following example combines the use of Esperanto messages and\n"
+"conventions with monetary conventions from Croatia:"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-i18n.texi:101
+msgid ""
+"@example\n"
+"(make-locale LC_MONETARY \"hr_HR\"\n"
+"             (make-locale LC_ALL \"eo_EO\"))\n"
+"@end example"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-i18n.texi:106
+msgid ""
+"A @code{system-error} exception (@pxref{Handling Errors}) is raised by\n"
+"@code{make-locale} when @var{locale-name} does not match any of the\n"
+"locales compiled on the system.  Note that on non-GNU systems, this\n"
+"error may be raised later, when the locale object is actually used."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-i18n.texi:108
+msgctxt "/home/bear/work/guile/doc/guile/en/api-i18n.texi:108"
+msgid "@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-i18n.texi:113
+msgid ""
+"@deffn {Scheme Procedure} locale? obj\n"
+"@deffnx {C Function} scm_locale_p (obj)\n"
+"Return true if @var{obj} is a locale object.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-i18n.texi:121
+msgid ""
+"@defvr {Scheme Variable} %global-locale\n"
+"@defvrx {C Variable} scm_global_locale\n"
+"This variable is bound to a locale object denoting the current process\n"
+"locale as installed using @code{setlocale ()} (@pxref{Locales}).  It\n"
+"may be used like any other locale object, including as a third\n"
+"argument to @code{make-locale}, for instance.\n"
+"@end defvr"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-i18n.texi:125
+msgid ""
+"@node Text Collation, Character Case Mapping, i18n Introduction, "
+"Internationalization\n"
+"@subsection Text Collation"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-i18n.texi:128
+msgid ""
+"The following procedures provide support for text collation, i.e.,\n"
+"locale-dependent string and character sorting."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-i18n.texi:143
+msgid ""
+"@deffn {Scheme Procedure} string-locale<? s1 s2 [locale]\n"
+"@deffnx {C Function} scm_string_locale_lt (s1, s2, locale)\n"
+"@deffnx {Scheme Procedure} string-locale>? s1 s2 [locale]\n"
+"@deffnx {C Function} scm_string_locale_gt (s1, s2, locale)\n"
+"@deffnx {Scheme Procedure} string-locale-ci<? s1 s2 [locale]\n"
+"@deffnx {C Function} scm_string_locale_ci_lt (s1, s2, locale)\n"
+"@deffnx {Scheme Procedure} string-locale-ci>? s1 s2 [locale]\n"
+"@deffnx {C Function} scm_string_locale_ci_gt (s1, s2, locale)\n"
+"Compare strings @var{s1} and @var{s2} in a locale-dependent way.  If\n"
+"@var{locale} is provided, it should be locale object (as returned by\n"
+"@code{make-locale}) and will be used to perform the comparison;\n"
+"otherwise, the current system locale is used.  For the @code{-ci}\n"
+"variants, the comparison is made in a case-insensitive way.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-i18n.texi:151
+msgid ""
+"@deffn {Scheme Procedure} string-locale-ci=? s1 s2 [locale]\n"
+"@deffnx {C Function} scm_string_locale_ci_eq (s1, s2, locale)\n"
+"Compare strings @var{s1} and @var{s2} in a case-insensitive, and\n"
+"locale-dependent way.  If @var{locale} is provided, it should be\n"
+"a locale object (as returned by @code{make-locale}) and will be used to\n"
+"perform the comparison; otherwise, the current system locale is used.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-i18n.texi:165
+msgid ""
+"@deffn {Scheme Procedure} char-locale<? c1 c2 [locale]\n"
+"@deffnx {C Function} scm_char_locale_lt (c1, c2, locale)\n"
+"@deffnx {Scheme Procedure} char-locale>? c1 c2 [locale]\n"
+"@deffnx {C Function} scm_char_locale_gt (c1, c2, locale)\n"
+"@deffnx {Scheme Procedure} char-locale-ci<? c1 c2 [locale]\n"
+"@deffnx {C Function} scm_char_locale_ci_lt (c1, c2, locale)\n"
+"@deffnx {Scheme Procedure} char-locale-ci>? c1 c2 [locale]\n"
+"@deffnx {C Function} scm_char_locale_ci_gt (c1, c2, locale)\n"
+"Compare characters @var{c1} and @var{c2} according to either\n"
+"@var{locale} (a locale object as returned by @code{make-locale}) or\n"
+"the current locale.  For the @code{-ci} variants, the comparison is\n"
+"made in a case-insensitive way.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-i18n.texi:171
+msgid ""
+"@deffn {Scheme Procedure} char-locale-ci=? c1 c2 [locale]\n"
+"@deffnx {C Function} scm_char_locale_ci_eq (c1, c2, locale)\n"
+"Return true if character @var{c1} is equal to @var{c2}, in a case\n"
+"insensitive way according to @var{locale} or to the current locale.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-i18n.texi:174
+msgid ""
+"@node Character Case Mapping, Number Input and Output, Text Collation, "
+"Internationalization\n"
+"@subsection Character Case Mapping"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-i18n.texi:186
+msgid ""
+"The procedures below provide support for ``character case mapping'',\n"
+"i.e., to convert characters or strings to their upper-case or\n"
+"lower-case equivalent.  Note that SRFI-13 provides procedures that\n"
+"look similar (@pxref{Alphabetic Case Mapping}).  However, the SRFI-13\n"
+"procedures are locale-independent.  Therefore, they do not take into\n"
+"account specificities of the customs in use in a particular language\n"
+"or region of the world.  For instance, while most languages using the\n"
+"Latin alphabet map lower-case letter ``i'' to upper-case letter ``I'',\n"
+"Turkish maps lower-case ``i'' to ``Latin capital letter I with dot\n"
+"above''.  The following procedures allow programmers to provide\n"
+"idiomatic character mapping."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-i18n.texi:192
+msgid ""
+"@deffn {Scheme Procedure} char-locale-downcase chr [locale]\n"
+"@deffnx {C Function} scm_char_locale_upcase (chr, locale)\n"
+"Return the lowercase character that corresponds to @var{chr} according\n"
+"to either @var{locale} or the current locale.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-i18n.texi:198
+msgid ""
+"@deffn {Scheme Procedure} char-locale-upcase chr [locale]\n"
+"@deffnx {C Function} scm_char_locale_downcase (chr, locale)\n"
+"Return the uppercase character that corresponds to @var{chr} according\n"
+"to either @var{locale} or the current locale.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-i18n.texi:204
+msgid ""
+"@deffn {Scheme Procedure} char-locale-titlecase chr [locale]\n"
+"@deffnx {C Function} scm_char_locale_titlecase (chr, locale)\n"
+"Return the titlecase character that corresponds to @var{chr} according\n"
+"to either @var{locale} or the current locale.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-i18n.texi:210
+msgid ""
+"@deffn {Scheme Procedure} string-locale-upcase str [locale]\n"
+"@deffnx {C Function} scm_string_locale_upcase (str, locale)\n"
+"Return a new string that is the uppercase version of @var{str}\n"
+"according to either @var{locale} or the current locale.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-i18n.texi:216
+msgid ""
+"@deffn {Scheme Procedure} string-locale-downcase str [locale]\n"
+"@deffnx {C Function} scm_string_locale_downcase (str, locale)\n"
+"Return a new string that is the down-case version of @var{str}\n"
+"according to either @var{locale} or the current locale.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-i18n.texi:222
+msgid ""
+"@deffn {Scheme Procedure} string-locale-titlecase str [locale]\n"
+"@deffnx {C Function} scm_string_locale_titlecase (str, locale)\n"
+"Return a new string that is the titlecase version of @var{str}\n"
+"according to either @var{locale} or the current locale.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-i18n.texi:225
+msgid ""
+"@node Number Input and Output, Accessing Locale Information, Character Case "
+"Mapping, Internationalization\n"
+"@subsection Number Input and Output"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-i18n.texi:231
+msgid ""
+"The following procedures allow programs to read and write numbers\n"
+"written according to a particular locale.  As an example, in English,\n"
+"``ten thousand and a half'' is usually written @code{10,000.5} while\n"
+"in French it is written @code{10 000,5}.  These procedures allow such\n"
+"differences to be taken into account."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-i18n.texi:243
+msgid ""
+"@findex strtod\n"
+"@deffn {Scheme Procedure} locale-string->integer str [base [locale]]\n"
+"@deffnx {C Function} scm_locale_string_to_integer (str, base, locale)\n"
+"Convert string @var{str} into an integer according to either\n"
+"@var{locale} (a locale object as returned by @code{make-locale}) or\n"
+"the current process locale.  If @var{base} is specified, then it\n"
+"determines the base of the integer being read (e.g., @code{16} for an\n"
+"hexadecimal number, @code{10} for a decimal number); by default,\n"
+"decimal numbers are read.  Return two values (@pxref{Multiple\n"
+"Values}): an integer (on success) or @code{#f}, and the number of\n"
+"characters read from @var{str} (@code{0} on failure)."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-i18n.texi:248
+msgid ""
+"This function is based on the C library's @code{strtol} function\n"
+"(@pxref{Parsing of Integers, @code{strtol},, libc, The GNU C Library\n"
+"Reference Manual}).\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-i18n.texi:257
+msgid ""
+"@findex strtod\n"
+"@deffn {Scheme Procedure} locale-string->inexact str [locale]\n"
+"@deffnx {C Function} scm_locale_string_to_inexact (str, locale)\n"
+"Convert string @var{str} into an inexact number according to either\n"
+"@var{locale} (a locale object as returned by @code{make-locale}) or\n"
+"the current process locale.  Return two values (@pxref{Multiple\n"
+"Values}): an inexact number (on success) or @code{#f}, and the number\n"
+"of characters read from @var{str} (@code{0} on failure)."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-i18n.texi:262
+msgid ""
+"This function is based on the C library's @code{strtod} function\n"
+"(@pxref{Parsing of Floats, @code{strtod},, libc, The GNU C Library\n"
+"Reference Manual}).\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-i18n.texi:271
+msgid ""
+"@deffn {Scheme Procedure} number->locale-string number [fraction-digits "
+"[locale]]\n"
+"Convert @var{number} (an inexact) into a string according to the\n"
+"cultural conventions of either @var{locale} (a locale object) or the\n"
+"current locale.  By default, print as many fractional digits as\n"
+"necessary, up to an upper bound.  Optionally, @var{fraction-digits} may\n"
+"be bound to an integer specifying the number of fractional digits to be\n"
+"displayed.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-i18n.texi:280
+msgid ""
+"@deffn {Scheme Procedure} monetary-amount->locale-string amount intl? "
+"[locale]\n"
+"Convert @var{amount} (an inexact denoting a monetary amount) into a\n"
+"string according to the cultural conventions of either @var{locale} (a\n"
+"locale object) or the current locale.  If @var{intl?} is true, then\n"
+"the international monetary format for the given locale is used\n"
+"(@pxref{Currency Symbol, international and locale monetary formats,,\n"
+"libc, The GNU C Library Reference Manual}).\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-i18n.texi:284
+msgid ""
+"@node Accessing Locale Information, Gettext Support, Number Input and "
+"Output, Internationalization\n"
+"@subsection Accessing Locale Information"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-i18n.texi:295
+msgid ""
+"@findex nl_langinfo\n"
+"@cindex low-level locale information\n"
+"It is sometimes useful to obtain very specific information about a\n"
+"locale such as the word it uses for days or months, its format for\n"
+"representing floating-point figures, etc.  The @code{(ice-9 i18n)}\n"
+"module provides support for this in a way that is similar to the libc\n"
+"functions @code{nl_langinfo ()} and @code{localeconv ()}\n"
+"(@pxref{Locale Information, accessing locale information from C,,\n"
+"libc, The GNU C Library Reference Manual}).  The available functions\n"
+"are listed below."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-i18n.texi:300
+msgid ""
+"@deffn {Scheme Procedure} locale-encoding [locale]\n"
+"Return the name of the encoding (a string whose interpretation is\n"
+"system-dependent) of either @var{locale} or the current locale.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-i18n.texi:302
+msgid "The following functions deal with dates and times."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-i18n.texi:312
+msgid ""
+"@deffn {Scheme Procedure} locale-day day [locale]\n"
+"@deffnx {Scheme Procedure} locale-day-short day [locale]\n"
+"@deffnx {Scheme Procedure} locale-month month [locale]\n"
+"@deffnx {Scheme Procedure} locale-month-short month [locale]\n"
+"Return the word (a string) used in either @var{locale} or the current\n"
+"locale to name the day (or month) denoted by @var{day} (or\n"
+"@var{month}), an integer between 1 and 7 (or 1 and 12).  The\n"
+"@code{-short} variants provide an abbreviation instead of a full name.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-i18n.texi:318
+msgid ""
+"@deffn {Scheme Procedure} locale-am-string [locale]\n"
+"@deffnx {Scheme Procedure} locale-pm-string [locale]\n"
+"Return a (potentially empty) string that is used to denote @i{ante\n"
+"meridiem} (or @i{post meridiem}) hours in 12-hour format.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-i18n.texi:333
+msgid ""
+"@deffn {Scheme Procedure} locale-date+time-format [locale]\n"
+"@deffnx {Scheme Procedure} locale-date-format [locale]\n"
+"@deffnx {Scheme Procedure} locale-time-format [locale]\n"
+"@deffnx {Scheme Procedure} locale-time+am/pm-format [locale]\n"
+"@deffnx {Scheme Procedure} locale-era-date-format [locale]\n"
+"@deffnx {Scheme Procedure} locale-era-date+time-format [locale]\n"
+"@deffnx {Scheme Procedure} locale-era-time-format [locale]\n"
+"These procedures return format strings suitable to @code{strftime}\n"
+"(@pxref{Time}) that may be used to display (part of) a date/time\n"
+"according to certain constraints and to the conventions of either\n"
+"@var{locale} or the current locale (@pxref{The Elegant and Fast Way,\n"
+"the @code{nl_langinfo ()} items,, libc, The GNU C Library Reference\n"
+"Manual}).\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-i18n.texi:342
+msgid ""
+"@deffn {Scheme Procedure} locale-era [locale]\n"
+"@deffnx {Scheme Procedure} locale-era-year [locale]\n"
+"These functions return, respectively, the era and the year of the\n"
+"relevant era used in @var{locale} or the current locale.  Most locales\n"
+"do not define this value.  In this case, the empty string is returned.\n"
+"An example of a locale that does define this value is the Japanese\n"
+"one.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-i18n.texi:344
+msgid "The following procedures give information about number representation."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-i18n.texi:351
+msgid ""
+"@deffn {Scheme Procedure} locale-decimal-point [locale]\n"
+"@deffnx {Scheme Procedure} locale-thousands-separator [locale]\n"
+"These functions return a string denoting the representation of the\n"
+"decimal point or that of the thousand separator (respectively) for\n"
+"either @var{locale} or the current locale.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-i18n.texi:359
+msgid ""
+"@deffn {Scheme Procedure} locale-digit-grouping [locale]\n"
+"Return a (potentially circular) list of integers denoting how digits\n"
+"of the integer part of a number are to be grouped, starting at the\n"
+"decimal point and going to the left.  The list contains integers\n"
+"indicating the size of the successive groups, from right to left.  If\n"
+"the list is non-circular, then no grouping occurs for digits beyond\n"
+"the last group."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-i18n.texi:365
+msgid ""
+"For instance, if the returned list is a circular list that contains\n"
+"only @code{3} and the thousand separator is @code{\",\"} (as is the case\n"
+"with English locales), then the number @code{12345678} should be\n"
+"printed @code{12,345,678}.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-i18n.texi:370
+msgid ""
+"The following procedures deal with the representation of monetary\n"
+"amounts.  Some of them take an additional @var{intl?} argument (a\n"
+"boolean) that tells whether the international or local monetary\n"
+"conventions for the given locale are to be used."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-i18n.texi:377
+msgid ""
+"@deffn {Scheme Procedure} locale-monetary-decimal-point [locale]\n"
+"@deffnx {Scheme Procedure} locale-monetary-thousands-separator [locale]\n"
+"@deffnx {Scheme Procedure} locale-monetary-grouping [locale]\n"
+"These are the monetary counterparts of the above procedures.  These\n"
+"procedures apply to monetary amounts.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-i18n.texi:381
+msgid ""
+"@deffn {Scheme Procedure} locale-currency-symbol intl? [locale]\n"
+"Return the currency symbol (a string) of either @var{locale} or the\n"
+"current locale."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-i18n.texi:384
+msgid ""
+"The following example illustrates the difference between the local and\n"
+"international monetary formats:"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-i18n.texi:393
+msgid ""
+"@example\n"
+"(define us (make-locale LC_MONETARY \"en_US\"))\n"
+"(locale-currency-symbol #f us)\n"
+"@result{} \"-$\"\n"
+"(locale-currency-symbol #t us)\n"
+"@result{} \"USD \"\n"
+"@end example\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-i18n.texi:400
+msgid ""
+"@deffn {Scheme Procedure} locale-monetary-fractional-digits intl? [locale]\n"
+"Return the number of fractional digits to be used when printing\n"
+"monetary amounts according to either @var{locale} or the current\n"
+"locale.  If the locale does not specify it, then @code{#f} is\n"
+"returned.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-i18n.texi:410
+msgid ""
+"@deffn {Scheme Procedure} locale-currency-symbol-precedes-positive? intl? "
+"[locale]\n"
+"@deffnx {Scheme Procedure} locale-currency-symbol-precedes-negative? intl? "
+"[locale]\n"
+"@deffnx {Scheme Procedure} locale-positive-separated-by-space? intl? [locale]"
+"\n"
+"@deffnx {Scheme Procedure} locale-negative-separated-by-space? intl? [locale]"
+"\n"
+"These procedures return a boolean indicating whether the currency\n"
+"symbol should precede a positive/negative number, and whether a\n"
+"whitespace should be inserted between the currency symbol and a\n"
+"positive/negative amount.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-i18n.texi:416
+msgid ""
+"@deffn {Scheme Procedure} locale-monetary-positive-sign [locale]\n"
+"@deffnx {Scheme Procedure} locale-monetary-negative-sign [locale]\n"
+"Return a string denoting the positive (respectively negative) sign\n"
+"that should be used when printing a monetary amount.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-i18n.texi:422
+msgid ""
+"@deffn {Scheme Procedure} locale-positive-sign-position\n"
+"@deffnx {Scheme Procedure} locale-negative-sign-position\n"
+"These functions return a symbol telling where a sign of a\n"
+"positive/negative monetary amount is to appear when printing it.  The\n"
+"possible values are:"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-i18n.texi:438
+msgid ""
+"@table @code\n"
+"@item parenthesize\n"
+"The currency symbol and quantity should be surrounded by parentheses.\n"
+"@item sign-before\n"
+"Print the sign string before the quantity and currency symbol.\n"
+"@item sign-after\n"
+"Print the sign string after the quantity and currency symbol.\n"
+"@item sign-before-currency-symbol\n"
+"Print the sign string right before the currency symbol.\n"
+"@item sign-after-currency-symbol\n"
+"Print the sign string right after the currency symbol.\n"
+"@item unspecified\n"
+"Unspecified.  We recommend you print the sign after the currency\n"
+"symbol.\n"
+"@end table"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-i18n.texi:440
+msgctxt "/home/bear/work/guile/doc/guile/en/api-i18n.texi:440"
+msgid "@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-i18n.texi:443
+msgid ""
+"Finally, the two following procedures may be helpful when programming\n"
+"user interfaces:"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-i18n.texi:450
+msgid ""
+"@deffn {Scheme Procedure} locale-yes-regexp [locale]\n"
+"@deffnx {Scheme Procedure} locale-no-regexp [locale]\n"
+"Return a string that can be used as a regular expression to recognize\n"
+"a positive (respectively, negative) response to a yes/no question.\n"
+"For the C locale, the default values are typically @code{\"^[yY]\"} and\n"
+"@code{\"^[nN]\"}, respectively."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-i18n.texi:452
+msgid "Here is an example:"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-i18n.texi:466
+msgid ""
+"@example\n"
+"(use-modules (ice-9 rdelim))\n"
+"(format #t \"Does Guile rock?~%\")\n"
+"(let lp ((answer (read-line)))\n"
+"  (cond ((string-match (locale-yes-regexp) answer)\n"
+"         (format #t \"High fives!~%\"))\n"
+"        ((string-match (locale-no-regexp) answer)\n"
+"         (format #t \"How about now? Does it rock yet?~%\")\n"
+"         (lp (read-line)))\n"
+"        (else\n"
+"         (format #t \"What do you mean?~%\")\n"
+"         (lp (read-line)))))\n"
+"@end example"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-i18n.texi:470
+msgid ""
+"For an internationalized yes/no string output, @code{gettext} should\n"
+"be used (@pxref{Gettext Support}).\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-i18n.texi:475
+msgid ""
+"Example uses of some of these functions are the implementation of the\n"
+"@code{number->locale-string} and @code{monetary-amount->locale-string}\n"
+"procedures (@pxref{Number Input and Output}), as well as that the\n"
+"SRFI-19 date and time conversion to/from strings (@pxref{SRFI-19})."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-i18n.texi:479
+msgid ""
+"@node Gettext Support,  , Accessing Locale Information, "
+"Internationalization\n"
+"@subsection Gettext Support"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-i18n.texi:483
+msgid ""
+"Guile provides an interface to GNU @code{gettext} for translating\n"
+"message strings (@pxref{Introduction,,, gettext, GNU @code{gettext}\n"
+"utilities})."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-i18n.texi:488
+msgid ""
+"Messages are collected in domains, so different libraries and programs\n"
+"maintain different message catalogues.  The @var{domain} parameter in\n"
+"the functions below is a string (it becomes part of the message\n"
+"catalog filename)."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-i18n.texi:493
+msgid ""
+"When @code{gettext} is not available, or if Guile was configured\n"
+"@samp{--without-nls}, dummy functions doing no translation are\n"
+"provided.  When @code{gettext} support is available in Guile, the\n"
+"@code{i18n} feature is provided (@pxref{Feature Tracking})."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-i18n.texi:500
+msgid ""
+"@deffn {Scheme Procedure} gettext msg [domain [category]]\n"
+"@deffnx {C Function} scm_gettext (msg, domain, category)\n"
+"Return the translation of @var{msg} in @var{domain}.  @var{domain} is\n"
+"optional and defaults to the domain set through @code{textdomain}\n"
+"below.  @var{category} is optional and defaults to @code{LC_MESSAGES}\n"
+"(@pxref{Locales})."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-i18n.texi:506
+msgid ""
+"Normal usage is for @var{msg} to be a literal string.\n"
+"@command{xgettext} can extract those from the source to form a message\n"
+"catalogue ready for translators (@pxref{xgettext Invocation,, Invoking\n"
+"the @command{xgettext} Program, gettext, GNU @code{gettext}\n"
+"utilities})."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-i18n.texi:510
+msgid ""
+"@example\n"
+"(display (gettext \"You are in a maze of twisty passages.\"))\n"
+"@end example"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-i18n.texi:515
+msgid ""
+"@code{_} is a commonly used shorthand, an application can make that an\n"
+"alias for @code{gettext}.  Or a library can make a definition that\n"
+"uses its specific @var{domain} (so an application can change the\n"
+"default without affecting the library)."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-i18n.texi:520
+msgid ""
+"@example\n"
+"(define (_ msg) (gettext msg \"mylibrary\"))\n"
+"(display (_ \"File not found.\"))\n"
+"@end example"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-i18n.texi:526
+msgid ""
+"@code{_} is also a good place to perhaps strip disambiguating extra\n"
+"text from the message string, as for instance in @ref{GUI program\n"
+"problems,, How to use @code{gettext} in GUI programs, gettext, GNU\n"
+"@code{gettext} utilities}.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-i18n.texi:534
+msgid ""
+"@deffn {Scheme Procedure} ngettext msg msgplural n [domain [category]]\n"
+"@deffnx {C Function} scm_ngettext (msg, msgplural, n, domain, category)\n"
+"Return the translation of @var{msg}/@var{msgplural} in @var{domain},\n"
+"with a plural form chosen appropriately for the number @var{n}.\n"
+"@var{domain} is optional and defaults to the domain set through\n"
+"@code{textdomain} below.  @var{category} is optional and defaults to\n"
+"@code{LC_MESSAGES} (@pxref{Locales})."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-i18n.texi:539
+msgid ""
+"@var{msg} is the singular form, and @var{msgplural} the plural.  When\n"
+"no translation is available, @var{msg} is used if @math{@var{n} = 1},\n"
+"or @var{msgplural} otherwise.  When translated, the message catalogue\n"
+"can have a different rule, and can have more than two possible forms."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-i18n.texi:544
+msgid ""
+"As per @code{gettext} above, normal usage is for @var{msg} and\n"
+"@var{msgplural} to be literal strings, since @command{xgettext} can\n"
+"extract them from the source to build a message catalogue.  For\n"
+"example,"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-i18n.texi:550
+msgid ""
+"@example\n"
+"(define (done n)\n"
+"  (format #t (ngettext \"~a file processed\\n"
+"\"\n"
+"                       \"~a files processed\\n"
+"\" n)\n"
+"             n))"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-i18n.texi:554
+msgid ""
+"(done 1) @print{} 1 file processed\n"
+"(done 3) @print{} 3 files processed\n"
+"@end example"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-i18n.texi:561
+msgid ""
+"It's important to use @code{ngettext} rather than plain @code{gettext}\n"
+"for plurals, since the rules for singular and plural forms in English\n"
+"are not the same in other languages.  Only @code{ngettext} will allow\n"
+"translators to give correct forms (@pxref{Plural forms,, Additional\n"
+"functions for plural forms, gettext, GNU @code{gettext} utilities}).\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-i18n.texi:568
+msgid ""
+"@deffn {Scheme Procedure} textdomain [domain]\n"
+"@deffnx {C Function} scm_textdomain (domain)\n"
+"Get or set the default gettext domain.  When called with no parameter\n"
+"the current domain is returned.  When called with a parameter,\n"
+"@var{domain} is set as the current domain, and that new value\n"
+"returned.  For example,"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-i18n.texi:574
+msgid ""
+"@example\n"
+"(textdomain \"myprog\")\n"
+"@result{} \"myprog\"\n"
+"@end example\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-i18n.texi:582
+msgid ""
+"@deffn {Scheme Procedure} bindtextdomain domain [directory]\n"
+"@deffnx {C Function} scm_bindtextdomain (domain, directory)\n"
+"Get or set the directory under which to find message files for\n"
+"@var{domain}.  When called without a @var{directory} the current\n"
+"setting is returned.  When called with a @var{directory},\n"
+"@var{directory} is set for @var{domain} and that new setting returned.\n"
+"For example,"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-i18n.texi:587
+msgid ""
+"@example\n"
+"(bindtextdomain \"myprog\" \"/my/tree/share/locale\")\n"
+"@result{} \"/my/tree/share/locale\"\n"
+"@end example"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-i18n.texi:594
+msgid ""
+"When using Autoconf/Automake, an application should arrange for the\n"
+"configured @code{localedir} to get into the program (by substituting,\n"
+"or by generating a config file) and set that for its domain.  This\n"
+"ensures the catalogue can be found even when installed in a\n"
+"non-standard location.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-i18n.texi:601
+msgid ""
+"@deffn {Scheme Procedure} bind-textdomain-codeset domain [encoding]\n"
+"@deffnx {C Function} scm_bind_textdomain_codeset (domain, encoding)\n"
+"Get or set the text encoding to be used by @code{gettext} for messages\n"
+"from @var{domain}.  @var{encoding} is a string, the name of a coding\n"
+"system, for instance @nicode{\"8859_1\"}.  (On a Unix/POSIX system the\n"
+"@command{iconv} program can list all available encodings.)"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-i18n.texi:605
+msgid ""
+"When called without an @var{encoding} the current setting is returned,\n"
+"or @code{#f} if none yet set.  When called with an @var{encoding}, it\n"
+"is set for @var{domain} and that new setting returned.  For example,"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-i18n.texi:612
+msgid ""
+"@example\n"
+"(bind-textdomain-codeset \"myprog\")\n"
+"@result{} #f\n"
+"(bind-textdomain-codeset \"myprog\" \"latin-9\")\n"
+"@result{} \"latin-9\"\n"
+"@end example"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-i18n.texi:618
+msgid ""
+"The encoding requested can be different from the translated data file,\n"
+"messages will be recoded as necessary.  But note that when there is no\n"
+"translation, @code{gettext} returns its @var{msg} unchanged, ie.@:\n"
+"without any recoding.  For that reason source message strings are best\n"
+"as plain ASCII."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-i18n.texi:625
+msgid ""
+"Currently Guile has no understanding of multi-byte characters, and\n"
+"string functions won't recognise character boundaries in multi-byte\n"
+"strings.  An application will at least be able to pass such strings\n"
+"through to some output though.  Perhaps this will change in the\n"
+"future.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-i18n.texi:629
+msgid ""
+"@c Local Variables:\n"
+"@c TeX-master: \"guile.texi\"\n"
+"@c ispell-local-dictionary: \"american\"\n"
+"@c End:"
+msgstr ""

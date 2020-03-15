@@ -1,0 +1,738 @@
+#
+# Gagin <mikhail-gagin@yandex.ru>, 2018.
+#
+#. extracted from /home/bear/work/guile/doc/guile/en/guile.texi
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2018-05-07 12:37+0300\n"
+"PO-Revision-Date: 2018-05-07 13:37+0300\n"
+"Last-Translator: Gagin <mikhail-gagin@yandex.ru>\n"
+"Language-Team: Russian <mikhail-gagin@yandex.ru>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Generator: Gtranslator 2.91.7\n"
+"Plural-Forms: nplurals=5; plural=n==1 ? 0 : n==2 ? 1 : n<7 ? 2 : n<11 ? 3 : "
+"4;\n"
+
+#: /home/bear/work/guile/doc/guile/en/guile.texi:12
+msgid ""
+"\\input texinfo\n"
+"@c -*-texinfo-*-\n"
+"@c %**start of header\n"
+"@setfilename guile.info\n"
+"@documentencoding UTF-8\n"
+"@settitle Guile Reference Manual\n"
+"@set guile\n"
+"@set MANUAL-REVISION 1\n"
+"@c %**end of header\n"
+"@include version.texi\n"
+"@include effective-version.texi"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/guile.texi:15
+msgid ""
+"@copying\n"
+"This manual documents Guile version @value{VERSION}."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/guile.texi:18
+msgid ""
+"Copyright (C) 1996, 1997, 2000, 2001, 2002, 2003, 2004, 2005, 2009,\n"
+"2010, 2011, 2012, 2013, 2014, 2015, 2016 Free Software Foundation."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/guile.texi:26
+msgid ""
+"Permission is granted to copy, distribute and/or modify this document\n"
+"under the terms of the GNU Free Documentation License, Version 1.3 or\n"
+"any later version published by the Free Software Foundation; with no\n"
+"Invariant Sections, no Front-Cover Texts, and no Back-Cover Texts.  A\n"
+"copy of the license is included in the section entitled ``GNU Free\n"
+"Documentation License.''\n"
+"@end copying"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/guile.texi:62
+msgid ""
+"@c Notes\n"
+"@c\n"
+"@c We no longer use the category \"primitive\" to distinguish C-defined\n"
+"@c Scheme procedures from those defined in Scheme.  Instead, the\n"
+"@c reference manual now includes a C declaration as well as a Scheme\n"
+"@c declaration for each procedure that is available in both Scheme and\n"
+"@c C.\n"
+"@c\n"
+"@c When adding a new reference entry to the Guile manual, please\n"
+"@c document it with @deffn using one of the following categories:\n"
+"@c\n"
+"@c   {Scheme Procedure}\n"
+"@c   {Scheme Syntax}\n"
+"@c   {C Function}\n"
+"@c   {C Macro}\n"
+"@c\n"
+"@c If the entry is for a new primitive, it should have both a @deffn\n"
+"@c {Scheme Procedure} line and a @deffnx {C Function} line; see the\n"
+"@c manual source for plenty of existing examples of this.\n"
+"@c\n"
+"@c For {C Function} entries where the return type and all parameter\n"
+"@c types are SCM, we omit the SCMs.  This is easier to read and also\n"
+"@c gets round the problem that Texinfo doesn't allow a @deftypefnx\n"
+"@c inside a @deffn.\n"
+"@c\n"
+"@c For a list of Guile primitives that are not yet incorporated into the\n"
+"@c reference manual, see the file `new-docstrings.texi', which holds all\n"
+"@c the docstrings snarfed from the libguile C sources for primitives\n"
+"@c that are not in the reference manual.  If you have worked with some\n"
+"@c of these concepts, implemented them, or just happen to know what they\n"
+"@c do, please write up a little explanation -- it would be a big help.\n"
+"@c Alternatively, if you know of any reason why some of these should\n"
+"@c *not* go in the manual, please let the mailing list\n"
+"@c <guile-devel@gnu.org> know."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/guile.texi:67
+msgid ""
+"@c Define indices that are used in the Guile Scheme part of the\n"
+"@c reference manual to group stuff according to whether it is R5RS or a\n"
+"@c Guile extension.\n"
+"@defcodeindex rn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/guile.texi:73
+msgid ""
+"@c vnew - For (some) new items, indicates the Guile version in which\n"
+"@c item first appeared.  In future, this could be made to expand to\n"
+"@c something like a \"New in Guile 45!\" banner.\n"
+"@macro vnew{VERSION}\n"
+"@end macro"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/guile.texi:86
+msgid ""
+"@c  The following, @le{} and @ge{}, are standard tex directives, given\n"
+"@c  definitions for use in non-tex.\n"
+"@c\n"
+"@ifnottex\n"
+"@macro ge\n"
+">=\n"
+"@end macro\n"
+"@macro le\n"
+"<=\n"
+"@end macro\n"
+"@end ifnottex"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/guile.texi:97
+msgid ""
+"@c  @cross{} is a \\times symbol in tex, or an \"x\" in info.  In tex it "
+"works\n"
+"@c  inside or outside $ $.\n"
+"@tex\n"
+"\\gdef\\cross{\\ifmmode\\times\\else$\\times$\\fi}\n"
+"@end tex\n"
+"@ifnottex\n"
+"@macro cross\n"
+"x\n"
+"@end macro\n"
+"@end ifnottex"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/guile.texi:110
+msgid ""
+"@c  @m{T,N} is $T$ in tex or @math{N} otherwise.  This is an easy way to "
+"give\n"
+"@c  different forms for math in tex and info.\n"
+"@iftex\n"
+"@macro m {T,N}\n"
+"@tex$\\T\\$@end tex\n"
+"@end macro\n"
+"@end iftex\n"
+"@ifnottex\n"
+"@macro m {T,N}\n"
+"@math{\\N\\}\n"
+"@end macro\n"
+"@end ifnottex"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/guile.texi:121
+msgid ""
+"@c  @nicode{S} is plain S in info, or @code{S} elsewhere.  This can be used\n"
+"@c  when the quotes that @code{} gives in info aren't wanted, but the\n"
+"@c  fontification in tex or html is wanted.  @alias is used rather\n"
+"@c  than @macro because backslashes don't work properly in an @macro.\n"
+"@ifinfo\n"
+"@alias nicode=asis\n"
+"@end ifinfo\n"
+"@ifnotinfo\n"
+"@alias nicode=code\n"
+"@end ifnotinfo"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/guile.texi:126
+msgid ""
+"@c @iftex\n"
+"@c @cropmarks\n"
+"@c @end iftex"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/guile.texi:131
+msgid ""
+"@dircategory The Algorithmic Language Scheme\n"
+"@direntry\n"
+"* Guile Reference: (guile).     The Guile reference manual.\n"
+"@end direntry"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/guile.texi:133
+msgid "@setchapternewpage odd"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/guile.texi:140
+msgid ""
+"@titlepage\n"
+"@sp 10\n"
+"@comment The title is printed in a large font.\n"
+"@title Guile Reference Manual\n"
+"@subtitle Edition @value{EDITION}, revision @value{MANUAL-REVISION}, for use "
+"with Guile @value{VERSION}\n"
+"@c @subtitle $Id: guile.texi,v 1.49 2008-03-19 22:51:23 ossau Exp $"
+msgstr ""
+"@titlepage\n"
+"@sp 10\n"
+"@comment The title is printed in a large font.\n"
+"@title Справочное руководство Guile\n"
+"@subtitle Edition @value{EDITION}, revision @value{MANUAL-REVISION}, for use "
+"with Guile @value{VERSION}\n"
+"@c @subtitle $Id: guile.texi,v 1.49 2008-03-19 22:51:23 ossau Exp $"
+
+#: /home/bear/work/guile/doc/guile/en/guile.texi:143
+msgid ""
+"@c See preface.texi for the list of authors\n"
+"@author The Guile Developers"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/guile.texi:150
+msgid ""
+"@c The following two commands start the copyright page.\n"
+"@page\n"
+"@vskip 0pt plus 1filll\n"
+"@vskip 0pt plus 1filll\n"
+"@insertcopying\n"
+"@end titlepage"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/guile.texi:154
+msgid ""
+"@c @smallbook\n"
+"@finalout\n"
+"@headings double"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/guile.texi:157
+msgid ""
+"@c Where to find Guile examples.\n"
+"@set example-dir doc/examples"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/guile.texi:161
+msgid ""
+"@ifnottex\n"
+"@node Top, Preface, (dir), (dir)\n"
+"@top The Guile Reference Manual"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/guile.texi:165
+msgid ""
+"@insertcopying\n"
+"@sp 1\n"
+"@end ifnottex"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/guile.texi:167
+msgid "@menu"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/guile.texi:170
+msgid ""
+"* Preface::\n"
+"* Introduction::"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/guile.texi:173
+msgid ""
+"* Hello Guile!::\n"
+"* Hello Scheme!::"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/guile.texi:176
+msgid ""
+"* Programming in Scheme::\n"
+"* Programming in C::"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/guile.texi:178
+msgid "* API Reference::"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/guile.texi:180
+msgid "* Guile Modules::"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/guile.texi:182
+msgid "* GOOPS::"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/guile.texi:184
+msgid "* Guile Implementation::"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/guile.texi:186
+msgid "Appendices"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/guile.texi:188
+msgid "* GNU Free Documentation License::  The license of this manual."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/guile.texi:190
+msgid "Indices"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/guile.texi:196
+msgid ""
+"* Concept Index::\n"
+"* Procedure Index::\n"
+"* Variable Index::\n"
+"* Type Index::\n"
+"* R5RS Index::"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/guile.texi:198
+msgid "@end menu"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/guile.texi:200
+msgid "@contents"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/guile.texi:202
+msgid "@include preface.texi"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/guile.texi:204
+msgid "@include intro.texi"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/guile.texi:206
+msgid "@include tour.texi"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/guile.texi:209
+msgid ""
+"@include scheme-ideas.texi\n"
+"@include scheme-reading.texi"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/guile.texi:212
+msgid ""
+"@node Programming in Scheme\n"
+"@chapter Programming in Scheme"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/guile.texi:218
+msgid ""
+"Guile's core language is Scheme, and a lot can be achieved simply by using "
+"Guile\n"
+"to write and run Scheme programs --- as opposed to having to dive into C "
+"code.\n"
+"In this part of the manual, we explain how to use Guile in this mode, and\n"
+"describe the tools that Guile provides to help you with script writing,\n"
+"debugging, and packaging your programs for distribution."
+msgstr ""
+"Основной язык Guile это Scheme, и многого можно добиться простым "
+"использованием\n"
+"Guile для написания и запуска программ Scheme --- в отличие от "
+"необходимости\n"
+"погружаться в код Си. В этой части руководства мы объясняем, как "
+"использовать\n"
+"Guile в этом режиме и описываем инструменты которые предоставляет Guile, "
+"чтобы\n"
+"помочь вам писать сценарии, отлаживать и упаковывать ваши программы для \n"
+"распространения."
+
+#: /home/bear/work/guile/doc/guile/en/guile.texi:222
+msgid ""
+"For detailed reference information on the variables, functions, and so\n"
+"on that make up Guile's application programming interface (API), see\n"
+"@ref{API Reference}."
+msgstr ""
+"Подробную информацию о переменных, функциях и т.д., которые предоставляет\n"
+"программный интерфейс(API) Guile, см. @ref{API Reference}."
+
+#: /home/bear/work/guile/doc/guile/en/guile.texi:232
+msgid ""
+"@menu\n"
+"* Guile Scheme::                Guile's implementation of Scheme.\n"
+"* Invoking Guile::              Selecting optional features when starting "
+"Guile.\n"
+"* Guile Scripting::             How to write Guile scripts.\n"
+"* Using Guile Interactively::   Guile's REPL features.\n"
+"* Using Guile in Emacs::        Guile and Emacs.\n"
+"* Using Guile Tools::           A guild of scheming wizards.\n"
+"* Installing Site Packages::    Installing Scheme code.\n"
+"@end menu"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/guile.texi:237
+msgid ""
+"@include scheme-intro.texi\n"
+"@include guile-invoke.texi\n"
+"@include scheme-scripts.texi\n"
+"@include scheme-using.texi"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/guile.texi:240
+msgid ""
+"@node Programming in C\n"
+"@chapter Programming in C"
+msgstr ""
+"@node Programming in C\n"
+"@chapter Программирование на Си"
+
+#: /home/bear/work/guile/doc/guile/en/guile.texi:246
+msgid ""
+"This part of the manual explains the general concepts that you need to\n"
+"understand when interfacing to Guile from C.  You will learn about how\n"
+"the latent typing of Scheme is embedded into the static typing of C, how\n"
+"the garbage collection of Guile is made available to C code, and how\n"
+"continuations influence the control flow in a C program."
+msgstr ""
+"В этой части руководства объясняются общие концепции, которые необходимо\n"
+"понять, для написания программ взаимодействия с Guile из Си. Вы узнаете,\n"
+"как встроена скрытая типизация Scheme в статическую типизацию Си, как\n"
+"сборщик мусора Guile становиться доступным для Си кода и как продолжения\n"
+"(continuations) влияют на поток управления в программе на Си."
+
+#: /home/bear/work/guile/doc/guile/en/guile.texi:250
+msgid ""
+"This knowledge should make it straightforward to add new functions to\n"
+"Guile that can be called from Scheme.  Adding new data types is also\n"
+"possible and is done by defining @dfn{foreign objects}."
+msgstr ""
+"Эти знания должны сделать простыми добавление новых функций в \n"
+"Guile, которые могут быть вызваны из Scheme.  Добавление новых\n"
+"типов данных также возможно и выполняется путем определения \n"
+"@dfn{внешних объектов(foreign objects)}."
+
+#: /home/bear/work/guile/doc/guile/en/guile.texi:255
+msgid ""
+"The @ref{Programming Overview} section of this part contains general\n"
+"musings and guidelines about programming with Guile.  It explores\n"
+"different ways to design a program around Guile, or how to embed Guile\n"
+"into existing programs."
+msgstr ""
+"Раздел @ref{Programming Overview} этой части содержит общие размышления\n"
+"и рекомендации по программированию на Guile.  В нем рассматриваются\n"
+"различные способы проектирования программ, связанных с Guile, или\n"
+"то как встраивать Guile в существующие программы."
+
+#: /home/bear/work/guile/doc/guile/en/guile.texi:260
+msgid ""
+"For a pedagogical yet detailed explanation of how the data representation "
+"of\n"
+"Guile is implemented, @xref{Data Representation}. You don't need to know "
+"the\n"
+"details given there to use Guile from C, but they are useful when you want "
+"to\n"
+"modify Guile itself or when you are just curious about how it is all done."
+msgstr ""
+"Для педагогического, но подробного объяснения того, какое представление "
+"данных\n"
+"реализует Guile, смж @xref{Data Representation}. Вам не нужно знать "
+"подробности,\n"
+"данные там, чтобы использовать Guile из Си, но они полезны, когда вы "
+"хотите \n"
+"изменить Guile или когда вам будет интересно узнать, как все это делается."
+
+#: /home/bear/work/guile/doc/guile/en/guile.texi:264
+msgid ""
+"For detailed reference information on the variables, functions\n"
+"etc. that make up Guile's application programming interface (API),\n"
+"@xref{API Reference}."
+msgstr ""
+"Подробную справочную информацию о переменных, функциях и т.д. Которые\n"
+"составляют интефрейс прикладного программирования (API) Guile, см.\n"
+"@xref{API Reference}."
+
+#: /home/bear/work/guile/doc/guile/en/guile.texi:275
+msgid ""
+"@menu\n"
+"* Parallel Installations::      Finding the right Guile.\n"
+"* Linking Programs With Guile:: More precisely, with the libguile library.\n"
+"* Linking Guile with Libraries::  To extend Guile itself. \n"
+"* General Libguile Concepts::   General concepts for using libguile.\n"
+"* Defining New Foreign Object Types::  Adding new types to Guile.\n"
+"* Function Snarfing::           A way to define new functions.\n"
+"* Programming Overview::        An overview of Guile programming.\n"
+"* Autoconf Support::            Putting m4 to good use.\n"
+"@end menu"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/guile.texi:284
+msgid ""
+"@include libguile-parallel.texi\n"
+"@include libguile-linking.texi\n"
+"@include libguile-extensions.texi\n"
+"@include libguile-concepts.texi\n"
+"@include libguile-foreign-objects.texi\n"
+"@include libguile-snarf.texi\n"
+"@include libguile-program.texi\n"
+"@include libguile-autoconf.texi"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/guile.texi:288
+msgid ""
+"@node API Reference\n"
+"@chapter API Reference"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/guile.texi:293
+msgid ""
+"Guile provides an application programming interface (@dfn{API}) to\n"
+"developers in two core languages: Scheme and C.  This part of the manual\n"
+"contains reference documentation for all of the functionality that is\n"
+"available through both Scheme and C interfaces."
+msgstr ""
+"Guile предоставляет интерфейс прикладного программирования (@dfn{API}) для\n"
+"разработчиков на двух языках: Scheme и Си.  В данной части руководства\n"
+"содержиться справочная документация для всех функций, доступных через\n"
+"интерфейсы обоих языков Scheme и Си."
+
+#: /home/bear/work/guile/doc/guile/en/guile.texi:323
+msgid ""
+"@menu\n"
+"* API Overview::                Overview of the Guile API.\n"
+"* Deprecation::                 Obsolete back-compatible APIs.\n"
+"* The SCM Type::                The fundamental data type for C code.\n"
+"* Initialization::              Initializing Guile.\n"
+"* Snarfing Macros::             Macros for snarfing initialization actions.\n"
+"* Data Types::                  Representing values in Guile.\n"
+"* Foreign Objects::             Defining new data types in C.\n"
+"* Smobs::                       Use foreign objects instead.\n"
+"* Procedures::                  Procedures.\n"
+"* Macros::                      Extending the syntax of Scheme.\n"
+"* Utility Functions::           General utility functions.\n"
+"* Binding Constructs::          Definitions and variable bindings.\n"
+"* Control Mechanisms::          Controlling the flow of program execution.\n"
+"* Input and Output::            Ports, reading and writing.\n"
+"* Regular Expressions::         Pattern matching and substitution.\n"
+"* LALR(1) Parsing::             Generating LALR(1) parsers.\n"
+"* PEG Parsing::                 Parsing Expression Grammars.\n"
+"* Read/Load/Eval/Compile::      Reading and evaluating Scheme code.\n"
+"* Memory Management::           Memory management and garbage collection.\n"
+"* Modules::                     Designing reusable code libraries.\n"
+"* Foreign Function Interface::  Interacting with C procedures and data.\n"
+"* Scheduling::                  Threads, mutexes, asyncs and dynamic roots.\n"
+"* Options and Config::          Configuration, features and runtime "
+"options.\n"
+"* Other Languages::             Emacs Lisp, ECMAScript, and more.\n"
+"* Internationalization::        Support for gettext, etc.\n"
+"* Debugging::                   Debugging infrastructure and Scheme "
+"interface.\n"
+"* Code Coverage::               Gathering code coverage data.\n"
+"@end menu"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/guile.texi:352
+msgid ""
+"@include api-overview.texi\n"
+"@include api-deprecated.texi\n"
+"@include api-scm.texi\n"
+"@include api-init.texi\n"
+"@include api-snarf.texi\n"
+"@include api-data.texi\n"
+"@include api-foreign-objects.texi\n"
+"@include api-smobs.texi\n"
+"@include api-procedures.texi\n"
+"@include api-macros.texi\n"
+"@include api-utility.texi\n"
+"@include api-binding.texi\n"
+"@include api-control.texi\n"
+"@include api-io.texi\n"
+"@include api-regex.texi\n"
+"@include api-lalr.texi\n"
+"@include api-peg.texi\n"
+"@include api-evaluation.texi\n"
+"@include api-memory.texi\n"
+"@include api-modules.texi\n"
+"@include api-foreign.texi\n"
+"@include api-scheduling.texi\n"
+"@c object orientation support here\n"
+"@include api-options.texi\n"
+"@include api-languages.texi\n"
+"@include api-i18n.texi\n"
+"@include api-debug.texi\n"
+"@include api-coverage.texi"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/guile.texi:355
+msgid ""
+"@node Guile Modules\n"
+"@chapter Guile Modules"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/guile.texi:379
+msgid ""
+"@menu\n"
+"* SLIB::                        Using the SLIB Scheme library.\n"
+"* POSIX::                       POSIX system calls and networking.\n"
+"* Web::                         HTTP, the web, and all that.\n"
+"* getopt-long::                 Command line handling.\n"
+"* SRFI Support::                Support for various SRFIs.\n"
+"* R6RS Support::                Modules defined by the R6RS.\n"
+"* Pattern Matching::            Generic pattern matching constructs.\n"
+"* Readline Support::            Module for using the readline library.\n"
+"* Pretty Printing::             Nicely formatting Scheme objects for "
+"output.\n"
+"* Formatted Output::            The @code{format} procedure.\n"
+"* File Tree Walk::              Traversing the file system.\n"
+"* Queues::                      First-in first-out queuing.\n"
+"* Streams::                     Sequences of values.\n"
+"* Buffered Input::              Ports made from a reader function.\n"
+"* Expect::\t\t\tControlling interactive programs with Guile.\n"
+"* sxml-match::                  Pattern matching of SXML.\n"
+"* The Scheme shell (scsh)::     Using scsh interfaces in Guile.\n"
+"* Curried Definitions::         Extended @code{define} syntax.\n"
+"* Statprof::                    An easy-to-use statistical profiler.\n"
+"* SXML::                        Parsing, transforming, and serializing XML.\n"
+"* Texinfo Processing::          Munging documents written in Texinfo.\n"
+"@end menu"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/guile.texi:390
+msgid ""
+"@include slib.texi\n"
+"@include posix.texi\n"
+"@include web.texi\n"
+"@include mod-getopt-long.texi\n"
+"@include srfi-modules.texi\n"
+"@include r6rs.texi\n"
+"@include match.texi\n"
+"@include repl-modules.texi\n"
+"@include misc-modules.texi\n"
+"@include expect.texi"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/guile.texi:393
+msgid ""
+"@c XXX: Would be nicer if it were close to the (sxml simple) documentation.\n"
+"@include sxml-match.texi"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/guile.texi:396
+msgid ""
+"@include scsh.texi\n"
+"@include curried.texi"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/guile.texi:400
+msgid ""
+"@include statprof.texi\n"
+"@include sxml.texi\n"
+"@include texinfo.texi"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/guile.texi:402
+msgid "@include goops.texi"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/guile.texi:405
+msgid ""
+"@node Guile Implementation\n"
+"@chapter Guile Implementation"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/guile.texi:415
+msgid ""
+"At some point, after one has been programming in Scheme for some time,\n"
+"another level of Scheme comes into view: its implementation. Knowledge\n"
+"of how Scheme can be implemented turns out to be necessary to become\n"
+"an expert hacker. As Peter Norvig notes in his retrospective on\n"
+"PAIP@footnote{PAIP is the common abbreviation for @cite{Paradigms of\n"
+"Artificial Intelligence Programming}, an old but still useful text on\n"
+"Lisp. Norvig's retrospective sums up the lessons of PAIP, and can be\n"
+"found at @uref{http://norvig.com/Lisp-retro.html}.}, ``The expert Lisp\n"
+"programmer eventually develops a good `efficiency model'.''"
+msgstr ""
+"В какой-то момент, после того, как вы начали программировать на Scheme,\n"
+"на другом уровне Scheme знание реализации: того как Scheme реализована,\n"
+"оказывается необходимым что бы стать экспертом-хакером. Как отмечает\n"
+"Peter Norvig в своей ретроспективе PAIP@footnote{PAIP это абревиатура\n"
+"для @cite{Paradigms of Artificial Intelligence Programming}, старый,\n"
+"но полезный текст на Lisp. Ретроспектива Norvig суммирует уроки\n"
+"PAIP, и может быть найдена на @uref{http://norvig.com/Lisp-retro.html}.}, \n"
+"``Эксперт-программист Lisp в конечном итоге развивает хорошую \n"
+"`модель эффективности'.''"
+
+#: /home/bear/work/guile/doc/guile/en/guile.texi:419
+msgid ""
+"By this Norvig means that over time, the Lisp hacker eventually\n"
+"develops an understanding of how much her code ``costs'' in terms of\n"
+"space and time."
+msgstr ""
+"Благодаря этому Норвиг отмечает, что со временем, хакер Lisp в конечном\n"
+"итоге развивает понимание чего стоит его код с точки зрения пространства\n"
+"и времени."
+
+#: /home/bear/work/guile/doc/guile/en/guile.texi:424
+msgid ""
+"This chapter describes Guile as an implementation of Scheme: its\n"
+"history, how it represents and evaluates its data, and its compiler.\n"
+"This knowledge can help you to make that step from being one who is\n"
+"merely familiar with Scheme to being a real hacker."
+msgstr ""
+"Эта глава описывает Guile как реализацию Scheme: ее историю,\n"
+"ее представление и оценивает ее данные и ее компилятор.\n"
+"Эти знания помогут вам сделать шаг от того чтобы просто быть\n"
+"знакомым со Scheme к уровню настоящего хакера."
+
+#: /home/bear/work/guile/doc/guile/en/guile.texi:431
+msgid ""
+"@menu\n"
+"* History::                          A brief history of Guile.\n"
+"* Data Representation::              How Guile represents Scheme data.\n"
+"* A Virtual Machine for Guile::      How compiled procedures work.\n"
+"* Compiling to the Virtual Machine:: Not as hard as you might think.\n"
+"@end menu"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/guile.texi:436
+msgid ""
+"@include history.texi\n"
+"@include data-rep.texi\n"
+"@include vm.texi\n"
+"@include compiler.texi"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/guile.texi:439
+msgid ""
+"@node GNU Free Documentation License\n"
+"@appendix GNU Free Documentation License"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/guile.texi:441
+msgid "@include fdl.texi"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/guile.texi:444
+msgid ""
+"@include indices.texi\n"
+"@include scheme-indices.texi"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/guile.texi:445
+msgid "@bye"
+msgstr ""

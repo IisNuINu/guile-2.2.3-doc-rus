@@ -1,0 +1,338 @@
+#
+# NuINu <don't@send.my>, 2018.
+#
+#. extracted from /home/bear/work/guile/doc/guile/en/api-snarf.texi
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2018-05-07 12:37+0300\n"
+"PO-Revision-Date: 2018-12-24 09:14+0300\n"
+"Last-Translator: NuINu <don't@send.my>\n"
+"Language-Team: Russian <don't@send.my>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Generator: Gtranslator 2.91.7\n"
+"Plural-Forms: nplurals=5; plural=n==1 ? 0 : n==2 ? 1 : n<7 ? 2 : n<11 ? 3 : "
+"4;\n"
+
+#: /home/bear/work/guile/doc/guile/en/api-snarf.texi:6
+msgid ""
+"@c -*-texinfo-*-\n"
+"@c This is part of the GNU Guile Reference Manual.\n"
+"@c Copyright (C)  1996, 1997, 2000, 2001, 2002, 2003, 2004\n"
+"@c   Free Software Foundation, Inc.\n"
+"@c See the file guile.texi for copying conditions."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-snarf.texi:12
+msgid ""
+"@node Snarfing Macros\n"
+"@section Snarfing Macros\n"
+"@cindex guile-snarf recognized macros\n"
+"@cindex guile-snarf deprecated macros"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-snarf.texi:17
+msgid ""
+"The following macros do two different things: when compiled normally,\n"
+"they expand in one way; when processed during snarfing, they cause the\n"
+"@code{guile-snarf} program to pick up some initialization code,\n"
+"@xref{Function Snarfing}."
+msgstr ""
+"Следующие макросы выполняют две разные функции: при обычной компиляции,\n"
+"они расширяются одним способом; при обработке во время snarfing'а, они "
+"приводят\n"
+"к тому что программа @code{guile-snarf} подхватывает(присоединяет) немного \n"
+"инициализационного кода, @xref{Function Snarfing}."
+
+#: /home/bear/work/guile/doc/guile/en/api-snarf.texi:21
+msgid ""
+"The descriptions below use the term `normally' to refer to the case\n"
+"when the code is compiled normally, and `while snarfing' when the code\n"
+"is processed by @code{guile-snarf}."
+msgstr ""
+"В описаниях ниже используется термин `обычно' для обозначения случая, когда\n"
+"код компилируется нормально, и `во время snarfing'а', когда код "
+"обрабатывается\n"
+"программой @code{guile-snarf}."
+
+#: /home/bear/work/guile/doc/guile/en/api-snarf.texi:23
+msgid "@deffn {C Macro} SCM_SNARF_INIT (code)"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-snarf.texi:27
+msgid ""
+"Normally, @code{SCM_SNARF_INIT} expands to nothing; while snarfing, it\n"
+"causes @var{code} to be included in the initialization action file,\n"
+"followed by a semicolon."
+msgstr ""
+"Обычно, @code{SCM_SNARF_INIT} расширяется в ноль(т.е ничего не дает на "
+"выходе); во время snarfing, он\n"
+"заставляет включить @var{code} в файл действий по инициализации,\n"
+"после которого ставиться точка с запятой."
+
+#: /home/bear/work/guile/doc/guile/en/api-snarf.texi:31
+msgid ""
+"This is the fundamental macro for snarfing initialization actions.\n"
+"The more specialized macros below use it internally.\n"
+"@end deffn"
+msgstr ""
+"Это фундаментальный макрос для упрощения(snarfing) действий инициализации.\n"
+"Более специализированный макросы ниже используют его внутри себя.\n"
+"@end deffn"
+
+#: /home/bear/work/guile/doc/guile/en/api-snarf.texi:34
+msgid ""
+"@deffn {C Macro} SCM_DEFINE (c_name, scheme_name, req, opt, var, arglist, "
+"docstring)"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-snarf.texi:36
+msgid "Normally, this macro expands into"
+msgstr "Обычно, макрос расширяется в"
+
+#: /home/bear/work/guile/doc/guile/en/api-snarf.texi:42
+msgid ""
+"@smallexample\n"
+"static const char s_@var{c_name}[] = @var{scheme_name};\n"
+"SCM\n"
+"@var{c_name} @var{arglist}\n"
+"@end smallexample"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-snarf.texi:44
+msgid "While snarfing, it causes"
+msgstr "во время snarfing'а, он вызывает"
+
+#: /home/bear/work/guile/doc/guile/en/api-snarf.texi:49
+msgid ""
+"@smallexample\n"
+"scm_c_define_gsubr (s_@var{c_name}, @var{req}, @var{opt}, @var{var},\n"
+"                    @var{c_name});\n"
+"@end smallexample"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-snarf.texi:53
+msgid ""
+"to be added to the initialization actions.  Thus, you can use it to\n"
+"declare a C function named @var{c_name} that will be made available to\n"
+"Scheme with the name @var{scheme_name}."
+msgstr ""
+"добавление к действиям инициализации.  Таким образом, вы можете использовать "
+"его\n"
+"для объявления Си функции с именем @var{c_name}, которое будет доступно\n"
+"Scheme с именем @var{scheme_name}."
+
+#: /home/bear/work/guile/doc/guile/en/api-snarf.texi:56
+msgid ""
+"Note that the @var{arglist} argument must have parentheses around it.\n"
+"@end deffn"
+msgstr ""
+"Обратите внимание, что аргумент @var{arglist} должен иметь круглые скобки "
+"вокруг себя.\n"
+"@end deffn"
+
+#: /home/bear/work/guile/doc/guile/en/api-snarf.texi:60
+msgid ""
+"@deffn {C Macro} SCM_SYMBOL (c_name, scheme_name)\n"
+"@deffnx {C Macro} SCM_GLOBAL_SYMBOL (c_name, scheme_name)\n"
+"Normally, these macros expand into"
+msgstr ""
+"@deffn {C Macro} SCM_SYMBOL (c_name, scheme_name)\n"
+"@deffnx {C Macro} SCM_GLOBAL_SYMBOL (c_name, scheme_name)\n"
+"Обычно, эти макросы расширяются в"
+
+#: /home/bear/work/guile/doc/guile/en/api-snarf.texi:64
+msgctxt "/home/bear/work/guile/doc/guile/en/api-snarf.texi:64"
+msgid ""
+"@smallexample\n"
+"static SCM @var{c_name}\n"
+"@end smallexample"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-snarf.texi:66
+msgctxt "/home/bear/work/guile/doc/guile/en/api-snarf.texi:66"
+msgid "or"
+msgstr "или"
+
+#: /home/bear/work/guile/doc/guile/en/api-snarf.texi:70
+msgctxt "/home/bear/work/guile/doc/guile/en/api-snarf.texi:70"
+msgid ""
+"@smallexample\n"
+"SCM @var{c_name}\n"
+"@end smallexample"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-snarf.texi:73
+msgctxt "/home/bear/work/guile/doc/guile/en/api-snarf.texi:73"
+msgid ""
+"respectively.  While snarfing, they both expand into the\n"
+"initialization code"
+msgstr ""
+"соответственно. Во время snarfing'а, они оба расширяются в \n"
+"код инициализации"
+
+#: /home/bear/work/guile/doc/guile/en/api-snarf.texi:77
+msgid ""
+"@smallexample\n"
+"@var{c_name} = scm_permanent_object (scm_from_locale_symbol "
+"(@var{scheme_name}));\n"
+"@end smallexample"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-snarf.texi:82
+msgid ""
+"Thus, you can use them declare a static or global variable of type\n"
+"@code{SCM} that will be initialized to the symbol named\n"
+"@var{scheme_name}.\n"
+"@end deffn"
+msgstr ""
+"Таким образом, вы можете использовать их для объявления статической или "
+"глобальной\n"
+"переменной типа @code{SCM}, которая будет инициализироваться символом с "
+"именем\n"
+"@var{scheme_name}.\n"
+"@end deffn"
+
+#: /home/bear/work/guile/doc/guile/en/api-snarf.texi:86
+msgid ""
+"@deffn {C Macro} SCM_KEYWORD (c_name, scheme_name)\n"
+"@deffnx {C Macro} SCM_GLOBAL_KEYWORD (c_name, scheme_name)\n"
+"Normally, these macros expand into"
+msgstr ""
+"@deffn {C Macro} SCM_KEYWORD (c_name, scheme_name)\n"
+"@deffnx {C Macro} SCM_GLOBAL_KEYWORD (c_name, scheme_name)\n"
+"Обычно, эти макросы расширяются в"
+
+#: /home/bear/work/guile/doc/guile/en/api-snarf.texi:90
+msgctxt "/home/bear/work/guile/doc/guile/en/api-snarf.texi:90"
+msgid ""
+"@smallexample\n"
+"static SCM @var{c_name}\n"
+"@end smallexample"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-snarf.texi:92
+msgctxt "/home/bear/work/guile/doc/guile/en/api-snarf.texi:92"
+msgid "or"
+msgstr "или"
+
+#: /home/bear/work/guile/doc/guile/en/api-snarf.texi:96
+msgctxt "/home/bear/work/guile/doc/guile/en/api-snarf.texi:96"
+msgid ""
+"@smallexample\n"
+"SCM @var{c_name}\n"
+"@end smallexample"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-snarf.texi:99
+msgctxt "/home/bear/work/guile/doc/guile/en/api-snarf.texi:99"
+msgid ""
+"respectively.  While snarfing, they both expand into the\n"
+"initialization code"
+msgstr ""
+"соответственно.  Во время snarfing'а, они оба расширяются в код\n"
+"инициализации"
+
+#: /home/bear/work/guile/doc/guile/en/api-snarf.texi:103
+msgid ""
+"@smallexample\n"
+"@var{c_name} = scm_permanent_object (scm_c_make_keyword "
+"(@var{scheme_name}));\n"
+"@end smallexample"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-snarf.texi:108
+msgid ""
+"Thus, you can use them declare a static or global variable of type\n"
+"@code{SCM} that will be initialized to the keyword named\n"
+"@var{scheme_name}.\n"
+"@end deffn"
+msgstr ""
+"Таким образом, вы можете использовать их для объявления статической или\n"
+"глобальной переменной @code{SCM} типа, которая будет инициализироваться\n"
+"ключевым словом с именем @var{scheme_name}.\n"
+"@end deffn"
+
+#: /home/bear/work/guile/doc/guile/en/api-snarf.texi:115
+msgid ""
+"@deffn {C Macro} SCM_VARIABLE (c_name, scheme_name)\n"
+"@deffnx {C Macro} SCM_GLOBAL_VARIABLE (c_name, scheme_name)\n"
+"These macros are equivalent to @code{SCM_VARIABLE_INIT} and\n"
+"@code{SCM_GLOBAL_VARIABLE_INIT}, respectively, with a @var{value} of\n"
+"@code{SCM_BOOL_F}.\n"
+"@end deffn"
+msgstr ""
+"@deffn {C Macro} SCM_VARIABLE (c_name, scheme_name)\n"
+"@deffnx {C Macro} SCM_GLOBAL_VARIABLE (c_name, scheme_name)\n"
+"Эти макросы эквивалентны макросам @code{SCM_VARIABLE_INIT} и\n"
+"@code{SCM_GLOBAL_VARIABLE_INIT}, соответственно, со значачением @var{value} "
+"равной\n"
+"@code{SCM_BOOL_F}.\n"
+"@end deffn"
+
+#: /home/bear/work/guile/doc/guile/en/api-snarf.texi:118
+msgid ""
+"@deffn {C Macro} SCM_VARIABLE_INIT (c_name, scheme_name, value)\n"
+"@deffnx {C Macro} SCM_GLOBAL_VARIABLE_INIT (c_name, scheme_name, value)"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-snarf.texi:120
+msgid "Normally, these macros expand into"
+msgstr "Обычно эти макросы расширяются в"
+
+#: /home/bear/work/guile/doc/guile/en/api-snarf.texi:124
+msgctxt "/home/bear/work/guile/doc/guile/en/api-snarf.texi:124"
+msgid ""
+"@smallexample\n"
+"static SCM @var{c_name}\n"
+"@end smallexample"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-snarf.texi:126
+msgctxt "/home/bear/work/guile/doc/guile/en/api-snarf.texi:126"
+msgid "or"
+msgstr "или"
+
+#: /home/bear/work/guile/doc/guile/en/api-snarf.texi:130
+msgctxt "/home/bear/work/guile/doc/guile/en/api-snarf.texi:130"
+msgid ""
+"@smallexample\n"
+"SCM @var{c_name}\n"
+"@end smallexample"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-snarf.texi:133
+msgctxt "/home/bear/work/guile/doc/guile/en/api-snarf.texi:133"
+msgid ""
+"respectively.  While snarfing, they both expand into the\n"
+"initialization code"
+msgstr ""
+"соответственно.  А во время snarfing, они оба расширяются в код\n"
+"инициализации"
+
+#: /home/bear/work/guile/doc/guile/en/api-snarf.texi:137
+msgid ""
+"@smallexample\n"
+"@var{c_name} = scm_permanent_object (scm_c_define (@var{scheme_name}, "
+"@var{value}));\n"
+"@end smallexample"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-snarf.texi:143
+msgid ""
+"Thus, you can use them declare a static or global C variable of type\n"
+"@code{SCM} that will be initialized to the object representing the\n"
+"Scheme variable named @var{scheme_name} in the current module.  The\n"
+"variable will be defined when it doesn't already exist.  It is always\n"
+"set to @var{value}.\n"
+"@end deffn"
+msgstr ""
+"Таким образом, вы можете использовать их для объявления статической или\n"
+"глобальной Си переменной типа @code{SCM}, которая будет инициализирована\n"
+"для объекта представляющего переменную Scheme с именем @var{scheme_name}\n"
+"в текущем модуле.  Переменная будет определена когда она еще не существует.\n"
+"Она всегда установлена в значение @var{value}.\n"
+"@end deffn"

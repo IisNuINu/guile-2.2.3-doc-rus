@@ -1,0 +1,678 @@
+#. extracted from /home/bear/work/guile/doc/guile/en/api-memory.texi
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2018-05-07 12:36+0300\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Generator: Translate Toolkit 2.2.5\n"
+
+#: /home/bear/work/guile/doc/guile/en/api-memory.texi:6
+msgid ""
+"@c -*-texinfo-*-\n"
+"@c This is part of the GNU Guile Reference Manual.\n"
+"@c Copyright (C)  1996, 1997, 2000-2004, 2009, 2010, 2012-2016\n"
+"@c   Free Software Foundation, Inc.\n"
+"@c See the file guile.texi for copying conditions."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-memory.texi:9
+msgid ""
+"@node Memory Management\n"
+"@section Memory Management and Garbage Collection"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-memory.texi:13
+msgid ""
+"Guile uses a @emph{garbage collector} to manage most of its objects.\n"
+"While the garbage collector is designed to be mostly invisible, you \n"
+"sometimes need to interact with it explicitly."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-memory.texi:16
+msgid ""
+"See @ref{Garbage Collection} for a general discussion of how garbage\n"
+"collection relates to using Guile from C."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-memory.texi:23
+msgid ""
+"@menu\n"
+"* Garbage Collection Functions::\n"
+"* Memory Blocks::\n"
+"* Weak References::\n"
+"* Guardians::\n"
+"@end menu"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-memory.texi:27
+msgid ""
+"@node Garbage Collection Functions\n"
+"@subsection Function related to Garbage Collection"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-memory.texi:35
+msgid ""
+"@deffn {Scheme Procedure} gc\n"
+"@deffnx {C Function} scm_gc ()\n"
+"Finds all of the ``live'' @code{SCM} objects and reclaims for further\n"
+"use those that are no longer accessible.  You normally don't need to\n"
+"call this function explicitly.  Its functionality is invoked\n"
+"automatically as needed.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-memory.texi:44
+msgid ""
+"@deftypefn {C Function} SCM scm_gc_protect_object (SCM @var{obj})\n"
+"Protects @var{obj} from being freed by the garbage collector, when it\n"
+"otherwise might be.  When you are done with the object, call\n"
+"@code{scm_gc_unprotect_object} on the object. Calls to\n"
+"@code{scm_gc_protect_object}/@code{scm_gc_unprotect_object} can be nested, "
+"and\n"
+"the object remains protected until it has been unprotected as many times\n"
+"as it was protected. It is an error to unprotect an object more times\n"
+"than it has been protected. Returns the SCM object it was passed."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-memory.texi:51
+msgid ""
+"Note that storing @var{obj} in a C global variable has the same\n"
+"effect@footnote{In Guile up to version 1.8, C global variables were not\n"
+"visited by the garbage collector in the mark phase; hence,\n"
+"@code{scm_gc_protect_object} was the only way in C to prevent a Scheme\n"
+"object from being freed.}.\n"
+"@end deftypefn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-memory.texi:53
+msgid "@deftypefn {C Function} SCM scm_gc_unprotect_object (SCM @var{obj})"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-memory.texi:57
+msgid ""
+"Unprotects an object from the garbage collector which was protected by\n"
+"@code{scm_gc_unprotect_object}. Returns the SCM object it was passed.\n"
+"@end deftypefn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-memory.texi:59
+msgid "@deftypefn {C Function} SCM scm_permanent_object (SCM @var{obj})"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-memory.texi:67
+msgid ""
+"Similar to @code{scm_gc_protect_object} in that it causes the\n"
+"collector to always mark the object, except that it should not be\n"
+"nested (only call @code{scm_permanent_object} on an object once), and\n"
+"it has no corresponding unpermanent function. Once an object is\n"
+"declared permanent, it will never be freed. Returns the SCM object it\n"
+"was passed.\n"
+"@end deftypefn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-memory.texi:72
+msgid ""
+"@c  NOTE: The varargs scm_remember_upto_here is deliberately not\n"
+"@c  documented, because we don't think it can be implemented as a nice\n"
+"@c  inline compiler directive or asm block.  New _3, _4 or whatever\n"
+"@c  forms could certainly be added though, if needed."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-memory.texi:78
+msgid ""
+"@deftypefn {C Macro} void scm_remember_upto_here_1 (SCM obj)\n"
+"@deftypefnx {C Macro} void scm_remember_upto_here_2 (SCM obj1, SCM obj2)\n"
+"Create a reference to the given object or objects, so they're certain\n"
+"to be present on the stack or in a register and hence will not be\n"
+"freed by the garbage collector before this point."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-memory.texi:84
+msgid ""
+"Note that these functions can only be applied to ordinary C local\n"
+"variables (ie.@: ``automatics'').  Objects held in global or static\n"
+"variables or some malloced block or the like cannot be protected with\n"
+"this mechanism.\n"
+"@end deftypefn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-memory.texi:90
+msgid ""
+"@deffn {Scheme Procedure} gc-stats\n"
+"@deffnx {C Function} scm_gc_stats ()\n"
+"Return an association list of statistics about Guile's current\n"
+"use of storage.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-memory.texi:95
+msgid ""
+"@deffn {Scheme Procedure} gc-live-object-stats\n"
+"@deffnx {C Function} scm_gc_live_object_stats ()\n"
+"Return an alist of statistics of the current live objects. \n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-memory.texi:102
+msgid ""
+"@deftypefun void scm_gc_mark (SCM @var{x})\n"
+"Mark the object @var{x}, and recurse on any objects @var{x} refers to.\n"
+"If @var{x}'s mark bit is already set, return immediately.  This function\n"
+"must only be called during the mark-phase of garbage collection,\n"
+"typically from a smob @emph{mark} function.\n"
+"@end deftypefun"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-memory.texi:106
+msgid ""
+"@node Memory Blocks\n"
+"@subsection Memory Blocks"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-memory.texi:110
+msgid ""
+"@cindex automatically-managed memory\n"
+"@cindex GC-managed memory\n"
+"@cindex conservative garbage collection"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-memory.texi:115
+msgid ""
+"In C programs, dynamic management of memory blocks is normally done\n"
+"with the functions malloc, realloc, and free.  Guile has additional\n"
+"functions for dynamic memory allocation that are integrated into the\n"
+"garbage collector and the error reporting system."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-memory.texi:127
+msgid ""
+"Memory blocks that are associated with Scheme objects (for example a\n"
+"foreign object) should be allocated with @code{scm_gc_malloc} or\n"
+"@code{scm_gc_malloc_pointerless}.  These two functions will either\n"
+"return a valid pointer or signal an error.  Memory blocks allocated this\n"
+"way may be released explicitly; however, this is not strictly needed,\n"
+"and we recommend @emph{not} calling @code{scm_gc_free}.  All memory\n"
+"allocated with @code{scm_gc_malloc} or @code{scm_gc_malloc_pointerless}\n"
+"is automatically reclaimed when the garbage collector no longer sees any\n"
+"live reference to it@footnote{In Guile up to version 1.8, memory\n"
+"allocated with @code{scm_gc_malloc} @emph{had} to be freed with\n"
+"@code{scm_gc_free}.}."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-memory.texi:140
+msgid ""
+"When garbage collection occurs, Guile will visit the words in memory\n"
+"allocated with @code{scm_gc_malloc}, looking for live pointers.  This\n"
+"means that if @code{scm_gc_malloc}-allocated memory contains a pointer\n"
+"to some other part of the memory, the garbage collector notices it and\n"
+"prevents it from being reclaimed@footnote{In Guile up to 1.8, memory\n"
+"allocated with @code{scm_gc_malloc} was @emph{not} visited by the\n"
+"collector in the mark phase.  Consequently, the GC had to be told\n"
+"explicitly about pointers to live objects contained in the memory block,\n"
+"e.g., @i{via} SMOB mark functions (@pxref{Smobs,\n"
+"@code{scm_set_smob_mark}})}.  Conversely, memory allocated with\n"
+"@code{scm_gc_malloc_pointerless} is assumed to be ``pointer-less'' and\n"
+"is not scanned for pointers."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-memory.texi:147
+msgid ""
+"For memory that is not associated with a Scheme object, you can use\n"
+"@code{scm_malloc} instead of @code{malloc}.  Like\n"
+"@code{scm_gc_malloc}, it will either return a valid pointer or signal\n"
+"an error.  However, it will not assume that the new memory block can\n"
+"be freed by a garbage collection.  The memory must be explicitly freed\n"
+"with @code{free}."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-memory.texi:152
+msgid ""
+"There is also @code{scm_gc_realloc} and @code{scm_realloc}, to be used\n"
+"in place of @code{realloc} when appropriate, and @code{scm_gc_calloc}\n"
+"and @code{scm_calloc}, to be used in place of @code{calloc} when\n"
+"appropriate."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-memory.texi:156
+msgid ""
+"The function @code{scm_dynwind_free} can be useful when memory should be\n"
+"freed with libc's @code{free} when leaving a dynwind context,\n"
+"@xref{Dynamic Wind}."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-memory.texi:163
+msgid ""
+"@deftypefn {C Function} {void *} scm_malloc (size_t @var{size})\n"
+"@deftypefnx {C Function} {void *} scm_calloc (size_t @var{size})\n"
+"Allocate @var{size} bytes of memory and return a pointer to it.  When\n"
+"@var{size} is 0, return @code{NULL}.  When not enough memory is\n"
+"available, signal an error.  This function runs the GC to free up some\n"
+"memory when it deems it appropriate."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-memory.texi:168
+msgid ""
+"The memory is allocated by the libc @code{malloc} function and can be\n"
+"freed with @code{free}.  There is no @code{scm_free} function to go\n"
+"with @code{scm_malloc} to make it easier to pass memory back and forth\n"
+"between different modules.  "
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-memory.texi:171
+msgid ""
+"The function @code{scm_calloc} is similar to @code{scm_malloc}, but\n"
+"initializes the block of memory to zero as well."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-memory.texi:175
+msgid ""
+"These functions will (indirectly) call\n"
+"@code{scm_gc_register_allocation}.\n"
+"@end deftypefn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-memory.texi:182
+msgid ""
+"@deftypefn {C Function} {void *} scm_realloc (void *@var{mem}, size_t "
+"@var{new_size})\n"
+"Change the size of the memory block at @var{mem} to @var{new_size} and\n"
+"return its new location.  When @var{new_size} is 0, this is the same\n"
+"as calling @code{free} on @var{mem} and @code{NULL} is returned.  When\n"
+"@var{mem} is @code{NULL}, this function behaves like @code{scm_malloc}\n"
+"and allocates a new block of size @var{new_size}."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-memory.texi:185
+msgid ""
+"When not enough memory is available, signal an error.  This function\n"
+"runs the GC to free up some memory when it deems it appropriate."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-memory.texi:188
+msgid ""
+"This function will call @code{scm_gc_register_allocation}.\n"
+"@end deftypefn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-memory.texi:199
+msgid ""
+"@deftypefn {C Function} {void *} scm_gc_malloc (size_t @var{size}, const "
+"char *@var{what})\n"
+"@deftypefnx {C Function} {void *} scm_gc_malloc_pointerless (size_t "
+"@var{size}, const char *@var{what})\n"
+"@deftypefnx {C Function} {void *} scm_gc_realloc (void *@var{mem}, size_t "
+"@var{old_size}, size_t @var{new_size}, const char *@var{what});\n"
+"@deftypefnx {C Function} {void *} scm_gc_calloc (size_t @var{size}, const "
+"char *@var{what})\n"
+"Allocate @var{size} bytes of automatically-managed memory.  The memory\n"
+"is automatically freed when no longer referenced from any live memory\n"
+"block."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-memory.texi:205
+msgid ""
+"When garbage collection occurs, Guile will visit the words in memory\n"
+"allocated with @code{scm_gc_malloc} or @code{scm_gc_calloc}, looking for\n"
+"pointers to other memory allocations that are managed by the GC.  In\n"
+"contrast, memory allocated by @code{scm_gc_malloc_pointerless} is not\n"
+"scanned for pointers."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-memory.texi:210
+msgid ""
+"The @code{scm_gc_realloc} call preserves the ``pointerlessness'' of the\n"
+"memory area pointed to by @var{mem}.  Note that you need to pass the old\n"
+"size of a reallocated memory block as well.  See below for a motivation.\n"
+"@end deftypefn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-memory.texi:217
+msgid ""
+"@deftypefn {C Function} void scm_gc_free (void *@var{mem}, size_t @var{size}"
+", const char *@var{what})\n"
+"Explicitly free the memory block pointed to by @var{mem}, which was\n"
+"previously allocated by one of the above @code{scm_gc} functions.  This\n"
+"function is almost always unnecessary, except for codebases that still\n"
+"need to compile on Guile 1.8."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-memory.texi:224
+msgid ""
+"Note that you need to explicitly pass the @var{size} parameter.  This\n"
+"is done since it should normally be easy to provide this parameter\n"
+"(for memory that is associated with GC controlled objects) and help keep\n"
+"the memory management overhead very low.  However, in Guile 2.x,\n"
+"@var{size} is always ignored.\n"
+"@end deftypefn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-memory.texi:229
+msgid ""
+"@deftypefn {C Function} void scm_gc_register_allocation (size_t @var{size})\n"
+"Informs the garbage collector that @var{size} bytes have been allocated,\n"
+"which the collector would otherwise not have known about."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-memory.texi:234
+msgid ""
+"In general, Scheme will decide to collect garbage only after some amount\n"
+"of memory has been allocated.  Calling this function will make the\n"
+"Scheme garbage collector know about more allocation, and thus run more\n"
+"often (as appropriate)."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-memory.texi:239
+msgid ""
+"It is especially important to call this function when large unmanaged\n"
+"allocations, like images, may be freed by small Scheme allocations, like\n"
+"foreign objects.\n"
+"@end deftypefn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-memory.texi:247
+msgid ""
+"@deftypefn {C Function} void scm_dynwind_free (void *mem)\n"
+"Equivalent to @code{scm_dynwind_unwind_handler (free, @var{mem},\n"
+"SCM_F_WIND_EXPLICITLY)}.  That is, the memory block at @var{mem} will be\n"
+"freed (using @code{free} from the C library) when the current dynwind is\n"
+"left.\n"
+"@end deftypefn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-memory.texi:254
+msgid ""
+"@deffn {Scheme Procedure} malloc-stats\n"
+"Return an alist ((@var{what} . @var{n}) ...) describing number\n"
+"of malloced objects.\n"
+"@var{what} is the second argument to @code{scm_gc_malloc},\n"
+"@var{n} is the number of objects of that type currently\n"
+"allocated."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-memory.texi:258
+msgid ""
+"This function is only available if the @code{GUILE_DEBUG_MALLOC}\n"
+"preprocessor macro was defined when Guile was compiled.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-memory.texi:262
+msgid ""
+"@node Weak References\n"
+"@subsection Weak References"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-memory.texi:265
+msgid ""
+"[FIXME: This chapter is based on Mikael Djurfeldt's answer to a\n"
+"question by Michael Livshin. Any mistakes are not theirs, of course. ]"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-memory.texi:274
+msgid ""
+"Weak references let you attach bookkeeping information to data so that\n"
+"the additional information automatically disappears when the original\n"
+"data is no longer in use and gets garbage collected. In a weak key hash,\n"
+"the hash entry for that key disappears as soon as the key is no longer\n"
+"referenced from anywhere else. For weak value hashes, the same happens\n"
+"as soon as the value is no longer in use. Entries in a doubly weak hash\n"
+"disappear when either the key or the value are not used anywhere else\n"
+"anymore."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-memory.texi:277
+msgid ""
+"Object properties offer the same kind of functionality as weak key\n"
+"hashes in many situations. (@pxref{Object Properties})"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-memory.texi:280
+msgid ""
+"Here's an example (a little bit strained perhaps, but one of the\n"
+"examples is actually used in Guile):"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-memory.texi:284
+msgid ""
+"Assume that you're implementing a debugging system where you want to\n"
+"associate information about filename and position of source code\n"
+"expressions with the expressions themselves."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-memory.texi:288
+msgid ""
+"Hashtables can be used for that, but if you use ordinary hash tables\n"
+"it will be impossible for the scheme interpreter to \"forget\" old\n"
+"source when, for example, a file is reloaded."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-memory.texi:292
+msgid ""
+"To implement the mapping from source code expressions to positional\n"
+"information it is necessary to use weak-key tables since we don't want\n"
+"the expressions to be remembered just because they are in our table."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-memory.texi:295
+msgid ""
+"To implement a mapping from source file line numbers to source code\n"
+"expressions you would use a weak-value table."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-memory.texi:298
+msgid ""
+"To implement a mapping from source code expressions to the procedures\n"
+"they constitute a doubly-weak table has to be used."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-memory.texi:303
+msgid ""
+"@menu\n"
+"* Weak hash tables::\n"
+"* Weak vectors::\n"
+"@end menu"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-memory.texi:307
+msgid ""
+"@node Weak hash tables\n"
+"@subsubsection Weak hash tables"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-memory.texi:317
+msgid ""
+"@deffn {Scheme Procedure} make-weak-key-hash-table [size]\n"
+"@deffnx {Scheme Procedure} make-weak-value-hash-table [size]\n"
+"@deffnx {Scheme Procedure} make-doubly-weak-hash-table [size]\n"
+"@deffnx {C Function} scm_make_weak_key_hash_table (size)\n"
+"@deffnx {C Function} scm_make_weak_value_hash_table (size)\n"
+"@deffnx {C Function} scm_make_doubly_weak_hash_table (size)\n"
+"Return a weak hash table with @var{size} buckets. As with any\n"
+"hash table, choosing a good size for the table requires some\n"
+"caution."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-memory.texi:324
+msgid ""
+"You can modify weak hash tables in exactly the same way you would modify\n"
+"regular hash tables, with the exception of the routines that act on\n"
+"handles.  Weak tables have a different implementation behind the scenes\n"
+"that doesn't have handles.  @pxref{Hash Tables}, for more on\n"
+"@code{hashq-ref} et al.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-memory.texi:329
+msgid ""
+"Note that in a weak-key hash table, the reference to the value is\n"
+"strong.  This means that if the value references the key, even\n"
+"indirectly, the key will never be collected, which can lead to a memory\n"
+"leak.  The reverse is true for weak value tables."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-memory.texi:340
+msgid ""
+"@deffn {Scheme Procedure} weak-key-hash-table? obj\n"
+"@deffnx {Scheme Procedure} weak-value-hash-table? obj\n"
+"@deffnx {Scheme Procedure} doubly-weak-hash-table? obj\n"
+"@deffnx {C Function} scm_weak_key_hash_table_p (obj)\n"
+"@deffnx {C Function} scm_weak_value_hash_table_p (obj)\n"
+"@deffnx {C Function} scm_doubly_weak_hash_table_p (obj)\n"
+"Return @code{#t} if @var{obj} is the specified weak hash\n"
+"table. Note that a doubly weak hash table is neither a weak key\n"
+"nor a weak value hash table.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-memory.texi:343
+msgid ""
+"@node Weak vectors\n"
+"@subsubsection Weak vectors"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-memory.texi:351
+msgid ""
+"@deffn {Scheme Procedure} make-weak-vector size [fill]\n"
+"@deffnx {C Function} scm_make_weak_vector (size, fill)\n"
+"Return a weak vector with @var{size} elements. If the optional\n"
+"argument @var{fill} is given, all entries in the vector will be\n"
+"set to @var{fill}. The default value for @var{fill} is the\n"
+"empty list.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-memory.texi:360
+msgid ""
+"@deffn {Scheme Procedure} weak-vector elem @dots{}\n"
+"@deffnx {Scheme Procedure} list->weak-vector l\n"
+"@deffnx {C Function} scm_weak_vector (l)\n"
+"Construct a weak vector from a list: @code{weak-vector} uses\n"
+"the list of its arguments while @code{list->weak-vector} uses\n"
+"its only argument @var{l} (a list) to construct a weak vector\n"
+"the same way @code{list->vector} would.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-memory.texi:365
+msgid ""
+"@deffn {Scheme Procedure} weak-vector? obj\n"
+"@deffnx {C Function} scm_weak_vector_p (obj)\n"
+"Return @code{#t} if @var{obj} is a weak vector.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-memory.texi:371
+msgid ""
+"@deffn {Scheme Procedure} weak-vector-ref wvect k\n"
+"@deffnx {C Function} scm_weak_vector_ref (wvect, k)\n"
+"Return the @var{k}th element of the weak vector @var{wvect}, or\n"
+"@code{#f} if that element has been collected.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-memory.texi:376
+msgid ""
+"@deffn {Scheme Procedure} weak-vector-set! wvect k elt\n"
+"@deffnx {C Function} scm_weak_vector_set_x (wvect, k, elt)\n"
+"Set the @var{k}th element of the weak vector @var{wvect} to @var{elt}.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-memory.texi:380
+msgid ""
+"@node Guardians\n"
+"@subsection Guardians"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-memory.texi:385
+msgid ""
+"Guardians provide a way to be notified about objects that would\n"
+"otherwise be collected as garbage.  Guarding them prevents the objects\n"
+"from being collected and cleanup actions can be performed on them, for\n"
+"example."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-memory.texi:389
+msgid ""
+"See R. Kent Dybvig, Carl Bruggeman, and David Eby (1993) \"Guardians in\n"
+"a Generation-Based Garbage Collector\".  ACM SIGPLAN Conference on\n"
+"Programming Language Design and Implementation, June 1993."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-memory.texi:395
+msgid ""
+"@deffn {Scheme Procedure} make-guardian\n"
+"@deffnx {C Function} scm_make_guardian ()\n"
+"Create a new guardian.  A guardian protects a set of objects from\n"
+"garbage collection, allowing a program to apply cleanup or other\n"
+"actions."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-memory.texi:403
+msgid ""
+"@code{make-guardian} returns a procedure representing the guardian.\n"
+"Calling the guardian procedure with an argument adds the argument to\n"
+"the guardian's set of protected objects.  Calling the guardian\n"
+"procedure without an argument returns one of the protected objects\n"
+"which are ready for garbage collection, or @code{#f} if no such object\n"
+"is available.  Objects which are returned in this way are removed from\n"
+"the guardian."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-memory.texi:407
+msgid ""
+"You can put a single object into a guardian more than once and you can\n"
+"put a single object into more than one guardian.  The object will then\n"
+"be returned multiple times by the guardian procedures."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-memory.texi:410
+msgid ""
+"An object is eligible to be returned from a guardian when it is no\n"
+"longer referenced from outside any guardian."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-memory.texi:416
+msgid ""
+"There is no guarantee about the order in which objects are returned\n"
+"from a guardian.  If you want to impose an order on finalization\n"
+"actions, for example, you can do that by keeping objects alive in some\n"
+"global data structure until they are no longer needed for finalizing\n"
+"other objects."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-memory.texi:424
+msgid ""
+"Being an element in a weak vector, a key in a hash table with weak\n"
+"keys, or a value in a hash table with weak values does not prevent an\n"
+"object from being returned by a guardian.  But as long as an object\n"
+"can be returned from a guardian it will not be removed from such a\n"
+"weak vector or hash table.  In other words, a weak link does not\n"
+"prevent an object from being considered collectable, but being inside\n"
+"a guardian prevents a weak link from being broken."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-memory.texi:432
+msgid ""
+"A key in a weak key hash table can be thought of as having a strong\n"
+"reference to its associated value as long as the key is accessible.\n"
+"Consequently, when the key is only accessible from within a guardian,\n"
+"the reference from the key to the value is also considered to be\n"
+"coming from within a guardian.  Thus, if there is no other reference\n"
+"to the value, it is eligible to be returned from a guardian.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-memory.texi:436
+msgid ""
+"@c Local Variables:\n"
+"@c TeX-master: \"guile.texi\"\n"
+"@c End:"
+msgstr ""

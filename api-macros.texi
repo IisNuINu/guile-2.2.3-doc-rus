@@ -1,0 +1,1490 @@
+@c -*-texinfo-*-
+@c This is part of the GNU Guile Reference Manual.
+@c Copyright (C)  1996, 1997, 2000-2004, 2009-2015
+@c   Free Software Foundation, Inc.
+@c See the file guile.texi for copying conditions.
+
+@node Macros
+@section Макросы
+
+В лучшем случае, программирование на Lisp это итеративный процесс создания 
+соответствующего языка к имеющейся проблеме, и затем решение этой проблемы
+на этом языке. Определение новой процедуры является частью этого, но Lisp 
+также позволяет пользователю расширять свой синтаксис используя широко
+известные Макросы(@dfn{macros}).
+
+@cindex macros
+@cindex transformation
+Макросы - это синтаксические расширения, которые вызывают трансформацию выражений,
+в которых они появляются каким либо образом, перед(@emph{before}) их вычислением.
+В выражениях, которые предназначены для преобразования макросов, идентификатор,
+который  именует соответствующий макрос, должен быть первым элементом, например:
+
+@lisp
+(@var{macro-name} @var{macro-args} @dots{})
+@end lisp
+
+@cindex macro expansion
+@cindex domain-specific language
+@cindex embedded domain-specific language
+@cindex DSL
+@cindex EDSL
+Расширение макросов это отдельная фаза вычислений, запускаемый до интерпретации кода или
+компиляции. Макрос это программа работающая над программами, переводящая встроенный язык
+в базовый язык Scheme@footnote{В наши дни такие встроенные языки часто упоминаются
+как встроенные специфичные языки(@dfn{embedded domain-specific
+languages}, or EDSLs.}).
+
+@menu
+* Defining Macros::             Binding macros, globally and locally.
+* Syntax Rules::                Pattern-driven macros.
+* Syntax Case::                 Procedural, hygienic macros.
+* Syntax Transformer Helpers::  Helpers for use in procedural macros.
+* Defmacros::                   Lisp-style macros.
+* Identifier Macros::           Identifier macros.
+* Syntax Parameters::           Syntax Parameters.
+* Eval When::                   Affecting the expand-time environment.
+* Macro Expansion::             Procedurally expanding macros.
+* Hygiene and the Top-Level::   A hack you might want to know about.
+* Internal Macros::             Macros as first-class values.
+@end menu
+
+@node Defining Macros
+@subsection Определение Макросов
+
+Макрос является связующим звеном между ключевыми словами и синтаксическим преобразованием.
+Поскольку трудно обсуждать @code{define-syntax} без обсуждения формата преобразования,
+рассмотрим следующий пример определения макроса:
+
+@example
+(define-syntax when
+  (syntax-rules ()
+    ((when condition exp ...)
+     (if condition
+         (begin exp ...)))))
+
+(when #t
+  (display "hey ho\n") 
+  (display "let's go\n"))
+@print{} hey ho
+@print{} let's go
+@end example
+
+В этом примере, @code{when} связывается охватывающией формой @code{define-syntax}.
+Синтаксические преобразователи более подробно рассматриваются в @ref{Syntax Rules}
+и @ref{Syntax Case}.
+
+@deffn {Syntax} define-syntax keyword transformer
+Связывает @var{keyword} к синтаксическому преобразованию, полученному путем
+вычисления @var{transformer}.
+
+После определения макроса, дополнительные экземпляры @var{keyword} в исходном
+коде Scheme будут вызывать синтаксический преобразователь определенный в
+@var{transformer}.
+@end deffn
+
+Можно также устанавливать локальные синтаксические привязки используя @code{let-syntax}.
+
+@deffn {Syntax} let-syntax ((keyword transformer) @dots{}) exp1 exp2 @dots{}
+Связывает каждое @var{keyword} с соответствующим преобразователем(@var{transformer})
+при рассширении @var{exp1} @var{exp2} @enddots{}.
+
+Связывание @code{let-syntax} существует только во время
+рассширения(локально). 
+
+@example
+(let-syntax ((unless
+              (syntax-rules ()
+                ((unless condition exp ...)
+                 (if (not condition)
+                     (begin exp ...))))))
+  (unless #t
+    (primitive-exit 1))
+  "rock rock rock")
+@result{} "rock rock rock"
+@end example
+@end deffn
+
+Форма @code{define-syntax} действительна в любом месте, где может появиться
+определение: на верхнем уровне или локально. Также как локальное @code{define}
+расширяется до экземпляра @code{letrec}, и локально заданное @code{define-syntax}
+расширяется до @code{letrec-syntax}.
+
+@deffn {Syntax} letrec-syntax ((keyword transformer) @dots{}) exp1 exp2 @dots{}
+Связывает каждое @var{keyword} с соответствующим преобразователем(@var{transformer})
+пока расширяются выражения @var{exp1} @var{exp2} @enddots{}.
+
+В духе @code{letrec} и @code{let}, расширение создаваемое трансформатором
+синтаксиса(@var{transformer}) может выполняться упоминанием @var{keyword}
+связванное в том же @var{letrec-syntax}.
+
+@example
+(letrec-syntax ((my-or
+                 (syntax-rules ()
+                   ((my-or)
+                    #t)
+                   ((my-or exp)
+                    exp)
+                   ((my-or exp rest ...)
+                    (let ((t exp))
+                      (if t
+                          t
+                          (my-or rest ...)))))))
+  (my-or #f "rockaway beach"))
+@result{} "rockaway beach"
+@end example
+@end deffn
+
+@node Syntax Rules
+@subsection Макрос Syntax-rules
+
+Макрос @code{syntax-rules} - очень простой, синтаксический преобразователь управляемый
+шаблоном, с достойной красотой  Scheme.
+
+@deffn {Syntax} syntax-rules literals (pattern template) @dots{}
+Создает синтксисчекий преобразователь, который будет переписывать
+выражение с использованием правил указанных в предложениях @var{pattern}
+и @var{template}.
+@end deffn
+
+Макрос @code{syntax-rules} состоит из трех частей: литералов (если они есть),
+образцов(patterns) и столькоих же шаблонов(templates).
+
+Когда расширитель синтаксиса видит вызов макроса @code{syntax-rules}, он
+вычисляет выражение для образцов(patterns), в порядке следования, и перезаписывает
+выражения используя шаблон(template) для первого совпадающего образца. Если нет
+совпавших образцов, сигнализируется о синтаксической ошибке.
+
+@subsubsection Образцы(Patterns)
+
+Мы уже видели некоторые примеры образцов в предыдущем разделе:
+@code{(unless condition exp ...)}, @code{(my-or exp)}, и т.д.  Образец структурирован
+как выражение, которому он должен соответствовать. Он также может иметь вложенную
+структуру, подобно @code{(let ((var val) ...) exp exp* ...)}. Вообще говоря,
+образцы состоят из списков, неподходящих списков, векторов, идентификаторов, и 
+исходных фактов. Пользователи могут сопоставлять последовательность образцов
+используя многоточия (@code{...}).
+
+Идентификаторы в образце называются литералами(@dfn{literals}), если они присутствуют
+в списке литералов @code{syntax-rules}, и переменными образца(@dfn{pattern variables})
+если нет. При создании вывода макроса, макрорасширитель заменяет экземпляры переменных
+в образце на вычисленные подвыражения шаблона.
+
+@example
+(define-syntax kwote
+  (syntax-rules ()
+    ((kwote exp)
+     (quote exp))))
+(kwote (foo . bar))
+@result{} (foo . bar)
+@end example
+
+Список неправильных образцов соответствует остаточным(rest) аргументам:
+
+@example
+(define-syntax let1
+  (syntax-rules ()
+    ((_ (var val) . exps)
+     (let ((var val)) . exps))))
+@end example
+
+Однако это определение @code{let1}, вероятно, не то, что вы ожидали, так как
+хвостовой образец @var{exps} будет соответствовать не спискам, например
+@code{(let1 (foo 'bar) . baz)}. Поэтому часто вместо использования списков
+неправильных как образцов, лучше использовать образцы многоточия. За экземпляром
+переменной образца в шаблоне должно следовать многоточие.
+
+@example
+(define-syntax let1
+  (syntax-rules ()
+    ((_ (var val) exp ...)
+     (let ((var val)) exp ...))))
+@end example
+
+Этот @code{let1} вероятно, все еще не делает того, что мы хотим получить, потому
+что тело сопоставляемых последовательностей является пустым выражением, таким как
+@code{(let1 (foo 'bar))}. В этом случае нам нужно проверят что мы имеем тело хотябы
+с одним выражением. Общей идиомой для этого является имя переменной многоточечного
+образца со звездочкой:
+
+@example
+(define-syntax let1
+  (syntax-rules ()
+    ((_ (var val) exp exp* ...)
+     (let ((var val)) exp exp* ...))))
+@end example
+
+Вектор образцов соответствует вектору, содержимое которого соответствует
+образцам включающим многоточия и  хвостовые образцы.
+
+@example
+(define-syntax letv
+  (syntax-rules ()
+    ((_ #((var val) ...) exp exp* ...)
+     (let ((var val) ...) exp exp* ...))))
+(letv #((foo 'bar)) foo)
+@result{} bar
+@end example
+
+Литералы используются для соответствия определенным данным в выражении, например
+испльзования @code{=>} и @code{else} в выражении @code{cond}.
+
+@example
+(define-syntax cond1
+  (syntax-rules (=> else)
+    ((cond1 test => fun)
+     (let ((exp test))
+       (if exp (fun exp) #f)))
+    ((cond1 test exp exp* ...)
+     (if test (begin exp exp* ...)))
+    ((cond1 else exp exp* ...)
+     (begin exp exp* ...))))
+
+(define (square x) (* x x))
+(cond1 10 => square)
+@result{} 100
+(let ((=> #t))
+  (cond1 10 => square))
+@result{} #<procedure square (x)>
+@end example
+
+Литерал соответствует входному выражению, если входное выраженине является
+идентификатором тем же именем что и литерал, и оба являются несвязанными
+@footnote{Языковые законники, вероятно, видят здесь необходимость использования
+@code{literal-identifier=?} в первую очередь, чем @code{free-identifier=?}, и
+вероятно будут правы. Поправки принимаются.}.
+
+Если образец не является списком, вектором, или идентификатором, он проверяется на
+совпадение как литерал с помощью @code{equal?}.
+
+@example
+(define-syntax define-matcher-macro
+  (syntax-rules ()
+    ((_ name lit)
+     (define-syntax name
+       (syntax-rules ()
+        ((_ lit) #t)
+        ((_ else) #f))))))
+
+(define-matcher-macro is-literal-foo? "foo")
+
+(is-literal-foo? "foo")
+@result{} #t
+(is-literal-foo? "bar")
+@result{} #f
+(let ((foo "foo"))
+  (is-literal-foo? foo))
+@result{} #f
+@end example
+
+В последнем примере показано, что сопоставление происходит во время развертывания
+макроса(на этапе компиляции), а не во время выполнения.
+
+Макросы синтаксических правил(Syntax-rules) всегда используются как 
+@code{(@var{macro} . @var{args})}, а @var{macro} всегда будет символом.
+Соответственно, образец в @code{syntax-rules} должен быть списком (правильным
+или не правильным), и первый образец в этом списке должен быть идентификатором.
+Кстати, это может быть любой идентификатор -- он не обязательно должен быть
+именем макроса. Таким обрзамо следующие три примера эквивалентны:
+
+@example
+(define-syntax when
+  (syntax-rules ()
+    ((when c e ...)
+     (if c (begin e ...)))))
+
+(define-syntax when
+  (syntax-rules ()
+    ((_ c e ...)
+     (if c (begin e ...)))))
+
+(define-syntax when
+  (syntax-rules ()
+    ((something-else-entirely c e ...)
+     (if c (begin e ...)))))
+@end example
+
+Для ясности используйте один из первых двух вариантов. Также обратите внимание,
+что поскольку переменная образца всегда будет соответствовать самому макросу
+(например @code{cond1}), она фактически остается не связанной в шаблоне.
+
+@subsubsection Гигиена
+
+Макросы синтакисических правил(@code{syntax-rules}) имеют магическое свойство:
+они сохраняют ссылочную прозрачность. Когда вы читаете определение макроса, любые
+свободные привязки в этом макросе разрешаются относительно определения макроса; и
+когда вы читаете экземпляр макроса, все свободные привязки в этом выражении разрешаются
+относительно выражения.
+
+Это свойство иногда называют гигиеной(@dfn{hygiene}), и оно помогает в чистоте
+кода В вашем макроопределении, вы можете свободно вводить временные переменные, 
+не беспокоясь о непреднамеренном введении привязок в макрорасширение.
+
+Рассмотрим определение @code{my-or} из предыдущего раздела:
+
+@example
+(define-syntax my-or
+  (syntax-rules ()
+    ((my-or)
+     #t)
+    ((my-or exp)
+     exp)
+    ((my-or exp rest ...)
+     (let ((t exp))
+       (if t
+           t
+           (my-or rest ...))))))
+@end example
+
+Наивное расширение @code{(let ((t #t)) (my-or #f t))} даст:
+
+@example
+(let ((t #t))
+  (let ((t #f))
+    (if t t t)))
+@result{} #f
+@end example
+
+@noindent
+Это явно не то, что мы хотим. Так или иначе @code{t} в определении отличается 
+от @code{t} в месте использования; и это действительно такое различие, которое
+поддерживается расширителем синтаксиса, при расширении макросов с гигиеной.
+
+Это обсуждение в основном актуально в контексте традиционных макросов Lisp
+(@pxref{Defmacros}), которые не сохраняют ссылочную прозрачность.
+Гигиена добавляет выразительной силы Scheme.
+
+@subsubsection Стенография(сокращение ввода)
+
+Часто пишут простые макросы с одним предложением @code{syntax-rules}.
+Существует удобное сокращение для этой идиомы, в форме
+@code{define-syntax-rule}.
+
+@deffn {Syntax} define-syntax-rule (keyword . pattern) [docstring] template
+Определяет ключевое слово(@var{keyword}) как новый макрос @code{syntax-rules} с одним
+предложением.
+@end deffn
+
+Вставка этой формы, делает наш пример @code{when} значительно короче:
+
+@example
+(define-syntax-rule (when c e ...)
+  (if c (begin e ...)))
+@end example
+
+@subsubsection Сообщения о синтаксических ошибках в Макросах
+
+@deffn {Syntax} syntax-error message [arg ...]
+Сообщение об ошибке во время макро-расширения  @var{message} должно быть 
+строковым литералом, а необязательные операнды @var{arg} могут быть произвольными
+выражениями, предоставляющими дополнительную информацию
+@end deffn
+
+@code{syntax-error} предназначен для использования в шабалонах @code{syntax-rules}
+Например:
+
+@example
+(define-syntax simple-let
+  (syntax-rules ()
+    ((_ (head ... ((x . y) val) . tail)
+        body1 body2 ...)
+     (syntax-error
+      "expected an identifier but got"
+      (x . y)))
+    ((_ ((name val) ...) body1 body2 ...)
+     ((lambda (name ...) body1 body2 ...)
+      val ...))))
+@end example
+
+@subsubsection Указание пользовательского идентификатора многоточия
+
+При написании макросов, которые генерируют определения макросов, удобно
+использовать разные идентификаторы многоточия на каждом уровне. Guile 
+позволяет указать желаемый идентификатор многточия как первый операнд в
+@code{syntax-rules}, как указано в SRFI-46 и R7RS.  Например:
+
+@example
+(define-syntax define-quotation-macros
+  (syntax-rules ()
+    ((_ (macro-name head-symbol) ...)
+     (begin (define-syntax macro-name
+              (syntax-rules ::: ()
+                ((_ x :::)
+                 (quote (head-symbol x :::)))))
+            ...))))
+(define-quotation-macros (quote-a a) (quote-b b) (quote-c c))
+(quote-a 1 2 3) @result{} (a 1 2 3)
+@end example
+
+@subsubsection Дальнейшая информация
+
+Для формального определения @code{syntax-rules} и языка шаблонов, см.
+@xref{Macros, , Macros, r5rs, Revised(5) Report on the Algorithmic Language
+Scheme}.
+
+Макрос @code{syntax-rules} простой и чистый, но имеют ограничения. Они делают не
+поддающиеся выражени сообщения об ошибках: образец либо совпадает, либо нет.
+Их способность генерировать код ограничивается расширением шаблонов; часто нужно
+определять ряд вспомогательных макросов, чтобы получить реальную работу. Иногда
+хочется предоставить привязку к лексическому контексту сгенерированного кода; это
+не возможно с @code{syntax-rules}. Кроме того, они не могут программно генерировать
+идентификаторы.
+
+Решение всех этих проблем использовать  @code{syntax-case} если вам нужны его
+функции. Но если по какой либо причине вы придерживаетесь @code{syntax-rules},
+вам может понравиться работа Joe Marshall
+@uref{http://sites.google.com/site/evalapply/eccentric.txt,@code{syntax-rules}
+Primer for the Merely Eccentric}.
+
+@node Syntax Case
+@subsection Поддержка для системы @code{syntax-case}
+
+Макрос @code{syntax-case} это процедурный синтаксический преобразователь, обладающий
+мощью достойной Scheme.
+
+@deffn {Syntax} syntax-case syntax literals (pattern [guard] exp) @dots{}
+Сопоставляет синтаксический объект @var{syntax} с данными образцами, в порядке
+следования. Если @var{pattern} совпадает, возвращает результат вычисления
+соответствующего выражения @var{exp}.
+@end deffn
+
+Сравните следующие определения @code{when}:
+
+@example
+(define-syntax when
+  (syntax-rules ()
+    ((_ test e e* ...)
+     (if test (begin e e* ...)))))
+
+(define-syntax when
+  (lambda (x)
+    (syntax-case x ()
+      ((_ test e e* ...)
+       #'(if test (begin e e* ...))))))
+@end example
+
+Очевидно, что определение @code{syntax-case} аналогично @code{syntax-rules}
+и одинаково ясно, что есть несколько различий. Определение @code{syntax-case}
+обернуто в лямбда(@code{lambda}), функцию от одного аргумента; этот аргумент
+передается вызову @code{syntax-case}; и ``возвращаемое значение'' макроса
+имеет префикс @code{#'}.
+
+Все эти различия связаны с тем, что @code{syntax-case} не определяет
+преобразователь синтаксиса самостоятельно -- вместо этого выражение
+@code{syntax-case} обеспечивает способ разрушить синтаксический объект
+(@dfn{syntax object}), и перестроить синтаксический объект при выводе.
+
+Таким образом, обертка @code{lambda} это просто проходная деталь реализации,
+чтобы преобразователь синтаксиса просто функция преобразовывающая синтаксис
+в синтаксис. Это не должно удивлять, учитывая что мы уже описали макросы как
+``программы, которые пишут программы''. @code{syntax-case} это простой способ
+разобрать и скомпоновать текст программы, и допустимый преобразователь синтаксиса
+должен быть обернут в процедуру.
+
+В отличии от традиционных макросов Лисп (@pxref{Defmacros}), макросы @code{syntax-case}
+преобразуют синтаксический объект, а не необработанные формы Scheme. Напомним наивное
+расширение @code{my-or} заданное в предыдущем разделе:
+
+@example
+(let ((t #t))
+  (my-or #f t))
+;; naive expansion:
+(let ((t #t))
+  (let ((t #f))
+    (if t t t)))
+@end example
+
+В необработанных формах Scheme просто не хватает информации чтобы отличить
+первые два экземпляра @code{t} в форме @code{(if t t t)} из/от третьего @code{t}. 
+Поэтому вместо предоставления идентификаторов в качестве символов, расширитель
+синтаксиса представляет идентификаторы как синтаксические объекты, присоединяя
+к ним информацию которая необходима синтаксическим объектам для поддержания
+ссылочной прозрачности.
+
+@deffn {Syntax} syntax form
+создает синтаксический объект обернутый в форму @var{form} в текущем лексическом контексет.
+@end deffn
+
+Синтаксические объекты обычно создаются внутри процесса расширения, но это
+возможность создать их вне расширения синтаксиса.
+
+@example
+(syntax (foo bar baz))
+@result{} #<some representation of that syntax>
+@end example
+
+@noindent
+Однако более часто и полезно, создавать синтаксические объекты при посторении
+вывода из выражения @code{syntax-case}.
+
+@example
+(define-syntax add1
+  (lambda (x)
+    (syntax-case x ()
+      ((_ exp)
+       (syntax (+ exp 1))))))
+@end example
+
+Не обязательно, чтобы выражение @code{syntax-case} возвращало синтаксический
+объект, потому что выражения @code{syntax-case} могут использоваться вспомогательными
+функциями или использоваться иным образом вне самого расширения синтаксиса. Однако
+процедура преобразования синтаксиса должна возрвращать синтаксический объект, поэтому
+большинство применений @code{syntax-case} в конечном итоге возвращает синтаксические
+объекты.
+
+Здесь в этом случае форма, которая построила возвращаемое значение, была
+@code{(syntax (+ exp 1))}. Интересная вещь заключается в том, что в выражении
+@code{syntax} любое появление образца переменной подставляется в результирущий синтаксический
+объект, перенося с собой все соответствующие метаданные из исходного выражения, такого как
+лексический идентификатор и местоположение источника.
+
+В самом деле, переменная шаблона может ссылаться только внутри формы @code{syntax}.
+Синтаксический расширитель  вызовет ошибку при определении @code{add1} если он найдет
+@var{exp} ссылающееся вовне @code{syntax} формы.
+
+Поскольку @code{syntax} часто появляется в макро-тяжелом коде, он имеет специальный
+макрос чтения: @code{#'}. @code{#'foo} преобразуется читателем в @code{(syntax foo)},
+также как @code{'foo} преобразуется в @code{(quote foo)}.
+
+Язык шаблонов используемый @code{syntax-case} это удобный язык используемый
+в @code{syntax-rules}. Учитывая это, Guile фактически определеят @code{syntax-rules}
+в терминах @code{syntax-case}:
+
+@example
+(define-syntax syntax-rules
+  (lambda (x)
+    (syntax-case x ()
+      ((_ (k ...) ((keyword . pattern) template) ...)
+       #'(lambda (x)
+           (syntax-case x (k ...)
+             ((dummy . pattern) #'template)
+             ...))))))
+@end example
+
+И вот что.
+
+@subsubsection Почему @code{syntax-case}?
+
+Данные нами до сих пор примеры можно было точно также выразить @code{syntax-rules},
+и только что показали, что @code{syntax-case} является более подробным, что верно.
+Но есть разница: @code{syntax-case} создает процедурный(@emph{procedural}) макрос,
+давая полную мощь Scheme макро-расширителю. Этому есть много практических
+применений.
+
+Общее желание состоит в том, чтобы иметь возможность сопоставлять форму только
+в том случае, если она является идентификатором. Это невозможно с @code{syntax-rules},
+с учетом форм сопоставления данных. Но с @code{syntax-case} это легко:
+
+@deffn {Scheme Procedure} identifier? syntax-object
+Возвращает @code{#t} если @var{syntax-object} это идентификатор, или @code{#f}
+если нет.
+@end deffn
+
+@example
+;; relying on previous add1 definition
+(define-syntax add1!
+  (lambda (x)
+    (syntax-case x ()
+      ((_ var) (identifier? #'var)
+       #'(set! var (add1 var))))))
+
+(define foo 0)
+(add1! foo)
+foo @result{} 1
+(add1! "not-an-identifier") @result{} error
+@end example
+
+С @code{syntax-rules}, ошибка для @code{(add1! "not-an-identifier")} была бы
+чем то похожим на ``invalid @code{set!}''. С @code{syntax-case}, он может сказать
+что то вроде ``invalid @code{add1!}'', потому что мы прикрепляем защитное предложение
+(@dfn{guard clause} к образцу: @code{(identifier? #'var)}. Это становиться более важным
+с более сложными макросами. Нижно использовать @code{identifier?}, потому что расширитель,
+идентифицирует более чем пустой символ.
+
+Обратите внимание, что даже в защищающем предложении, мы сслыаемся на переменную 
+@var{var} образца в форме @code{syntax}, через @code{#'var}.
+
+Еще одно общее желание -- ввести привязки в лексический контекст выражений вывода.
+Один пример будет в так называемых ``anaphoric макросах'', таких как @code{aif}.
+Anaphoric макросы связывают некоторое выражение с известным идентификатором, часто
+он(@code{it}), внутри своих тел. Например, в @code{(aif (foo) (bar it))}, @code{it}
+будет связан с результатом @code{(foo)}.
+
+Для начала следует упомянуть решение, которое не работает:
+
+@example
+;; doesn't work
+(define-syntax aif
+  (lambda (x)
+    (syntax-case x ()
+      ((_ test then else)
+       #'(let ((it test))
+           (if it then else))))))
+@end example
+
+Причина, по которой это не работает, заключается в том, что по умолчанию расширитель
+сохраняет ссылочную прозрачность; выражения @var{then} и @var{else} не будут иметь
+доступ к привязке @code{it}.
+
+Но они смогут ее получить, если мы введем привязку через @code{datum->syntax}.
+
+@deffn {Scheme Procedure} datum->syntax template-id datum
+Создает синтаксический объект, который оборачивает @var{datum} в лексическом контексте,
+соответствующим идентификатору @var{template-id}.
+@end deffn
+
+Для полноты, следует отметить, что метаданные можно удалить из синтаксического
+объекта, вернув необработанные данные(datum) Scheme:
+
+@deffn {Scheme Procedure} syntax->datum syntax-object
+Убирает метаданные из @var{syntax-object}, возвращая его содержимое в виде
+необработанных данных(datum) Scheme.
+@end deffn
+
+В этом случае мы хотим пердставить @code{it} в контексте всего выражения, поэтому
+мы можем создать синтаксический объект как @code{(datum->syntax x 'it)},
+где @code{x} это целое выражение, как прошедшее процедуру преоборазованиня.
+
+Вот еще одно решение которое не работает:
+
+@example
+;; doesn't work either
+(define-syntax aif
+  (lambda (x)
+    (syntax-case x ()
+      ((_ test then else)
+       (let ((it (datum->syntax x 'it)))
+         #'(let ((it test))
+             (if it then else)))))))
+@end example
+
+Причина, по которой это не работает, состоит в том, что на самом деле здесь
+работают две среды -- среда переменных образца, связываемых
+@code{syntax-case}, и среда лексических переменных,
+связываемых в обычной Scheme. Внешняя форма let устанавливает привязки в 
+среде лексических переменных, но внутренняя форма let находиться внутри
+синтаксической формы, где будут заменены только переменные образца. Здесь нам
+нужно ввести кусочек лексической среды(окружения) в среду переменных образца,
+и мы можем сделать это используя сам @code{syntax-case}:
+
+@example
+;; works, but is obtuse
+(define-syntax aif
+  (lambda (x)
+    (syntax-case x ()
+      ((_ test then else)
+       ;; invoking syntax-case on the generated
+       ;; syntax object to expose it to `syntax'
+       (syntax-case (datum->syntax x 'it) ()
+         (it
+           #'(let ((it test))
+               (if it then else))))))))
+
+(aif (getuid) (display it) (display "none")) (newline)
+@print{} 500
+@end example
+
+Однако есть более простые способы написать это. @code{with-syntax} часто 
+удобно:
+
+@deffn {Syntax} with-syntax ((pat val) @dots{}) exp @dots{}
+Связывает образцы @var{pat} с их соответствующими значениями @var{val}, в лексическом
+контексте @var{exp} @enddots{}.
+
+@example
+;; better
+(define-syntax aif
+  (lambda (x)
+    (syntax-case x ()
+      ((_ test then else)
+       (with-syntax ((it (datum->syntax x 'it)))
+         #'(let ((it test))
+             (if it then else)))))))
+@end example
+@end deffn
+
+Как вы можете себе представить, @code{with-syntax} определяется в терминах
+@code{syntax-case}. Но даже это может быть неприятным если вы старый хакер
+макросов на Lispе, привыкший к созданию с помощью @code{quasiquote}. Проблема
+в том, что @code{with-syntax} создает разделение между точкой определения
+значения и точкой его подстановки.
+
+@pindex quasisyntax
+@pindex unsyntax
+@pindex unsyntax-splicing
+Так что для случаев, в которых стиль @code{quasiquote} имеет больше смысла,
+@code{syntax-case} также определяет @code{quasisyntax}, и связанные с ним
+@code{unsyntax} и @code{unsyntax-splicing}, сокращенно читаемые как
+@code{#`}, @code{#,}, и @code{#,@@}, соответственно.
+
+Например, чтобы определить макрос, который вставляет метку времени компиляции в
+искходный файл, можно написать:
+
+@example
+(define-syntax display-compile-timestamp
+  (lambda (x)
+    (syntax-case x ()
+      ((_)
+       #`(begin
+          (display "The compile timestamp was: ")
+          (display #,(current-time))
+          (newline))))))
+@end example
+
+Читатели, интересующиеся дополнительной информацией о макросах @code{syntax-case}
+должны смотреть R. Kent Dybvig's отличную книгу  @cite{The Scheme Programming Language}, 
+редакции 3 или 4, в главе о синтаксисе. Dybvig был основным автором системы
+@code{syntax-case}. Сама книга доступна в интернете
+@uref{http://scheme.com/tspl4/}. (ищите русский перевод)
+
+@subsubsection Пользовательские Идентификаторы Многоточий для макросов syntax-case
+
+При написании процедурных макросов, которые генерируют определения макросов,
+удобно использовать различные идентификаторы многоточий на каждом уровне.  Guile
+поддерживает это для процедурных макросов используюзуя специальную форму 
+@code{with-ellipsis}:
+
+@deffn {Syntax} with-ellipsis ellipsis body @dots{}
+@var{ellipsis} должен быть идентификатором.  Вычисляет @var{body} в
+специальном лексическом окружении(среде), такой что все макро обрацзы и
+шаблоны внутри тела @var{body} будут использовать @var{ellipsis} как
+идентификатор многоточия вместо обычных трех точек (@code{...}).
+@end deffn
+
+Например:
+
+@example
+(define-syntax define-quotation-macros
+  (lambda (x)
+    (syntax-case x ()
+      ((_ (macro-name head-symbol) ...)
+       #'(begin (define-syntax macro-name
+                  (lambda (x)
+                    (with-ellipsis :::
+                      (syntax-case x ()
+                        ((_ x :::)
+                         #'(quote (head-symbol x :::)))))))
+                ...)))))
+(define-quotation-macros (quote-a a) (quote-b b) (quote-c c))
+(quote-a 1 2 3) @result{} (a 1 2 3)
+@end example
+
+Обратите внимание, что @code{with-ellipsis} не влияет на идентификатор
+многоточия генерируемого кода, разве что @code{with-ellipsis} будет включен
+в сгенерированный код.
+
+@node Syntax Transformer Helpers
+@subsection Вспомогательные функции Синтаксического Преобразования
+
+Как отмечалось в предыдущем разделе, синтаксический расширитель Guile
+работет с синтаксическими объектами. Процедурные макросы потребляют и
+создают синтаксические объекты. В этом разделе описаны некоторые из
+вспомогательных помощников, которые процедурные макросы могут использовать
+для сравнения, генерации и запросов объектов этого типа данных.
+
+@deffn {Scheme Procedure} bound-identifier=? a b
+Возвращает @code{#t} если синтаксический объект @var{a} и @var{b} ссылаются на
+один и тот же лексически связанный идентификатор, или @code{#f} в противном случае.
+@end deffn
+
+@deffn {Scheme Procedure} free-identifier=? a b
+Возвращает @code{#t} если синтаксические объекты @var{a} и @var{b} ссылаются
+на один и тот же свободный идентификатор, или @code{#f} в противном случае.
+@end deffn
+
+@deffn {Scheme Procedure} generate-temporaries ls
+Возвращает список временных идентификаторов такой же длины какой длины список @var{ls}.
+@end deffn
+
+@deffn {Scheme Procedure} syntax-source x
+Возвращает исходные свойства, которые соответствуют синтаксическому объекту
+@var{x}.  @xref{Source Properties}, для дальнейшей информации.
+@end deffn
+
+А теперь уделим немного времения для исповеди.  Синтаксический расширитель
+Guile берет свое начало в коде из Chez Scheme: версия расширителя в Chez Scheme
+которая была сделана переносимой в другую систему Scheme. Еще в середине 1990х,
+некоторые системы Scheme даже не имели возможности определять новые абстрактные
+типы данных.  По этой причине, переносимый расширитель из Chez Scheme
+который унаследовала Guile использовал тегированные вектора в качестве синтаксических
+объектов: вектора, первый элемент которых был символ, @code{syntax-object}.
+
+На момент написания статьи это был 2017 и Guile все еще поддерживает эту
+стратегию. Это работало долго, потому что никто не  помещал буквальный(литеральныЙ)
+вектор в положение оператора:
+
+@example
+(#(syntax-object ...) 1 2 3)
+@end example
+
+Но такое положение дел было ошибкой. Поскольку синтаксические объекты являлись
+просто векторами, это дает возможность любому коду Scheme подделать
+объект синтаксиса, которая может привести к нарушению границы абстракции.
+В не можете построить средство для песочницы, которая ограничивает набор привязок
+в области, когда всегда можно избежать этого ограничения, просто вычислив
+специальный вектор. Для устранения этой проблемы, Guile 2.2.1 наконец, переносит
+представление синтаксических объектов в виде отдельного типа с отдельным конструктором,
+который недоступен для пользовательского кода.
+
+Тем не менее, Guile по прежнему должен поддерживать ``устаревшие'' синтаксические
+объекты, потому что это может быть файл скомпилированный с Guile 2.2.0, который
+встраивает синтаксические объекты векторного типа. Расширитель обрабатывает
+специальные тегированные вектора, так как синтаксические объекты теперь контролируются
+с помощью параметра @code{allow-legacy-syntax-objects?}:
+
+@deffn {Scheme Procedure} allow-legacy-syntax-objects?
+Параметр который указывает, должен ли расширитель поддерживать устаревшие синтаксические
+объекты, как описано выше.  По причинам стабильности ABI по умолчанию используется
+значение @code{#t}.  Используйте @code{parameterize}, чтобы связать его с @code{#f}.
+@xref{Parameters}.
+@end deffn
+
+Guile также предлагает еще несколько экспериментальных интерфейсов в отдельном
+модуле.  Как было в случае большим адронным коллайдером, нашим ведущим
+думателям(macrologists) неясно, добавление этих интерфейсов приведет к
+потрясению или уничтожению Guile посредством создания сингулярности.
+Мы сохраним их функциональность в серии 2.0, но мы оставляем за собой право
+изменять их в будущих стабильных сериях, большей чем обычно степени.
+
+@example
+(use-modules (system syntax))
+@end example
+
+@deffn {Scheme Procedure} syntax-module id
+Возвращает имя модуля, источника содержащего идентификатор
+@var{id}.
+@end deffn
+
+@deffn {Scheme Procedure} syntax-local-binding id [#:resolve-syntax-parameters?=#t]
+Разыскивает(разрешает) идентификатор @var{id}, синтаксического объекта, в текущей лексической среде и
+возвращает два значения, тип привязки и значение привязки. Тип привязки является символом, который
+может быть одним из следующих:
+
+@table @code
+@item lexical
+Лексически связанная переменная.  Значение является уникальным токеном (в смысле
+@code{eq?}) идетифицирующим эту привязку.
+@item macro
+Синтаксический преобразователь, локальный или глобальный. Значением является
+процедурой преобразования.
+@item syntax-parameter
+Синтаксический параметр (@pxref{Syntax Parameters}).  По умолчанию,
+@code{syntax-local-binding} будет разрешать синтаксический параметр, так что это
+значение ну будет возвращено.  Передайте @code{#:resolve-syntax-parameters? #f}
+чтобы указать, что вас интересуют синтаксические параметры.  Значение является
+процедурой преобразования по умолчанию, как в @code{macro}.
+@item pattern-variable
+Переменная образца, связанная через @code{syntax-case}.  Значением является непрозрачный
+объект, внутренний для расширителя.
+@item ellipsis
+Внутренняя привязка, связанная через @code{with-ellipsis}.  Значением является
+(anti-marked) локальный идентификатор многоточия.
+@item displaced-lexical
+Лексическая переменная, вышедшая из области видимости. Это может произойти, если плохо
+написанный процедурный макрос сохраняет синтаксический объект, а затем пытается
+разместить его в контексте, в котором он не связан.  Значение равно
+@code{#f}.
+@item global
+Глобальная привязка.  Значение представляет собой пару, чья голова является символом,
+и чей хвост - это имя модуля, в котором разрешается символ.
+@item other
+Некоторые другие привязки, такие как @code{lambda} или другие привязки в ядре.  Значение
+равно @code{#f}.
+@end table
+
+Это очень низкоуровневая процедура с ограниченным использованием. Один
+случай, когда она полезна это построение абстракций, которые связывают
+вспомогательную информацию с макросами:
+
+@example
+(define aux-property (make-object-property))
+(define-syntax-rule (with-aux aux value)
+  (let ((trans value))
+    (set! (aux-property trans) aux)
+    trans))
+(define-syntax retrieve-aux
+  (lambda (x)
+    (syntax-case x ()
+      ((x id)
+       (call-with-values (lambda () (syntax-local-binding #'id))
+         (lambda (type val)
+           (with-syntax ((aux (datum->syntax #'here
+                                             (and (eq? type 'macro)
+                                                  (aux-property val)))))
+             #''aux)))))))
+(define-syntax foo
+  (with-aux 'bar
+    (syntax-rules () ((_) 'foo))))
+(foo)
+@result{} foo
+(retrieve-aux foo)
+@result{} bar
+@end example
+
+@code{syntax-local-binding} должна вызываться в пределах динамического 
+пространства синтаксического преобразователя; чтобы вызвать его в противном
+случае сигнализировать об ошибке.
+@end deffn
+
+@deffn {Scheme Procedure} syntax-locally-bound-identifiers id
+Возвращает список идентификаторов, которые были видны лексически при
+создании идентификатора @var{id}, в порядке от самого внешнего, до самого
+внутреннего.
+
+Эта процедура предназначена для использования в специализированных процедурных
+макросах, чтобы обеспечить макрос набором связанных идентификаторов, на которые
+может ссылаться макрос.
+
+В качестве технической детали реализации, идентификаторы возвращаемые
+@code{syntax-locally-bound-identifiers} будут помечены, как синтаксические
+объекты, заданные в качестве входных данных в макрос.  Это сигнализирует
+макро рассширителю, что эти привязки присутствуют в первоисточнике(исходнике)
+и не должны быть гигиенически переименованы, как было бы в случае с другими
+введенными идентификаторами.  См. обсуждение гигиены в разделе
+ 12.1  R6RS, для получения дополнительной информации о маркировке.
+
+@example
+(define (local-lexicals id)
+  (filter (lambda (x)
+            (eq? (syntax-local-binding x) 'lexical))
+          (syntax-locally-bound-identifiers id)))
+(define-syntax lexicals
+  (lambda (x)
+    (syntax-case x ()
+      ((lexicals) #'(lexicals lexicals))
+      ((lexicals scope)
+       (with-syntax (((id ...) (local-lexicals #'scope)))
+         #'(list (cons 'id id) ...))))))
+
+(let* ((x 10) (x 20)) (lexicals))
+@result{} ((x . 10) (x . 20))
+@end example
+@end deffn
+
+@node Defmacros
+@subsection Определение макросов в стиле Lisp
+
+Традиционный способ определения макросов в Lisp очень похож на определение
+процедур. Основные отличия заключаются в том, что тело определения макроса должно
+возвращать список, который описывает преобразованное выражение, и который определен
+как помеченное макроопределения (а не определение процедуры) с использованием
+отличного ключевого слова определения: в Lisp, @code{defmacro} а не
+@code{defun}, и в Scheme, @code{define-macro} а не @code{define}.
+
+@fnindex defmacro
+@fnindex define-macro
+Guile поддерживает этот стиль определения макросов, используя оба, и @code{defmacro}
+и @code{define-macro}.  Единственная разница между ними заключается в том, как сгруппированы
+имя макроса и аргументы в определении:
+
+@lisp
+(defmacro @var{name} (@var{args} @dots{}) @var{body} @dots{})
+@end lisp
+
+@noindent
+такой же как
+
+@lisp
+(define-macro (@var{name} @var{args} @dots{}) @var{body} @dots{})
+@end lisp
+
+@noindent
+Разница аналогична соответствующей разнице между
+@code{defun} в Lisp и  @code{define} в Scheme.
+
+Прочитав предыдущий раздел @code{syntax-case}, вероятно вам ясно, что
+Guile реализуетs defmacros в терминах @code{syntax-case}, применяя преобразователь
+выражений между вызовами @code{syntax->datum} и @code{datum->syntax}. 
+Эта реализация приводит нас к проблемам с  defmacros,
+состоящих в том, что он не сохраняет ссылочную прозрачность. Можно, остророжно,
+чтобы не вводить привязки в расширенный код, через либеральное использование
+@code{gensym}, но здесь не обойтись без ссылочной прозрачности для свободных
+привязок в самом макросе.
+
+Даже такой простой макрос как @code{when} из предыдущего разделаЮ было бы
+трудно понять:
+
+@example
+(define-macro (when cond exp . rest)
+  `(if ,cond
+       (begin ,exp . ,rest)))
+
+(when #f (display "Launching missiles!\n"))
+@result{} #f
+
+(let ((if list))
+  (when #f (display "Launching missiles!\n")))
+@print{} Launching missiles!
+@result{} (#f #<unspecified>)
+@end example
+
+Перспектива Guile заключается в том, что defmacros отлично работает, но современные
+макросы должны быть написаны с помощью @code{syntax-rules} или @code{syntax-case}. 
+Есть еще много примененений defmacros в самом Guil, но мы будем постепенно сворачивать их.
+Кончено, мы не будем убирать @code{defmacro} или @code{define-macro}, так как есть много
+кода, который использует их.
+
+@node Identifier Macros
+@subsection Идентификатор Макросов
+
+Когда расширитель синтаксиса видит форму, в которой первый элемент является макросом,
+вся форма передается преобразователю синтаксиса макроса. Можно представить это как:
+
+@example
+(define-syntax foo foo-transformer)
+(foo @var{arg}...)
+;; expands via
+(foo-transformer #'(foo @var{arg}...))
+@end example
+
+Если, с другой стороны, макрос упоминается в какой либо другой части формы, перобразователь
+синтаксиса вызывается только со ссылкой на макрос, а не на всю форму.
+
+@example
+(define-syntax foo foo-transformer)
+foo
+;; expands via
+(foo-transformer #'foo)
+@end example
+
+Это позволяет программно заменять голые ссылки на идентификаторы с помощью макроса.
+@code{syntax-rules} предоставлят несколько синтаксисов для более легкого осуществления
+этого преобразования.
+
+@deffn {Syntax} identifier-syntax exp
+Возвращает макро преобразователь, который заменит вхождение макроса на 
+@var{exp}.
+@end deffn
+
+Например, если вы импортируете внешний код написанный в терминах  @code{fx+},
+fixnum оператор сложения, но в Guile нет @code{fx+}, вы можете использовать
+следующее для замены @code{fx+} на @code{+}:
+
+@example
+(define-syntax fx+ (identifier-syntax +))
+@end example
+
+Так же есть специальная поддержка распознавания идентификаторов в
+левой части выражения @code{set!}, как в следующем примере:
+
+@example
+(define-syntax foo foo-transformer)
+(set! foo @var{val})
+;; expands via
+(foo-transformer #'(set! foo @var{val}))
+;; if foo-transformer is a "variable transformer"
+@end example
+
+Как видно из примера, процедура преобразования должна быть явно помечена
+как преобразователь переменной(``variable transformer''), так как большинство
+макросов не пишуться для распознавания в форме положения оператора.
+
+@deffn {Scheme Procedure} make-variable-transformer transformer
+Помечает процедуру @var{transformer} как преобразователь переменной(``variable
+transformer''). На практике это означает, что при привязке к синтаксическому
+ключевому слову, он может обнаружить ссылки на это ключевое слово в левой части
+@code{set!}.
+
+@example
+(define bar 10)
+(define-syntax bar-alias
+  (make-variable-transformer
+   (lambda (x)
+     (syntax-case x (set!)
+       ((set! var val) #'(set! bar val))
+       ((var arg ...) #'(bar arg ...))
+       (var (identifier? #'var) #'bar)))))
+
+bar-alias @result{} 10
+(set! bar-alias 20)
+bar @result{} 20
+(set! bar 30)
+bar-alias @result{} 30
+@end example
+@end deffn
+
+Имеется расширение identifier-syntax которое позволяет ему обрабатывать
+так же @code{set!}:
+
+@deffn {Syntax} identifier-syntax (var exp1) ((set! var val) exp2)
+Создает преобразователь переменной. Первое предложение используется для ссылок
+на переменную в положении оператора или операнда, а второе - для появления
+переменной в левой стороне оператора присваивания.
+
+Например, предыдущий пример @code{bar-alias} можно выразить более кратко,
+подобно этому:
+
+@example
+(define-syntax bar-alias
+  (identifier-syntax
+    (var bar)
+    ((set! var val) (set! bar val))))
+@end example
+
+@noindent
+Как и прежде, шаблоны в формах @code{identifier-syntax} не нуждаются в
+обертывании в @code{#'} синтаксических форм.
+@end deffn
+
+@node Syntax Parameters
+@subsection Синтаксические Параметры
+
+Синтаксические параметры@footnote{Описанные в публикации @cite{Сохранение
+чистоты с использованием синтаксических параметров(Keeping it Clean
+with Syntax Parameters)} by Barzilay, Culpepper and Flatt.} представляют
+собой механизм для повторного связывания определения макроса в пределах
+динамического расширения макроса.  Это обеспечивает удобное решение для
+одного из самых распространенных типов негигиенических макросов: те, которые
+вводят нигигиеническое связывание каждый раз когда макрос используется.
+Например включение формы @code{lambda} с ключевым словом @code{return},
+или макросов класса, которые вводят специальную привязку @code{self}.
+
+С синтаксическими параметрами, вместо того, чтобы  негигиенично вводить 
+каждый раз привязу, вместо этого мы создаем одну привязку для ключевого слова, которую
+затем можем настроить позже, когда захотим, чтобы ключевое слово имело другое
+значение.  Поскольку новые привязки не вводяться, гигиена сохраняется.
+Это похоже на механизмы динамического связывания, которые мы имеем во время
+выполнения (@pxref{SRFI-39, parameters}), за исключением того, что динамическое
+связывание происходит только во время расширения макроса. Код после расширения
+макроса остается лексически ограниченным(охваченным).
+
+@deffn {Syntax} define-syntax-parameter keyword transformer
+Привязывает @var{keyword} к значению, полученному путем выполнения
+преобразователя @var{transformer}.  @var{transformer} обеспечивает расширение
+по умолчанию для синтаксического параметра, а при отсутствии
+@code{syntax-parameterize}, функционально эквивалентен
+@code{define-syntax}.  Обычно вы просто хотите, что бы перобразователь
+@var{transformer} выдал синтаксическую ошибку, указвающую что @var{keyword}
+предполагается использовать вместе с другим макросом, например:
+@example
+(define-syntax-parameter return
+  (lambda (stx)
+    (syntax-violation 'return "return used outside of a lambda^" stx)))
+@end example
+@end deffn
+
+@deffn {Syntax} syntax-parameterize ((keyword transformer) @dots{}) exp @dots{}
+Корректирует @var{keyword} @dots{} для использования значения полученного путем
+вычисления преобразователя @var{transformer} @dots{}, при расширении формы @var{exp}
+@dots{}.  Каждое @var{keyword} должно быть связано с синтаксическим параметром.
+@code{syntax-parameterize} отличается от @code{let-syntax}, тем что привязка
+не затеняется, а скорее корректируется, и поэтому использует keyword при
+расширении @var{exp} @dots{} использует новый преобразователь. Это несколько
+похоже на то, как @code{parameterize} корректирует значения регулярных параметров,
+вместо того чтобы создавать новые привязки.
+
+@example
+(define-syntax lambda^
+  (syntax-rules ()
+    [(lambda^ argument-list body body* ...)
+     (lambda argument-list
+       (call-with-current-continuation
+        (lambda (escape)
+          ;; В теле мы настраиваем ключевое слово 'return' так чтобы вызов
+          ;; 'return' заменялся бы вызовом escape прекращения(побега)
+          ;; продолжения.
+          (syntax-parameterize ([return (syntax-rules ()
+                                          [(return vals (... ...))
+                                           (escape vals (... ...))])])
+            body body* ...))))]))
+
+;; Теперь мы можем написать функции, которые возвращаются досрочно. Здесь, результатом'product' будет
+;; немедленный возврат если он видит 0 элементов.
+(define product
+  (lambda^ (list)
+           (fold (lambda (n o)
+                   (if (zero? n)
+                       (return 0)
+                       (* n o)))
+                 1
+                 list)))
+@end example
+@end deffn
+
+@node Eval When
+@subsection Eval-when
+
+Так как макросам @code{syntax-case}  доступна вся сила Scheme,
+они представляют проблему, связанную со временем: когда макрос запускается, какие части
+программы доступны для использования макросом?
+
+Ответ на этот вопрос по умолчанию, заключается в том, что при импортеа модуля
+(через @code{define-module} или @code{use-modules}), этот модуль будет загружен
+во время расширения, так же как и во время выполнения. Кроме того, синтаксичсеские
+определения верхнего уровня во время компиляции элемента(файла) созданные с помощью
+ @code{define-syntax}, также вычисляются во время расширения в том порядке, в котором
+они появляются в компилируемом элементе(файле).
+
+Но если синтаксическое определение должно вызвать нормальную процедуру во время
+расширения, вполне может потребоваться специальная декларация, указывающая на 
+необходимость доступности процедуры во время расширения.
+
+Например, следующий код будет работать в REPL, не не в файле:
+
+@example
+;; не правильное
+(use-modules (srfi srfi-19))
+(define (date) (date->string (current-date)))
+(define-syntax %date (identifier-syntax (date)))
+(define *compilation-date* %date)
+@end example
+
+Это работает в REPL, потому что выражения вычисляются(обрабатываются) по порядку, 
+но если они будут помещены в файл, выражения расширяются один за другим, но не
+вычисляются до того как скомпилированный файл будет загружен.
+
+Исправление состоит в использовании @code{eval-when}.
+
+@example
+;; правильно: исползуя eval-when
+(use-modules (srfi srfi-19))
+(eval-when (expand load eval)
+  (define (date) (date->string (current-date))))
+(define-syntax %date (identifier-syntax (date)))
+(define *compilation-date* %date)
+@end example
+
+@deffn {Syntax} eval-when conditions exp...
+Вычисляет @var{exp...} при данных условиях @var{conditions}.  Действительные
+условия включают в себя:
+
+@table @code
+@item expand
+Вычисление во время макро расширения, не зависимо от того скомпилирован он или нет.
+
+@item load
+Вычисление на этапе вычисления скомпилированного кода, т.е. при загрузке
+скомпилированного модуля или запуске скомпилированного кода в  REPL.
+
+@item eval
+Вычисление во время фазы вычисления не скомпилированного кода.
+
+@item compile
+Вычисление во время макро расширения, но только при компиляции.
+@end table
+
+Другими словами, при использовании примитивного исполнителя(evaluator), выражение 
+@code{eval-when} с @code{expand} выполняются во время расширения макроса, а те, которые
+имеют @code{eval} запускаются во время этапа вычисления.
+
+При использовании компилятора, выражение @code{eval-when} с
+@code{expand} или @code{compile} запускаются во время макро
+расширения, а те у кого есть @code{load} также запускаются
+во время этапаа вычисления.
+
+Если вы сомневаетесь, исползуйте три условия @code{(expand load eval)}, как в
+примере выше.  Другие способы использования @code{eval-when} могут привести
+к анулированию гарантий или отравлению вашего кота.
+@end deffn
+
+@node Macro Expansion
+@subsection Расширение Макроса
+
+Обычно, макросы расширяются по мере необходимости их использования.Расширение
+макросов неотемлемая часть @code{eval} и @code{compile}.  Пользователи также
+могут расширять макросы в запросе REPL через команду REPL @code{expand}; 
+@xref{Compile Commands}.
+
+Макросы также могут быть расширены программно, через @code{macroexpand},
+не детали получаются ужасными, по двум причинам.
+
+Первая трудность состоит в том, что результатом макрорасширения
+является не Scheme: а Tree-IL, высокоуровневый промежуточный язык Guile.
+@xref{Tree-IL}.  Как ``гигиенические макросы'' могут создавать идентификаторы,
+которые отличаются друг от друга, но имеют одинаковое имя, выходной формат
+должен быть способен представлять различия между переменными и именами. Еще
+раз @xref{Tree-IL}, для получаения детальной информации.  Самое простое -
+просто запустить @code{tree-il->scheme} для результата макро-расширения:
+
+@lisp
+(macroexpand '(+ 1 2))
+@result{}
+#<tree-il (call (toplevel +) (const 1) (const 2))>
+
+(use-modules (language tree-il))
+(tree-il->scheme (macroexpand '(+ 1 2)))
+@result{}
+(+ 1 2)
+@end lisp
+
+Вторая трудность заключена в @code{eval-when}.  В качестве примера, что означает
+для macro-expand определение макроса?
+
+@lisp
+(macroexpand '(define-syntax qux (identifier-syntax 'bar)))
+@result{}
+?
+@end lisp
+
+Ответ зависит от того, кто является расширителем макроса и почему. Вы
+определяете макрос в текущей окружающей среде? Остаточное определение
+макроса? И то и другое? Ни? По умолчанию это расширение в режиме ``eval'',
+что означает, что предложения @code{eval-when} будет действовать только
+когда @code{eval} (или @code{expand}) удовлетворяют набору условий. Макрос
+верхнего уровня будет вычислен @code{eval} в среде верхнего уровня.
+
+Таким образом @code{(macroexpand @var{foo})} эквивалентно
+@code{(macroexpand @var{foo} 'e '(eval))}.  вторым аргументом является
+режим (@code{'e} for ``eval'') и второй параметр eval-syntax-expanders-when
+(только @code{eval} в этой установке по умолчанию).
+
+Но если вы компилируете определение макроса, возможн, вы захотите
+восстановить само определение макроса. В этом случае вы передаете
+@code{'c} в качестве второго параметра в @code{macroexpand}.  Но, 
+вероятно, вы хотите, чтобы определение макроса присутствовало во
+врмея компиляции, так что вы передаете  @code{'(compile load eval)}
+как параметр @var{esew}.  На самом деле @code{(compile @var{foo} #:to 'tree-il)}
+полностью эквивалентен @code{(macroexpand @var{foo} 'c '(compile load eval))}; 
+@xref{The Scheme Compiler}.
+
+Это ужасный интерфейс; мы знаем.  Макрорасширитель(macroexpander) несколько
+сложнее в этом отношении, поэтому, если вы не создаете утилиту макро-расширения,
+мы предлагаем избегать его вызова на прямую.
+
+@node Hygiene and the Top-Level
+@subsection Гигиена и Верхний Уровень
+
+Рассмотрим следующий макрос.
+
+@lisp
+(define-syntax-rule (defconst name val)
+  (begin
+    (define t val)
+    (define-syntax-rule (name) t)))
+@end lisp
+
+Если мы используем его, чтобы сделать пару привязок:
+
+@lisp
+(defconst foo 42)
+(defconst bar 37)
+@end lisp
+
+Его расширение будет выглядеть примерно так:
+
+@lisp
+(begin
+  (define t 42)
+  (define-syntax-rule (foo) t))
+(begin
+  (define t 37)
+  (define-syntax-rule (bar) t))
+@end lisp
+
+Поскольку два @code{t} привязки были введены макросом, они должны быть
+введены гигиенически(hygienically) -- и действительно, они находяться внутри
+лексического контура (т.е. @code{let} или какой-то другой лексической области охвата).
+Ссылка @code{t} в @code{foo} отличается от ссылке в @code{bar}.
+
+На верхнем уровне все сложнее.  До Guile 2.2, исползование @code{defconst}
+на верхнем уровне не будет вводить новую привязку для @code{t}.  Это было
+сделано в соответствии с гибкой интерпретацией стандарта Scheme, в котором
+предполагалось, что все возможные привязки осуществляются на верхнем уровне,
+и в котором мы просто используем преимущества @code{define} верхнего уровня
+для существующей привязки она эквивалентна @code{set!}.
+Но это не веская причина.
+
+Решение состоит в том, чтобы создать новые имена для всех привязок,
+предоставленных макросами, а не только привязками в лексических контурах,
+но и привязкам введенным на верхнем уровне.
+
+Однако, очевидно стратегия простого присвоения случайных имен идентификаторам
+верхнего уровня создает проблему для отдельной компиляции.  Рассмотрим без
+ограничения общности @code{defconst} из @code{foo} в модуле
+@code{a}, который вводит новое имя верхнего уровня @code{t-1}.  Если мы тогда
+скомпилируем модуль @code{b} который исползжует @code{foo}, теперь в модуле
+@code{b} есть ссылка на @code{t-1}.  Если модуль @code{a} затем вновь расширяется,
+по любой причине, например при простой перекомпиляции, введенный  @code{t} получает
+новое имя; скажем, @code{t-2}.  Теперь модуль @code{b} ломается, потому что в модуле
+@code{a} нет больше привязки с именем @code{t-1}.
+
+Если введенные идентификаторы верхнего уровня экранируются(``escape'') 
+модулем, то в любом случае они образуют часть двоичного интерфейса (ABI)
+модуля.  С инженерной точки зрения не допустимо случайное изменение ABI.
+(Это также создает практические проблемы в выполнении условий перекомпиляции
+лицензии Lesser GPL, для таких модулей.)
+По этой причине многие люди предпочитают никогда не использовать макросы,
+вводящие идентификаторы на верхнем уровне, вместо этого заставляя эти макросы
+получать имена для вводимых ими идентификаторов как часть их аргументов, или
+чтобы строить их программно и использовать @code{datum->syntax}.  Но этот подход
+требует всеведения в отношении реализации всех макросов, которые можно использовать,
+и также ограничивает выразительную силу макросов Scheme.
+
+Идеального решения этой проблемы не существует.  Guile делает здесь ужасную
+вещь.  Когда дело идет к введению идентификатора верхнего уровня, Guile дает
+идентификатору псевдо-чистое имя: имя это зависит от хеша исходного выражения, в
+котором встречается имя.  В этом случае введенные определения расширяются как:
+
+@lisp
+(begin
+  (define t-1dc5e42de7c1050c 42)
+  (define-syntax-rule (foo) t-1dc5e42de7c1050c))
+(begin
+  (define t-10cb8ce9fdddd6e9 37)
+  (define-syntax-rule (bar) t-10cb8ce9fdddd6e9))
+@end lisp
+
+Однако обратите внимание, что поскольку хеш зависит исключительно от выражения, вводящего
+определение, у нас также есть:
+
+@lisp
+(defconst baz 42)
+@result{} (begin
+    (define t-1dc5e42de7c1050c 42)
+    (define-syntax-rule (baz) t-1dc5e42de7c1050c))
+@end lisp
+
+Обратите внимание, что введенная привязка имеет тоже имя!  Это потому, что
+исходное выражение, @code{(define t 42)}, было тоже самое.  Возможно, вы никогда
+не увидите ошибку в этой области, но важно понимать компоненты интерфейса модуля,
+и что интерфейс может включать в себя макро-введенные идентификаторы.
+
+@node Internal Macros
+@subsection Внутренние Макросы
+
+@deffn {Scheme Procedure} make-syntax-transformer name type binding
+Строит объект синтаксического преобразования. Это часть низкоуровневой поддержки 
+в Guile syntax-case.
+@end deffn
+
+@deffn {Scheme Procedure} macro? obj
+@deffnx {C Function} scm_macro_p (obj)
+Возвращает @code{#t} если @var{obj} является синтаксическим преобразователем, или @code{#f}
+otherwise.
+
+Обратите внимание, что немного сложно получить макрос как объект первого класса(первоклассный);
+простое именование его (такие как @code{case}) приведет к синтаксической ошибке. Но можно получить
+эти объекты используя @code{module-ref}:
+
+@example
+(macro? (module-ref (current-module) 'case))
+@result{} #t
+@end example
+@end deffn
+
+@deffn {Scheme Procedure} macro-type m
+@deffnx {C Function} scm_macro_type (m)
+Возвращает тип @var{type} который был задан, при создании @var{m}, с помощью
+преобразователя синтаксиса @code{make-syntax-transformer}.
+@end deffn
+
+@deffn {Scheme Procedure} macro-name m
+@deffnx {C Function} scm_macro_name (m)
+Возвращает имя макроса @var{m}.
+@end deffn
+
+@deffn {Scheme Procedure} macro-binding m
+@deffnx {C Function} scm_macro_binding (m)
+Возвращает привязку макроса @var{m}.
+@end deffn
+
+@deffn {Scheme Procedure} macro-transformer m
+@deffnx {C Function} scm_macro_transformer (m)
+Возвращает преобразователь макроса @var{m}. Возвращает процедуру, для которой можно
+запросить документацию(docstring). Вот и вся причина поо которой этот раздел 
+задокументирован. На самом деле это часть результата @code{macro-binding}.
+@end deffn
+
+@c Local Variables:
+@c TeX-master: "guile.texi"
+@c End:

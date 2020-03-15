@@ -1,0 +1,1874 @@
+#. extracted from /home/bear/work/guile/doc/guile/en/sxml.texi
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2018-05-07 12:37+0300\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Generator: Translate Toolkit 2.2.5\n"
+
+#: /home/bear/work/guile/doc/guile/en/sxml.texi:5
+msgid ""
+"@c -*-texinfo-*-\n"
+"@c This is part of the GNU Guile Reference Manual.\n"
+"@c Copyright (C) 2013, 2017 Free Software Foundation, Inc.\n"
+"@c See the file guile.texi for copying conditions."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/sxml.texi:9
+msgid ""
+"@c SXPath documentation based on SXPath.scm by Oleg Kiselyov,\n"
+"@c which is in the public domain according to <http://okmij.org/ftp/>\n"
+"@c and <http://ssax.sourceforge.net/>."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/sxml.texi:12
+msgid ""
+"@node SXML\n"
+"@section SXML"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/sxml.texi:16
+msgid ""
+"SXML is a native representation of XML in terms of standard Scheme data\n"
+"types: lists, symbols, and strings.  For example, the simple XML\n"
+"fragment:"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/sxml.texi:20
+msgid ""
+"@example\n"
+"<parrot type=\"African Grey\"><name>Alfie</name></parrot>\n"
+"@end example"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/sxml.texi:22
+msgid "may be represented with the following SXML:"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/sxml.texi:26
+msgid ""
+"@example\n"
+"(parrot (@@ (type \"African Grey\")) (name \"Alfie\"))\n"
+"@end example"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/sxml.texi:30
+msgid ""
+"SXML is very general, and is capable of representing all of XML.\n"
+"Formally, this means that SXML is a conforming implementation of the\n"
+"@uref{XML Information Set,http://www.w3.org/TR/xml-infoset/} standard."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/sxml.texi:33
+msgid ""
+"Guile includes several facilities for working with XML and SXML:\n"
+"parsers, serializers, and transformers."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/sxml.texi:44
+msgid ""
+"@menu\n"
+"* SXML Overview::               XML, as it was meant to be\n"
+"* Reading and Writing XML::     Convenient XML parsing and serializing\n"
+"* SSAX::                        Custom functional-style XML parsers\n"
+"* Transforming SXML::           Munging SXML with @code{pre-post-order}\n"
+"* SXML Tree Fold::              Fold-based SXML transformations\n"
+"* SXPath::                      XPath for SXML\n"
+"* sxml ssax input-parse::       The SSAX tokenizer, optimized for Guile\n"
+"* sxml apply-templates::        A more XSLT-like approach to SXML "
+"transformations\n"
+"@end menu"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/sxml.texi:47
+msgid ""
+"@node SXML Overview\n"
+"@subsection SXML Overview"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/sxml.texi:49
+msgid "(This section needs to be written; volunteers welcome.)"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/sxml.texi:53
+msgid ""
+"@node Reading and Writing XML\n"
+"@subsection Reading and Writing XML"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/sxml.texi:57
+msgid ""
+"The @code{(sxml simple)} module presents a basic interface for parsing\n"
+"XML from a port into the Scheme SXML format, and for serializing it back\n"
+"to text."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/sxml.texi:61
+msgid ""
+"@example\n"
+"(use-modules (sxml simple))\n"
+"@end example"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/sxml.texi:72
+msgid ""
+"@deffn {Scheme Procedure} xml->sxml [string-or-port] [#:namespaces='()] @\n"
+"       [#:declare-namespaces?=#t] [#:trim-whitespace?=#f] @\n"
+"       [#:entities='()] [#:default-entity-handler=#f] @\n"
+"       [#:doctype-handler=#f]\n"
+"Use SSAX to parse an XML document into SXML. Takes one optional\n"
+"argument, @var{string-or-port}, which defaults to the current input\n"
+"port.  Returns the resulting SXML document.  If @var{string-or-port} is\n"
+"a port, it will be left pointing at the next available character in the\n"
+"port.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/sxml.texi:78
+msgid ""
+"As is normal in SXML, XML elements parse as tagged lists.  Attributes,\n"
+"if any, are placed after the tag, within an @code{@@} element.  The root\n"
+"of the resulting XML will be contained in a special tag, @code{*TOP*}.\n"
+"This tag will contain the root element of the XML, but also any prior\n"
+"processing instructions."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/sxml.texi:89
+msgid ""
+"@example\n"
+"(xml->sxml \"<foo/>\")\n"
+"@result{} (*TOP* (foo))\n"
+"(xml->sxml \"<foo>text</foo>\")\n"
+"@result{} (*TOP* (foo \"text\"))\n"
+"(xml->sxml \"<foo kind=\\\"bar\\\">text</foo>\")\n"
+"@result{} (*TOP* (foo (@@ (kind \"bar\")) \"text\"))\n"
+"(xml->sxml \"<?xml version=\\\"1.0\\\"?><foo/>\")\n"
+"@result{} (*TOP* (*PI* xml \"version=\\\"1.0\\\"\") (foo))\n"
+"@end example"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/sxml.texi:95
+msgid ""
+"All namespaces in the XML document must be declared, via @code{xmlns}\n"
+"attributes.  SXML elements built from non-default namespaces will have\n"
+"their tags prefixed with their URI.  Users can specify custom prefixes\n"
+"for certain namespaces with the @code{#:namespaces} keyword argument to\n"
+"@code{xml->sxml}."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/sxml.texi:106
+msgid ""
+"@example\n"
+"(xml->sxml \"<foo xmlns=\\\"http://example.org/ns1\\\">text</foo>\")\n"
+"@result{} (*TOP* (http://example.org/ns1:foo \"text\"))\n"
+"(xml->sxml \"<foo xmlns=\\\"http://example.org/ns1\\\">text</foo>\"\n"
+"           #:namespaces '((ns1 . \"http://example.org/ns1\")))\n"
+"@result{} (*TOP* (ns1:foo \"text\"))\n"
+"(xml->sxml \"<foo xmlns:bar=\\\"http://example.org/ns2\\\"><bar:baz/></foo>\""
+"\n"
+"           #:namespaces '((ns2 . \"http://example.org/ns2\")))\n"
+"@result{} (*TOP* (foo (ns2:baz)))\n"
+"@end example"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/sxml.texi:111
+msgid ""
+"By default, namespaces passed to @code{xml->sxml} are treated as if they\n"
+"were declared on the root element.  Passing a false\n"
+"@code{#:declare-namespaces?} argument will disable this behavior,\n"
+"requiring in-document declarations of namespaces before use.."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/sxml.texi:121
+msgid ""
+"@example\n"
+"(xml->sxml \"<foo><ns2:baz/></foo>\"\n"
+"           #:namespaces '((ns2 . \"http://example.org/ns2\")))\n"
+"@result{} (*TOP* (foo (ns2:baz)))\n"
+"(xml->sxml \"<foo><ns2:baz/></foo>\"\n"
+"           #:namespaces '((ns2 . \"http://example.org/ns2\"))\n"
+"           #:declare-namespaces? #f)\n"
+"@result{} error: undeclared namespace: `bar'\n"
+"@end example"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/sxml.texi:126
+msgid ""
+"By default, all whitespace in XML is significant.  Passing the\n"
+"@code{#:trim-whitespace?} keyword argument to @code{xml->sxml} will trim\n"
+"whitespace in front, behind and between elements, treating it as\n"
+"``unsignificant''.  Whitespace in text fragments is left alone."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/sxml.texi:134
+msgid ""
+"@example\n"
+"(xml->sxml \"<foo>\\n"
+"<bar> Alfie the parrot! </bar>\\n"
+"</foo>\")\n"
+"@result{} (*TOP* (foo \"\\n"
+"\" (bar \" Alfie the parrot! \") \"\\n"
+"\"))\n"
+"(xml->sxml \"<foo>\\n"
+"<bar> Alfie the parrot! </bar>\\n"
+"</foo>\"\n"
+"           #:trim-whitespace? #t)\n"
+"@result{} (*TOP* (foo (bar \" Alfie the parrot! \")))\n"
+"@end example"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/sxml.texi:141
+msgid ""
+"Parsed entities may be declared with the @code{#:entities} keyword\n"
+"argument, or handled with the @code{#:default-entity-handler}.  By\n"
+"default, only the standard @code{&lt;}, @code{&gt;}, @code{&amp;},\n"
+"@code{&apos;} and @code{&quot;} entities are defined, as well as the\n"
+"@code{&#@var{N};} and @code{&#x@var{N};} (decimal and hexadecimal)\n"
+"numeric character entities."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/sxml.texi:167
+msgid ""
+"@example\n"
+"(xml->sxml \"<foo>&amp;</foo>\")\n"
+"@result{} (*TOP* (foo \"&\"))\n"
+"(xml->sxml \"<foo>&nbsp;</foo>\")\n"
+"@result{} error: undefined entity: nbsp\n"
+"(xml->sxml \"<foo>&#xA0;</foo>\")\n"
+"@result{} (*TOP* (foo \"\\xa0\"))\n"
+"(xml->sxml \"<foo>&nbsp;</foo>\"\n"
+"           #:entities '((nbsp . \"\\xa0\")))\n"
+"@result{} (*TOP* (foo \"\\xa0\"))\n"
+"(xml->sxml \"<foo>&nbsp; &foo;</foo>\"\n"
+"           #:default-entity-handler\n"
+"           (lambda (port name)\n"
+"             (case name\n"
+"               ((nbsp) \"\\xa0\")\n"
+"               (else\n"
+"                (format (current-warning-port)\n"
+"                        \"~a:~a:~a: undefined entitity: ~a\\n"
+"\"\n"
+"                        (or (port-filename port) \"<unknown file>\")\n"
+"                        (port-line port) (port-column port)\n"
+"                        name)\n"
+"                (symbol->string name)))))\n"
+"@print{} <unknown file>:0:17: undefined entitity: foo\n"
+"@result{} (*TOP* (foo \"\\xa0 foo\"))\n"
+"@end example"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/sxml.texi:173
+msgid ""
+"By default, @code{xml->sxml} skips over the @code{<!DOCTYPE>}\n"
+"declaration, if any.  This behavior can be overridden with the\n"
+"@code{#:doctype-handler} argument, which should be a procedure of three\n"
+"arguments: the @dfn{docname} (a symbol), @dfn{systemid} (a string), and\n"
+"the internal doctype subset (as a string or @code{#f} if not present)."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/sxml.texi:180
+msgid ""
+"The handler should return keyword arguments as multiple values, as if it\n"
+"were calling its continuation with keyword arguments.  The continuation\n"
+"accepts the @code{#:entities} and @code{#:namespaces} keyword arguments,\n"
+"in the same format that @code{xml->sxml} itself takes.  These entities\n"
+"and namespaces will be prepended to those given to the @code{xml->sxml}\n"
+"invocation."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/sxml.texi:188
+msgid ""
+"@example\n"
+"(define (handle-foo docname systemid internal-subset)\n"
+"  (case docname\n"
+"    ((foo)\n"
+"     (values #:entities '((greets . \"<i>Hello, world!</i>\"))))\n"
+"    (else\n"
+"     (values))))"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/sxml.texi:193
+msgid ""
+"(xml->sxml \"<!DOCTYPE foo><p>&greets;</p>\"\n"
+"           #:doctype-handler handle-foo)\n"
+"@result{} (*TOP* (p (i \"Hello, world!\")))\n"
+"@end example"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/sxml.texi:196
+msgid ""
+"If the document has no doctype declaration, the @var{doctype-handler} is\n"
+"invoked with @code{#f} for the three arguments."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/sxml.texi:199
+msgid ""
+"In the future, the continuation may accept other keyword arguments, for\n"
+"example to validate the parsed SXML against the doctype."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/sxml.texi:205
+msgid ""
+"@deffn {Scheme Procedure} sxml->xml tree [port]\n"
+"Serialize the SXML tree @var{tree} as XML. The output will be written to\n"
+"the current output port, unless the optional argument @var{port} is\n"
+"present.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/sxml.texi:210
+msgid ""
+"@deffn {Scheme Procedure} sxml->string sxml\n"
+"Detag an sxml tree @var{sxml} into a string. Does not perform any\n"
+"formatting.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/sxml.texi:213
+msgid ""
+"@node SSAX\n"
+"@subsection SSAX: A Functional XML Parsing Toolkit"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/sxml.texi:216
+msgid ""
+"Guile's XML parser is based on Oleg Kiselyov's powerful XML parsing\n"
+"toolkit, SSAX."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/sxml.texi:218
+msgid "@subsubsection History"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/sxml.texi:222
+msgid ""
+"Back in the 1990s, when the world was young again and XML was the\n"
+"solution to all of its problems, there were basically two kinds of XML\n"
+"parsers out there: DOM parsers and SAX parsers."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/sxml.texi:228
+msgid ""
+"A DOM parser reads through an entire XML document, building up a tree of\n"
+"``DOM objects'' representing the document structure.  They are very easy\n"
+"to use, but sometimes you don't actually want all of the information in\n"
+"a document; building an object tree is not necessary if all you want to\n"
+"do is to count word frequencies in a document, for example."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/sxml.texi:235
+msgid ""
+"SAX parsers were created to give the programmer more control on the\n"
+"parsing process.  A programmer gives the SAX parser a number of\n"
+"``callbacks'': functions that will be called on various features of the\n"
+"XML stream as they are encountered.  SAX parsers are more efficient, but\n"
+"much harder to user, as users typically have to manually maintain a\n"
+"stack of open elements."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/sxml.texi:241
+msgid ""
+"Kiselyov realized that the SAX programming model could be made much\n"
+"simpler if the callbacks were formulated not as a linear fold across the\n"
+"features of the XML stream, but as a @emph{tree fold} over the structure\n"
+"implicit in the XML.  In this way, the user has a very convenient,\n"
+"functional-style interface that can still generate optimal parsers."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/sxml.texi:245
+msgid ""
+"The @code{xml->sxml} interface from the @code{(sxml simple)} module is a\n"
+"DOM-style parser built using SSAX, though it returns SXML instead of DOM\n"
+"objects."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/sxml.texi:247
+msgid "@subsubsection Implementation"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/sxml.texi:259
+msgid ""
+"@code{(sxml ssax)} is a package of low-to-high level lexing and parsing\n"
+"procedures that can be combined to yield a SAX, a DOM, a validating\n"
+"parser, or a parser intended for a particular document type.  The\n"
+"procedures in the package can be used separately to tokenize or parse\n"
+"various pieces of XML documents.  The package supports XML Namespaces,\n"
+"internal and external parsed entities, user-controlled handling of\n"
+"whitespace, and validation.  This module therefore is intended to be a\n"
+"framework, a set of ``Lego blocks'' you can use to build a parser\n"
+"following any discipline and performing validation to any degree.  As an\n"
+"example of the parser construction, the source file includes a\n"
+"semi-validating SXML parser."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/sxml.texi:271
+msgid ""
+"SSAX has a ``sequential'' feel of SAX yet a ``functional style'' of DOM.\n"
+"Like a SAX parser, the framework scans the document only once and\n"
+"permits incremental processing.  An application that handles document\n"
+"elements in order can run as efficiently as possible.  @emph{Unlike} a\n"
+"SAX parser, the framework does not require an application register\n"
+"stateful callbacks and surrender control to the parser.  Rather, it is\n"
+"the application that can drive the framework -- calling its functions to\n"
+"get the current lexical or syntax element.  These functions do not\n"
+"maintain or mutate any state save the input port.  Therefore, the\n"
+"framework permits parsing of XML in a pure functional style, with the\n"
+"input port being a monad (or a linear, read-once parameter)."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/sxml.texi:286
+msgid ""
+"Besides the @var{port}, there is another monad -- @var{seed}.  Most of\n"
+"the middle- and high-level parsers are single-threaded through the\n"
+"@var{seed}.  The functions of this framework do not process or affect\n"
+"the @var{seed} in any way: they simply pass it around as an instance of\n"
+"an opaque datatype.  User functions, on the other hand, can use the seed\n"
+"to maintain user's state, to accumulate parsing results, etc.  A user\n"
+"can freely mix their own functions with those of the framework.  On the\n"
+"other hand, the user may wish to instantiate a high-level parser:\n"
+"@code{SSAX:make-elem-parser} or @code{SSAX:make-parser}.  In the latter\n"
+"case, the user must provide functions of specific signatures, which are\n"
+"called at predictable moments during the parsing: to handle character\n"
+"data, element data, or processing instructions (PI).  The functions are\n"
+"always given the @var{seed}, among other parameters, and must return the\n"
+"new @var{seed}."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/sxml.texi:297
+msgid ""
+"From a functional point of view, XML parsing is a combined\n"
+"pre-post-order traversal of a ``tree'' that is the XML document itself.\n"
+"This down-and-up traversal tells the user about an element when its\n"
+"start tag is encountered.  The user is notified about the element once\n"
+"more, after all element's children have been handled.  The process of\n"
+"XML parsing therefore is a fold over the raw XML document.  Unlike a\n"
+"fold over trees defined in [1], the parser is necessarily\n"
+"single-threaded -- obviously as elements in a text XML document are laid\n"
+"down sequentially.  The parser therefore is a tree fold that has been\n"
+"transformed to accept an accumulating parameter [1,2]."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/sxml.texi:299
+msgid "Formally, the denotational semantics of the parser can be expressed as"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/sxml.texi:308
+msgid ""
+"@smallexample \n"
+" parser:: (Start-tag -> Seed -> Seed) ->\n"
+"\t   (Start-tag -> Seed -> Seed -> Seed) ->\n"
+"\t   (Char-Data -> Seed -> Seed) ->\n"
+"\t   XML-text-fragment -> Seed -> Seed\n"
+" parser fdown fup fchar \"<elem attrs> content </elem>\" seed\n"
+"  = fup \"<elem attrs>\" seed\n"
+"\t(parser fdown fup fchar \"content\" (fdown \"<elem attrs>\" seed))"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/sxml.texi:311
+msgid ""
+" parser fdown fup fchar \"char-data content\" seed\n"
+"  = parser fdown fup fchar \"content\" (fchar \"char-data\" seed)"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/sxml.texi:316
+msgid ""
+" parser fdown fup fchar \"elem-content content\" seed\n"
+"  = parser fdown fup fchar \"content\" (\n"
+"\tparser fdown fup fchar \"elem-content\" seed)\n"
+"@end smallexample"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/sxml.texi:318
+msgid "Compare the last two equations with the left fold"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/sxml.texi:322
+msgid ""
+"@smallexample \n"
+" fold-left kons elem:list seed = fold-left kons list (kons elem seed)\n"
+"@end smallexample"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/sxml.texi:326
+msgid ""
+"The real parser created by @code{SSAX:make-parser} is slightly more\n"
+"complicated, to account for processing instructions, entity references,\n"
+"namespaces, processing of document type declaration, etc."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/sxml.texi:329
+msgid ""
+"The XML standard document referred to in this module is\n"
+"@uref{http://www.w3.org/TR/1998/REC-xml-19980210.html}"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/sxml.texi:338
+msgid ""
+"The present file also defines a procedure that parses the text of an XML\n"
+"document or of a separate element into SXML, an S-expression-based model\n"
+"of an XML Information Set.  SXML is also an Abstract Syntax Tree of an\n"
+"XML document.  SXML is similar but not identical to DOM; SXML is\n"
+"particularly suitable for Scheme-based XML/HTML authoring, SXPath\n"
+"queries, and tree transformations.  See SXML.html for more details.\n"
+"SXML is a term implementation of evaluation of the XML document [3].\n"
+"The other implementation is context-passing."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/sxml.texi:341
+msgid ""
+"The present frameworks fully supports the XML Namespaces Recommendation:\n"
+"@uref{http://www.w3.org/TR/REC-xml-names/}."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/sxml.texi:343
+msgid "Other links:"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/sxml.texi:348
+msgid ""
+"@table @asis\n"
+"@item [1]\n"
+"Jeremy Gibbons, Geraint Jones, \"The Under-appreciated Unfold,\" Proc.\n"
+"ICFP'98, 1998, pp. 273-279."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/sxml.texi:353
+msgid ""
+"@item [2]\n"
+"Richard S. Bird, The promotion and accumulation strategies in\n"
+"transformational programming, ACM Trans. Progr. Lang. Systems,\n"
+"6(4):487-504, October 1984."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/sxml.texi:357
+msgid ""
+"@item [3]\n"
+"Ralf Hinze, \"Deriving Backtracking Monad Transformers,\" Functional\n"
+"Pearl. Proc ICFP'00, pp. 186-197."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/sxml.texi:359
+msgctxt "/home/bear/work/guile/doc/guile/en/sxml.texi:359"
+msgid "@end table"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/sxml.texi:363
+msgid ""
+"@subsubsection Usage\n"
+"@deffn {Scheme Procedure} current-ssax-error-port \n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/sxml.texi:366
+msgid ""
+"@deffn {Scheme Procedure} with-ssax-error-to-port port thunk\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/sxml.texi:371
+msgid ""
+"@deffn {Scheme Procedure} xml-token? _\n"
+"@verbatim \n"
+" -- Scheme Procedure: pair? x\n"
+"     Return `#t' if X is a pair; otherwise return `#f'."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/sxml.texi:375
+msgid ""
+"@end verbatim\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/sxml.texi:378
+msgid ""
+"@deffn {Scheme Syntax} xml-token-kind token\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/sxml.texi:381
+msgid ""
+"@deffn {Scheme Syntax} xml-token-head token\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/sxml.texi:384
+msgid ""
+"@deffn {Scheme Procedure} make-empty-attlist \n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/sxml.texi:387
+msgid ""
+"@deffn {Scheme Procedure} attlist-add attlist name-value\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/sxml.texi:391
+msgid ""
+"@deffn {Scheme Procedure} attlist-null? x\n"
+"Return @code{#t} if @var{x} is the empty list, else @code{#f}.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/sxml.texi:394
+msgid ""
+"@deffn {Scheme Procedure} attlist-remove-top attlist\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/sxml.texi:397
+msgid ""
+"@deffn {Scheme Procedure} attlist->alist attlist\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/sxml.texi:400
+msgid ""
+"@deffn {Scheme Procedure} attlist-fold kons knil lis1\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/sxml.texi:403
+msgid ""
+"@deffn {Scheme Procedure} define-parsed-entity! entity str\n"
+"Define a new parsed entity.  @var{entity} should be a symbol."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/sxml.texi:407
+msgid ""
+"Instances of &@var{entity}; in XML text will be replaced with the string\n"
+"@var{str}, which will then be parsed.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/sxml.texi:411
+msgid ""
+"@deffn {Scheme Procedure} reset-parsed-entity-definitions! \n"
+"Restore the set of parsed entity definitions to its initial state.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/sxml.texi:414
+msgid ""
+"@deffn {Scheme Procedure} ssax:uri-string->symbol uri-str\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/sxml.texi:417
+msgid ""
+"@deffn {Scheme Procedure} ssax:skip-internal-dtd port\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/sxml.texi:420
+msgid ""
+"@deffn {Scheme Procedure} ssax:read-pi-body-as-string port\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/sxml.texi:423
+msgid ""
+"@deffn {Scheme Procedure} ssax:reverse-collect-str-drop-ws fragments\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/sxml.texi:426
+msgid ""
+"@deffn {Scheme Procedure} ssax:read-markup-token port\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/sxml.texi:429
+msgid ""
+"@deffn {Scheme Procedure} ssax:read-cdata-body port str-handler seed\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/sxml.texi:432
+msgid ""
+"@deffn {Scheme Procedure} ssax:read-char-ref port\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/sxml.texi:435
+msgid ""
+"@deffn {Scheme Procedure} ssax:read-attributes port entities\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/sxml.texi:438
+msgid ""
+"@deffn {Scheme Procedure} ssax:complete-start-tag tag-head port elems "
+"entities namespaces\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/sxml.texi:441
+msgid ""
+"@deffn {Scheme Procedure} ssax:read-external-id port\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/sxml.texi:444
+msgid ""
+"@deffn {Scheme Procedure} ssax:read-char-data port expect-eof? str-handler "
+"seed\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/sxml.texi:447
+msgid ""
+"@deffn {Scheme Procedure} ssax:xml->sxml port namespace-prefix-assig\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/sxml.texi:450
+msgid ""
+"@deffn {Scheme Syntax} ssax:make-parser . kw-val-pairs\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/sxml.texi:453
+msgid ""
+"@deffn {Scheme Syntax} ssax:make-pi-parser orig-handlers\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/sxml.texi:456
+msgid ""
+"@deffn {Scheme Syntax} ssax:make-elem-parser my-new-level-seed my-finish-"
+"element my-char-data-handler my-pi-handlers\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/sxml.texi:465
+msgid ""
+"@node Transforming SXML\n"
+"@subsection Transforming SXML\n"
+"@subsubsection Overview\n"
+"@heading SXML expression tree transformers\n"
+"@subheading Pre-Post-order traversal of a tree and creation of a new tree\n"
+"@smallexample \n"
+"pre-post-order:: <tree> x <bindings> -> <new-tree>\n"
+"@end smallexample"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/sxml.texi:467
+msgctxt "/home/bear/work/guile/doc/guile/en/sxml.texi:467"
+msgid "where"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/sxml.texi:477
+msgid ""
+"@smallexample \n"
+" <bindings> ::= (<binding> ...)\n"
+" <binding> ::= (<trigger-symbol> *preorder* . <handler>) |\n"
+"               (<trigger-symbol> *macro* . <handler>) |\n"
+"\t\t(<trigger-symbol> <new-bindings> . <handler>) |\n"
+"\t\t(<trigger-symbol> . <handler>)\n"
+" <trigger-symbol> ::= XMLname | *text* | *default*\n"
+" <handler> :: <trigger-symbol> x [<tree>] -> <new-tree>\n"
+"@end smallexample"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/sxml.texi:486
+msgid ""
+"The pre-post-order function visits the nodes and nodelists\n"
+"pre-post-order (depth-first).  For each @code{<Node>} of the form\n"
+"@code{(@var{name} <Node> ...)}, it looks up an association with the\n"
+"given @var{name} among its @var{<bindings>}.  If failed,\n"
+"@code{pre-post-order} tries to locate a @code{*default*} binding.  It's\n"
+"an error if the latter attempt fails as well.  Having found a binding,\n"
+"the @code{pre-post-order} function first checks to see if the binding is\n"
+"of the form"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/sxml.texi:490
+msgid ""
+"@smallexample \n"
+"\t(<trigger-symbol> *preorder* . <handler>)\n"
+"@end smallexample"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/sxml.texi:501
+msgid ""
+"If it is, the handler is 'applied' to the current node.  Otherwise, the\n"
+"pre-post-order function first calls itself recursively for each child of\n"
+"the current node, with @var{<new-bindings>} prepended to the\n"
+"@var{<bindings>} in effect.  The result of these calls is passed to the\n"
+"@var{<handler>} (along with the head of the current @var{<Node>}).  To be\n"
+"more precise, the handler is _applied_ to the head of the current node\n"
+"and its processed children.  The result of the handler, which should also\n"
+"be a @code{<tree>}, replaces the current @var{<Node>}.  If the current\n"
+"@var{<Node>} is a text string or other atom, a special binding with a\n"
+"symbol @code{*text*} is looked up."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/sxml.texi:503
+msgid "A binding can also be of a form"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/sxml.texi:507
+msgid ""
+"@smallexample \n"
+"\t(<trigger-symbol> *macro* . <handler>)\n"
+"@end smallexample"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/sxml.texi:510
+msgid ""
+"This is equivalent to @code{*preorder*} described above.  However, the\n"
+"result is re-processed again, with the current stylesheet."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/sxml.texi:514
+msgid ""
+"@subsubsection Usage\n"
+"@deffn {Scheme Procedure} SRV:send-reply . fragments\n"
+"Output the @var{fragments} to the current output port."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/sxml.texi:523
+msgid ""
+"The fragments are a list of strings, characters, numbers, thunks,\n"
+"@code{#f}, @code{#t} -- and other fragments.  The function traverses the\n"
+"tree depth-first, writes out strings and characters, executes thunks,\n"
+"and ignores @code{#f} and @code{'()}.  The function returns @code{#t} if\n"
+"anything was written at all; otherwise the result is @code{#f} If\n"
+"@code{#t} occurs among the fragments, it is not written out but causes\n"
+"the result of @code{SRV:send-reply} to be @code{#t}.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/sxml.texi:526
+msgid ""
+"@deffn {Scheme Procedure} foldts fdown fup fhere seed tree\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/sxml.texi:529
+msgid ""
+"@deffn {Scheme Procedure} post-order tree bindings\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/sxml.texi:532
+msgid ""
+"@deffn {Scheme Procedure} pre-post-order tree bindings\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/sxml.texi:535
+msgid ""
+"@deffn {Scheme Procedure} replace-range beg-pred end-pred forest\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/sxml.texi:543
+msgid ""
+"@node SXML Tree Fold\n"
+"@subsection SXML Tree Fold\n"
+"@subsubsection Overview\n"
+"@code{(sxml fold)} defines a number of variants of the @dfn{fold}\n"
+"algorithm for use in transforming SXML trees.  Additionally it defines\n"
+"the layout operator, @code{fold-layout}, which might be described as a\n"
+"context-passing variant of SSAX's @code{pre-post-order}."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/sxml.texi:547
+msgid ""
+"@subsubsection Usage\n"
+"@deffn {Scheme Procedure} foldt fup fhere tree\n"
+"The standard multithreaded tree fold."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/sxml.texi:550
+msgid ""
+"@var{fup} is of type [a] -> a. @var{fhere} is of type object -> a.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/sxml.texi:555
+msgid ""
+"@deffn {Scheme Procedure} foldts fdown fup fhere seed tree\n"
+"The single-threaded tree fold originally defined in SSAX.  @xref{SSAX},\n"
+"for more information.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/sxml.texi:561
+msgid ""
+"@deffn {Scheme Procedure} foldts* fdown fup fhere seed tree\n"
+"A variant of @code{foldts} that allows pre-order tree\n"
+"rewrites.  Originally defined in Andy Wingo's 2007 paper,\n"
+"@emph{Applications of fold to XML transformation}.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/sxml.texi:567
+msgid ""
+"@deffn {Scheme Procedure} fold-values proc list . seeds\n"
+"A variant of @code{fold} that allows multi-valued seeds.  Note that the\n"
+"order of the arguments differs from that of @code{fold}.  @xref{SRFI-1\n"
+"Fold and Map}.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/sxml.texi:573
+msgid ""
+"@deffn {Scheme Procedure} foldts*-values fdown fup fhere tree . seeds\n"
+"A variant of @code{foldts*} that allows multi-valued\n"
+"seeds.  Originally defined in Andy Wingo's 2007 paper, @emph{Applications\n"
+"of fold to XML transformation}.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/sxml.texi:577
+msgid ""
+"@deffn {Scheme Procedure} fold-layout tree bindings params layout "
+"stylesheet\n"
+"A traversal combinator in the spirit of @code{pre-post-order}.\n"
+"@xref{Transforming SXML}."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/sxml.texi:580
+msgid ""
+"@code{fold-layout} was originally presented in Andy Wingo's 2007 paper,\n"
+"@emph{Applications of fold to XML transformation}."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/sxml.texi:593
+msgid ""
+"@example \n"
+"bindings := (<binding>...)\n"
+"binding  := (<tag> <handler-pair>...)\n"
+"          | (*default* . <post-handler>)\n"
+"          | (*text* . <text-handler>)\n"
+"tag      := <symbol>\n"
+"handler-pair := (pre-layout . <pre-layout-handler>)\n"
+"          | (post . <post-handler>)\n"
+"          | (bindings . <bindings>)\n"
+"          | (pre . <pre-handler>)\n"
+"          | (macro . <macro-handler>)\n"
+"@end example"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/sxml.texi:597
+msgid ""
+"@table @var\n"
+"@item pre-layout-handler\n"
+"A function of three arguments:"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/sxml.texi:601
+msgid ""
+"@table @var\n"
+"@item kids\n"
+"the kids of the current node, before traversal"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/sxml.texi:604
+msgctxt "/home/bear/work/guile/doc/guile/en/sxml.texi:604"
+msgid ""
+"@item params\n"
+"the params of the current node"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/sxml.texi:607
+msgid ""
+"@item layout\n"
+"the layout coming into this node"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/sxml.texi:609
+msgctxt "/home/bear/work/guile/doc/guile/en/sxml.texi:609"
+msgid "@end table"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/sxml.texi:613
+msgid ""
+"@var{pre-layout-handler} is expected to use this information to return a\n"
+"layout to pass to the kids.  The default implementation returns the\n"
+"layout given in the arguments."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/sxml.texi:616
+msgid ""
+"@item post-handler\n"
+"A function of five arguments:"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/sxml.texi:620
+msgid ""
+"@table @var\n"
+"@item tag\n"
+"the current tag being processed"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/sxml.texi:623
+msgctxt "/home/bear/work/guile/doc/guile/en/sxml.texi:623"
+msgid ""
+"@item params\n"
+"the params of the current node"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/sxml.texi:626
+msgid ""
+"@item layout\n"
+"the layout coming into the current node, before any kids were processed"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/sxml.texi:629
+msgid ""
+"@item klayout\n"
+"the layout after processing all of the children"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/sxml.texi:632
+msgid ""
+"@item kids\n"
+"the already-processed child nodes"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/sxml.texi:634
+msgctxt "/home/bear/work/guile/doc/guile/en/sxml.texi:634"
+msgid "@end table"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/sxml.texi:637
+msgid ""
+"@var{post-handler} should return two values, the layout to pass to the\n"
+"next node and the final tree."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/sxml.texi:640
+msgid ""
+"@item text-handler\n"
+"@var{text-handler} is a function of three arguments:"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/sxml.texi:644
+msgid ""
+"@table @var\n"
+"@item text\n"
+"the string"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/sxml.texi:647
+msgid ""
+"@item params\n"
+"the current params"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/sxml.texi:650
+msgid ""
+"@item layout\n"
+"the current layout"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/sxml.texi:652
+msgctxt "/home/bear/work/guile/doc/guile/en/sxml.texi:652"
+msgid "@end table"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/sxml.texi:655
+msgid ""
+"@var{text-handler} should return two values, the layout to pass to the\n"
+"next node and the value to which the string should transform."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/sxml.texi:658
+msgid ""
+"@end table\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/sxml.texi:669
+msgid ""
+"@node SXPath\n"
+"@subsection SXPath\n"
+"@subsubsection Overview\n"
+"@heading SXPath: SXML Query Language\n"
+"SXPath is a query language for SXML, an instance of XML Information set\n"
+"(Infoset) in the form of s-expressions.  See @code{(sxml ssax)} for the\n"
+"definition of SXML and more details.  SXPath is also a translation into\n"
+"Scheme of an XML Path Language, @uref{http://www.w3.org/TR/xpath,XPath}.\n"
+"XPath and SXPath describe means of selecting a set of Infoset's items or\n"
+"their properties."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/sxml.texi:681
+msgid ""
+"To facilitate queries, XPath maps the XML Infoset into an explicit tree,\n"
+"and introduces important notions of a location path and a current,\n"
+"context node.  A location path denotes a selection of a set of nodes\n"
+"relative to a context node.  Any XPath tree has a distinguished, root\n"
+"node -- which serves as the context node for absolute location paths.\n"
+"Location path is recursively defined as a location step joined with a\n"
+"location path.  A location step is a simple query of the database\n"
+"relative to a context node.  A step may include expressions that further\n"
+"filter the selected set.  Each node in the resulting set is used as a\n"
+"context node for the adjoining location path.  The result of the step is\n"
+"a union of the sets returned by the latter location paths."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/sxml.texi:685
+msgid ""
+"The SXML representation of the XML Infoset (see SSAX.scm) is rather\n"
+"suitable for querying as it is.  Bowing to the XPath specification, we\n"
+"will refer to SXML information items as 'Nodes':"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/sxml.texi:690
+msgid ""
+"@example \n"
+" \t<Node> ::= <Element> | <attributes-coll> | <attrib>\n"
+" \t\t   | \"text string\" | <PI>\n"
+"@end example"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/sxml.texi:692
+msgid "This production can also be described as"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/sxml.texi:696
+msgid ""
+"@example \n"
+"\t<Node> ::= (name . <Nodeset>) | \"text string\"\n"
+"@end example"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/sxml.texi:698
+msgid "An (ordered) set of nodes is just a list of the constituent nodes:"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/sxml.texi:702
+msgid ""
+"@example \n"
+" \t<Nodeset> ::= (<Node> ...)\n"
+"@end example"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/sxml.texi:711
+msgid ""
+"Nodesets, and Nodes other than text strings are both lists.  A <Nodeset>\n"
+"however is either an empty list, or a list whose head is not a symbol.  A\n"
+"symbol at the head of a node is either an XML name (in which case it's a\n"
+"tag of an XML element), or an administrative name such as '@@'.  This\n"
+"uniform list representation makes processing rather simple and elegant,\n"
+"while avoiding confusion.  The multi-branch tree structure formed by the\n"
+"mutually-recursive datatypes <Node> and <Nodeset> lends itself well to\n"
+"processing by functional languages."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/sxml.texi:728
+msgid ""
+"A location path is in fact a composite query over an XPath tree or its\n"
+"branch.  A singe step is a combination of a projection, selection or a\n"
+"transitive closure.  Multiple steps are combined via join and union\n"
+"operations.  This insight allows us to @emph{elegantly} implement XPath\n"
+"as a sequence of projection and filtering primitives -- converters --\n"
+"joined by @dfn{combinators}.  Each converter takes a node and returns a\n"
+"nodeset which is the result of the corresponding query relative to that\n"
+"node.  A converter can also be called on a set of nodes.  In that case it\n"
+"returns a union of the corresponding queries over each node in the set.\n"
+"The union is easily implemented as a list append operation as all nodes\n"
+"in a SXML tree are considered distinct, by XPath conventions.  We also\n"
+"preserve the order of the members in the union.  Query combinators are\n"
+"high-order functions: they take converter(s) (which is a Node|Nodeset ->\n"
+"Nodeset function) and compose or otherwise combine them.  We will be\n"
+"concerned with only relative location paths [XPath]: an absolute\n"
+"location path is a relative path applied to the root node."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/sxml.texi:735
+msgid ""
+"Similarly to XPath, SXPath defines full and abbreviated notations for\n"
+"location paths.  In both cases, the abbreviated notation can be\n"
+"mechanically expanded into the full form by simple rewriting rules.  In\n"
+"the case of SXPath the corresponding rules are given in the\n"
+"documentation of the @code{sxpath} procedure.\n"
+"@xref{sxpath-procedure-docs,,SXPath procedure documentation}."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/sxml.texi:740
+msgid ""
+"The regression test suite at the end of the file @file{SXPATH-old.scm}\n"
+"shows a representative sample of SXPaths in both notations, juxtaposed\n"
+"with the corresponding XPath expressions.  Most of the samples are\n"
+"borrowed literally from the XPath specification."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/sxml.texi:743
+msgid ""
+"Much of the following material is taken from the SXPath sources by Oleg\n"
+"Kiselyov et al."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/sxml.texi:745
+msgid "@subsubsection Basic Converters and Applicators"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/sxml.texi:748
+msgid ""
+"A converter is a function mapping a nodeset (or a single node) to another\n"
+"nodeset.  Its type can be represented like this:"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/sxml.texi:752
+msgid ""
+"@example\n"
+"type Converter = Node|Nodeset -> Nodeset\n"
+"@end example"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/sxml.texi:757
+msgid ""
+"A converter can also play the role of a predicate: in that case, if a\n"
+"converter, applied to a node or a nodeset, yields a non-empty nodeset,\n"
+"the converter-predicate is deemed satisfied.  Likewise, an empty nodeset\n"
+"is equivalent to @code{#f} in denoting failure."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/sxml.texi:761
+msgid ""
+"@deffn {Scheme Procedure} nodeset? x\n"
+"Return @code{#t} if @var{x} is a nodeset.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/sxml.texi:766
+msgid ""
+"@deffn {Scheme Procedure} node-typeof? crit\n"
+"This function implements a 'Node test' as defined in Sec. 2.3 of the\n"
+"XPath document.  A node test is one of the components of a location\n"
+"step.  It is also a converter-predicate in SXPath."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/sxml.texi:770
+msgid ""
+"The function @code{node-typeof?} takes a type criterion and returns a\n"
+"function, which, when applied to a node, will tell if the node satisfies\n"
+"the test."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/sxml.texi:772
+msgid "The criterion @var{crit} is a symbol, one of the following:"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/sxml.texi:776
+msgid ""
+"@table @code\n"
+"@item id\n"
+"tests if the node has the right name (id)"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/sxml.texi:779
+msgid ""
+"@item @@\n"
+"tests if the node is an <attributes-coll>"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/sxml.texi:782
+msgid ""
+"@item *\n"
+"tests if the node is an <Element>"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/sxml.texi:785
+msgid ""
+"@item *text*\n"
+"tests if the node is a text node"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/sxml.texi:788
+msgid ""
+"@item *PI*\n"
+"tests if the node is a PI (processing instruction) node"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/sxml.texi:793
+msgid ""
+"@item *any*\n"
+"@code{#t} for any type of node\n"
+"@end table\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/sxml.texi:799
+msgid ""
+"@deffn {Scheme Procedure} node-eq? other\n"
+"A curried equivalence converter predicate that takes a node @var{other}\n"
+"and returns a function that takes another node.  The two nodes are\n"
+"compared using @code{eq?}.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/sxml.texi:805
+msgid ""
+"@deffn {Scheme Procedure} node-equal? other\n"
+"A curried equivalence converter predicate that takes a node @var{other}\n"
+"and returns a function that takes another node.  The two nodes are\n"
+"compared using @code{equal?}.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/sxml.texi:811
+msgid ""
+"@deffn {Scheme Procedure} node-pos n\n"
+"Select the @var{n}'th element of a nodeset and return as a singular\n"
+"nodeset.  If the @var{n}'th element does not exist, return an empty\n"
+"nodeset.  If @var{n} is a negative number the node is picked from the\n"
+"tail of the list."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/sxml.texi:819
+msgid ""
+"@example\n"
+"((node-pos 1) nodeset)  ; return the the head of the nodeset (if exists)\n"
+"((node-pos 2) nodeset)  ; return the node after that (if exists)\n"
+"((node-pos -1) nodeset) ; selects the last node of a non-empty nodeset\n"
+"((node-pos -2) nodeset) ; selects the last but one node, if exists.\n"
+"@end example\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/sxml.texi:825
+msgid ""
+"@deffn {Scheme Procedure} filter pred?\n"
+"A filter applicator, which introduces a filtering context.  The argument\n"
+"converter @var{pred?} is considered a predicate, with either @code{#f}\n"
+"or @code{nil} meaning failure.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/sxml.texi:831
+msgid ""
+"@deffn {Scheme Procedure} take-until pred?\n"
+"@example\n"
+"take-until:: Converter -> Converter, or\n"
+"take-until:: Pred -> Node|Nodeset -> Nodeset\n"
+"@end example"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/sxml.texi:837
+msgid ""
+"Given a converter-predicate @var{pred?} and a nodeset, apply the\n"
+"predicate to each element of the nodeset, until the predicate yields\n"
+"anything but @code{#f} or @code{nil}.  Return the elements of the input\n"
+"nodeset that have been processed until that moment (that is, which fail\n"
+"the predicate)."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/sxml.texi:845
+msgid ""
+"@code{take-until} is a variation of the @code{filter} above:\n"
+"@code{take-until} passes elements of an ordered input set up to (but not\n"
+"including) the first element that satisfies the predicate.  The nodeset\n"
+"returned by @code{((take-until (not pred)) nset)} is a subset -- to be\n"
+"more precise, a prefix -- of the nodeset returned by @code{((filter\n"
+"pred) nset)}.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/sxml.texi:851
+msgid ""
+"@deffn {Scheme Procedure} take-after pred?\n"
+"@example\n"
+"take-after:: Converter -> Converter, or\n"
+"take-after:: Pred -> Node|Nodeset -> Nodeset\n"
+"@end example"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/sxml.texi:858
+msgid ""
+"Given a converter-predicate @var{pred?} and a nodeset, apply the\n"
+"predicate to each element of the nodeset, until the predicate yields\n"
+"anything but @code{#f} or @code{nil}.  Return the elements of the input\n"
+"nodeset that have not been processed: that is, return the elements of\n"
+"the input nodeset that follow the first element that satisfied the\n"
+"predicate."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/sxml.texi:863
+msgid ""
+"@code{take-after} along with @code{take-until} partition an input\n"
+"nodeset into three parts: the first element that satisfies a predicate,\n"
+"all preceding elements and all following elements.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/sxml.texi:867
+msgid ""
+"@deffn {Scheme Procedure} map-union proc lst\n"
+"Apply @var{proc} to each element of @var{lst} and return the list of results."
+"\n"
+"If @var{proc} returns a nodeset, splice it into the result"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/sxml.texi:872
+msgid ""
+"From another point of view, @code{map-union} is a function\n"
+"@code{Converter->Converter}, which places an argument-converter in a "
+"joining\n"
+"context.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/sxml.texi:878
+msgid ""
+"@deffn {Scheme Procedure} node-reverse node-or-nodeset\n"
+"@example\n"
+"node-reverse :: Converter, or\n"
+"node-reverse:: Node|Nodeset -> Nodeset\n"
+"@end example"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/sxml.texi:883
+msgid ""
+"Reverses the order of nodes in the nodeset.  This basic converter is\n"
+"needed to implement a reverse document order (see the XPath\n"
+"Recommendation).\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/sxml.texi:888
+msgid ""
+"@deffn {Scheme Procedure} node-trace title\n"
+"@example\n"
+"node-trace:: String -> Converter\n"
+"@end example"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/sxml.texi:893
+msgid ""
+"@code{(node-trace title)} is an identity converter.  In addition it\n"
+"prints out the node or nodeset it is applied to, prefixed with the\n"
+"@var{title}.  This converter is very useful for debugging.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/sxml.texi:895
+msgid "@subsubsection Converter Combinators"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/sxml.texi:899
+msgid ""
+"Combinators are higher-order functions that transmogrify a converter or\n"
+"glue a sequence of converters into a single, non-trivial converter.  The\n"
+"goal is to arrive at converters that correspond to XPath location paths."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/sxml.texi:906
+msgid ""
+"From a different point of view, a combinator is a fixed, named\n"
+"@dfn{pattern} of applying converters.  Given below is a complete set of\n"
+"such patterns that together implement XPath location path specification.\n"
+"As it turns out, all these combinators can be built from a small number\n"
+"of basic blocks: regular functional composition, @code{map-union} and\n"
+"@code{filter} applicators, and the nodeset union."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/sxml.texi:913
+msgid ""
+"@deffn {Scheme Procedure} select-kids test-pred?\n"
+"@code{select-kids} takes a converter (or a predicate) as an argument and\n"
+"returns another converter.  The resulting converter applied to a nodeset\n"
+"returns an ordered subset of its children that satisfy the predicate\n"
+"@var{test-pred?}.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/sxml.texi:920
+msgid ""
+"@deffn {Scheme Procedure} node-self pred?\n"
+"Similar to @code{select-kids} except that the predicate @var{pred?} is\n"
+"applied to the node itself rather than to its children.  The resulting\n"
+"nodeset will contain either one component, or will be empty if the node\n"
+"failed the predicate.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/sxml.texi:926
+msgid ""
+"@deffn {Scheme Procedure} node-join . selectors\n"
+"@example\n"
+"node-join:: [LocPath] -> Node|Nodeset -> Nodeset, or\n"
+"node-join:: [Converter] -> Converter\n"
+"@end example"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/sxml.texi:929
+msgid ""
+"Join the sequence of location steps or paths as described above.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/sxml.texi:935
+msgid ""
+"@deffn {Scheme Procedure} node-reduce . converters\n"
+"@example\n"
+"node-reduce:: [LocPath] -> Node|Nodeset -> Nodeset, or\n"
+"node-reduce:: [Converter] -> Converter\n"
+"@end example"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/sxml.texi:941
+msgid ""
+"A regular functional composition of converters.  From a different point\n"
+"of view, @code{((apply node-reduce converters) nodeset)} is equivalent\n"
+"to @code{(foldl apply nodeset converters)}, i.e., folding, or reducing,\n"
+"a list of converters with the nodeset as a seed.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/sxml.texi:946
+msgid ""
+"@deffn {Scheme Procedure} node-or . converters\n"
+"@example\n"
+"node-or:: [Converter] -> Converter\n"
+"@end example"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/sxml.texi:951
+msgid ""
+"This combinator applies all converters to a given node and produces the\n"
+"union of their results.  This combinator corresponds to a union\n"
+"(@code{|} operation) for XPath location paths.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/sxml.texi:956
+msgid ""
+"@deffn {Scheme Procedure} node-closure test-pred?\n"
+"@example\n"
+"node-closure:: Converter -> Converter\n"
+"@end example"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/sxml.texi:962
+msgid ""
+"Select all @emph{descendants} of a node that satisfy a\n"
+"converter-predicate @var{test-pred?}.  This combinator is similar to\n"
+"@code{select-kids} but applies to grand... children as well.  This\n"
+"combinator implements the @code{descendant::} XPath axis.  Conceptually,\n"
+"this combinator can be expressed as"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/sxml.texi:969
+msgid ""
+"@example\n"
+"(define (node-closure f)\n"
+"  (node-or\n"
+"    (select-kids f)\n"
+"    (node-reduce (select-kids (node-typeof? '*)) (node-closure f))))\n"
+"@end example"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/sxml.texi:976
+msgid ""
+"This definition, as written, looks somewhat like a fixpoint, and it will\n"
+"run forever.  It is obvious however that sooner or later\n"
+"@code{(select-kids (node-typeof? '*))} will return an empty nodeset.  At\n"
+"this point further iterations will no longer affect the result and can\n"
+"be stopped.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/sxml.texi:981
+msgid ""
+"@deffn {Scheme Procedure} node-parent rootnode\n"
+"@example\n"
+"node-parent:: RootNode -> Converter\n"
+"@end example"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/sxml.texi:987
+msgid ""
+"@code{(node-parent rootnode)} yields a converter that returns a parent\n"
+"of a node it is applied to.  If applied to a nodeset, it returns the\n"
+"list of parents of nodes in the nodeset.  The @var{rootnode} does not\n"
+"have to be the root node of the whole SXML tree -- it may be a root node\n"
+"of a branch of interest."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/sxml.texi:989
+msgid "Given the notation of Philip Wadler's paper on semantics of XSLT,"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/sxml.texi:993
+msgid ""
+"@verbatim\n"
+"  parent(x) = { y | y=subnode*(root), x=subnode(y) }\n"
+"@end verbatim"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/sxml.texi:1000
+msgid ""
+"Therefore, @code{node-parent} is not the fundamental converter: it can\n"
+"be expressed through the existing ones.  Yet @code{node-parent} is a\n"
+"rather convenient converter.  It corresponds to a @code{parent::} axis\n"
+"of SXPath.  Note that the @code{parent::} axis can be used with an\n"
+"attribute node as well.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/sxml.texi:1004
+msgid ""
+"@anchor{sxpath-procedure-docs}\n"
+"@deffn {Scheme Procedure} sxpath path\n"
+"Evaluate an abbreviated SXPath."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/sxml.texi:1009
+msgid ""
+"@example\n"
+"sxpath:: AbbrPath -> Converter, or\n"
+"sxpath:: AbbrPath -> Node|Nodeset -> Nodeset\n"
+"@end example"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/sxml.texi:1012
+msgid ""
+"@var{path} is a list.  It is translated to the full SXPath according to\n"
+"the following rewriting rules:"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/sxml.texi:1016
+msgid ""
+"@example\n"
+"(sxpath '())\n"
+"@result{} (node-join)"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/sxml.texi:1019
+msgid ""
+"(sxpath '(path-component ...))\n"
+"@result{} (node-join (sxpath1 path-component) (sxpath '(...)))"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/sxml.texi:1024
+msgid ""
+"(sxpath1 '//)\n"
+"@result{} (node-or\n"
+"   (node-self (node-typeof? '*any*))\n"
+"   (node-closure (node-typeof? '*any*)))"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/sxml.texi:1027
+msgid ""
+"(sxpath1 '(equal? x))\n"
+"@result{} (select-kids (node-equal? x))"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/sxml.texi:1030
+msgid ""
+"(sxpath1 '(eq? x))\n"
+"@result{} (select-kids (node-eq? x))"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/sxml.texi:1033
+msgid ""
+"(sxpath1 ?symbol)\n"
+"@result{} (select-kids (node-typeof? ?symbol)"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/sxml.texi:1036
+msgid ""
+"(sxpath1 procedure)\n"
+"@result{} procedure"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/sxml.texi:1039
+msgid ""
+"(sxpath1 '(?symbol ...))\n"
+"@result{} (sxpath1 '((?symbol) ...))"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/sxml.texi:1042
+msgid ""
+"(sxpath1 '(path reducer ...))\n"
+"@result{} (node-reduce (sxpath path) (sxpathr reducer) ...)"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/sxml.texi:1045
+msgid ""
+"(sxpathr number)\n"
+"@result{} (node-pos number)"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/sxml.texi:1050
+msgid ""
+"(sxpathr path-filter)\n"
+"@result{} (filter (sxpath path-filter))\n"
+"@end example\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/sxml.texi:1055
+msgid ""
+"@node sxml ssax input-parse\n"
+"@subsection (sxml ssax input-parse)\n"
+"@subsubsection Overview\n"
+"A simple lexer."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/sxml.texi:1062
+msgid ""
+"The procedures in this module surprisingly often suffice to parse an\n"
+"input stream.  They either skip, or build and return tokens, according to\n"
+"inclusion or delimiting semantics.  The list of characters to expect,\n"
+"include, or to break at may vary from one invocation of a function to\n"
+"another.  This allows the functions to easily parse even\n"
+"context-sensitive languages."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/sxml.texi:1067
+msgid ""
+"EOF is generally frowned on, and thrown up upon if encountered.\n"
+"Exceptions are mentioned specifically.  The list of expected characters\n"
+"(characters to skip until, or break-characters) may include an EOF\n"
+"\"character\", which is to be coded as the symbol, @code{*eof*}."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/sxml.texi:1071
+msgid ""
+"The input stream to parse is specified as a @dfn{port}, which is usually\n"
+"the last (and optional) argument.  It defaults to the current input port\n"
+"if omitted."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/sxml.texi:1075
+msgid ""
+"If the parser encounters an error, it will throw an exception to the key\n"
+"@code{parser-error}.  The arguments will be of the form @code{(@var{port}\n"
+"@var{message} @var{specialising-msg}*)}."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/sxml.texi:1081
+msgid ""
+"The first argument is a port, which typically points to the offending\n"
+"character or its neighborhood.  You can then use @code{port-column} and\n"
+"@code{port-line} to query the current position.  @var{message} is the\n"
+"description of the error.  Other arguments supply more details about the\n"
+"problem."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/sxml.texi:1085
+msgid ""
+"@subsubsection Usage\n"
+"@deffn {Scheme Procedure} peek-next-char [port]\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/sxml.texi:1088
+msgid ""
+"@deffn {Scheme Procedure} assert-curr-char expected-chars comment [port]\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/sxml.texi:1091
+msgid ""
+"@deffn {Scheme Procedure} skip-until arg [port]\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/sxml.texi:1094
+msgid ""
+"@deffn {Scheme Procedure} skip-while skip-chars [port]\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/sxml.texi:1097
+msgid ""
+"@deffn {Scheme Procedure} next-token prefix-skipped-chars break-chars "
+"[comment] [port]\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/sxml.texi:1100
+msgid ""
+"@deffn {Scheme Procedure} next-token-of incl-list/pred [port]\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/sxml.texi:1103
+msgid ""
+"@deffn {Scheme Procedure} read-text-line [port]\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/sxml.texi:1106
+msgid ""
+"@deffn {Scheme Procedure} read-string n [port]\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/sxml.texi:1111
+msgid ""
+"@deffn {Scheme Procedure} find-string-from-port? _ _ . _\n"
+"Looks for @var{str} in @var{<input-port>}, optionally within the first\n"
+"@var{max-no-char} characters.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/sxml.texi:1116
+msgid ""
+"@node sxml apply-templates\n"
+"@subsection (sxml apply-templates)\n"
+"@subsubsection Overview\n"
+"Pre-order traversal of a tree and creation of a new tree:"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/sxml.texi:1120
+msgid ""
+"@smallexample \n"
+"\tapply-templates:: tree x <templates> -> <new-tree>\n"
+"@end smallexample"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/sxml.texi:1122
+msgctxt "/home/bear/work/guile/doc/guile/en/sxml.texi:1122"
+msgid "where"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/sxml.texi:1129
+msgid ""
+"@smallexample \n"
+" <templates> ::= (<template> ...)\n"
+" <template>  ::= (<node-test> <node-test> ... <node-test> . <handler>)\n"
+" <node-test> ::= an argument to node-typeof? above\n"
+" <handler>   ::= <tree> -> <new-tree>\n"
+"@end smallexample"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/sxml.texi:1133
+msgid ""
+"This procedure does a @emph{normal}, pre-order traversal of an SXML\n"
+"tree.  It walks the tree, checking at each node against the list of\n"
+"matching templates."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/sxml.texi:1140
+msgid ""
+"If the match is found (which must be unique, i.e., unambiguous), the\n"
+"corresponding handler is invoked and given the current node as an\n"
+"argument.  The result from the handler, which must be a @code{<tree>},\n"
+"takes place of the current node in the resulting tree.  The name of the\n"
+"function is not accidental: it resembles rather closely an\n"
+"@code{apply-templates} function of XSLT."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/sxml.texi:1144
+msgid ""
+"@subsubsection Usage\n"
+"@deffn {Scheme Procedure} apply-templates tree templates\n"
+"@end deffn"
+msgstr ""

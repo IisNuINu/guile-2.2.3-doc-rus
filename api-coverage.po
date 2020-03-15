@@ -1,0 +1,144 @@
+#. extracted from /home/bear/work/guile/doc/guile/en/api-coverage.texi
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2018-05-07 12:36+0300\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Generator: Translate Toolkit 2.2.5\n"
+
+#: /home/bear/work/guile/doc/guile/en/api-coverage.texi:5
+msgid ""
+"@c -*-texinfo-*-\n"
+"@c This is part of the GNU Guile Reference Manual.\n"
+"@c Copyright (C) 2010, 2013  Free Software Foundation, Inc.\n"
+"@c See the file guile.texi for copying conditions."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-coverage.texi:9
+msgid ""
+"@node Code Coverage\n"
+"@section Code Coverage Reports"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-coverage.texi:16
+msgid ""
+"@cindex code coverage\n"
+"@cindex coverage\n"
+"When writing a test suite for a program or library, it is desirable to know "
+"what\n"
+"part of the code is @dfn{covered} by the test suite.  The @code{(system vm\n"
+"coverage)} module provides tools to gather code coverage data and to "
+"present\n"
+"them, as detailed below."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-coverage.texi:22
+msgid ""
+"@deffn {Scheme Procedure} with-code-coverage thunk\n"
+"Run @var{thunk}, a zero-argument procedure, while instrumenting Guile's\n"
+"virtual machine to collect code coverage data.  Return code coverage\n"
+"data and the values returned by @var{thunk}.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-coverage.texi:27
+msgid ""
+"@deffn {Scheme Procedure} coverage-data? obj\n"
+"Return @code{#t} if @var{obj} is a @dfn{coverage data} object as returned "
+"by\n"
+"@code{with-code-coverage}.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-coverage.texi:34
+msgid ""
+"@deffn {Scheme Procedure} coverage-data->lcov data port #:key modules\n"
+"Traverse code coverage information @var{data}, as obtained with\n"
+"@code{with-code-coverage}, and write coverage information to port in the\n"
+"@code{.info} format used by "
+"@url{http://ltp.sourceforge.net/coverage/lcov.php,\n"
+"LCOV}.  The report will include all of @var{modules} (or, by default, all "
+"the\n"
+"currently loaded modules) even if their code was not executed."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-coverage.texi:38
+msgid ""
+"The generated data can be fed to LCOV's @command{genhtml} command to produce "
+"an\n"
+"HTML report, which aids coverage data visualization.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-coverage.texi:40
+msgid "Here's an example use:"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-coverage.texi:44
+msgid ""
+"@example\n"
+"(use-modules (system vm coverage)\n"
+"             (system vm vm))"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-coverage.texi:54
+msgid ""
+"(call-with-values (lambda ()\n"
+"                    (with-code-coverage\n"
+"                      (lambda ()\n"
+"                        (do-something-tricky))))\n"
+"  (lambda (data result)\n"
+"    (let ((port (open-output-file \"lcov.info\")))\n"
+"      (coverage-data->lcov data port)\n"
+"      (close file))))\n"
+"@end example"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-coverage.texi:57
+msgid ""
+"In addition, the module provides low-level procedures that would make it\n"
+"possible to write other user interfaces to the coverage data."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-coverage.texi:62
+msgid ""
+"@deffn {Scheme Procedures} instrumented-source-files data\n"
+"Return the list of ``instrumented'' source files, i.e., source files whose\n"
+"code was loaded at the time @var{data} was collected.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-coverage.texi:68
+msgid ""
+"@deffn {Scheme Procedures} line-execution-counts data file\n"
+"Return a list of line number/execution count pairs for @var{file}, or\n"
+"@code{#f} if @var{file} is not among the files covered by @var{data}.  This\n"
+"includes lines with zero count.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-coverage.texi:73
+msgid ""
+"@deffn {Scheme Procedures} instrumented/executed-lines data file\n"
+"Return the number of instrumented and the number of executed source lines\n"
+"in @var{file} according to @var{data}.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-coverage.texi:80
+msgid ""
+"@deffn {Scheme Procedures} procedure-execution-count data proc\n"
+"Return the number of times @var{proc}'s code was executed, according to\n"
+"@var{data}, or @code{#f} if @var{proc} was not executed.  When @var{proc}\n"
+"is a closure, the number of times its code was executed is returned, not\n"
+"the number of times this code associated with this particular closure was\n"
+"executed.\n"
+"@end deffn"
+msgstr ""

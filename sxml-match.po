@@ -1,0 +1,668 @@
+#. extracted from /home/bear/work/guile/doc/guile/en/sxml-match.texi
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2018-05-07 12:37+0300\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Generator: Translate Toolkit 2.2.5\n"
+
+#: /home/bear/work/guile/doc/guile/en/sxml-match.texi:12
+msgid ""
+"@c -*-texinfo-*-\n"
+"@c This is part of the GNU Guile Reference Manual.\n"
+"@c Copyright (C) 2010, 2013  Free Software Foundation, Inc.\n"
+"@c See the file guile.texi for copying conditions.\n"
+"@c\n"
+"@c Based on the documentation at\n"
+"@c <http://planet.plt-scheme.org/package-source/jim/sxml-"
+"match.plt/1/1/doc.txt>,\n"
+"@c copyright 2005 Jim Bender, and released under the MIT/X11 license (like "
+"the\n"
+"@c rest of `sxml-match'.)\n"
+"@c\n"
+"@c Converted to Texinfo and modified by Ludovic Courtès, 2010."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/sxml-match.texi:15
+msgid ""
+"@node sxml-match\n"
+"@section @code{sxml-match}: Pattern Matching of SXML"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/sxml-match.texi:18
+msgid ""
+"@cindex pattern matching (SXML)\n"
+"@cindex SXML pattern matching"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/sxml-match.texi:23
+msgid ""
+"The @code{(sxml match)} module provides syntactic forms for pattern\n"
+"matching of SXML trees, in a ``by example'' style reminiscent of the\n"
+"pattern matching of the @code{syntax-rules} and @code{syntax-case} macro\n"
+"systems.  @xref{SXML}, for more information on SXML."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/sxml-match.texi:29
+msgid ""
+"The following example@footnote{This example is taken from a paper by\n"
+"Krishnamurthi et al.  Their paper was the first to show the usefulness of "
+"the\n"
+"@code{syntax-rules} style of pattern matching for transformation of XML, "
+"though\n"
+"the language described, XT3D, is an XML language.} provides a brief\n"
+"illustration, transforming a music album catalog language into HTML."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/sxml-match.texi:37
+msgid ""
+"@lisp\n"
+"(define (album->html x)\n"
+"  (sxml-match x\n"
+"    [(album (@@ (title ,t)) (catalog (num ,n) (fmt ,f)) ...)\n"
+"     `(ul (li ,t)\n"
+"          (li (b ,n) (i ,f)) ...)]))\n"
+"@end lisp"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/sxml-match.texi:40
+msgid ""
+"Three macros are provided: @code{sxml-match}, @code{sxml-match-let}, and\n"
+"@code{sxml-match-let*}."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/sxml-match.texi:43
+msgid ""
+"Compared to a standard s-expression pattern matcher (@pxref{Pattern\n"
+"Matching}), @code{sxml-match} provides the following benefits:"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/sxml-match.texi:57
+msgid ""
+"@itemize\n"
+"@item\n"
+"matching of SXML elements does not depend on any degree of normalization of "
+"the\n"
+"SXML;\n"
+"@item\n"
+"matching of SXML attributes (within an element) is under-ordered; the order "
+"of\n"
+"the attributes specified within the pattern need not match the ordering with "
+"the\n"
+"element being matched;\n"
+"@item\n"
+"all attributes specified in the pattern must be present in the element "
+"being\n"
+"matched; in the spirit that XML is 'extensible', the element being matched "
+"may\n"
+"include additional attributes not specified in the pattern.\n"
+"@end itemize"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/sxml-match.texi:61
+msgid ""
+"The present module is a descendant of WebIt!, and was inspired by an\n"
+"s-expression pattern matcher developed by Erik Hilsdale, Dan Friedman, and "
+"Kent\n"
+"Dybvig at Indiana University."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/sxml-match.texi:63
+msgid "@unnumberedsubsec Syntax"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/sxml-match.texi:66
+msgid ""
+"@code{sxml-match} provides @code{case}-like form for pattern matching of "
+"XML\n"
+"nodes."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/sxml-match.texi:73
+msgid ""
+"@deffn {Scheme Syntax} sxml-match input-expression clause1 clause2 @dots{}\n"
+"Match @var{input-expression}, an SXML tree, according to the given "
+"@var{clause}s\n"
+"(one or more), each consisting of a pattern and one or more expressions to "
+"be\n"
+"evaluated if the pattern match succeeds.  Optionally, each @var{clause} "
+"within\n"
+"@code{sxml-match} may include a @dfn{guard expression}.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/sxml-match.texi:77
+msgid ""
+"The pattern notation is based on that of Scheme's @code{syntax-rules} and\n"
+"@code{syntax-case} macro systems.  The grammar for the @code{sxml-match} "
+"syntax\n"
+"is given below:"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/sxml-match.texi:81
+msgid ""
+"@verbatim\n"
+"match-form ::= (sxml-match input-expression\n"
+"                 clause+)"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/sxml-match.texi:84
+msgid ""
+"clause ::= [node-pattern action-expression+]\n"
+"         | [node-pattern (guard expression*) action-expression+]"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/sxml-match.texi:89
+msgid ""
+"node-pattern ::= literal-pattern\n"
+"               | pat-var-or-cata\n"
+"               | element-pattern\n"
+"               | list-pattern"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/sxml-match.texi:95
+msgid ""
+"literal-pattern ::= string\n"
+"                  | character\n"
+"                  | number\n"
+"                  | #t\n"
+"                  | #f"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/sxml-match.texi:98
+msgid ""
+"attr-list-pattern ::= (@ attribute-pattern*)\n"
+"                    | (@ attribute-pattern* . pat-var-or-cata)"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/sxml-match.texi:100
+msgid "attribute-pattern ::= (tag-symbol attr-val-pattern)"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/sxml-match.texi:104
+msgid ""
+"attr-val-pattern ::= literal-pattern\n"
+"                   | pat-var-or-cata\n"
+"                   | (pat-var-or-cata default-value-expr)"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/sxml-match.texi:109
+msgid ""
+"element-pattern ::= (tag-symbol attr-list-pattern?)\n"
+"                  | (tag-symbol attr-list-pattern? nodeset-pattern)\n"
+"                  | (tag-symbol attr-list-pattern?\n"
+"                                nodeset-pattern? . pat-var-or-cata)"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/sxml-match.texi:113
+msgid ""
+"list-pattern ::= (list nodeset-pattern)\n"
+"               | (list nodeset-pattern? . pat-var-or-cata)\n"
+"               | (list)"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/sxml-match.texi:118
+msgid ""
+"nodeset-pattern ::= node-pattern\n"
+"                  | node-pattern ...\n"
+"                  | node-pattern nodeset-pattern\n"
+"                  | node-pattern ... nodeset-pattern"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/sxml-match.texi:123
+msgid ""
+"pat-var-or-cata ::= (unquote var-symbol)\n"
+"                  | (unquote [var-symbol*])\n"
+"                  | (unquote [cata-expression -> var-symbol*])\n"
+"@end verbatim"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/sxml-match.texi:126
+msgid ""
+"Within a list or element body pattern, ellipses may appear only once, but "
+"may be\n"
+"followed by zero or more node patterns."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/sxml-match.texi:128
+msgid "Guard expressions cannot refer to the return values of catamorphisms."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/sxml-match.texi:131
+msgid ""
+"Ellipses in the output expressions must appear only in an expression context;"
+"\n"
+"ellipses are not allowed in a syntactic form."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/sxml-match.texi:134
+msgid ""
+"The sections below illustrate specific aspects of the @code{sxml-match} "
+"pattern\n"
+"matcher."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/sxml-match.texi:136
+msgid "@unnumberedsubsec Matching XML Elements"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/sxml-match.texi:138
+msgid "The example below illustrates the pattern matching of an XML element:"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/sxml-match.texi:144
+msgid ""
+"@lisp\n"
+"(sxml-match '(e (@@ (i 1)) 3 4 5)\n"
+"  [(e (@@ (i ,d)) ,a ,b ,c) (list d a b c)]\n"
+"  [,otherwise #f])\n"
+"@end lisp"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/sxml-match.texi:149
+msgid ""
+"Each clause in @code{sxml-match} contains two parts: a pattern and one or "
+"more\n"
+"expressions which are evaluated if the pattern is successfully match.  The\n"
+"example above matches an element @code{e} with an attribute @code{i} and "
+"three\n"
+"children."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/sxml-match.texi:153
+msgid ""
+"Pattern variables must be ``unquoted'' in the pattern.  The above "
+"expression\n"
+"binds @var{d} to @code{1}, @var{a} to @code{3}, @var{b} to @code{4}, and "
+"@var{c}\n"
+"to @code{5}."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/sxml-match.texi:155
+msgid "@unnumberedsubsec Ellipses in Patterns"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/sxml-match.texi:159
+msgid ""
+"As in @code{syntax-rules}, ellipses may be used to specify a repeated "
+"pattern.\n"
+"Note that the pattern @code{item ...} specifies zero-or-more matches of the\n"
+"pattern @code{item}."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/sxml-match.texi:163
+msgid ""
+"The use of ellipses in a pattern is illustrated in the code fragment below,\n"
+"where nested ellipses are used to match the children of repeated instances "
+"of an\n"
+"@code{a} element, within an element @code{d}."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/sxml-match.texi:166
+msgid ""
+"@lisp\n"
+"(define x '(d (a 1 2 3) (a 4 5) (a 6 7 8) (a 9 10)))"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/sxml-match.texi:171
+msgid ""
+"(sxml-match x\n"
+"  [(d (a ,b ...) ...)\n"
+"   (list (list b ...) ...)])\n"
+"@end lisp"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/sxml-match.texi:173
+msgid ""
+"The above expression returns a value of @code{((1 2 3) (4 5) (6 7 8) (9 "
+"10))}."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/sxml-match.texi:175
+msgid "@unnumberedsubsec Ellipses in Quasiquote'd Output"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/sxml-match.texi:179
+msgid ""
+"Within the body of an @code{sxml-match} form, a slightly extended version "
+"of\n"
+"quasiquote is provided, which allows the use of ellipses.  This is "
+"illustrated\n"
+"in the example below."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/sxml-match.texi:185
+msgid ""
+"@lisp\n"
+"(sxml-match '(e 3 4 5 6 7)\n"
+"  [(e ,i ... 6 7) `(\"start\" ,(list 'wrap i) ... \"end\")]\n"
+"  [,otherwise #f])\n"
+"@end lisp"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/sxml-match.texi:188
+msgid ""
+"The general pattern is that @code{`(something ,i ...)} is rewritten as\n"
+"@code{`(something ,@@i)}."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/sxml-match.texi:190
+msgid "@unnumberedsubsec Matching Nodesets"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/sxml-match.texi:193
+msgid ""
+"A nodeset pattern is designated by a list in the pattern, beginning the\n"
+"identifier list.  The example below illustrates matching a nodeset."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/sxml-match.texi:199
+msgid ""
+"@lisp\n"
+"(sxml-match '(\"i\" \"j\" \"k\" \"l\" \"m\")\n"
+"  [(list ,a ,b ,c ,d ,e)\n"
+"   `((p ,a) (p ,b) (p ,c) (p ,d) (p ,e))])\n"
+"@end lisp"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/sxml-match.texi:202
+msgid ""
+"This example wraps each nodeset item in an HTML paragraph element.  This "
+"example\n"
+"can be rewritten and simplified through using ellipsis:"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/sxml-match.texi:208
+msgid ""
+"@lisp\n"
+"(sxml-match '(\"i\" \"j\" \"k\" \"l\" \"m\")\n"
+"  [(list ,i ...)\n"
+"   `((p ,i) ...)])\n"
+"@end lisp"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/sxml-match.texi:211
+msgid ""
+"This version will match nodesets of any length, and wrap each item in the\n"
+"nodeset in an HTML paragraph element."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/sxml-match.texi:213
+msgid "@unnumberedsubsec Matching the ``Rest'' of a Nodeset"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/sxml-match.texi:216
+msgid ""
+"Matching the ``rest'' of a nodeset is achieved by using a @code{. rest)} "
+"pattern\n"
+"at the end of an element or nodeset pattern."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/sxml-match.texi:218
+msgid "This is illustrated in the example below:"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/sxml-match.texi:224
+msgid ""
+"@lisp\n"
+"(sxml-match '(e 3 (f 4 5 6) 7)\n"
+"  [(e ,a (f . ,y) ,d)\n"
+"   (list a y d)])\n"
+"@end lisp"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/sxml-match.texi:226
+msgid "The above expression returns @code{(3 (4 5 6) 7)}."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/sxml-match.texi:228
+msgid "@unnumberedsubsec Matching the Unmatched Attributes"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/sxml-match.texi:233
+msgid ""
+"Sometimes it is useful to bind a list of attributes present in the element "
+"being\n"
+"matched, but which do not appear in the pattern.  This is achieved by using "
+"a\n"
+"@code{. rest)} pattern at the end of the attribute list pattern.  This is\n"
+"illustrated in the example below:"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/sxml-match.texi:239
+msgid ""
+"@lisp\n"
+"(sxml-match '(a (@@ (z 1) (y 2) (x 3)) 4 5 6)\n"
+"  [(a (@@ (y ,www) . ,qqq) ,t ,u ,v)\n"
+"   (list www qqq t u v)])\n"
+"@end lisp"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/sxml-match.texi:243
+msgid ""
+"The above expression matches the attribute @code{y} and binds a list of the\n"
+"remaining attributes to the variable @var{qqq}.  The result of the above\n"
+"expression is @code{(2 ((z 1) (x 3)) 4 5 6)}."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/sxml-match.texi:245
+msgid "This type of pattern also allows the binding of all attributes:"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/sxml-match.texi:251
+msgid ""
+"@lisp\n"
+"(sxml-match '(a (@@ (z 1) (y 2) (x 3)))\n"
+"  [(a (@@ . ,qqq))\n"
+"   qqq])\n"
+"@end lisp"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/sxml-match.texi:253
+msgid "@unnumberedsubsec Default Values in Attribute Patterns"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/sxml-match.texi:257
+msgid ""
+"It is possible to specify a default value for an attribute which is used if "
+"the\n"
+"attribute is not present in the element being matched.  This is illustrated "
+"in\n"
+"the following example:"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/sxml-match.texi:262
+msgid ""
+"@lisp\n"
+"(sxml-match '(e 3 4 5)\n"
+"  [(e (@@ (z (,d 1))) ,a ,b ,c) (list d a b c)])\n"
+"@end lisp"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/sxml-match.texi:265
+msgid ""
+"The value @code{1} is used when the attribute @code{z} is absent from the\n"
+"element @code{e}."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/sxml-match.texi:267
+msgid "@unnumberedsubsec Guards in Patterns"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/sxml-match.texi:272
+msgid ""
+"Guards may be added to a pattern clause via the @code{guard} keyword.  A "
+"guard\n"
+"expression may include zero or more expressions which are evaluated only if "
+"the\n"
+"pattern is matched.  The body of the clause is only evaluated if the guard\n"
+"expressions evaluate to @code{#t}."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/sxml-match.texi:274
+msgid "The use of guard expressions is illustrated below:"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/sxml-match.texi:280
+msgid ""
+"@lisp\n"
+"(sxml-match '(a 2 3)\n"
+"  ((a ,n) (guard (number? n)) n)\n"
+"  ((a ,m ,n) (guard (number? m) (number? n)) (+ m n)))\n"
+"@end lisp"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/sxml-match.texi:282
+msgid "@unnumberedsubsec Catamorphisms"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/sxml-match.texi:287
+msgid ""
+"The example below illustrates the use of explicit recursion within an\n"
+"@code{sxml-match} form.  This example implements a simple calculator for "
+"the\n"
+"basic arithmetic operations, which are represented by the XML elements\n"
+"@code{plus}, @code{minus}, @code{times}, and @code{div}."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/sxml-match.texi:299
+msgid ""
+"@lisp\n"
+"(define simple-eval\n"
+"  (lambda (x)\n"
+"    (sxml-match x\n"
+"      [,i (guard (integer? i)) i]\n"
+"      [(plus ,x ,y) (+ (simple-eval x) (simple-eval y))]\n"
+"      [(times ,x ,y) (* (simple-eval x) (simple-eval y))]\n"
+"      [(minus ,x ,y) (- (simple-eval x) (simple-eval y))]\n"
+"      [(div ,x ,y) (/ (simple-eval x) (simple-eval y))]\n"
+"      [,otherwise (error \"simple-eval: invalid expression\" x)])))\n"
+"@end lisp"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/sxml-match.texi:303
+msgid ""
+"Using the catamorphism feature of @code{sxml-match}, a more concise version "
+"of\n"
+"@code{simple-eval} can be written.  The pattern @code{,[x]} recursively "
+"invokes\n"
+"the pattern matcher on the value bound in this position."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/sxml-match.texi:315
+msgid ""
+"@lisp\n"
+"(define simple-eval\n"
+"  (lambda (x)\n"
+"    (sxml-match x\n"
+"      [,i (guard (integer? i)) i]\n"
+"      [(plus ,[x] ,[y]) (+ x y)]\n"
+"      [(times ,[x] ,[y]) (* x y)]\n"
+"      [(minus ,[x] ,[y]) (- x y)]\n"
+"      [(div ,[x] ,[y]) (/ x y)]\n"
+"      [,otherwise (error \"simple-eval: invalid expression\" x)])))\n"
+"@end lisp"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/sxml-match.texi:317
+msgid "@unnumberedsubsec Named-Catamorphisms"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/sxml-match.texi:323
+msgid ""
+"It is also possible to explicitly name the operator in the ``cata'' position."
+"\n"
+"Where @code{,[id*]} recurs to the top of the current @code{sxml-match},\n"
+"@code{,[cata -> id*]} recurs to @code{cata}.  @code{cata} must evaluate to "
+"a\n"
+"procedure which takes one argument, and returns as many values as there are\n"
+"identifiers following @code{->}."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/sxml-match.texi:327
+msgid ""
+"Named catamorphism patterns allow processing to be split into multiple, "
+"mutually\n"
+"recursive procedures.  This is illustrated in the example below: a\n"
+"transformation that formats a ``TV Guide'' into HTML."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/sxml-match.texi:356
+msgid ""
+"@lisp\n"
+"(define (tv-guide->html g)\n"
+"  (define (cast-list cl)\n"
+"    (sxml-match cl\n"
+"      [(CastList (CastMember (Character (Name ,ch)) (Actor (Name ,a))) ...)\n"
+"       `(div (ul (li ,ch \": \" ,a) ...))]))\n"
+"  (define (prog p)\n"
+"    (sxml-match p\n"
+"      [(Program (Start ,start-time) (Duration ,dur) (Series ,series-title)\n"
+"                (Description ,desc ...))\n"
+"       `(div (p ,start-time\n"
+"                (br) ,series-title\n"
+"                (br) ,desc ...))]\n"
+"      [(Program (Start ,start-time) (Duration ,dur) (Series ,series-title)\n"
+"                (Description ,desc ...)\n"
+"                ,[cast-list -> cl])\n"
+"       `(div (p ,start-time\n"
+"                (br) ,series-title\n"
+"                (br) ,desc ...)\n"
+"             ,cl)]))\n"
+"  (sxml-match g\n"
+"    [(TVGuide (@@ (start ,start-date)\n"
+"                 (end ,end-date))\n"
+"              (Channel (Name ,nm) ,[prog -> p] ...) ...)\n"
+"     `(html (head (title \"TV Guide\"))\n"
+"            (body (h1 \"TV Guide\")\n"
+"                  (div (h2 ,nm) ,p ...) ...))]))\n"
+"@end lisp"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/sxml-match.texi:358
+msgid "@unnumberedsubsec @code{sxml-match-let} and @code{sxml-match-let*}"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/sxml-match.texi:364
+msgid ""
+"@deffn {Scheme Syntax} sxml-match-let ((pat expr) ...) expression0 "
+"expression ...\n"
+"@deffnx {Scheme Syntax} sxml-match-let* ((pat expr) ...) expression0 "
+"expression ...\n"
+"These forms generalize the @code{let} and @code{let*} forms of Scheme to "
+"allow\n"
+"an XML pattern in the binding position, rather than a simple variable.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/sxml-match.texi:366
+msgid "For example, the expression below:"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/sxml-match.texi:371
+msgid ""
+"@lisp\n"
+"(sxml-match-let ([(a ,i ,j) '(a 1 2)])\n"
+"  (+ i j))\n"
+"@end lisp"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/sxml-match.texi:374
+msgid ""
+"binds the variables @var{i} and @var{j} to @code{1} and @code{2} in the XML\n"
+"value given."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/sxml-match.texi:377
+msgid ""
+"@c Local Variables:\n"
+"@c coding: utf-8\n"
+"@c End:"
+msgstr ""

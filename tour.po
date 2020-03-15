@@ -1,0 +1,864 @@
+#
+# Gagin <mikhail-gagin@yandex.ru>, 2018.
+#
+#. extracted from /home/bear/work/guile/doc/guile/en/tour.texi
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2018-05-07 12:37+0300\n"
+"PO-Revision-Date: 2018-05-10 10:02+0300\n"
+"Last-Translator: Gagin <mikhail-gagin@yandex.ru>\n"
+"Language-Team: Russian <mikhail-gagin@yandex.ru>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Generator: Gtranslator 2.91.7\n"
+"Plural-Forms: nplurals=5; plural=n==1 ? 0 : n==2 ? 1 : n<7 ? 2 : n<11 ? 3 : "
+"4;\n"
+
+#: /home/bear/work/guile/doc/guile/en/tour.texi:6
+msgid ""
+"@c -*-texinfo-*-\n"
+"@c This is part of the GNU Guile Reference Manual.\n"
+"@c Copyright (C)  1996, 1997, 2000, 2001, 2002, 2003, 2004, 2006, 2010, "
+"2011,\n"
+"@c   2012 Free Software Foundation, Inc.\n"
+"@c See the file guile.texi for copying conditions."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/tour.texi:8
+msgid "@raisesections"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/tour.texi:11
+msgid ""
+"@node Hello Guile!\n"
+"@section Hello Guile!"
+msgstr ""
+"@node Hello Guile!\n"
+"@section Hello Guile!"
+
+#: /home/bear/work/guile/doc/guile/en/tour.texi:16
+msgid ""
+"This chapter presents a quick tour of all the ways that Guile can be\n"
+"used.  There are additional examples in the @file{examples/}\n"
+"directory in the Guile source distribution.  It also explains how best to "
+"report\n"
+"any problems that you find."
+msgstr ""
+"В этой главе представлена краткая экскурисия по всем способам использования\n"
+"Guile.  Есть дополнительные примеры в каталоге @file{examples/} "
+"дистрибутива\n"
+"Guile. Она также объясняет, как лучше сообщить о любых проблемах, которые\n"
+"вы найдете."
+
+#: /home/bear/work/guile/doc/guile/en/tour.texi:19
+msgid ""
+"The following examples assume that Guile has been installed in\n"
+"@code{/usr/local/}."
+msgstr ""
+"В следующих примерах предполагается что Guile установлен в \n"
+"@code{/usr/local/}."
+
+#: /home/bear/work/guile/doc/guile/en/tour.texi:28
+msgid ""
+"@menu\n"
+"* Running Guile Interactively::\n"
+"* Running Guile Scripts::\n"
+"* Linking Guile into Programs::\n"
+"* Writing Guile Extensions::\n"
+"* Using the Guile Module System::\n"
+"* Reporting Bugs::              \n"
+"@end menu"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/tour.texi:32
+msgid ""
+"@node Running Guile Interactively\n"
+"@subsection Running Guile Interactively"
+msgstr ""
+"@node Running Guile Interactively\n"
+"@subsection Запуск интерактивной сессии Guile"
+
+#: /home/bear/work/guile/doc/guile/en/tour.texi:38
+msgid ""
+"In its simplest form, Guile acts as an interactive interpreter for the\n"
+"Scheme programming language, reading and evaluating Scheme expressions\n"
+"the user enters from the terminal.  Here is a sample interaction between\n"
+"Guile and a user; the user's input appears after the @code{$} and\n"
+"@code{scheme@@(guile-user)>} prompts:"
+msgstr ""
+"В простейшей форме, Guile выступает в качестве интерактивного "
+"интерпретатора\n"
+"языка программирования Scheme, читает и выполняет выражения Scheme, которые\n"
+"пользователь вводит в терминале.  Вот пример взаимодействия между Guile и\n"
+"пользователем; Ввод пользователя осуществляется после приглашения @code{$} "
+"и\n"
+"@code{scheme@@(guile-user)>}:"
+
+#: /home/bear/work/guile/doc/guile/en/tour.texi:52
+msgid ""
+"@example\n"
+"$ guile\n"
+"scheme@@(guile-user)> (+ 1 2 3)                ; add some numbers\n"
+"$1 = 6\n"
+"scheme@@(guile-user)> (define (factorial n)    ; define a function\n"
+"                       (if (zero? n) 1 (* n (factorial (- n 1)))))\n"
+"scheme@@(guile-user)> (factorial 20)\n"
+"$2 = 2432902008176640000\n"
+"scheme@@(guile-user)> (getpwnam \"root\")        ; look in /etc/passwd\n"
+"$3 = #(\"root\" \"x\" 0 0 \"root\" \"/root\" \"/bin/bash\")\n"
+"scheme@@(guile-user)> @kbd{C-d}\n"
+"$\n"
+"@end example"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/tour.texi:56
+msgid ""
+"@node Running Guile Scripts\n"
+"@subsection Running Guile Scripts"
+msgstr ""
+"@node Running Guile Scripts\n"
+"@subsection Запуск скрипта Guile"
+
+#: /home/bear/work/guile/doc/guile/en/tour.texi:61
+msgid ""
+"Like AWK, Perl, or any shell, Guile can interpret script files.  A Guile\n"
+"script is simply a file of Scheme code with some extra information at\n"
+"the beginning which tells the operating system how to invoke Guile, and\n"
+"then tells Guile how to handle the Scheme code."
+msgstr ""
+"Подобно AWK, Perl, или любой другой оболочке, Guile может интерпретировать\n"
+"файлы сценариев. Сценарий Guile --- это просто файл кода Scheme  с "
+"некоторой\n"
+"дополнительной информацией в начале, которая сообщает операционной системе \n"
+"как вызвать Guile, а затем говорит Guile как обработать код Scheme."
+
+#: /home/bear/work/guile/doc/guile/en/tour.texi:63
+msgid ""
+"Here is a trivial Guile script.  @xref{Guile Scripting}, for more details."
+msgstr ""
+"Вот тривиальный сценарий Guile.  @xref{Guile Scripting}, для более "
+"подробной\n"
+"информации."
+
+#: /home/bear/work/guile/doc/guile/en/tour.texi:70
+msgid ""
+"@example\n"
+"#!/usr/local/bin/guile -s\n"
+"!#\n"
+"(display \"Hello, world!\")\n"
+"(newline)\n"
+"@end example"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/tour.texi:74
+msgid ""
+"@node Linking Guile into Programs\n"
+"@subsection Linking Guile into Programs"
+msgstr ""
+"@node Linking Guile into Programs\n"
+"@subsection Встраивание Guile в программу(статическая линковка)"
+
+#: /home/bear/work/guile/doc/guile/en/tour.texi:78
+msgid ""
+"The Guile interpreter is available as an object library, to be linked\n"
+"into applications using Scheme as a configuration or extension\n"
+"language."
+msgstr ""
+"Интерпретатор Guile доступен в виде библиотеки объектов, которая должна\n"
+"быть присоединена(подлинкована_ к приложению, использующему Scheme как\n"
+"язык конфигурации или расширения."
+
+#: /home/bear/work/guile/doc/guile/en/tour.texi:83
+msgid ""
+"Here is @file{simple-guile.c}, source code for a program that will\n"
+"produce a complete Guile interpreter.  In addition to all usual\n"
+"functions provided by Guile, it will also offer the function\n"
+"@code{my-hostname}."
+msgstr ""
+"Вот @file{simple-guile.c}, исходный код программы, которая создаст\n"
+"полноценный интерпрепретатор Guile.  В дополнение к обычным функциям,\n"
+"предоставляемыми  Guile, он так же будет предлагать функцию \n"
+"@code{my-hostname}."
+
+#: /home/bear/work/guile/doc/guile/en/tour.texi:87
+msgid ""
+"@example\n"
+"#include <stdlib.h>\n"
+"#include <libguile.h>"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/tour.texi:97
+msgid ""
+"static SCM\n"
+"my_hostname (void)\n"
+"@{\n"
+"  char *s = getenv (\"HOSTNAME\");\n"
+"  if (s == NULL)\n"
+"    return SCM_BOOL_F;\n"
+"  else\n"
+"    return scm_from_locale_string (s);\n"
+"@}"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/tour.texi:104
+msgid ""
+"static void\n"
+"inner_main (void *data, int argc, char **argv)\n"
+"@{\n"
+"  scm_c_define_gsubr (\"my-hostname\", 0, 0, 0, my_hostname);\n"
+"  scm_shell (argc, argv);\n"
+"@}"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/tour.texi:112
+msgid ""
+"int\n"
+"main (int argc, char **argv)\n"
+"@{\n"
+"  scm_boot_guile (argc, argv, inner_main, 0);\n"
+"  return 0; /* never reached */\n"
+"@}\n"
+"@end example"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/tour.texi:115
+msgid ""
+"When Guile is correctly installed on your system, the above program\n"
+"can be compiled and linked like this:"
+msgstr ""
+"Когда Guile правильно установлен в вашей системе, вышеуказанная\n"
+"программа может быть скомпилирована и связана со статическми\n"
+"библиотеками(слинкована) так:"
+
+#: /home/bear/work/guile/doc/guile/en/tour.texi:120
+msgid ""
+"@example\n"
+"$ gcc -o simple-guile simple-guile.c \\\n"
+"    `pkg-config --cflags --libs guile-@value{EFFECTIVE-VERSION}`\n"
+"@end example"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/tour.texi:123
+msgid ""
+"When it is run, it behaves just like the @code{guile} program except\n"
+"that you can also call the new @code{my-hostname} function."
+msgstr ""
+"Когда она запускается, она ведет себя точно так же, как программа "
+"@code{guile},\n"
+"за исключением того, что вы также можете вызвать новую функцию @code{my-"
+"hostname}."
+
+#: /home/bear/work/guile/doc/guile/en/tour.texi:131
+msgid ""
+"@example\n"
+"$ ./simple-guile\n"
+"scheme@@(guile-user)> (+ 1 2 3)\n"
+"$1 = 6\n"
+"scheme@@(guile-user)> (my-hostname)\n"
+"\"burns\"\n"
+"@end example"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/tour.texi:134
+msgid ""
+"@node Writing Guile Extensions\n"
+"@subsection Writing Guile Extensions"
+msgstr ""
+"@node Writing Guile Extensions\n"
+"@subsection Написание расширений Guile"
+
+#: /home/bear/work/guile/doc/guile/en/tour.texi:138
+msgid ""
+"You can link Guile into your program and make Scheme available to the\n"
+"users of your program.  You can also link your library into Guile and\n"
+"make its functionality available to all users of Guile."
+msgstr ""
+"Вы можете связать Guile с вашей программой и сделать Scheme доступным\n"
+"для пользователей вашей программы.  Вы также можете связать свою библиотеку\n"
+"с Guile и сделать ее функциональность доступной для всех пользователей Guile."
+
+#: /home/bear/work/guile/doc/guile/en/tour.texi:141
+msgid ""
+"A library that is linked into Guile is called an @dfn{extension}, but it\n"
+"really just is an ordinary object library."
+msgstr ""
+"Библиотека, которая связана с Guile, называется "
+"@dfn{расширением(extension)},\n"
+"но на самом деле это просто обычная объектная библиотека."
+
+#: /home/bear/work/guile/doc/guile/en/tour.texi:144
+msgid ""
+"The following example shows how to write a simple extension for Guile\n"
+"that makes the @code{j0} function available to Scheme code."
+msgstr ""
+"В следующем примере показано, как написать простое расширение для  Guile\n"
+"которое делает функцию @code{j0} доступной из кода Scheme."
+
+#: /home/bear/work/guile/doc/guile/en/tour.texi:148
+msgid ""
+"@smallexample\n"
+"#include <math.h>\n"
+"#include <libguile.h>"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/tour.texi:154
+msgid ""
+"SCM\n"
+"j0_wrapper (SCM x)\n"
+"@{\n"
+"  return scm_from_double (j0 (scm_to_double (x)));\n"
+"@}"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/tour.texi:161
+msgid ""
+"void\n"
+"init_bessel ()\n"
+"@{\n"
+"  scm_c_define_gsubr (\"j0\", 1, 0, 0, j0_wrapper);\n"
+"@}\n"
+"@end smallexample"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/tour.texi:164
+msgid ""
+"This C source file needs to be compiled into a shared library.  Here is\n"
+"how to do it on GNU/Linux:"
+msgstr ""
+"Этот исходный Си файл должен быть скомпилирован в разделяемую библиотеку.  \n"
+"Вот как это делается в GNU/Linux:"
+
+#: /home/bear/work/guile/doc/guile/en/tour.texi:169
+msgid ""
+"@smallexample\n"
+"gcc `pkg-config --cflags guile-@value{EFFECTIVE-VERSION}` \\\n"
+"  -shared -o libguile-bessel.so -fPIC bessel.c\n"
+"@end smallexample"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/tour.texi:172
+msgid ""
+"For creating shared libraries portably, we recommend the use of GNU\n"
+"Libtool (@pxref{Top, , Introduction, libtool, GNU Libtool})."
+msgstr ""
+"Для создания переносимых разделяемых библиотек, мы рекомендуем использовать\n"
+"GNU Libtool (@pxref{Top, , Introduction, libtool, GNU Libtool})."
+
+#: /home/bear/work/guile/doc/guile/en/tour.texi:176
+msgid ""
+"A shared library can be loaded into a running Guile process with the\n"
+"function @code{load-extension}.  The @code{j0} is then immediately\n"
+"available:"
+msgstr ""
+"Разделяемая библиотека может быть загружена в запущенный процесс Guile\n"
+"функцией @code{load-extension}.  Затем функция @code{j0} становиться\n"
+"доступной для выполнения:"
+
+#: /home/bear/work/guile/doc/guile/en/tour.texi:183
+msgid ""
+"@smallexample\n"
+"$ guile\n"
+"scheme@@(guile-user)> (load-extension \"./libguile-bessel\" \"init_bessel"
+"\")\n"
+"scheme@@(guile-user)> (j0 2)\n"
+"$1 = 0.223890779141236\n"
+"@end smallexample"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/tour.texi:186
+msgid ""
+"For more on how to install your extension, @pxref{Installing Site\n"
+"Packages}."
+msgstr ""
+"Подробнее о том, как установить расширение, @pxref{Installing Site\n"
+"Packages}."
+
+#: /home/bear/work/guile/doc/guile/en/tour.texi:190
+msgid ""
+"@node Using the Guile Module System\n"
+"@subsection Using the Guile Module System"
+msgstr ""
+"@node Using the Guile Module System\n"
+"@subsection Использование модульной системы Guile"
+
+#: /home/bear/work/guile/doc/guile/en/tour.texi:194
+msgid ""
+"Guile has support for dividing a program into @dfn{modules}.  By using\n"
+"modules, you can group related code together and manage the\n"
+"composition of complete programs from largely independent parts."
+msgstr ""
+"Guile поддерживает разделение программа на модули@dfn{modules}. Используя "
+"модули,\n"
+"вы можете группировать и управлять содержанием программ, состоящих, в "
+"основном,\n"
+"из независимых частей."
+
+#: /home/bear/work/guile/doc/guile/en/tour.texi:197
+msgid ""
+"For more details on the module system beyond this introductory material,\n"
+"@xref{Modules}."
+msgstr ""
+"Для получения дополнительной информации о модульной системе сверх\n"
+"вводного материала, см. @xref{Modules}."
+
+#: /home/bear/work/guile/doc/guile/en/tour.texi:203
+msgid ""
+"@menu\n"
+"* Using Modules::\n"
+"* Writing new Modules::\n"
+"* Putting Extensions into Modules::\n"
+"@end menu"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/tour.texi:207
+msgid ""
+"@node Using Modules\n"
+"@subsubsection Using Modules"
+msgstr ""
+"@node Using Modules\n"
+"@subsubsection Использование Модулей"
+
+#: /home/bear/work/guile/doc/guile/en/tour.texi:212
+msgid ""
+"Guile comes with a lot of useful modules, for example for string\n"
+"processing or command line parsing.  Additionally, there exist many\n"
+"Guile modules written by other Guile hackers, but which have to be\n"
+"installed manually."
+msgstr ""
+"Guile поставляется со множеством полезных модулей, например, для\n"
+"обработки строк или синтаксического анализа командной строки. Кроме\n"
+"того, существует множество модулей Guile написанных другими хакерами\n"
+"Guile, но которые необходимо устанавливать в ручную."
+
+#: /home/bear/work/guile/doc/guile/en/tour.texi:217
+msgid ""
+"Here is a sample interactive session that shows how to use the\n"
+"@code{(ice-9 popen)} module which provides the means for communicating\n"
+"with other processes over pipes together with the @code{(ice-9\n"
+"rdelim)} module that provides the function @code{read-line}."
+msgstr ""
+"Вот пример интерактивного сеанса, который показывает, как использовать\n"
+"модуль @code{(ice-9 popen)} который обеспечивает средства связи с другими\n"
+"процессами посредством pipes совместно с модулем @code{(ice-9\n"
+"rdelim)} предоставляющим функцию чтения строки @code{read-line}."
+
+#: /home/bear/work/guile/doc/guile/en/tour.texi:228
+msgid ""
+"@smallexample\n"
+"$ guile\n"
+"scheme@@(guile-user)> (use-modules (ice-9 popen))\n"
+"scheme@@(guile-user)> (use-modules (ice-9 rdelim))\n"
+"scheme@@(guile-user)> (define p (open-input-pipe \"ls -l\"))\n"
+"scheme@@(guile-user)> (read-line p)\n"
+"$1 = \"total 30\"\n"
+"scheme@@(guile-user)> (read-line p)\n"
+"$2 = \"drwxr-sr-x    2 mgrabmue mgrabmue     1024 Mar 29 19:57 CVS\"\n"
+"@end smallexample"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/tour.texi:231
+msgid ""
+"@node Writing new Modules\n"
+"@subsubsection Writing new Modules"
+msgstr ""
+"@node Writing new Modules\n"
+"@subsubsection Написание новых Модулей"
+
+#: /home/bear/work/guile/doc/guile/en/tour.texi:235
+msgid ""
+"You can create new modules using the syntactic form\n"
+"@code{define-module}.  All definitions following this form until the\n"
+"next @code{define-module} are placed into the new module."
+msgstr ""
+"Вы можете создавать новые модули с помощью синтаксической формы\n"
+"@code{define-module}.  Все определения  следующие за данной формой,\n"
+"будут помещаться в этот модуль, пока не будет размещена новая \n"
+"форма @code{define-module} обозначающая новый модуль."
+
+#: /home/bear/work/guile/doc/guile/en/tour.texi:239
+msgid ""
+"One module is usually placed into one file, and that file is installed\n"
+"in a location where Guile can automatically find it.  The following\n"
+"session shows a simple example."
+msgstr ""
+"Один модуль обычно размещается в один файл, и этот файл устанавливается\n"
+"в том месте, где Guile может автоматически найти его. В следующем\n"
+"сеансе показан простой пример:"
+
+#: /home/bear/work/guile/doc/guile/en/tour.texi:242
+msgid ""
+"@smallexample\n"
+"$ cat /usr/local/share/guile/site/foo/bar.scm"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/tour.texi:245
+msgid ""
+"(define-module (foo bar)\n"
+"  #:export (frob))"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/tour.texi:247
+msgid "(define (frob x) (* 2 x))"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/tour.texi:253
+msgid ""
+"$ guile\n"
+"scheme@@(guile-user)> (use-modules (foo bar))\n"
+"scheme@@(guile-user)> (frob 12)\n"
+"$1 = 24\n"
+"@end smallexample"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/tour.texi:256
+msgid ""
+"For more on how to install your module, @pxref{Installing Site\n"
+"Packages}."
+msgstr ""
+"Подробнее о том, как устанавливать модули, см. @pxref{Installing Site\n"
+"Packages}."
+
+#: /home/bear/work/guile/doc/guile/en/tour.texi:260
+msgid ""
+"@node Putting Extensions into Modules\n"
+"@subsubsection Putting Extensions into Modules"
+msgstr ""
+"@node Putting Extensions into Modules\n"
+"@subsubsection Вставка расширений в Модуль"
+
+#: /home/bear/work/guile/doc/guile/en/tour.texi:263
+msgid ""
+"In addition to Scheme code you can also put things that are defined in\n"
+"C into a module."
+msgstr ""
+"В дополнении к коду Scheme вы также можете помещать в модуль объекты,\n"
+"которые определены в Си модулях."
+
+#: /home/bear/work/guile/doc/guile/en/tour.texi:266
+msgid ""
+"You do this by writing a small Scheme file that defines the module and\n"
+"call @code{load-extension} directly in the body of the module."
+msgstr ""
+"ВЫ сделаете это, написав небольшой файл Scheme, который определяет модуль\n"
+"и вызывает @code{load-extension} непосредственно из тела модуля."
+
+#: /home/bear/work/guile/doc/guile/en/tour.texi:269
+msgid ""
+"@smallexample\n"
+"$ cat /usr/local/share/guile/site/math/bessel.scm"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/tour.texi:272
+msgid ""
+"(define-module (math bessel)\n"
+"  #:export (j0))"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/tour.texi:274
+msgid "(load-extension \"libguile-bessel\" \"init_bessel\")"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/tour.texi:282
+msgid ""
+"$ file /usr/local/lib/guile/@value{EFFECTIVE-VERSION}/extensions/libguile-"
+"bessel.so\n"
+"@dots{} ELF 32-bit LSB shared object @dots{}\n"
+"$ guile\n"
+"scheme@@(guile-user)> (use-modules (math bessel))\n"
+"scheme@@(guile-user)> (j0 2)\n"
+"$1 = 0.223890779141236\n"
+"@end smallexample"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/tour.texi:284
+msgid "@xref{Modules and Extensions}, for more information."
+msgstr "@xref{Modules and Extensions}, за дальнейшей информацией."
+
+#: /home/bear/work/guile/doc/guile/en/tour.texi:286
+msgid "@lowersections"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/tour.texi:289
+msgid ""
+"@node Reporting Bugs\n"
+"@section Reporting Bugs"
+msgstr ""
+"@node Reporting Bugs\n"
+"@section Сообщение об Ошибках"
+
+#: /home/bear/work/guile/doc/guile/en/tour.texi:292
+msgid ""
+"Any problems with the installation should be reported to\n"
+"@email{bug-guile@@gnu.org}."
+msgstr ""
+"О любых проблемах с установкой следует сообщать на\n"
+"@email{bug-guile@@gnu.org}."
+
+#: /home/bear/work/guile/doc/guile/en/tour.texi:297
+msgid ""
+"If you find a bug in Guile, please report it to the Guile developers, so\n"
+"they can fix it.  They may also be able to suggest workarounds when it\n"
+"is not possible for you to apply the bug-fix or install a new version of\n"
+"Guile yourself."
+msgstr ""
+"Если вы обнаружите ошибку в Guile, пожалуйста сообщите об том разработчикам\n"
+"Guile, чтобы они могли ее исправить. Они так же могут предложить обходные \n"
+"пути, когда вам не удасться применить bug-fix или установить новую\n"
+"версию Guile самостоятельно."
+
+#: /home/bear/work/guile/doc/guile/en/tour.texi:300
+msgid ""
+"Before sending in bug reports, please check with the following list that\n"
+"you really have found a bug."
+msgstr ""
+"Перед отправкой отчетов об ошибке, пожалуйста ознакомьтесь со следующим\n"
+"списком, который подтвердит что вы действительно нашли ошибку."
+
+#: /home/bear/work/guile/doc/guile/en/tour.texi:305
+msgid ""
+"@itemize @bullet\n"
+"@item\n"
+"Whenever documentation and actual behavior differ, you have certainly\n"
+"found a bug, either in the documentation or in the program."
+msgstr ""
+"@itemize @bullet\n"
+"@item\n"
+"Всякий раз, когда документация и фактическое поведение отличаются, вы \n"
+"наверняка обнаружили ошибку, либо в документации, либо в программе."
+
+#: /home/bear/work/guile/doc/guile/en/tour.texi:308
+msgid ""
+"@item\n"
+"When Guile crashes, it is a bug."
+msgstr ""
+"@item\n"
+"Когда Guile \"падает\", это ошибка."
+
+#: /home/bear/work/guile/doc/guile/en/tour.texi:311
+msgid ""
+"@item\n"
+"When Guile hangs or takes forever to complete a task, it is a bug."
+msgstr ""
+"@item\n"
+"Когда Guile зависает или берет навсегда выполнение задачи, это ошибка."
+
+#: /home/bear/work/guile/doc/guile/en/tour.texi:314
+msgid ""
+"@item\n"
+"When calculations produce wrong results, it is a bug."
+msgstr ""
+"@item\n"
+"Когда вычисления выдают неправильные результаты, это ошибка."
+
+#: /home/bear/work/guile/doc/guile/en/tour.texi:317
+msgid ""
+"@item\n"
+"When Guile signals an error for valid Scheme programs, it is a bug."
+msgstr ""
+"@item\n"
+"Когда Guile сообщает об ошибке в корректных программх Scheme, это ошибка."
+
+#: /home/bear/work/guile/doc/guile/en/tour.texi:321
+msgid ""
+"@item\n"
+"When Guile does not signal an error for invalid Scheme programs, it may\n"
+"be a bug, unless this is explicitly documented."
+msgstr ""
+"@item\n"
+"Когда Guile не сигнализирует об ошибке для некорректных программ Scheme,\n"
+"это может быть ошибка, если это явно не задокументировано."
+
+#: /home/bear/work/guile/doc/guile/en/tour.texi:326
+msgid ""
+"@item\n"
+"When some part of the documentation is not clear and does not make sense\n"
+"to you even after re-reading the section, it is a bug.\n"
+"@end itemize"
+msgstr ""
+"@item\n"
+"Когда какая-то часть документации не ясна и не имеет для вас смысла\n"
+"даже после повторного прочтения раздела, это ошибка.\n"
+"@end itemize"
+
+#: /home/bear/work/guile/doc/guile/en/tour.texi:335
+msgid ""
+"Before reporting the bug, check whether any programs you have loaded\n"
+"into Guile, including your @file{.guile} file, set any variables that\n"
+"may affect the functioning of Guile.  Also, see whether the problem\n"
+"happens in a freshly started Guile without loading your @file{.guile}\n"
+"file (start Guile with the @code{-q} switch to prevent loading the init\n"
+"file).  If the problem does @emph{not} occur then, you must report the\n"
+"precise contents of any programs that you must load into Guile in order\n"
+"to cause the problem to occur."
+msgstr ""
+"Прежде чем сообщать об ошибке, проверьте, загружены ли какие-либо\n"
+"программы в Guile, включая ваш файл @file{.guile}, устаровлены ли\n"
+"какие либо переменные, способные повлиять на работу Guile.  Также,\n"
+"смотрите, возникнет ли проблема в чисто загруженном Guile без\n"
+"загрузки вашего файла @file{.guile} (старт Guile с переключателем\n"
+"@code{-q} предотвращает загрузку вашего инициализационного файла).\n"
+"Если проблема не устраняется, тогда вы должны сообщить точное\n"
+"содержание любых программ, которые вы загружаете в Guile, чтобы\n"
+"вызвать проблему."
+
+#: /home/bear/work/guile/doc/guile/en/tour.texi:340
+msgid ""
+"When you write a bug report, please make sure to include as much of the\n"
+"information described below in the report.  If you can't figure out some\n"
+"of the items, it is not a problem, but the more information we get, the\n"
+"more likely we can diagnose and fix the bug."
+msgstr ""
+"Когда вы пишете отчет об ошибке, обязательно указывайте как можно больше\n"
+"информации в отчете описанной ниже. Если вы не можете понять некоторые\n"
+"элементы, это не проблема, но чем больше информации мы получаем,\n"
+"тем более вероятно, что мы сможем диагностировать и исправить ошибку."
+
+#: /home/bear/work/guile/doc/guile/en/tour.texi:346
+msgid ""
+"@itemize @bullet\n"
+"@item\n"
+"The version number of Guile. You can get this information from invoking\n"
+"@samp{guile --version} at your shell, or calling @code{(version)} from\n"
+"within Guile."
+msgstr ""
+"@itemize @bullet\n"
+"@item\n"
+"Номер версии Guile. Вы можете получить эту инофрмацию при вызове \n"
+"@samp{guile --version} в вашей оболочке или вызвав\n"
+"@code{(version)} изнутри Guile."
+
+#: /home/bear/work/guile/doc/guile/en/tour.texi:352
+msgid ""
+"@item\n"
+"Your machine type, as determined by the @code{config.guess} shell\n"
+"script. If you have a Guile checkout, this file is located in\n"
+"@code{build-aux}; otherwise you can fetch the latest version from\n"
+"@uref{http://git.savannah.gnu.org/gitweb/?p=config.git;a=blob_plain;f=config."
+"guess;hb=HEAD}."
+msgstr ""
+"@item\n"
+"Тип вашей машины, определяемый скриптом оболочки @code{config.guess}.\n"
+"Если вы проверите Guile, этот файл находиться в директории @code{build-"
+"aux}; \n"
+"иначе вы его можете получить его полную версию по ссылке:\n"
+"@uref{http://git.savannah.gnu.org/gitweb/?p=config.git;a=blob_plain;f=config."
+"guess;hb=HEAD}."
+
+#: /home/bear/work/guile/doc/guile/en/tour.texi:357
+msgid ""
+"@example\n"
+"$ build-aux/config.guess\n"
+"x86_64-unknown-linux-gnu\n"
+"@end example"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/tour.texi:362
+msgid ""
+"@item\n"
+"If you installed Guile from a binary package, the version of that\n"
+"package. On systems that use RPM, use @code{rpm -qa | grep guile}. On "
+"systems\n"
+"that use DPKG, @code{dpkg -l | grep guile}. "
+msgstr ""
+"@item\n"
+"Если вы установили Guile из двоичного пакета, версию этого пакета. В\n"
+"системах которые используют, используйте @code{rpm -qa | grep guile}. \n"
+"В системах использующих DPKG, @code{dpkg -l | grep guile}. "
+
+#: /home/bear/work/guile/doc/guile/en/tour.texi:365
+msgid ""
+"@item\n"
+"If you built Guile yourself, the build configuration that you used:"
+msgstr ""
+"@item\n"
+"Если вы собирали Guile самостоятельно, то необходима конфигурация\n"
+"которую вы использовали:"
+
+#: /home/bear/work/guile/doc/guile/en/tour.texi:370
+msgid ""
+"@example\n"
+"$ ./config.status --config\n"
+"'--enable-error-on-warning' '--disable-deprecated'...\n"
+"@end example"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/tour.texi:373
+msgid ""
+"@item\n"
+"A complete description of how to reproduce the bug."
+msgstr ""
+"@item\n"
+"Полное описание того как воспроизвести ошибку."
+
+#: /home/bear/work/guile/doc/guile/en/tour.texi:377
+msgid ""
+"If you have a Scheme program that produces the bug, please include it in\n"
+"the bug report. If your program is too big to include. please try to\n"
+"reduce your code to a minimal test case."
+msgstr ""
+"Если у вас есть программа Scheme которая генериует ошибку, пожалуйста\n"
+"включите ее в отчет об ошибке. Если ваша программа слишком велика,\n"
+"чтобы ее включить, попробуйте уменьшить свой код до минимального тестового\n"
+"примера."
+
+#: /home/bear/work/guile/doc/guile/en/tour.texi:380
+msgid ""
+"If you can reproduce your problem at the REPL, that is best. Give a\n"
+"transcript of the expressions you typed at the REPL."
+msgstr ""
+"Если вы можете воспроизвести свою проблему в REPL, это лучше всего.\n"
+"Дайта расшифровку введенных вами выражений в  REPL."
+
+#: /home/bear/work/guile/doc/guile/en/tour.texi:385
+msgid ""
+"@item\n"
+"A description of the incorrect behavior.  For example, \"The Guile\n"
+"process gets a fatal signal,\" or, \"The resulting output is as follows,\n"
+"which I think is wrong.\""
+msgstr ""
+"@item\n"
+"Описание неправильного поведения.  Например, \"Процесс Guile\n"
+"получает сметрельный сигнал,\" или, \"Результат получается следующим\n"
+"образом, что я считаю не правильным.\""
+
+#: /home/bear/work/guile/doc/guile/en/tour.texi:391
+msgid ""
+"If the manifestation of the bug is a Guile error message, it is\n"
+"important to report the precise text of the error message, and a\n"
+"backtrace showing how the Scheme program arrived at the error. This can\n"
+"be done using the @code{,backtrace} command in Guile's debugger.\n"
+"@end itemize"
+msgstr ""
+"Если появление ошибки является сообщением об ошибке Guile, важно\n"
+"сообщить полный текст сообщения об ошибке и обратную трассировку,\n"
+"показывающую как програмаа Scheme пришла к ошибке. Это можно сделать\n"
+"используя команду @code{,backtrace} в отладчике Guile.\n"
+"@end itemize"
+
+#: /home/bear/work/guile/doc/guile/en/tour.texi:399
+msgid ""
+"If your bug causes Guile to crash, additional information from a\n"
+"low-level debugger such as GDB might be helpful. If you have built Guile\n"
+"yourself, you can run Guile under GDB via the\n"
+"@code{meta/gdb-uninstalled-guile} script. Instead of invoking Guile as\n"
+"usual, invoke the wrapper script, type @code{run} to start the process,\n"
+"then @code{backtrace} when the crash comes. Include that backtrace in\n"
+"your report."
+msgstr ""
+"Если ваша ошибка приводит к собою Guil, дополнительная информация от\n"
+"низко-уровневого отлидчика, такого как GDB может быть полезна. Если вы\n"
+"сами собрали Guile, вы можете запустить Guile под GDB с помощью\n"
+"сценария @code{meta/gdb-uninstalled-guile} . Вместо вызова Guile как\n"
+"обычно, вызовите сценарий обертку, введите @code{run} для запуска\n"
+"процесса, затем @code{backtrace}, когда произойдет сбой.\n"
+"Включите эту трассировку в свой отчет."
+
+#: /home/bear/work/guile/doc/guile/en/tour.texi:404
+msgid ""
+"@c Local Variables:\n"
+"@c TeX-master: \"guile.texi\"\n"
+"@c End:"
+msgstr ""

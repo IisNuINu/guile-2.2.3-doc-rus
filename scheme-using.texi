@@ -1,0 +1,797 @@
+@c -*-texinfo-*-
+@c This is part of the GNU Guile Reference Manual.
+@c Copyright (C) 2006, 2010, 2011, 2012, 2013
+@c   Free Software Foundation, Inc.
+@c See the file guile.texi for copying conditions.
+
+@node Using Guile Interactively
+@section Интерактивное Использование Guile
+
+Когда вы запускаете Guile, просто набирая @code{guile}, без аргумента
+@code{-c} или имени скрипта для выполнения, вы получаете интерактивный
+интерпретатор, где вы можете вводить выражения Scheme, и 
+Guile вычислит их и распечатает результаты для вас. Вот несколько простых
+примеров.
+
+@lisp
+scheme@@(guile-user)> (+ 3 4 5)
+$1 = 12
+scheme@@(guile-user)> (display "Hello world!\n")
+Hello world!
+scheme@@(guile-user)> (values 'a 'b)
+$2 = a
+$3 = b
+@end lisp
+
+@noindent
+Этот режим использования называется @dfn{REPL}, что является сокращением от
+(Читать-Выполнять-Печатать в Цикле) ``Read-Eval-Print Loop'', потому что Guile
+интерпретатор сначала читает набранное вами выражение, заем вычисляет его, 
+а затем печатает результат.
+
+В подсказке отображается язык и модуль, в котором вы находитесь. В нашем случае,
+текущий язык это @code{scheme}, и текущий модуль это
+@code{(guile-user)}. @xref{Other Languages}, для получения дополнительной информации о
+поддерживаемых Guile языках отличных от Scheme.
+
+@menu
+* Init File::
+* Readline::                    
+* Value History::              
+* REPL Commands::               
+* Error Handling::              
+* Interactive Debugging::       
+@end menu
+
+@node Init File
+@subsection Файл инициализации, @file{~/.guile}
+
+@cindex .guile
+При интерактивном запуске, Guile загружает локальный файл инициализации из
+@file{~/.guile}.  Этот файл должен содержать выражения  Scheme для выполнения.
+
+Это средство позволяет пользователю настраивать свою интерактивную
+среду Guile, добавляя дополнительные модули или параметризацию
+реализации REPL.
+
+Чтобы запустить Guile без загрузки файла инициализации используйте параметр
+командной строки @code{-q}.
+
+@node Readline
+@subsection Readline
+
+Чтобы проще было повторять и изменять ранее введенные выражения и редактировать
+набранные выражения в Guile можно использовать библиотеку GNU Readline.
+Эта библиотека не включена по умолчанию, по причинам лицензирования, но все 
+что вам нужно сделать для активации Readline, это набрать следующую пару 
+строк.
+
+@lisp
+scheme@@(guile-user)> (use-modules (ice-9 readline))
+scheme@@(guile-user)> (activate-readline)
+@end lisp
+
+Рекомендуется поместить эти две строки (без приглашений
+@code{scheme@@(guile-user)>}) в ваш файл @file{.guile}.
+@xref{Init File}, для получения дополнительной информации о @file{.guile}.
+
+@node Value History
+@subsection История Значений(Value)
+
+Подобно тому как Readline помогает вам повторно использовать предыдущую
+строку ввода, история значений(@dfn{value history}) позволяет вам использовать
+результаты @emph{result} предедыдущих вычислений в новых выражениях.
+Когда история значений включена, каждый результат вычисления автоматически
+присваивается следующей переменной в последовательности переменных
+@code{$1}, @code{$2}, @dots{}.  Вы можете использовать эти переменные в последующих
+выражениях.
+
+@lisp
+scheme@@(guile-user)> (iota 10)
+$1 = (0 1 2 3 4 5 6 7 8 9)
+scheme@@(guile-user)> (apply * (cdr $1))
+$2 = 362880
+scheme@@(guile-user)> (sqrt $2)
+$3 = 602.3952191045344
+scheme@@(guile-user)> (cons $2 $1)
+$4 = (362880 0 1 2 3 4 5 6 7 8 9)
+@end lisp
+
+История значений включена по умолчанию, поскольку Guile REPL импортирует модуль
+@code{(ice-9 history)}. История значений может быть отключена или включена в
+repl, используя опции интерфейса:
+
+@lisp
+scheme@@(guile-user)> ,option value-history #f
+scheme@@(guile-user)> 'foo
+foo
+scheme@@(guile-user)> ,option value-history #t
+scheme@@(guile-user)> 'bar
+$5 = bar
+@end lisp
+
+Обратите внимание, что ранее записанные значения по прежнему доступны, даже если
+история значений отключена. В редких случаях эти ссылки на прошлые вычисления могут
+привести к тому, что Guile будет использовать слишком много памяти. Можно очистить эти
+значения, возможно включив сборку мусора, через процедуру @code{clear-value-history!},
+описанную ниже.
+
+Программный интерфейс для истории значений находится в модуле:
+
+@lisp
+(use-modules (ice-9 history))
+@end lisp
+
+@deffn {Scheme Procedure} value-history-enabled?
+Возвращает истину, если история значений включена, или ложь в противном случае.
+@end deffn
+
+@deffn {Scheme Procedure} enable-value-history!
+Включает запись истории значений, если она выключена.
+@end deffn
+
+@deffn {Scheme Procedure} disable-value-history!
+Выключает запись истории значений, если она включена.
+@end deffn
+
+@deffn {Scheme Procedure} clear-value-history!
+Очищает историю значений. Если сохраненные значения не фиксируются другими структурами
+данных или замыканиями, они могут быть затем утилизированы сборщиком мусора.
+@end deffn
+
+@node REPL Commands
+@subsection Команды REPL
+
+@cindex commands
+REPL существует чтобы читать выражения, вычислять их и распечатывать их 
+результы. Но иногда кто-то хочет сказать REPL, что бы он оценивал выражение
+по другому или сделал что-то вообще. Пользователь может повлиять на работу
+REPL с помощью команд REPL (@dfn{REPL command}).
+
+В предыдущем разделе был приведен пример команды, в виде
+@code{,option}.
+
+@lisp
+scheme@@(guile-user)> ,option value-history #t
+@end lisp
+
+@noindent
+Команды отличаются от выражений наличием в них начальной запятой
+(@samp{,}). С запятой не может начинаться выражение в большинстве языков, это
+эффективный показатель для REPL что следующий текст формирует команду, 
+а не выражение.
+
+
+Команды REPL удобны, потому что они всегда есть. Даже если текущий модуль не 
+имеет привязки для @code{pretty-print}, всегда можно сделать @code{,pretty-print}.
+
+В следующих разделах описаны различные команды, сгруппированные по 
+функциональности. Многие команды имеют сокращения; см. онлайн-справку
+(@code{,help}) для получения дополнительной информации.
+
+@menu
+* Help Commands::               
+* Module Commands::             
+* Language Commands::           
+* Compile Commands::            
+* Profile Commands::            
+* Debug Commands::              
+* Inspect Commands::            
+* System Commands::             
+@end menu
+
+@node Help Commands
+@subsubsection Команды помощи(Help)
+
+Когда Guile запускается в интерактивном режиме, он уведомляет пользователя
+о том, что справку можно получить набрав @samp{,help}. Действительно, @code{help}
+это команда особенно полезная, поскольку позволяет пользователю обнаружить остальные
+команды.
+
+@deffn {REPL Command} help [@code{all} | group | @code{[-c]} command]
+Показывает справку(помощь).
+
+С одним аругментом, пытается найти аргумент как имя группы, давая помощь если
+это группа. В противном случае, пытается найти аргумент в качестве команды, давая
+помощь если это команда.
+
+Если есть команда, имя которой также является именем группы, используйте
+фаорму @samp{-c @var{command}} для получения помощи по команде, а не по группе.
+
+Без каких либо аргументов отображается список команд справки и
+групп команд.
+@end deffn
+
+@deffn {REPL Command} show [topic]
+Дает информацию о Guile.
+
+С одним аргументом, пытается показать конкретную часть информации; в настоящее
+время поддеживаются темы: гарантии(`warranty') (или `w'), "копирование"(`copying') 
+(или `c') и версия(`version') (или `v').
+
+Без каких либо аргументов отображает список тем.
+@end deffn
+
+@deffn {REPL Command} apropos regexp
+Ищет привязки/модули/пакеты
+@end deffn
+
+@deffn {REPL Command} describe obj
+Показывает описание(description)/документацию(documentation).
+@end deffn
+
+@node Module Commands
+@subsubsection Команды Модулей
+
+@deffn {REPL Command} module [module]
+Изменяет текущий модуль / Показывает текущий модуль.
+@end deffn
+
+@deffn {REPL Command} import module @dots{}
+Импортирует модуль / Показывает список имротрированных модулей(текущим модулем).
+@end deffn
+
+@deffn {REPL Command} load file
+Загружает файл в текущий модуль.
+@end deffn
+
+@deffn {REPL Command} reload [module]
+Перезагружает  данный модуль или текущий модуль, если он не был указан.
+@end deffn
+
+@deffn {REPL Command} binding
+Список текущих привязок.
+@end deffn
+
+@deffn {REPL Command} in module expression
+@deffnx {REPL Command} in module command arg @dots{}
+Вычисляет выражение, или альтернативно, выполняет другую мета-команду в
+контексте модуля.  Например, @samp{,in (foo bar) ,binding}
+показывает привязки в модуле @code{(foo bar)}. а так интереснее: 
+@samp{,in (value-history) ,binding}
+@end deffn
+
+@node Language Commands
+@subsubsection Команды Языка
+
+@deffn {REPL Command} language language
+Изменяет текущий язык.
+@end deffn
+
+@node Compile Commands
+@subsubsection Команды Компиляции
+
+@deffn {REPL Command} compile exp
+Создает скомпилированный код выражения.
+@end deffn
+
+@deffn {REPL Command} compile-file file
+Компилирует файл.
+@end deffn
+
+@deffn {REPL Command} expand exp
+Расширяет макрос в форму Scheme(а возможно и другого языка).
+@samp{,expand (define-once a 3)}
+или
+ @samp{,expand (when (defined? a) (display "a defined!!!"))}
+@end deffn
+
+@deffn {REPL Command} optimize exp
+Запускает оптимизатор на куске кода и распечатывает результат.
+@end deffn
+
+@deffn {REPL Command} disassemble exp
+Дизассемблирует скомпилированную процедуру.
+@samp{(define a (lambda () (display "Test disassm\n")))
+,disassemble a}
+@end deffn
+
+@deffn {REPL Command} disassemble-file file
+Дизассемблирует файл.
+@end deffn
+
+@node Profile Commands
+@subsubsection Команды профилирования(измерения скорости работы)
+
+@deffn {REPL Command} time exp
+Выдает время выполнения выражения.
+@end deffn
+
+@deffn {REPL Command} profile exp [#:hz hz=100] @
+  [#:count-calls? count-calls?=#f] [#:display-style display-style=list]
+Профилирование выполнения выражения.  Эта команда компилирует выражение @var{exp}
+и затем запускае его в профилировщике statprof, передавая все ключевые слова в процедуру
+@code{statprof}.  Подробнее о statprof и доступных опциях для этой команды
+смотри  @xref{Statprof}.
+@end deffn
+
+@deffn {REPL Command} trace exp [#:width w] [#:max-indent i]
+Трассировка исполнения
+
+По умолчанию, trace ограничена шириной вашего терминала, или указанием
+ @var{width} если он определен.  Вложенные вызовы процедур будут печататься
+дальше в право, хотя если ширина отступа соответствует  @var{max-indent}, 
+максимальный отступ сокращается.
+@end deffn
+
+@node Debug Commands
+@subsubsection Команды Отладки
+
+Эти команды отладки доступын только в рамках рекурсивного REPL;
+они не работают на верхнем уровне.
+
+@deffn {REPL Command} backtrace [count] [#:width w] [#:full? f]
+Печатает обратную трассу(стек вызовов).
+
+Выводит обратную трассу всех кадров стека, или верхние @var{count} кадров.
+Если @var{count} отритцательный, будут показаны последние @var{count} кадров.
+@end deffn
+
+@deffn {REPL Command} up [count]
+Выбирает кадр стека вызова.
+
+Выбирает и распечатывает кадры стека, которые вызвали это.
+Аргумент говорит, сколько кадров надо пройти вверх.
+@end deffn
+
+@deffn {REPL Command} down [count]
+Выбирает кадр стека вызовов.
+
+Выбирает и распечатывает кадры стека, которые вызвали это.
+Аргумент говорит, сколько кадров надо пройти вниз.
+@end deffn
+
+@deffn {REPL Command} frame [idx]
+Показывает кадр.
+
+Показывает выбранный кадр.  С аргументом, выбирает кадр по индексу,
+а затем показывает его.
+@end deffn
+
+@deffn {REPL Command} locals
+Показывает локальные переменные.
+
+Показывает локально связанные переменные в выбранном кадре.
+@end deffn
+
+@deffn {REPL Command} error-message
+@deffnx {REPL Command} error
+Показывает сообщение об ошибке.
+
+Отображает сообщение, связанное с ошибкой с которой началась текущая
+сессия отладки REPL.
+@end deffn
+
+@deffn {REPL Command} registers
+Показывает регистры VM свяазнные с текущим кадром.
+
+@xref{Stack Layout}, для получения дополнительной информации о кадрах
+стека VM.
+@end deffn
+
+@deffn {REPL Command} width [cols]
+Устанавливает количество отображаемых столбцов в выходных данных @code{,backtrace}
+и @code{,locals} в значение  @var{cols}.  Если @var{cols} не указан, используется
+ширина терминала.
+@end deffn
+
+Следующие 3 команды работают в любом REPL.
+
+@deffn {REPL Command} break proc
+Установить точку останова на процедуре @var{proc}.
+@end deffn
+
+@deffn {REPL Command} break-at-source file line
+Установить точку останова в указанном местоположении исходного файла.
+@end deffn
+
+@deffn {REPL Command} tracepoint proc
+Устанавливает точку трассировки для данной процедуры. Это приведет к тому, что
+все вызовы процедуры распечатают сообщение трассировки. @xref{Tracing Traps}, 
+для получения дополнительной информации.
+@end deffn
+
+Все остальные команды данной подсекции применяются только тогда, когда стек
+является продолжаемым (@dfn{continuable}) --- другими словами, когда для программы
+стек которой получен возможно продолжить работу.  Обычно это означает, что
+программа остановлена из за прерывания или точки останова.
+
+@deffn {REPL Command} step
+Говорит отлаживаемой программе перейти к следующему положению в исходнике.
+@end deffn
+
+@deffn {REPL Command} next
+Говорит отлаживаемой программе перейти к следуюещему положению в исходнике в
+том же кадре стека (См. @ref{Traps} для получения детальной информации как это работает.)
+@end deffn
+
+@deffn {REPL Command} finish
+Говорит отлаживаемой программе, что бы она продолжала работать до завершения текущего
+кадра стека, после чего распечатать результат и повторнно войти в REPL.
+@end deffn
+
+@node Inspect Commands
+@subsubsection Проверяющие(Инспектирующие) Команды
+
+@deffn {REPL Command} inspect exp
+Проверяет результат вычисления  @var{exp}.
+@end deffn
+
+@deffn {REPL Command} pretty-print exp
+Достаточно красиво печатает результат вычисления выражения @var{exp}.
+@end deffn
+
+@node System Commands
+@subsubsection Системные команды
+
+@deffn {REPL Command} gc
+Сборка мусора.
+@end deffn
+
+@deffn {REPL Command} statistics
+Отображение статистики.
+@end deffn
+
+@deffn {REPL Command} option [name] [exp]
+Без аргументов, перечисляет все варианты.  С одним аргументом, показывает
+текущее значение опции с именем @var{name}.  С двумя аргументами, устанавливает
+для опции с именем @var{name} результат вычисления Scheme выражения
+@var{exp}.
+@end deffn
+
+@deffn {REPL Command} quit
+Выходит из сессии.
+@end deffn
+
+Текущие опции REPL включают:
+
+@table @code
+@item compile-options
+Параметры используемые при компиляции введенных выражений в REPL.
+@xref{Compilation}, для подробной информации о опциях компиляции.
+@item interp
+Следует ли интерпретировать или компилировать выражения предоставляемые
+REPL, если такой выбор доступен.  По умолчанию Off (indicating compilation).
+@item prompt
+Настроенное приглашение REPL.  @code{#f} по умолчанию, указывает на приглашение
+по умолчанию.
+@item print
+Процедура с двумя аргументами используемая для печати результата вычисления каждого
+выражения. Аргументы это текущий REPL и печатаемое значение.
+По умолчанию, @code{#f}, использовать процедуру по умолчанию.
+@item value-history
+Включена ли история значений или нет.  @xref{Value History}.
+@item on-error
+Что делать при возникновении ошибки.  По умолчанию, @code{debug}, то есть
+вход в отладчик.  Другие значения включают @code{backtrace}, для показа
+трассировки стека без входа в отладчик, или @code{report}, просто выводит
+сообщение об ошибке.
+@end table
+
+Значения по умолчанию для опций REPL могут быть установлены использованием
+@code{repl-default-option-set!} из @code{(system repl common)}:
+
+@deffn {Scheme Procedure} repl-default-option-set! key value
+Устанавливает значения по умолчанию опций REPL.  Эта функция особенно полезна в файле
+инициализации пользователя.  @xref{Init File}.
+@end deffn
+
+@node Error Handling
+@subsection Обработка ошибок
+
+Когда в коде выполняющимся из REPL обнаруживаеся ошибка, Guile вводит новое
+приглашение, позволяя вам проверить контекст ошибки.
+
+@lisp
+scheme@@(guile-user)> (map string-append '("a" "b") '("c" #\d))
+ERROR: In procedure string-append:
+ERROR: Wrong type (expecting string): #\d
+Entering a new prompt.  Type `,bt' for a backtrace or `,q' to continue.
+scheme@@(guile-user) [1]>
+@end lisp
+
+Новое приглашение запускается внутри старого, в динамическом контексте
+ошибки. Это рекурсивный REPL, дополненный усовершенствованным представлением стека,
+готовым к отладке.
+
+@code{,backtrace} (abbreviated @code{,bt}) отображает стек вызовов Scheme
+в точке, где произошла ошибка:
+
+@lisp
+scheme@@(guile-user) [1]> ,bt
+           1 (map #<procedure string-append _> ("a" "b") ("c" #\d))
+           0 (string-append "b" #\d)
+@end lisp
+
+В приведенном выше примере, обратная трассировка(backtrace) не имеет
+информации об исходном тексте обоих примитивов @code{map} и @code{string-append}.
+Но в общем случае пространство слева, от backtrace указывает строку и столбец,
+в которых данная процедура вызывает другую.
+
+Вы можете выйти из рекусрсивного REPL так же как вы выходите из любого REPL:
+через @samp{(quit)}, @samp{,quit} (сокращенно @samp{,q}), или
+другой вариант @kbd{C-d}.
+
+@node Interactive Debugging
+@subsection Интерактивная Отладка
+
+Рекурсивный отладочный REPL представляет ряд других метакоманд, которые проверяют
+состояние вычислений на момент ошибки. Эти команды позовляют вам
+
+@itemize @bullet
+@item
+отобразить стек вызовов Scheme в точке, где произошла ошибка;
+
+@item
+перемещаться вверх и вниз по стеку вызовов, чтобы детально увидеть вычисляемое
+выражение или применяемую процедуру в каждом кадре(@dfn{frame}); а также
+
+@item
+изучить значения переменных и выражений в контексте каждого фрейма(кадра стека).
+@end itemize
+
+@noindent
+@xref{Debug Commands}, для документации по отдельным командам.
+Этот раздел призван дать более детальное описание типичного сеанса отладки.
+
+Первым делом, нам понадобиться "хорошая" ошибка. Давайте попробуем macroexpand
+- расширить выражение @code{(unquote foo)}, за пределами формы @code{quasiquote},
+и посмотрим, как макрорасширитель сообщит об этой ошибке.
+
+@lisp
+scheme@@(guile-user)> (macroexpand '(unquote foo))
+ERROR: In procedure macroexpand:
+ERROR: unquote: expression not valid outside of quasiquote in (unquote foo)
+Entering a new prompt.  Type `,bt' for a backtrace or `,q' to continue.
+scheme@@(guile-user) [1]>
+@end lisp
+
+Команда @code{backtrace}, которая также может быть вызвана как @code{bt},
+отображает стек вызовов (иначе читается как backtrace) в том месте, где 
+управление процессом вычисления перешло к отладчику:
+
+@lisp
+scheme@@(guile-user) [1]> ,bt
+In ice-9/psyntax.scm:
+  1130:21  3 (chi-top (unquote foo) () ((top)) e (eval) (hygiene #))
+  1071:30  2 (syntax-type (unquote foo) () ((top)) #f #f (# #) #f)
+  1368:28  1 (chi-macro #<procedure de9360 at ice-9/psyntax.scm...> ...)
+In unknown file:
+           0 (scm-error syntax-error macroexpand "~a: ~a in ~a" # #f)
+@end lisp
+
+Стек вызовов состоит из последовательности кадров стека(@dfn{frames}), причем
+каждый кадр описывает одну процедуру, которая ждет, чтобы чтото сделать со
+значениями, возвращаемыми другой процедурой. Здесь мы видим, что в стеке
+четыре кадра.
+
+Обратите внимание, что @code{macroexpand} нет в стеке --- в действительности он
+выполняет хвостовой вызов @code{chi-top}, это можно найти в его определении в
+@code{ice-9/psyntax.scm}.
+
+Когда вы входите в отладчик, выбирается самый внутренний кадр, что означает,
+что команды для  получения информации о текущем кадре (``current''
+frame), или для  вычисления выражений в контексте текущего кадра, будут
+делать это по умолчанию относительно самого внутреннего кадра.  Чтобы
+выбрать другой кадр и применить к нему эти операции, используйте команды:
+@code{up}, @code{down} и @code{frame} вот так:
+
+@lisp
+scheme@@(guile-user) [1]> ,up
+In ice-9/psyntax.scm:
+  1368:28  1 (chi-macro #<procedure de9360 at ice-9/psyntax.scm...> ...)
+scheme@@(guile-user) [1]> ,frame 3
+In ice-9/psyntax.scm:
+  1130:21  3 (chi-top (unquote foo) () ((top)) e (eval) (hygiene #))
+scheme@@(guile-user) [1]> ,down
+In ice-9/psyntax.scm:
+  1071:30  2 (syntax-type (unquote foo) () ((top)) #f #f (# #) #f)
+@end lisp
+
+Возможно, нам интересно, что происходит во втором кадре, поэтому мы посмотрим
+его локальные переменные:
+
+@lisp
+scheme@@(guile-user) [1]> ,locals
+  Local variables:
+  $1 = e = (unquote foo)
+  $2 = r = ()
+  $3 = w = ((top))
+  $4 = s = #f
+  $5 = rib = #f
+  $6 = mod = (hygiene guile-user)
+  $7 = for-car? = #f
+  $8 = first = unquote
+  $9 = ftype = macro
+  $10 = fval = #<procedure de9360 at ice-9/psyntax.scm:2817:2 (x)>
+  $11 = fe = unquote
+  $12 = fw = ((top))
+  $13 = fs = #f
+  $14 = fmod = (hygiene guile-user)
+@end lisp
+
+Все значения доступны по именам истории значений
+(@code{$@var{n}}):
+
+@lisp
+scheme@@(guile-user) [1]> $10
+$15 = #<procedure de9360 at ice-9/psyntax.scm:2817:2 (x)>
+@end lisp
+
+Мы даже можем напрямую вызвать процедуру в REPL:
+
+@lisp
+scheme@@(guile-user) [1]> ($10 'not-going-to-work)
+ERROR: In procedure macroexpand:
+ERROR: source expression failed to match any pattern in not-going-to-work
+Entering a new prompt.  Type `,bt' for a backtrace or `,q' to continue.
+@end lisp
+
+И в этой точке, мы вызвали ошибку внутри ошибки. Давайте просто вернемся на
+верхний уровень(к стеку первой ошибки):
+
+@lisp
+scheme@@(guile-user) [2]> ,q
+scheme@@(guile-user) [1]> ,q
+scheme@@(guile-user)> 
+@end lisp
+
+Наконец: как совет для мудрых, хакеры закрывают свои приглашения REPL с помощью
+@kbd{C-d}.
+
+@node Using Guile in Emacs
+@section Использование Guile в Emacs
+
+@cindex Emacs
+Любой текстовый редактор может редактировать код Scheme, но некоторые
+лучше чем другие.  Emacs -- конечно лучший, и не только потому, что это
+хороший текстовый редактор. Emacs хорошо поддерживает Scheme сразу после
+установки, с разумными правилами отступов, сопоставлением скобок, подсветкой
+синтаксиса, и даже набором сочетаний горячих клавишь для структурного 
+редактирования, позволяющего осуществлять навигацию, вырезать и вставлять,
+и выполнять операции транспонирования, которые работают на сбалансированных
+S-выражениях.
+
+Как бы то нибыло, две вещи значительно улучшат ваш опыт работы с
+Emacs и Guile.
+
+@cindex Paredit
+Первой является  @uref{http://www.emacswiki.org/emacs/ParEdit, Paredit}
+от Taylor Campbell-а.  Вы не должны кодировать на любом диалекте Lisp
+без Paredit.  (Они говорят, что неуверенно, писать скучно, отсюда этот тон,
+но не зависимо от этого)  Paredit это пчела в колене.(фигня какая то, непереводимая
+игра английских слов)
+
+@cindex Geiser
+Второй это
+@iftex
+Jos@'e
+@end iftex
+@ifnottex
+José
+@end ifnottex
+Antonio Ortega Ruiz's
+@uref{http://www.nongnu.org/geiser/, Geiser}.  Geiser дополняет режимы  Emacs'
+@code{scheme-mode} тесной интеграцией с запущенным Guile процессом через
+a @code{comint-mode} буфер REPL.
+
+Конечно, есть комбинации горячих клавиш для переключения в REPL, и среда
+REPL хороша, но Geiser выходит за рамки этого, обеспечивая:
+
+@itemize @bullet
+@item
+Вычисление формы в контексте модуля текущего файла.
+@item
+Макрорасширение.
+@item
+Загрузку файла/модуля и/или его компиляцию.
+@item
+Завершение идентификатора с учетом пространства имен(включая локальные
+привязки, имена, видимые в текущем модуле и имена модулей)
+@item
+Autodoc: область эха показывает информацию о сигнатуре процедуры/макроса вокруг
+текущей точки - автоматически.
+@item
+Переход к определению текущего идентификатора.
+@item
+Доступ к документации (включая docstrings когда их обеспечивает реализация).
+@item
+Списки идентификаторов, экспортируемых данным модулем.
+@item
+Список вызывающих/вызываемых процедур.
+@item
+Зачаточную поддержку для отладки и отслеживания ошибки.
+@item
+Одновременную поддержку нескольких REPL.
+@end itemize
+
+См веб страницу Geiser @uref{http://www.nongnu.org/geiser/}, для получения
+подробной информации.
+
+@node Using Guile Tools
+@section Использование Инструментов Guile
+
+@cindex guild
+@cindex guile-tools
+@cindex wizards
+Guile также поставляется с растущим числом утилит командной строки: компилятор,
+дизассемблер, некоторые модули инспекторы, и в будущем, система для установки
+пакетов Guile из интернета.  Эти инструменты могут быть вызваны с помощью
+программы the @code{guild}.
+
+@example
+$ guild compile -o foo.go foo.scm
+wrote `foo.go'
+@end example
+
+Эта программа раньше называлась @code{guile-tools} вплоть до версии
+Guile 2.0.1, и для обратной совместимости ее еще можно назвать таковой.
+Однако мы изменили название на @code{guild}, не только потому что оно
+приятно короче и легче читается, но и потому, что этот инструмент будет
+служить чтобы связать мастеров Guile вместе, позволяя хакерам обмениваться
+кодом друг с другом, используя CPAN-подобную систему.
+
+@xref{Compilation}, для получения дополнительной информации о @code{guild compile}.
+
+Полный список guild скриптов можно получить, вызвав @code{guild list}, 
+или просто @code{guild}.
+
+@node Installing Site Packages
+@section Установка  Местных(Site) Пакетов
+
+@cindex site
+@cindex site path
+@cindex load path
+@findex %site-dir
+@findex %site-ccache-dir
+
+В какой-то, момент вы возможно, захотите поделиться своим кодом с другими людьми.
+Чтобы это сделать, важно следовать ряду общих соглашений, чтобы облегчить
+пользователям процесс установки и использования вашего пакета.
+
+Первое, что нужно сделать, это установить файлы Scheme, туда где Guile 
+сможет их найти.  Когда Guile отправляется на поиск файлов Scheme, он ищет
+используя путь загрузки(@dfn{load path}) для поиска файла: сначала по
+собственному Guile пути, затем в пути для местных пакетов(@dfn{site packages}).
+Местный пакет это любой код Scheme, который установлен, и не является частью
+самого Guile.  @xref{Load Paths}, для получения дополнительной информации о
+путях загрузки.
+
+Есть несколько местных путей(site paths), по историческим причинам, но тот который
+обычно должен быть использован можно получить вызвав процедуру
+@code{%site-dir}.  @xref{Build Config}.  Если Guile
+@value{EFFECTIVE-VERSION} установлен в вашей системе в @code{/usr/},
+то @code{(%site-dir)} будет
+@code{/usr/share/guile/site/@value{EFFECTIVE-VERSION}}.  Файлы Scheme должны
+быть установлены там.
+
+Если вы не установили скомпилированные @code{.go} файллы, Guile скомпилирует
+ваши модули и программы когда они будут впервые использованы, и кеширует их в
+домашнем каталоге пользователя. @xref{Compilation}, для получения дополнительной
+информации о авто-компиляции.  Тем не менее, лучше скомпилировать файлы до их установки,
+и просто скопировать файлы в то место, где Guile сможет их найти.
+
+Как и в случае с файлами Scheme, Guile ищет путь для поиска скомпилированных
+файлов @code{.go} используя путь @code{%load-compiled-path}.  По умолчанию этот
+путь содержит две записи: путь для Guile файлов и путь для местных(site) пакетов.
+Вы должны установить ваши файлы @code{.go} в последний каталог, значение которого
+возвращается путем вызова процедуры @code{%site-ccache-dir}.  Как и в предыдущем
+примере, если Guile @value{EFFECTIVE-VERSION} установлен в вашей системе в каталог
+@code{/usr/}, тогда @code{(%site-ccache-dir)} содержащая путь к местным пакетам
+будет @code{/usr/lib/guile/@value{EFFECTIVE-VERSION}/site-ccache}.
+
+Обратите внимание, что файл @code{.go} будет загружен только вместо файла
+@code{.scm} если тот не новее.  По этой причине, вы должны сначала установить файлы
+Scheme, а потом ваши скомпилированные файлы.  @xref{Load
+Paths}, для получения дополнительной информации о процессе загрузки.
+
+Наконец, хотя этот раздел посвящен только Scheme, иногда вам необходимо устанавливать
+и расширения Си.  Разделяемые(общие) библиотеки должны быть установлены в директории
+@dfn{extensions dir}.  Это значение можно узнать из конфигурации сборки.
+(@pxref{Build Config}).  Опять же, если Guile @value{EFFECTIVE-VERSION} установлен
+в вашей системе в @code{/usr/}, тогда директория для расширений будет
+@code{/usr/lib/guile/@value{EFFECTIVE-VERSION}/extensions}.
+
+@c Local Variables:
+@c TeX-master: "guile.texi"
+@c End:

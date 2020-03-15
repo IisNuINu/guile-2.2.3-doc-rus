@@ -1,0 +1,5423 @@
+#. extracted from /home/bear/work/guile/doc/guile/en/posix.texi
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2018-05-07 12:37+0300\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Generator: Translate Toolkit 2.2.5\n"
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:6
+msgid ""
+"@c -*-texinfo-*-\n"
+"@c This is part of the GNU Guile Reference Manual.\n"
+"@c Copyright (C)  1996, 1997, 2000, 2001, 2002, 2003, 2004, 2006, 2007,\n"
+"@c   2008, 2009, 2010, 2011, 2012, 2013, 2014, 2017 Free Software "
+"Foundation, Inc.\n"
+"@c See the file guile.texi for copying conditions."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:10
+msgid ""
+"@node POSIX\n"
+"@section @acronym{POSIX} System Calls and Networking\n"
+"@cindex POSIX"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:28
+msgid ""
+"@menu\n"
+"* Conventions::                 Conventions employed by the POSIX interface."
+"\n"
+"* Ports and File Descriptors::  Scheme ``ports'' and Unix file descriptors\n"
+"                                  have different representations.\n"
+"* File System::                 stat, chown, chmod, etc.\n"
+"* User Information::            Retrieving a user's GECOS (/etc/passwd) "
+"entry.\n"
+"* Time::                        gettimeofday, localtime, strftime, etc.\n"
+"* Runtime Environment::         Accessing and modifying Guile's environment."
+"\n"
+"* Processes::                   getuid, getpid, etc.\n"
+"* Signals::                     sigaction, kill, pause, alarm, setitimer, "
+"etc.\n"
+"* Terminals and Ptys::          ttyname, tcsetpgrp, etc.\n"
+"* Pipes::                       Communicating data between processes.\n"
+"* Networking::                  gethostbyaddr, getnetent, socket, bind, "
+"listen.\n"
+"* System Identification::       Obtaining information about the system.\n"
+"* Locales::                     setlocale, etc.\n"
+"* Encryption::\n"
+"@end menu"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:31
+msgid ""
+"@node Conventions\n"
+"@subsection @acronym{POSIX} Interface Conventions"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:36
+msgid ""
+"These interfaces provide access to operating system facilities.\n"
+"They provide a simple wrapping around the underlying C interfaces\n"
+"to make usage from Scheme more convenient.  They are also used\n"
+"to implement the Guile port of scsh (@pxref{The Scheme shell (scsh)})."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:41
+msgid ""
+"Generally there is a single procedure for each corresponding Unix\n"
+"facility.  There are some exceptions, such as procedures implemented for\n"
+"speed and convenience in Scheme with no primitive Unix equivalent,\n"
+"e.g.@: @code{copy-file}."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:46
+msgid ""
+"The interfaces are intended as far as possible to be portable across\n"
+"different versions of Unix.  In some cases procedures which can't be\n"
+"implemented on particular systems may become no-ops, or perform limited\n"
+"actions.  In other cases they may throw errors."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:48
+msgid "General naming conventions are as follows:"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:69
+msgid ""
+"@itemize @bullet\n"
+"@item\n"
+"The Scheme name is often identical to the name of the underlying Unix\n"
+"facility.\n"
+"@item\n"
+"Underscores in Unix procedure names are converted to hyphens.\n"
+"@item\n"
+"Procedures which destructively modify Scheme data have exclamation\n"
+"marks appended, e.g., @code{recv!}.\n"
+"@item\n"
+"Predicates (returning only @code{#t} or @code{#f}) have question marks\n"
+"appended, e.g., @code{access?}.\n"
+"@item\n"
+"Some names are changed to avoid conflict with dissimilar interfaces\n"
+"defined by scsh, e.g., @code{primitive-fork}.\n"
+"@item\n"
+"Unix preprocessor names such as @code{EPERM} or @code{R_OK} are converted\n"
+"to Scheme variables of the same name (underscores are not replaced\n"
+"with hyphens).\n"
+"@end itemize"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:75
+msgid ""
+"Unexpected conditions are generally handled by raising exceptions.\n"
+"There are a few procedures which return a special value if they don't\n"
+"succeed, e.g., @code{getenv} returns @code{#f} if it the requested\n"
+"string is not found in the environment.  These cases are noted in\n"
+"the documentation."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:77
+msgid "For ways to deal with exceptions, see @ref{Exceptions}."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:84
+msgid ""
+"@cindex @code{errno}\n"
+"Errors which the C library would report by returning a null pointer or\n"
+"through some other means are reported by raising a @code{system-error}\n"
+"exception with @code{scm-error} (@pxref{Error Reporting}).  The\n"
+"@var{data} parameter is a list containing the Unix @code{errno} value\n"
+"(an integer).  For example,"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:91
+msgid ""
+"@example\n"
+"(define (my-handler key func fmt fmtargs data)\n"
+"  (display key) (newline)\n"
+"  (display func) (newline)\n"
+"  (apply format #t fmt fmtargs) (newline)\n"
+"  (display data) (newline))"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:95
+msgid ""
+"(catch 'system-error\n"
+"  (lambda () (dup2 -123 -456))\n"
+"  my-handler)"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:102
+msgid ""
+"@print{}\n"
+"system-error\n"
+"dup2\n"
+"Bad file descriptor\n"
+"(9)\n"
+"@end example"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:110
+msgid ""
+"@sp 1\n"
+"@defun system-error-errno arglist\n"
+"@cindex @code{errno}\n"
+"Return the @code{errno} value from a list which is the arguments to an\n"
+"exception handler.  If the exception is not a @code{system-error},\n"
+"then the return is @code{#f}.  For example,"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:128
+msgid ""
+"@example\n"
+"(catch\n"
+" 'system-error\n"
+" (lambda ()\n"
+"   (mkdir \"/this-ought-to-fail-if-I'm-not-root\"))\n"
+" (lambda stuff\n"
+"   (let ((errno (system-error-errno stuff)))\n"
+"     (cond\n"
+"      ((= errno EACCES)\n"
+"       (display \"You're not allowed to do that.\"))\n"
+"      ((= errno EEXIST)\n"
+"       (display \"Already exists.\"))\n"
+"      (#t\n"
+"       (display (strerror errno))))\n"
+"     (newline))))\n"
+"@end example\n"
+"@end defun"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:133
+msgid ""
+"@node Ports and File Descriptors\n"
+"@subsection Ports and File Descriptors\n"
+"@cindex file descriptor"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:135
+msgid ""
+"Conventions generally follow those of scsh, @ref{The Scheme shell (scsh)}."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:140
+msgid ""
+"Each open file port has an associated operating system file descriptor.\n"
+"File descriptors are generally not useful in Scheme programs; however\n"
+"they may be needed when interfacing with foreign code and the Unix\n"
+"environment."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:147
+msgid ""
+"A file descriptor can be extracted from a port and a new port can be\n"
+"created from a file descriptor.  However a file descriptor is just an\n"
+"integer and the garbage collector doesn't recognize it as a reference\n"
+"to the port.  If all other references to the port were dropped, then\n"
+"it's likely that the garbage collector would free the port, with the\n"
+"side-effect of closing the file descriptor prematurely."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:155
+msgid ""
+"To assist the programmer in avoiding this problem, each port has an\n"
+"associated @dfn{revealed count} which can be used to keep track of how many\n"
+"times the underlying file descriptor has been stored in other places.\n"
+"If a port's revealed count is greater than zero, the file descriptor\n"
+"will not be closed when the port is garbage collected.  A programmer\n"
+"can therefore ensure that the revealed count will be greater than\n"
+"zero if the file descriptor is needed elsewhere."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:163
+msgid ""
+"For the simple case where a file descriptor is ``imported'' once to become\n"
+"a port, it does not matter if the file descriptor is closed when the\n"
+"port is garbage collected.  There is no need to maintain a revealed\n"
+"count.  Likewise when ``exporting'' a file descriptor to the external\n"
+"environment, setting the revealed count is not required provided the\n"
+"port is kept open (i.e., is pointed to by a live Scheme binding) while\n"
+"the file descriptor is in use."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:171
+msgid ""
+"To correspond with traditional Unix behaviour, three file descriptors\n"
+"(0, 1, and 2) are automatically imported when a program starts up and\n"
+"assigned to the initial values of the current/standard input, output,\n"
+"and error ports, respectively.  The revealed count for each is\n"
+"initially set to one, so that dropping references to one of these\n"
+"ports will not result in its garbage collection: it could be retrieved\n"
+"with @code{fdopen} or @code{fdes->ports}."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:182
+msgid ""
+"Guile's ports can be buffered.  This means that writing a byte to a file\n"
+"port goes to the internal buffer first, and only when the buffer is full\n"
+"(or the user invokes @code{force-output} on the port) is the data\n"
+"actually written to the file descriptor.  Likewise on input, bytes are\n"
+"read in from the file descriptor in blocks and placed in a buffer.\n"
+"Reading a character via @code{read-char} first goes to the buffer,\n"
+"filling it as needed.  Usually read buffering is more or less\n"
+"transparent, but write buffering can sometimes cause writes to be\n"
+"delayed unexpectedly, if you forget to call @code{force-output}.\n"
+"@xref{Buffering}, for more on how to control port buffers."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:187
+msgid ""
+"Note however that some procedures (e.g., @code{recv!}) will accept ports\n"
+"as arguments, but will actually operate directly on the file descriptor\n"
+"underlying the port.  Any port buffering is ignored, including the\n"
+"buffer which implements @code{peek-char} and @code{unread-char}."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:192
+msgid ""
+"@deffn {Scheme Procedure} port-revealed port\n"
+"@deffnx {C Function} scm_port_revealed (port)\n"
+"Return the revealed count for @var{port}.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:198
+msgid ""
+"@deffn {Scheme Procedure} set-port-revealed! port rcount\n"
+"@deffnx {C Function} scm_set_port_revealed_x (port, rcount)\n"
+"Sets the revealed count for a @var{port} to @var{rcount}.\n"
+"The return value is unspecified.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:204
+msgid ""
+"@deffn {Scheme Procedure} fileno port\n"
+"@deffnx {C Function} scm_fileno (port)\n"
+"Return the integer file descriptor underlying @var{port}.  Does\n"
+"not change its revealed count.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:209
+msgid ""
+"@deffn {Scheme Procedure} port->fdes port\n"
+"Returns the integer file descriptor underlying @var{port}.  As a\n"
+"side effect the revealed count of @var{port} is incremented.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:217
+msgid ""
+"@deffn {Scheme Procedure} fdopen fdes modes\n"
+"@deffnx {C Function} scm_fdopen (fdes, modes)\n"
+"Return a new port based on the file descriptor @var{fdes}.  Modes are\n"
+"given by the string @var{modes}.  The revealed count of the port is\n"
+"initialized to zero.  The @var{modes} string is the same as that\n"
+"accepted by @code{open-file} (@pxref{File Ports, open-file}).\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:224
+msgid ""
+"@deffn {Scheme Procedure} fdes->ports fdes\n"
+"@deffnx {C Function} scm_fdes_to_ports (fdes)\n"
+"Return a list of existing ports which have @var{fdes} as an\n"
+"underlying file descriptor, without changing their revealed\n"
+"counts.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:230
+msgid ""
+"@deffn {Scheme Procedure} fdes->inport fdes\n"
+"Returns an existing input port which has @var{fdes} as its underlying file\n"
+"descriptor, if one exists, and increments its revealed count.\n"
+"Otherwise, returns a new input port with a revealed count of 1.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:236
+msgid ""
+"@deffn {Scheme Procedure} fdes->outport fdes\n"
+"Returns an existing output port which has @var{fdes} as its underlying file\n"
+"descriptor, if one exists, and increments its revealed count.\n"
+"Otherwise, returns a new output port with a revealed count of 1.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:246
+msgid ""
+"@deffn {Scheme Procedure} primitive-move->fdes port fdes\n"
+"@deffnx {C Function} scm_primitive_move_to_fdes (port, fdes)\n"
+"Moves the underlying file descriptor for @var{port} to the integer\n"
+"value @var{fdes} without changing the revealed count of @var{port}.\n"
+"Any other ports already using this descriptor will be automatically\n"
+"shifted to new descriptors and their revealed counts reset to zero.\n"
+"The return value is @code{#f} if the file descriptor already had the\n"
+"required value or @code{#t} if it was moved.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:254
+msgid ""
+"@deffn {Scheme Procedure} move->fdes port fdes\n"
+"Moves the underlying file descriptor for @var{port} to the integer\n"
+"value @var{fdes} and sets its revealed count to one.  Any other ports\n"
+"already using this descriptor will be automatically\n"
+"shifted to new descriptors and their revealed counts reset to zero.\n"
+"The return value is unspecified.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:258
+msgid ""
+"@deffn {Scheme Procedure} release-port-handle port\n"
+"Decrements the revealed count for a port.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:266
+msgid ""
+"@deffn {Scheme Procedure} fsync port_or_fd\n"
+"@deffnx {C Function} scm_fsync (port_or_fd)\n"
+"Copies any unwritten data for the specified output file descriptor to disk.\n"
+"If @var{port_or_fd} is a port, its buffer is flushed before the underlying\n"
+"file descriptor is fsync'd.\n"
+"The return value is unspecified.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:274
+msgid ""
+"@deffn {Scheme Procedure} open path flags [mode]\n"
+"@deffnx {C Function} scm_open (path, flags, mode)\n"
+"Open the file named by @var{path} for reading and/or writing.\n"
+"@var{flags} is an integer specifying how the file should be opened.\n"
+"@var{mode} is an integer specifying the permission bits of the file,\n"
+"if it needs to be created, before the umask (@pxref{Processes}) is\n"
+"applied.  The default is 666 (Unix itself has no default)."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:277
+msgid ""
+"@var{flags} can be constructed by combining variables using @code{logior}.\n"
+"Basic flags are:"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:293
+msgid ""
+"@defvar O_RDONLY\n"
+"Open the file read-only.\n"
+"@end defvar\n"
+"@defvar O_WRONLY\n"
+"Open the file write-only.\n"
+"@end defvar\n"
+"@defvar O_RDWR\n"
+"Open the file read/write.\n"
+"@end defvar\n"
+"@defvar O_APPEND\n"
+"Append to the file instead of truncating.\n"
+"@end defvar\n"
+"@defvar O_CREAT\n"
+"Create the file if it does not already exist.\n"
+"@end defvar"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:297
+msgid ""
+"@xref{File Status Flags,,,libc,The GNU C Library Reference Manual},\n"
+"for additional flags.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:303
+msgid ""
+"@deffn {Scheme Procedure} open-fdes path flags [mode]\n"
+"@deffnx {C Function} scm_open_fdes (path, flags, mode)\n"
+"Similar to @code{open} but return a file descriptor instead of\n"
+"a port.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:312
+msgid ""
+"@deffn {Scheme Procedure} close fd_or_port\n"
+"@deffnx {C Function} scm_close (fd_or_port)\n"
+"Similar to @code{close-port} (@pxref{Ports, close-port}),\n"
+"but also works on file descriptors.  A side\n"
+"effect of closing a file descriptor is that any ports using that file\n"
+"descriptor are moved to a different file descriptor and have\n"
+"their revealed counts set to zero.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:320
+msgid ""
+"@deffn {Scheme Procedure} close-fdes fd\n"
+"@deffnx {C Function} scm_close_fdes (fd)\n"
+"A simple wrapper for the @code{close} system call.  Close file\n"
+"descriptor @var{fd}, which must be an integer.  Unlike @code{close},\n"
+"the file descriptor will be closed even if a port is using it.  The\n"
+"return value is unspecified.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:331
+msgid ""
+"@deffn {Scheme Procedure} pipe\n"
+"@deffnx {C Function} scm_pipe ()\n"
+"@cindex pipe\n"
+"Return a newly created pipe: a pair of ports which are linked together\n"
+"on the local machine.  The @acronym{CAR} is the input port and the\n"
+"@acronym{CDR} is the output port.  Data written (and flushed) to the\n"
+"output port can be read from the input port.  Pipes are commonly used\n"
+"for communication with a newly forked child process.  The need to flush\n"
+"the output port can be avoided by making it unbuffered using\n"
+"@code{setvbuf} (@pxref{Buffering})."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:338
+msgid ""
+"@defvar PIPE_BUF\n"
+"A write of up to @code{PIPE_BUF} many bytes to a pipe is atomic,\n"
+"meaning when done it goes into the pipe instantaneously and as a\n"
+"contiguous block (@pxref{Pipe Atomicity,, Atomicity of Pipe I/O, libc,\n"
+"The GNU C Library Reference Manual}).\n"
+"@end defvar"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:343
+msgid ""
+"Note that the output port is likely to block if too much data has been\n"
+"written but not yet read from the input port.  Typically the capacity\n"
+"is @code{PIPE_BUF} bytes.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:349
+msgid ""
+"The next group of procedures perform a @code{dup2}\n"
+"system call, if @var{newfd} (an\n"
+"integer) is supplied, otherwise a @code{dup}.  The file descriptor to be\n"
+"duplicated can be supplied as an integer or contained in a port.  The\n"
+"type of value returned varies depending on which procedure is used."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:353
+msgid ""
+"All procedures also have the side effect when performing @code{dup2} that "
+"any\n"
+"ports using @var{newfd} are moved to a different file descriptor and have\n"
+"their revealed counts set to zero."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:360
+msgid ""
+"@deffn {Scheme Procedure} dup->fdes fd_or_port [fd]\n"
+"@deffnx {C Function} scm_dup_to_fdes (fd_or_port, fd)\n"
+"Return a new integer file descriptor referring to the open file\n"
+"designated by @var{fd_or_port}, which must be either an open\n"
+"file port or a file descriptor.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:364
+msgid ""
+"@deffn {Scheme Procedure} dup->inport port/fd [newfd]\n"
+"Returns a new input port using the new file descriptor.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:368
+msgid ""
+"@deffn {Scheme Procedure} dup->outport port/fd [newfd]\n"
+"Returns a new output port using the new file descriptor.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:373
+msgid ""
+"@deffn {Scheme Procedure} dup port/fd [newfd]\n"
+"Returns a new port if @var{port/fd} is a port, with the same mode as the\n"
+"supplied port, otherwise returns an integer file descriptor.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:378
+msgid ""
+"@deffn {Scheme Procedure} dup->port port/fd mode [newfd]\n"
+"Returns a new port using the new file descriptor.  @var{mode} supplies a\n"
+"mode string for the port (@pxref{File Ports, open-file}).\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:384
+msgid ""
+"@deffn {Scheme Procedure} duplicate-port port modes\n"
+"Returns a new port which is opened on a duplicate of the file\n"
+"descriptor underlying @var{port}, with mode string @var{modes}\n"
+"as for @ref{File Ports, open-file}.  The two ports\n"
+"will share a file position and file status flags."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:389
+msgid ""
+"Unexpected behaviour can result if both ports are subsequently used\n"
+"and the original and/or duplicate ports are buffered.\n"
+"The mode string can include @code{0} to obtain an unbuffered duplicate\n"
+"port."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:392
+msgid ""
+"This procedure is equivalent to @code{(dup->port @var{port} @var{modes})}.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:400
+msgid ""
+"@deffn {Scheme Procedure} redirect-port old_port new_port\n"
+"@deffnx {C Function} scm_redirect_port (old_port, new_port)\n"
+"This procedure takes two ports and duplicates the underlying file\n"
+"descriptor from @var{old_port} into @var{new_port}.  The\n"
+"current file descriptor in @var{new_port} will be closed.\n"
+"After the redirection the two ports will share a file position\n"
+"and file status flags."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:402
+msgid "The return value is unspecified."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:405
+msgid ""
+"Unexpected behaviour can result if both ports are subsequently used\n"
+"and the original and/or duplicate ports are buffered."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:409
+msgid ""
+"This procedure does not have any side effects on other ports or\n"
+"revealed counts.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:421
+msgid ""
+"@deffn {Scheme Procedure} dup2 oldfd newfd\n"
+"@deffnx {C Function} scm_dup2 (oldfd, newfd)\n"
+"A simple wrapper for the @code{dup2} system call.\n"
+"Copies the file descriptor @var{oldfd} to descriptor\n"
+"number @var{newfd}, replacing the previous meaning\n"
+"of @var{newfd}.  Both @var{oldfd} and @var{newfd} must\n"
+"be integers.\n"
+"Unlike for @code{dup->fdes} or @code{primitive-move->fdes}, no attempt\n"
+"is made to move away ports which are using @var{newfd}.\n"
+"The return value is unspecified.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:432
+msgid ""
+"@deffn {Scheme Procedure} port-for-each proc\n"
+"@deffnx {C Function} scm_port_for_each (SCM proc)\n"
+"@deffnx {C Function} scm_c_port_for_each (void (*proc)(void *, SCM), void "
+"*data)\n"
+"Apply @var{proc} to each port in the Guile port table\n"
+"(FIXME: what is the Guile port table?)\n"
+"in turn.  The return value is unspecified.  More specifically,\n"
+"@var{proc} is applied exactly once to every port that exists in the\n"
+"system at the time @code{port-for-each} is invoked.  Changes to the\n"
+"port table while @code{port-for-each} is running have no effect as far\n"
+"as @code{port-for-each} is concerned."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:438
+msgid ""
+"The C function @code{scm_port_for_each} takes a Scheme procedure\n"
+"encoded as a @code{SCM} value, while @code{scm_c_port_for_each} takes\n"
+"a pointer to a C function and passes along a arbitrary @var{data}\n"
+"cookie.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:444
+msgid ""
+"@deffn {Scheme Procedure} fcntl port/fd cmd [value]\n"
+"@deffnx {C Function} scm_fcntl (object, cmd, value)\n"
+"Apply @var{cmd} on @var{port/fd}, either a port or file descriptor.\n"
+"The @var{value} argument is used by the @code{SET} commands described\n"
+"below, it's an integer value."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:446
+msgid "Values for @var{cmd} are:"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:451
+msgid ""
+"@defvar F_DUPFD\n"
+"Duplicate the file descriptor, the same as @code{dup->fdes} above\n"
+"does.\n"
+"@end defvar"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:456
+msgid ""
+"@defvar F_GETFD\n"
+"@defvarx F_SETFD\n"
+"Get or set flags associated with the file descriptor.  The only flag\n"
+"is the following,"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:461
+msgid ""
+"@defvar FD_CLOEXEC\n"
+"``Close on exec'', meaning the file descriptor will be closed on an\n"
+"@code{exec} call (a successful such call).  For example to set that\n"
+"flag,"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:465
+msgid ""
+"@example\n"
+"(fcntl port F_SETFD FD_CLOEXEC)\n"
+"@end example"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:467
+msgid "Or better, set it but leave any other possible future flags unchanged,"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:474
+msgid ""
+"@example\n"
+"(fcntl port F_SETFD (logior FD_CLOEXEC\n"
+"                            (fcntl port F_GETFD)))\n"
+"@end example\n"
+"@end defvar\n"
+"@end defvar"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:479
+msgid ""
+"@defvar F_GETFL\n"
+"@defvarx F_SETFL\n"
+"Get or set flags associated with the open file.  These flags are\n"
+"@code{O_RDONLY} etc described under @code{open} above."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:482
+msgid ""
+"A common use is to set @code{O_NONBLOCK} on a network socket.  The\n"
+"following sets that flag, and leaves other flags unchanged."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:488
+msgid ""
+"@example\n"
+"(fcntl sock F_SETFL (logior O_NONBLOCK\n"
+"                            (fcntl sock F_GETFL)))\n"
+"@end example\n"
+"@end defvar"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:494
+msgid ""
+"@defvar F_GETOWN\n"
+"@defvarx F_SETOWN\n"
+"Get or set the process ID of a socket's owner, for @code{SIGIO} signals.\n"
+"@end defvar\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:500
+msgid ""
+"@deffn {Scheme Procedure} flock file operation\n"
+"@deffnx {C Function} scm_flock (file, operation)\n"
+"@cindex file locking\n"
+"Apply or remove an advisory lock on an open file.\n"
+"@var{operation} specifies the action to be done:"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:518
+msgid ""
+"@defvar LOCK_SH\n"
+"Shared lock.  More than one process may hold a shared lock\n"
+"for a given file at a given time.\n"
+"@end defvar\n"
+"@defvar LOCK_EX\n"
+"Exclusive lock.  Only one process may hold an exclusive lock\n"
+"for a given file at a given time.\n"
+"@end defvar\n"
+"@defvar LOCK_UN\n"
+"Unlock the file.\n"
+"@end defvar\n"
+"@defvar LOCK_NB\n"
+"Don't block when locking.  This is combined with one of the other\n"
+"operations using @code{logior} (@pxref{Bitwise Operations}).  If\n"
+"@code{flock} would block an @code{EWOULDBLOCK} error is thrown\n"
+"(@pxref{Conventions}).\n"
+"@end defvar"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:521
+msgid ""
+"The return value is not specified. @var{file} may be an open\n"
+"file descriptor or an open file descriptor port."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:524
+msgid ""
+"Note that @code{flock} does not lock files across NFS.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:531
+msgid ""
+"@deffn {Scheme Procedure} select reads writes excepts [secs [usecs]]\n"
+"@deffnx {C Function} scm_select (reads, writes, excepts, secs, usecs)\n"
+"This procedure has a variety of uses: waiting for the ability\n"
+"to provide input, accept output, or the existence of\n"
+"exceptional conditions on a collection of ports or file\n"
+"descriptors, or waiting for a timeout to occur."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:536
+msgid ""
+"When an error occurs, this procedure throws a @code{system-error}\n"
+"exception (@pxref{Conventions, @code{system-error}}).  Note that\n"
+"@code{select} may return early for other reasons, for example due to\n"
+"pending interrupts.  @xref{Asyncs}, for more on interrupts."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:544
+msgid ""
+"@var{reads}, @var{writes} and @var{excepts} can be lists or\n"
+"vectors, with each member a port or a file descriptor.\n"
+"The value returned is a list of three corresponding\n"
+"lists or vectors containing only the members which meet the\n"
+"specified requirement.  The ability of port buffers to\n"
+"provide input or accept output is taken into account.\n"
+"Ordering of the input lists or vectors is not preserved."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:553
+msgid ""
+"The optional arguments @var{secs} and @var{usecs} specify the\n"
+"timeout.  Either @var{secs} can be specified alone, as\n"
+"either an integer or a real number, or both @var{secs} and\n"
+"@var{usecs} can be specified as integers, in which case\n"
+"@var{usecs} is an additional timeout expressed in\n"
+"microseconds.  If @var{secs} is omitted or is @code{#f} then\n"
+"select will wait for as long as it takes for one of the other\n"
+"conditions to be satisfied."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:561
+msgid ""
+"The scsh version of @code{select} differs as follows:\n"
+"Only vectors are accepted for the first three arguments.\n"
+"The @var{usecs} argument is not supported.\n"
+"Multiple values are returned instead of a list.\n"
+"Duplicates in the input vectors appear only once in output.\n"
+"An additional @code{select!} interface is provided.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:571
+msgid ""
+"While it is sometimes necessary to operate at the level of file\n"
+"descriptors, this is an operation whose correctness can only be\n"
+"considered as part of a whole program.  So for example while the effects\n"
+"of @code{(string-set! x 34 #\\y)} are limited to the bits of code that\n"
+"can access @var{x}, @code{(close-fdes 34)} mutates the state of the\n"
+"entire process.  In particular if another thread is using file\n"
+"descriptor 34 then their state might be corrupted; and another thread\n"
+"which opens a file might cause file descriptor 34 to be re-used, so that\n"
+"corruption could manifest itself in a strange way."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:579
+msgid ""
+"@cindex fdes finalizers\n"
+"@cindex file descriptor finalizers\n"
+"@cindex finalizers, file descriptor\n"
+"However when working with file descriptors, it's common to want to\n"
+"associate information with the file descriptor, perhaps in a side table.\n"
+"To support this use case and to allow user code to remove an association\n"
+"when a file descriptor is closed, Guile offers @dfn{fdes finalizers}."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:586
+msgid ""
+"As the name indicates, fdes finalizers are finalizers -- they can run in\n"
+"response to garbage collection, and they can also run in response to\n"
+"explicit calls to @code{close-port}, @code{close-fdes}, or the like.  As\n"
+"such they inherit many of the pitfalls of finalizers: they may be\n"
+"invoked from concurrent threads, or not at all.  @xref{Foreign Object\n"
+"Memory Management}, for more on finalizers."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:588
+msgid "To use fdes finalizers, import their module;"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:592
+msgid ""
+"@example\n"
+"(use-modules (ice-9 fdes-finalizers))\n"
+"@end example"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:601
+msgid ""
+"@deffn {Scheme Procedure} add-fdes-finalizer! fdes finalizer\n"
+"@deffnx {Scheme Procedure} remove-fdes-finalizer! fdes finalizer\n"
+"Add or remove a finalizer for @var{fdes}.  A finalizer is a procedure\n"
+"that is called by Guile when a file descriptor is closed.  The file\n"
+"descriptor being closed is passed as the one argument to the finalizer.\n"
+"If a finalizer has been added multiple times to a file descriptor, to\n"
+"remove it would require that number of calls to\n"
+"@code{remove-fdes-finalizer!}."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:605
+msgid ""
+"The finalizers added to a file descriptor are called by Guile in an\n"
+"unspecified order, and their return values are ignored.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:610
+msgid ""
+"@node File System\n"
+"@subsection File System\n"
+"@cindex file system"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:616
+msgid ""
+"These procedures allow querying and setting file system attributes\n"
+"(such as owner,\n"
+"permissions, sizes and types of files); deleting, copying, renaming and\n"
+"linking files; creating and removing directories and querying their\n"
+"contents; syncing the file system and creating special files."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:623
+msgid ""
+"@deffn {Scheme Procedure} access? path how\n"
+"@deffnx {C Function} scm_access (path, how)\n"
+"Test accessibility of a file under the real UID and GID of the calling\n"
+"process.  The return is @code{#t} if @var{path} exists and the\n"
+"permissions requested by @var{how} are all allowed, or @code{#f} if\n"
+"not."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:626
+msgid ""
+"@var{how} is an integer which is one of the following values, or a\n"
+"bitwise-OR (@code{logior}) of multiple values."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:640
+msgid ""
+"@defvar R_OK\n"
+"Test for read permission.\n"
+"@end defvar\n"
+"@defvar W_OK\n"
+"Test for write permission.\n"
+"@end defvar\n"
+"@defvar X_OK\n"
+"Test for execute permission.\n"
+"@end defvar\n"
+"@defvar F_OK\n"
+"Test for existence of the file.  This is implied by each of the other\n"
+"tests, so there's no need to combine it with them.\n"
+"@end defvar"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:646
+msgid ""
+"It's important to note that @code{access?} does not simply indicate\n"
+"what will happen on attempting to read or write a file.  In normal\n"
+"circumstances it does, but in a set-UID or set-GID program it doesn't\n"
+"because @code{access?} tests the real ID, whereas an open or execute\n"
+"attempt uses the effective ID."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:652
+msgid ""
+"A program which will never run set-UID/GID can ignore the difference\n"
+"between real and effective IDs, but for maximum generality, especially\n"
+"in library functions, it's best not to use @code{access?} to predict\n"
+"the result of an open or execute, instead simply attempt that and\n"
+"catch any exception."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:659
+msgid ""
+"The main use for @code{access?} is to let a set-UID/GID program\n"
+"determine what the invoking user would have been allowed to do,\n"
+"without the greater (or perhaps lesser) privileges afforded by the\n"
+"effective ID.  For more on this, see @ref{Testing File Access,,, libc,\n"
+"The GNU C Library Reference Manual}.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:668
+msgid ""
+"@findex fstat\n"
+"@deffn {Scheme Procedure} stat object\n"
+"@deffnx {C Function} scm_stat (object)\n"
+"Return an object containing various information about the file\n"
+"determined by @var{object}.  @var{object} can be a string containing\n"
+"a file name or a port or integer file descriptor which is open\n"
+"on a file (in which case @code{fstat} is used as the underlying\n"
+"system call)."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:672
+msgid ""
+"The object returned by @code{stat} can be passed as a single\n"
+"parameter to the following procedures, all of which return\n"
+"integers:"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:729
+msgid ""
+"@deffn {Scheme Procedure} stat:dev st\n"
+"The device number containing the file.\n"
+"@end deffn\n"
+"@deffn {Scheme Procedure} stat:ino st\n"
+"The file serial number, which distinguishes this file from all\n"
+"other files on the same device.\n"
+"@end deffn\n"
+"@deffn {Scheme Procedure} stat:mode st\n"
+"The mode of the file.  This is an integer which incorporates file type\n"
+"information and file permission bits.  See also @code{stat:type} and\n"
+"@code{stat:perms} below.\n"
+"@end deffn\n"
+"@deffn {Scheme Procedure} stat:nlink st\n"
+"The number of hard links to the file.\n"
+"@end deffn\n"
+"@deffn {Scheme Procedure} stat:uid st\n"
+"The user ID of the file's owner.\n"
+"@end deffn\n"
+"@deffn {Scheme Procedure} stat:gid st\n"
+"The group ID of the file.\n"
+"@end deffn\n"
+"@deffn {Scheme Procedure} stat:rdev st\n"
+"Device ID; this entry is defined only for character or block special\n"
+"files.  On some systems this field is not available at all, in which\n"
+"case @code{stat:rdev} returns @code{#f}.\n"
+"@end deffn\n"
+"@deffn {Scheme Procedure} stat:size st\n"
+"The size of a regular file in bytes.\n"
+"@end deffn\n"
+"@deffn {Scheme Procedure} stat:atime st\n"
+"The last access time for the file, in seconds.\n"
+"@end deffn\n"
+"@deffn {Scheme Procedure} stat:mtime st\n"
+"The last modification time for the file, in seconds.\n"
+"@end deffn\n"
+"@deffn {Scheme Procedure} stat:ctime st\n"
+"The last modification time for the attributes of the file, in seconds.\n"
+"@end deffn\n"
+"@deffn {Scheme Procedure} stat:atimensec st\n"
+"@deffnx {Scheme Procedure} stat:mtimensec st\n"
+"@deffnx {Scheme Procedure} stat:ctimensec st\n"
+"The fractional part of a file's access, modification, or attribute "
+"modification\n"
+"time, in nanoseconds. Nanosecond timestamps are only available on some "
+"operating\n"
+"systems and file systems. If Guile cannot retrieve nanosecond-level "
+"timestamps\n"
+"for a file, these fields will be set to 0.\n"
+"@end deffn\n"
+"@deffn {Scheme Procedure} stat:blksize st\n"
+"The optimal block size for reading or writing the file, in bytes.  On\n"
+"some systems this field is not available, in which case\n"
+"@code{stat:blksize} returns a sensible suggested block size.\n"
+"@end deffn\n"
+"@deffn {Scheme Procedure} stat:blocks st\n"
+"The amount of disk space that the file occupies measured in units of\n"
+"512 byte blocks.  On some systems this field is not available, in\n"
+"which case @code{stat:blocks} returns @code{#f}.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:732
+msgid ""
+"In addition, the following procedures return the information\n"
+"from @code{stat:mode} in a more convenient form:"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:743
+msgid ""
+"@deffn {Scheme Procedure} stat:type st\n"
+"A symbol representing the type of file.  Possible values are\n"
+"@samp{regular}, @samp{directory}, @samp{symlink},\n"
+"@samp{block-special}, @samp{char-special}, @samp{fifo}, @samp{socket},\n"
+"and @samp{unknown}.\n"
+"@end deffn\n"
+"@deffn {Scheme Procedure} stat:perms st\n"
+"An integer representing the access permission bits.\n"
+"@end deffn\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:750
+msgid ""
+"@deffn {Scheme Procedure} lstat path\n"
+"@deffnx {C Function} scm_lstat (path)\n"
+"Similar to @code{stat}, but does not follow symbolic links, i.e.,\n"
+"it will return information about a symbolic link itself, not the\n"
+"file it points to.  @var{path} must be a string.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:756
+msgid ""
+"@deffn {Scheme Procedure} readlink path\n"
+"@deffnx {C Function} scm_readlink (path)\n"
+"Return the value of the symbolic link named by @var{path} (a\n"
+"string), i.e., the file that the link points to.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:767
+msgid ""
+"@findex fchown\n"
+"@findex lchown\n"
+"@deffn {Scheme Procedure} chown object owner group\n"
+"@deffnx {C Function} scm_chown (object, owner, group)\n"
+"Change the ownership and group of the file referred to by @var{object}\n"
+"to the integer values @var{owner} and @var{group}.  @var{object} can\n"
+"be a string containing a file name or, if the platform supports\n"
+"@code{fchown} (@pxref{File Owner,,,libc,The GNU C Library Reference\n"
+"Manual}), a port or integer file descriptor which is open on the file.\n"
+"The return value is unspecified."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:774
+msgid ""
+"If @var{object} is a symbolic link, either the\n"
+"ownership of the link or the ownership of the referenced file will be\n"
+"changed depending on the operating system (lchown is\n"
+"unsupported at present).  If @var{owner} or @var{group} is specified\n"
+"as @code{-1}, then that ID is not changed.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:786
+msgid ""
+"@findex fchmod\n"
+"@deffn {Scheme Procedure} chmod object mode\n"
+"@deffnx {C Function} scm_chmod (object, mode)\n"
+"Changes the permissions of the file referred to by @var{object}.\n"
+"@var{object} can be a string containing a file name or a port or integer "
+"file\n"
+"descriptor which is open on a file (in which case @code{fchmod} is used\n"
+"as the underlying system call).\n"
+"@var{mode} specifies\n"
+"the new permissions as a decimal number, e.g., @code{(chmod \"foo\" #o755)}."
+"\n"
+"The return value is unspecified.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:794
+msgid ""
+"@deffn {Scheme Procedure} utime pathname [actime [modtime [actimens ["
+"modtimens [flags]]]]]\n"
+"@deffnx {C Function} scm_utime (pathname, actime, modtime, actimens, "
+"modtimens, flags)\n"
+"@code{utime} sets the access and modification times for the\n"
+"file named by @var{pathname}.  If @var{actime} or @var{modtime} is\n"
+"not supplied, then the current time is used.  @var{actime} and\n"
+"@var{modtime} must be integer time values as returned by the\n"
+"@code{current-time} procedure."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:805
+msgid ""
+"The optional @var{actimens} and @var{modtimens} are nanoseconds\n"
+"to add @var{actime} and @var{modtime}. Nanosecond precision is\n"
+"only supported on some combinations of file systems and operating\n"
+"systems.\n"
+"@lisp\n"
+"(utime \"foo\" (- (current-time) 3600))\n"
+"@end lisp\n"
+"will set the access time to one hour in the past and the\n"
+"modification time to the current time.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:812
+msgid ""
+"@findex unlink\n"
+"@deffn {Scheme Procedure} delete-file str\n"
+"@deffnx {C Function} scm_delete_file (str)\n"
+"Deletes (or ``unlinks'') the file whose path is specified by\n"
+"@var{str}.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:818
+msgid ""
+"@deffn {Scheme Procedure} copy-file oldfile newfile\n"
+"@deffnx {C Function} scm_copy_file (oldfile, newfile)\n"
+"Copy the file specified by @var{oldfile} to @var{newfile}.\n"
+"The return value is unspecified.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:826
+msgid ""
+"@deffn {Scheme Procedure} sendfile out in count [offset]\n"
+"@deffnx {C Function} scm_sendfile (out, in, count, offset)\n"
+"Send @var{count} bytes from @var{in} to @var{out}, both of which\n"
+"must be either open file ports or file descriptors.  When\n"
+"@var{offset} is omitted, start reading from @var{in}'s current\n"
+"position; otherwise, start reading at @var{offset}.  Return\n"
+"the number of bytes actually sent."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:830
+msgid ""
+"When @var{in} is a port, it is often preferable to specify @var{offset},\n"
+"because @var{in}'s offset as a port may be different from the offset of\n"
+"its underlying file descriptor."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:836
+msgid ""
+"On systems that support it, such as GNU/Linux, this procedure uses the\n"
+"@code{sendfile} libc function, which usually corresponds to a system\n"
+"call.  This is faster than doing a series of @code{read} and\n"
+"@code{write} system calls.  A typical application is to send a file over\n"
+"a socket."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:841
+msgid ""
+"In some cases, the @code{sendfile} libc function may return\n"
+"@code{EINVAL} or @code{ENOSYS}.  In that case, Guile's @code{sendfile}\n"
+"procedure automatically falls back to doing a series of @code{read} and\n"
+"@code{write} calls."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:848
+msgid ""
+"In other cases, the libc function may send fewer bytes than\n"
+"@var{count}---for instance because @var{out} is a slow or limited\n"
+"device, such as a pipe.  When that happens, Guile's @code{sendfile}\n"
+"automatically retries until exactly @var{count} bytes were sent or an\n"
+"error occurs.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:855
+msgid ""
+"@findex rename\n"
+"@deffn {Scheme Procedure} rename-file oldname newname\n"
+"@deffnx {C Function} scm_rename (oldname, newname)\n"
+"Renames the file specified by @var{oldname} to @var{newname}.\n"
+"The return value is unspecified.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:863
+msgid ""
+"@deffn {Scheme Procedure} link oldpath newpath\n"
+"@deffnx {C Function} scm_link (oldpath, newpath)\n"
+"Creates a new name @var{newpath} in the file system for the\n"
+"file named by @var{oldpath}.  If @var{oldpath} is a symbolic\n"
+"link, the link may or may not be followed depending on the\n"
+"system.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:869
+msgid ""
+"@deffn {Scheme Procedure} symlink oldpath newpath\n"
+"@deffnx {C Function} scm_symlink (oldpath, newpath)\n"
+"Create a symbolic link named @var{newpath} with the value (i.e., pointing to)"
+"\n"
+"@var{oldpath}.  The return value is unspecified.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:878
+msgid ""
+"@deffn {Scheme Procedure} mkdir path [mode]\n"
+"@deffnx {C Function} scm_mkdir (path, mode)\n"
+"Create a new directory named by @var{path}.  If @var{mode} is omitted\n"
+"then the permissions of the directory are set to @code{#o777}\n"
+"masked with the current umask (@pxref{Processes, @code{umask}}).\n"
+"Otherwise they are set to the value specified with @var{mode}.\n"
+"The return value is unspecified.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:884
+msgid ""
+"@deffn {Scheme Procedure} rmdir path\n"
+"@deffnx {C Function} scm_rmdir (path)\n"
+"Remove the existing directory named by @var{path}.  The directory must\n"
+"be empty for this to succeed.  The return value is unspecified.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:890
+msgid ""
+"@deffn {Scheme Procedure} opendir dirname\n"
+"@deffnx {C Function} scm_opendir (dirname)\n"
+"@cindex directory contents\n"
+"Open the directory specified by @var{dirname} and return a directory\n"
+"stream."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:895
+msgid ""
+"Before using this and the procedures below, make sure to see the\n"
+"higher-level procedures for directory traversal that are available\n"
+"(@pxref{File Tree Walk}).\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:901
+msgid ""
+"@deffn {Scheme Procedure} directory-stream? object\n"
+"@deffnx {C Function} scm_directory_stream_p (object)\n"
+"Return a boolean indicating whether @var{object} is a directory\n"
+"stream as returned by @code{opendir}.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:908
+msgid ""
+"@deffn {Scheme Procedure} readdir stream\n"
+"@deffnx {C Function} scm_readdir (stream)\n"
+"Return (as a string) the next directory entry from the directory stream\n"
+"@var{stream}.  If there is no remaining entry to be read then the\n"
+"end of file object is returned.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:914
+msgid ""
+"@deffn {Scheme Procedure} rewinddir stream\n"
+"@deffnx {C Function} scm_rewinddir (stream)\n"
+"Reset the directory port @var{stream} so that the next call to\n"
+"@code{readdir} will return the first directory entry.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:920
+msgid ""
+"@deffn {Scheme Procedure} closedir stream\n"
+"@deffnx {C Function} scm_closedir (stream)\n"
+"Close the directory stream @var{stream}.\n"
+"The return value is unspecified.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:923
+msgid ""
+"Here is an example showing how to display all the entries in a\n"
+"directory:"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:931
+msgid ""
+"@lisp\n"
+"(define dir (opendir \"/usr/lib\"))\n"
+"(do ((entry (readdir dir) (readdir dir)))\n"
+"    ((eof-object? entry))\n"
+"  (display entry)(newline))\n"
+"(closedir dir)\n"
+"@end lisp"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:937
+msgid ""
+"@deffn {Scheme Procedure} sync\n"
+"@deffnx {C Function} scm_sync ()\n"
+"Flush the operating system disk buffers.\n"
+"The return value is unspecified.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:949
+msgid ""
+"@deffn {Scheme Procedure} mknod path type perms dev\n"
+"@deffnx {C Function} scm_mknod (path, type, perms, dev)\n"
+"@cindex device file\n"
+"Creates a new special file, such as a file corresponding to a device.\n"
+"@var{path} specifies the name of the file.  @var{type} should be one\n"
+"of the following symbols: @samp{regular}, @samp{directory},\n"
+"@samp{symlink}, @samp{block-special}, @samp{char-special},\n"
+"@samp{fifo}, or @samp{socket}.  @var{perms} (an integer) specifies the\n"
+"file permissions.  @var{dev} (an integer) specifies which device the\n"
+"special file refers to.  Its exact interpretation depends on the kind\n"
+"of special file being created."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:954
+msgid ""
+"E.g.,\n"
+"@lisp\n"
+"(mknod \"/dev/fd0\" 'block-special #o660 (+ (* 2 256) 2))\n"
+"@end lisp"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:957
+msgctxt "/home/bear/work/guile/doc/guile/en/posix.texi:957"
+msgid ""
+"The return value is unspecified.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:964
+msgid ""
+"@deffn {Scheme Procedure} tmpnam\n"
+"@deffnx {C Function} scm_tmpnam ()\n"
+"@cindex temporary file\n"
+"Return an auto-generated name of a temporary file, a file which\n"
+"doesn't already exist.  The name includes a path, it's usually in\n"
+"@file{/tmp} but that's system dependent."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:969
+msgid ""
+"Care must be taken when using @code{tmpnam}.  In between choosing the\n"
+"name and creating the file another program might use that name, or an\n"
+"attacker might even make it a symlink pointing at something important\n"
+"and causing you to overwrite that."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:975
+msgid ""
+"The safe way is to create the file using @code{open} with\n"
+"@code{O_EXCL} to avoid any overwriting.  A loop can try again with\n"
+"another name if the file exists (error @code{EEXIST}).\n"
+"@code{mkstemp!} below does that.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:981
+msgid ""
+"@deffn {Scheme Procedure} mkstemp! tmpl [mode]\n"
+"@deffnx {C Function} scm_mkstemp (tmpl)\n"
+"@cindex temporary file\n"
+"Create a new unique file in the file system and return a new buffered\n"
+"port open for reading and writing to the file."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:986
+msgid ""
+"@var{tmpl} is a string specifying where the file should be created: it\n"
+"must end with @samp{XXXXXX} and those @samp{X}s will be changed in the\n"
+"string to return the name of the file.  (@code{port-filename} on the\n"
+"port also gives the name.)"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:991
+msgid ""
+"POSIX doesn't specify the permissions mode of the file, on GNU and\n"
+"most systems it's @code{#o600}.  An application can use @code{chmod}\n"
+"to relax that if desired.  For example @code{#o666} less @code{umask},\n"
+"which is usual for ordinary file creation,"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:997
+msgid ""
+"@example\n"
+"(let ((port (mkstemp! (string-copy \"/tmp/myfile-XXXXXX\"))))\n"
+"  (chmod port (logand #o666 (lognot (umask))))\n"
+"  ...)\n"
+"@end example"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:1002
+msgid ""
+"The optional @var{mode} argument specifies a mode with which to open the\n"
+"new file, as a string in the same format that @code{open-file} takes.\n"
+"It defaults to @code{\"w+\"}.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:1011
+msgid ""
+"@deffn {Scheme Procedure} tmpfile\n"
+"@deffnx {C Function} scm_tmpfile ()\n"
+"Return an input/output port to a unique temporary file\n"
+"named using the path prefix @code{P_tmpdir} defined in\n"
+"@file{stdio.h}.\n"
+"The file is automatically deleted when the port is closed\n"
+"or the program terminates.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:1018
+msgid ""
+"@deffn {Scheme Procedure} dirname filename\n"
+"@deffnx {C Function} scm_dirname (filename)\n"
+"Return the directory name component of the file name\n"
+"@var{filename}. If @var{filename} does not contain a directory\n"
+"component, @code{.} is returned.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:1025
+msgid ""
+"@deffn {Scheme Procedure} basename filename [suffix]\n"
+"@deffnx {C Function} scm_basename (filename, suffix)\n"
+"Return the base name of the file name @var{filename}. The\n"
+"base name is the file name without any directory components.\n"
+"If @var{suffix} is provided, and is equal to the end of\n"
+"@var{basename}, it is removed also."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:1031
+msgid ""
+"@lisp\n"
+"(basename \"/tmp/test.xml\" \".xml\")\n"
+"@result{} \"test\"\n"
+"@end lisp\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:1036
+msgid ""
+"@deffn {Scheme Procedure} file-exists? filename\n"
+"Return @code{#t} if the file named @var{filename} exists, @code{#f} if\n"
+"not.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:1039
+msgid ""
+"@cindex file name separator\n"
+"@cindex absolute file name"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:1049
+msgid ""
+"Many operating systems, such as GNU, use @code{/} (forward slash) to\n"
+"separate the components of a file name; any file name starting with\n"
+"@code{/} is considered an @dfn{absolute file name}.  These conventions\n"
+"are specified by the POSIX Base Definitions, which refer to conforming\n"
+"file names as ``pathnames''.  Some operating systems use a different\n"
+"convention; in particular, Windows uses @code{\\} (backslash) as the file\n"
+"name separator, and also has the notion of @dfn{volume names} like\n"
+"@code{C:\\} for absolute file names.  The following procedures and\n"
+"variables provide support for portable file name manipulations."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:1054
+msgid ""
+"@deffn {Scheme Procedure} system-file-name-convention\n"
+"Return either @code{posix} or @code{windows}, depending on\n"
+"what kind of system this Guile is running on.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:1059
+msgid ""
+"@deffn {Scheme Procedure} file-name-separator? c\n"
+"Return true if character @var{c} is a file name separator on the host\n"
+"platform.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:1064
+msgid ""
+"@deffn {Scheme Procedure} absolute-file-name? file-name\n"
+"Return true if @var{file-name} denotes an absolute file name on the host\n"
+"platform.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:1067
+msgid ""
+"@defvr {Scheme Variable} file-name-separator-string\n"
+"The preferred file name separator."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:1073
+msgid ""
+"Note that on MinGW builds for Windows, both @code{/} and @code{\\} are\n"
+"valid separators.  Thus, programs should not assume that\n"
+"@code{file-name-separator-string} is the @emph{only} file name\n"
+"separator---e.g., when extracting the components of a file name.\n"
+"@end defvr"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:1080
+msgid ""
+"@node User Information\n"
+"@subsection User Information\n"
+"@cindex user information\n"
+"@cindex password file\n"
+"@cindex group file"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:1084
+msgid ""
+"The facilities in this section provide an interface to the user and\n"
+"group database.\n"
+"They should be used with care since they are not reentrant."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:1087
+msgid ""
+"The following functions accept an object representing user information\n"
+"and return a selected component:"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:1110
+msgid ""
+"@deffn {Scheme Procedure} passwd:name pw\n"
+"The name of the userid.\n"
+"@end deffn\n"
+"@deffn {Scheme Procedure} passwd:passwd pw\n"
+"The encrypted passwd.\n"
+"@end deffn\n"
+"@deffn {Scheme Procedure} passwd:uid pw\n"
+"The user id number.\n"
+"@end deffn\n"
+"@deffn {Scheme Procedure} passwd:gid pw\n"
+"The group id number.\n"
+"@end deffn\n"
+"@deffn {Scheme Procedure} passwd:gecos pw\n"
+"The full name.\n"
+"@end deffn\n"
+"@deffn {Scheme Procedure} passwd:dir pw\n"
+"The home directory.\n"
+"@end deffn\n"
+"@deffn {Scheme Procedure} passwd:shell pw\n"
+"The login shell.\n"
+"@end deffn\n"
+"@sp 1"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:1114
+msgid ""
+"@deffn {Scheme Procedure} getpwuid uid\n"
+"Look up an integer userid in the user database.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:1118
+msgid ""
+"@deffn {Scheme Procedure} getpwnam name\n"
+"Look up a user name string in the user database.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:1124
+msgid ""
+"@deffn {Scheme Procedure} setpwent\n"
+"Initializes a stream used by @code{getpwent} to read from the user database."
+"\n"
+"The next use of @code{getpwent} will return the first entry.  The\n"
+"return value is unspecified.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:1129
+msgid ""
+"@deffn {Scheme Procedure} getpwent\n"
+"Read the next entry in the user database stream.  The return is a\n"
+"passwd user object as above, or @code{#f} when no more entries.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:1133
+msgid ""
+"@deffn {Scheme Procedure} endpwent\n"
+"Closes the stream used by @code{getpwent}.  The return value is unspecified."
+"\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:1140
+msgid ""
+"@deffn {Scheme Procedure} setpw [arg]\n"
+"@deffnx {C Function} scm_setpwent (arg)\n"
+"If called with a true argument, initialize or reset the password data\n"
+"stream.  Otherwise, close the stream.  The @code{setpwent} and\n"
+"@code{endpwent} procedures are implemented on top of this.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:1147
+msgid ""
+"@deffn {Scheme Procedure} getpw [user]\n"
+"@deffnx {C Function} scm_getpwuid (user)\n"
+"Look up an entry in the user database.  @var{user} can be an integer,\n"
+"a string, or omitted, giving the behaviour of getpwuid, getpwnam\n"
+"or getpwent respectively.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:1150
+msgid ""
+"The following functions accept an object representing group information\n"
+"and return a selected component:"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:1164
+msgid ""
+"@deffn {Scheme Procedure} group:name gr\n"
+"The group name.\n"
+"@end deffn\n"
+"@deffn {Scheme Procedure} group:passwd gr\n"
+"The encrypted group password.\n"
+"@end deffn\n"
+"@deffn {Scheme Procedure} group:gid gr\n"
+"The group id number.\n"
+"@end deffn\n"
+"@deffn {Scheme Procedure} group:mem gr\n"
+"A list of userids which have this group as a supplementary group.\n"
+"@end deffn\n"
+"@sp 1"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:1168
+msgid ""
+"@deffn {Scheme Procedure} getgrgid gid\n"
+"Look up an integer group id in the group database.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:1172
+msgid ""
+"@deffn {Scheme Procedure} getgrnam name\n"
+"Look up a group name in the group database.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:1178
+msgid ""
+"@deffn {Scheme Procedure} setgrent\n"
+"Initializes a stream used by @code{getgrent} to read from the group database."
+"\n"
+"The next use of @code{getgrent} will return the first entry.\n"
+"The return value is unspecified.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:1183
+msgid ""
+"@deffn {Scheme Procedure} getgrent\n"
+"Return the next entry in the group database, using the stream set by\n"
+"@code{setgrent}.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:1188
+msgid ""
+"@deffn {Scheme Procedure} endgrent\n"
+"Closes the stream used by @code{getgrent}.\n"
+"The return value is unspecified.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:1195
+msgid ""
+"@deffn {Scheme Procedure} setgr [arg]\n"
+"@deffnx {C Function} scm_setgrent (arg)\n"
+"If called with a true argument, initialize or reset the group data\n"
+"stream.  Otherwise, close the stream.  The @code{setgrent} and\n"
+"@code{endgrent} procedures are implemented on top of this.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:1202
+msgid ""
+"@deffn {Scheme Procedure} getgr [group]\n"
+"@deffnx {C Function} scm_getgrgid (group)\n"
+"Look up an entry in the group database.  @var{group} can be an integer,\n"
+"a string, or omitted, giving the behaviour of getgrgid, getgrnam\n"
+"or getgrent respectively.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:1205
+msgid ""
+"In addition to the accessor procedures for the user database, the\n"
+"following shortcut procedure is also available."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:1212
+msgid ""
+"@deffn {Scheme Procedure} getlogin\n"
+"@deffnx {C Function} scm_getlogin ()\n"
+"Return a string containing the name of the user logged in on\n"
+"the controlling terminal of the process, or @code{#f} if this\n"
+"information cannot be obtained.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:1217
+msgid ""
+"@node Time\n"
+"@subsection Time\n"
+"@cindex time"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:1223
+msgid ""
+"@deffn {Scheme Procedure} current-time\n"
+"@deffnx {C Function} scm_current_time ()\n"
+"Return the number of seconds since 1970-01-01 00:00:00 @acronym{UTC},\n"
+"excluding leap seconds.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:1231
+msgid ""
+"@deffn {Scheme Procedure} gettimeofday\n"
+"@deffnx {C Function} scm_gettimeofday ()\n"
+"Return a pair containing the number of seconds and microseconds\n"
+"since 1970-01-01 00:00:00 @acronym{UTC}, excluding leap seconds.  Note:\n"
+"whether true microsecond resolution is available depends on the\n"
+"operating system.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:1236
+msgid ""
+"The following procedures either accept an object representing a broken down\n"
+"time and return a selected component, or accept an object representing\n"
+"a broken down time and a value and set the component to the value.\n"
+"The numbers in parentheses give the usual range."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:1280
+msgid ""
+"@deffn {Scheme Procedure} tm:sec tm\n"
+"@deffnx {Scheme Procedure} set-tm:sec tm val\n"
+"Seconds (0-59).\n"
+"@end deffn\n"
+"@deffn {Scheme Procedure} tm:min tm\n"
+"@deffnx {Scheme Procedure} set-tm:min tm val\n"
+"Minutes (0-59).\n"
+"@end deffn\n"
+"@deffn {Scheme Procedure} tm:hour tm\n"
+"@deffnx {Scheme Procedure} set-tm:hour tm val\n"
+"Hours (0-23).\n"
+"@end deffn\n"
+"@deffn {Scheme Procedure} tm:mday tm\n"
+"@deffnx {Scheme Procedure} set-tm:mday tm val\n"
+"Day of the month (1-31).\n"
+"@end deffn\n"
+"@deffn {Scheme Procedure} tm:mon tm\n"
+"@deffnx {Scheme Procedure} set-tm:mon tm val\n"
+"Month (0-11).\n"
+"@end deffn\n"
+"@deffn {Scheme Procedure} tm:year tm\n"
+"@deffnx {Scheme Procedure} set-tm:year tm val\n"
+"Year (70-), the year minus 1900.\n"
+"@end deffn\n"
+"@deffn {Scheme Procedure} tm:wday tm\n"
+"@deffnx {Scheme Procedure} set-tm:wday tm val\n"
+"Day of the week (0-6) with Sunday represented as 0.\n"
+"@end deffn\n"
+"@deffn {Scheme Procedure} tm:yday tm\n"
+"@deffnx {Scheme Procedure} set-tm:yday tm val\n"
+"Day of the year (0-364, 365 in leap years).\n"
+"@end deffn\n"
+"@deffn {Scheme Procedure} tm:isdst tm\n"
+"@deffnx {Scheme Procedure} set-tm:isdst tm val\n"
+"Daylight saving indicator (0 for ``no'', greater than 0 for ``yes'', less "
+"than\n"
+"0 for ``unknown'').\n"
+"@end deffn\n"
+"@deffn {Scheme Procedure} tm:gmtoff tm\n"
+"@deffnx {Scheme Procedure} set-tm:gmtoff tm val\n"
+"Time zone offset in seconds west of @acronym{UTC} (-46800 to 43200).\n"
+"For example on East coast USA (zone @samp{EST+5}) this would be 18000\n"
+"(ie.@: @m{5\\times60\\times60,5*60*60}) in winter, or 14400\n"
+"(ie.@: @m{4\\times60\\times60,4*60*60}) during daylight savings."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:1290
+msgid ""
+"Note @code{tm:gmtoff} is not the same as @code{tm_gmtoff} in the C\n"
+"@code{tm} structure.  @code{tm_gmtoff} is seconds east and hence the\n"
+"negative of the value here.\n"
+"@end deffn\n"
+"@deffn {Scheme Procedure} tm:zone tm\n"
+"@deffnx {Scheme Procedure} set-tm:zone tm val\n"
+"Time zone label (a string), not necessarily unique.\n"
+"@end deffn\n"
+"@sp 1"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:1300
+msgid ""
+"@deffn {Scheme Procedure} localtime time [zone]\n"
+"@deffnx {C Function} scm_localtime (time, zone)\n"
+"@cindex local time\n"
+"Return an object representing the broken down components of\n"
+"@var{time}, an integer like the one returned by\n"
+"@code{current-time}.  The time zone for the calculation is\n"
+"optionally specified by @var{zone} (a string), otherwise the\n"
+"@env{TZ} environment variable or the system default is used.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:1307
+msgid ""
+"@deffn {Scheme Procedure} gmtime time\n"
+"@deffnx {C Function} scm_gmtime (time)\n"
+"Return an object representing the broken down components of\n"
+"@var{time}, an integer like the one returned by\n"
+"@code{current-time}.  The values are calculated for @acronym{UTC}.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:1314
+msgid ""
+"@deffn {Scheme Procedure} mktime sbd-time [zone]\n"
+"@deffnx {C Function} scm_mktime (sbd_time, zone)\n"
+"For a broken down time object @var{sbd-time}, return a pair the\n"
+"@code{car} of which is an integer time like @code{current-time}, and\n"
+"the @code{cdr} of which is a new broken down time with normalized\n"
+"fields."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:1319
+msgid ""
+"@var{zone} is a timezone string, or the default is the @env{TZ}\n"
+"environment variable or the system default (@pxref{TZ Variable,,\n"
+"Specifying the Time Zone with @env{TZ}, libc, GNU C Library Reference\n"
+"Manual}).  @var{sbd-time} is taken to be in that @var{zone}."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:1325
+msgid ""
+"The following fields of @var{sbd-time} are used: @code{tm:year},\n"
+"@code{tm:mon}, @code{tm:mday}, @code{tm:hour}, @code{tm:min},\n"
+"@code{tm:sec}, @code{tm:isdst}.  The values can be outside their usual\n"
+"ranges.  For example @code{tm:hour} normally goes up to 23, but a\n"
+"value say 33 would mean 9 the following day."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:1329
+msgid ""
+"@code{tm:isdst} in @var{sbd-time} says whether the time given is with\n"
+"daylight savings or not.  This is ignored if @var{zone} doesn't have\n"
+"any daylight savings adjustment amount."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:1338
+msgid ""
+"The broken down time in the return normalizes the values of\n"
+"@var{sbd-time} by bringing them into their usual ranges, and using the\n"
+"actual daylight savings rule for that time in @var{zone} (which may\n"
+"differ from what @var{sbd-time} had).  The easiest way to think of\n"
+"this is that @var{sbd-time} plus @var{zone} converts to the integer\n"
+"UTC time, then a @code{localtime} is applied to get the normal\n"
+"presentation of that time, in @var{zone}.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:1346
+msgid ""
+"@deffn {Scheme Procedure} tzset\n"
+"@deffnx {C Function} scm_tzset ()\n"
+"Initialize the timezone from the @env{TZ} environment variable\n"
+"or the system default.  It's not usually necessary to call this procedure\n"
+"since it's done automatically by other procedures that depend on the\n"
+"timezone.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:1352
+msgid ""
+"@deffn {Scheme Procedure} strftime format tm\n"
+"@deffnx {C Function} scm_strftime (format, tm)\n"
+"@cindex time formatting\n"
+"Return a string which is broken-down time structure @var{tm} formatted\n"
+"according to the given @var{format} string."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:1357
+msgid ""
+"@var{format} contains field specifications introduced by a @samp{%}\n"
+"character.  See @ref{Formatting Calendar Time,,, libc, The GNU C\n"
+"Library Reference Manual}, or @samp{man 3 strftime}, for the available\n"
+"formatting."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:1362
+msgid ""
+"@lisp\n"
+"(strftime \"%c\" (localtime (current-time)))\n"
+"@result{} \"Mon Mar 11 20:17:43 2002\"\n"
+"@end lisp"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:1366
+msgid ""
+"If @code{setlocale} has been called (@pxref{Locales}), month and day\n"
+"names are from the current locale and in the locale character set.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:1381
+msgid ""
+"@deffn {Scheme Procedure} strptime format string\n"
+"@deffnx {C Function} scm_strptime (format, string)\n"
+"@cindex time parsing\n"
+"Performs the reverse action to @code{strftime}, parsing\n"
+"@var{string} according to the specification supplied in\n"
+"@var{format}.  The interpretation of month and day names is\n"
+"dependent on the current locale.  The value returned is a pair.\n"
+"The @acronym{CAR} has an object with time components\n"
+"in the form returned by @code{localtime} or @code{gmtime},\n"
+"but the time zone components\n"
+"are not usefully set.\n"
+"The @acronym{CDR} reports the number of characters from @var{string}\n"
+"which were used for the conversion.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:1386
+msgid ""
+"@defvar internal-time-units-per-second\n"
+"The value of this variable is the number of time units per second\n"
+"reported by the following procedures.\n"
+"@end defvar"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:1392
+msgid ""
+"@deffn {Scheme Procedure} times\n"
+"@deffnx {C Function} scm_times ()\n"
+"Return an object with information about real and processor\n"
+"time.  The following procedures accept such an object as an\n"
+"argument and return a selected component:"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:1414
+msgid ""
+"@deffn {Scheme Procedure} tms:clock tms\n"
+"The current real time, expressed as time units relative to an\n"
+"arbitrary base.\n"
+"@end deffn\n"
+"@deffn {Scheme Procedure} tms:utime tms\n"
+"The CPU time units used by the calling process.\n"
+"@end deffn\n"
+"@deffn {Scheme Procedure} tms:stime tms\n"
+"The CPU time units used by the system on behalf of the calling\n"
+"process.\n"
+"@end deffn\n"
+"@deffn {Scheme Procedure} tms:cutime tms\n"
+"The CPU time units used by terminated child processes of the\n"
+"calling process, whose status has been collected (e.g., using\n"
+"@code{waitpid}).\n"
+"@end deffn\n"
+"@deffn {Scheme Procedure} tms:cstime tms\n"
+"Similarly, the CPU times units used by the system on behalf of\n"
+"terminated child processes.\n"
+"@end deffn\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:1420
+msgid ""
+"@deffn {Scheme Procedure} get-internal-real-time\n"
+"@deffnx {C Function} scm_get_internal_real_time ()\n"
+"Return the number of time units since the interpreter was\n"
+"started.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:1427
+msgid ""
+"@deffn {Scheme Procedure} get-internal-run-time\n"
+"@deffnx {C Function} scm_get_internal_run_time ()\n"
+"Return the number of time units of processor time used by the\n"
+"interpreter.  Both @emph{system} and @emph{user} time are\n"
+"included but subprocesses are not.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:1430
+msgid ""
+"@node Runtime Environment\n"
+"@subsection Runtime Environment"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:1439
+msgid ""
+"@deffn {Scheme Procedure} program-arguments\n"
+"@deffnx {Scheme Procedure} command-line\n"
+"@deffnx {Scheme Procedure} set-program-arguments\n"
+"@deffnx {C Function} scm_program_arguments ()\n"
+"@deffnx {C Function} scm_set_program_arguments_scm (lst)\n"
+"@cindex command line\n"
+"@cindex program arguments\n"
+"Get the command line arguments passed to Guile, or set new arguments."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:1444
+msgid ""
+"The arguments are a list of strings, the first of which is the invoked\n"
+"program name.  This is just @nicode{\"guile\"} (or the executable path)\n"
+"when run interactively, or it's the script name when running a script\n"
+"with @option{-s} (@pxref{Invoking Guile})."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:1447
+msgid ""
+"@example\n"
+"guile -L /my/extra/dir -s foo.scm abc def"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:1450
+msgid ""
+"(program-arguments) @result{} (\"foo.scm\" \"abc\" \"def\")\n"
+"@end example"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:1454
+msgid ""
+"@code{set-program-arguments} allows a library module or similar to\n"
+"modify the arguments, for example to strip options it recognises,\n"
+"leaving the rest for the mainline."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:1458
+msgid ""
+"The argument list is held in a fluid, which means it's separate for\n"
+"each thread.  Neither the list nor the strings within it are copied at\n"
+"any point and normally should not be mutated."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:1464
+msgid ""
+"The two names @code{program-arguments} and @code{command-line} are an\n"
+"historical accident, they both do exactly the same thing.  The name\n"
+"@code{scm_set_program_arguments_scm} has an extra @code{_scm} on the\n"
+"end to avoid clashing with the C function below.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:1470
+msgid ""
+"@deftypefn {C Function} void scm_set_program_arguments (int argc, char **"
+"argv, char *first)\n"
+"@cindex command line\n"
+"@cindex program arguments\n"
+"Set the list of command line arguments for @code{program-arguments}\n"
+"and @code{command-line} above."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:1475
+msgid ""
+"@var{argv} is an array of null-terminated strings, as in a C\n"
+"@code{main} function.  @var{argc} is the number of strings in\n"
+"@var{argv}, or if it's negative then a @code{NULL} in @var{argv} marks\n"
+"its end."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:1480
+msgid ""
+"@var{first} is an extra string put at the start of the arguments, or\n"
+"@code{NULL} for no such extra.  This is a convenient way to pass the\n"
+"program name after advancing @var{argv} to strip option arguments.\n"
+"Eg.@:"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:1492
+msgid ""
+"@example\n"
+"@{\n"
+"  char *progname = argv[0];\n"
+"  for (argv++; argv[0] != NULL && argv[0][0] == '-'; argv++)\n"
+"    @{\n"
+"      /* munch option ... */\n"
+"    @}\n"
+"  /* remaining args for scheme level use */\n"
+"  scm_set_program_arguments (-1, argv, progname);\n"
+"@}\n"
+"@end example"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:1498
+msgid ""
+"This sort of thing is often done at startup under\n"
+"@code{scm_boot_guile} with options handled at the C level removed.\n"
+"The given strings are all copied, so the C data is not accessed again\n"
+"once @code{scm_set_program_arguments} returns.\n"
+"@end deftypefn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:1506
+msgid ""
+"@deffn {Scheme Procedure} getenv name\n"
+"@deffnx {C Function} scm_getenv (name)\n"
+"@cindex environment\n"
+"Looks up the string @var{name} in the current environment.  The return\n"
+"value is @code{#f} unless a string of the form @code{NAME=VALUE} is\n"
+"found, in which case the string @code{VALUE} is returned.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:1510
+msgid ""
+"@deffn {Scheme Procedure} setenv name value\n"
+"Modifies the environment of the current process, which is\n"
+"also the default environment inherited by child processes."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:1515
+msgid ""
+"If @var{value} is @code{#f}, then @var{name} is removed from the\n"
+"environment.  Otherwise, the string @var{name}=@var{value} is added\n"
+"to the environment, replacing any existing string with name matching\n"
+"@var{name}."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:1518
+msgctxt "/home/bear/work/guile/doc/guile/en/posix.texi:1518"
+msgid ""
+"The return value is unspecified.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:1523
+msgid ""
+"@deffn {Scheme Procedure} unsetenv name\n"
+"Remove variable @var{name} from the environment.  The\n"
+"name can not contain a @samp{=} character.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:1534
+msgid ""
+"@deffn {Scheme Procedure} environ [env]\n"
+"@deffnx {C Function} scm_environ (env)\n"
+"If @var{env} is omitted, return the current environment (in the\n"
+"Unix sense) as a list of strings.  Otherwise set the current\n"
+"environment, which is also the default environment for child\n"
+"processes, to the supplied list of strings.  Each member of\n"
+"@var{env} should be of the form @var{name}=@var{value} and values of\n"
+"@var{name} should not be duplicated.  If @var{env} is supplied\n"
+"then the return value is unspecified.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:1539
+msgid ""
+"@deffn {Scheme Procedure} putenv str\n"
+"@deffnx {C Function} scm_putenv (str)\n"
+"Modifies the environment of the current process, which is\n"
+"also the default environment inherited by child processes."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:1546
+msgid ""
+"If @var{str} is of the form @code{NAME=VALUE} then it will be written\n"
+"directly into the environment, replacing any existing environment string\n"
+"with\n"
+"name matching @code{NAME}.  If @var{str} does not contain an equal\n"
+"sign, then any existing string with name matching @var{str} will\n"
+"be removed."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:1549
+msgctxt "/home/bear/work/guile/doc/guile/en/posix.texi:1549"
+msgid ""
+"The return value is unspecified.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:1555
+msgid ""
+"@node Processes\n"
+"@subsection Processes\n"
+"@cindex processes\n"
+"@cindex child processes"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:1563
+msgid ""
+"@findex cd\n"
+"@deffn {Scheme Procedure} chdir str\n"
+"@deffnx {C Function} scm_chdir (str)\n"
+"@cindex current directory\n"
+"Change the current working directory to @var{str}.\n"
+"The return value is unspecified.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:1569
+msgid ""
+"@findex pwd\n"
+"@deffn {Scheme Procedure} getcwd\n"
+"@deffnx {C Function} scm_getcwd ()\n"
+"Return the name of the current working directory.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:1577
+msgid ""
+"@deffn {Scheme Procedure} umask [mode]\n"
+"@deffnx {C Function} scm_umask (mode)\n"
+"If @var{mode} is omitted, returns a decimal number representing the\n"
+"current file creation mask.  Otherwise the file creation mask is set\n"
+"to @var{mode} and the previous value is returned. @xref{Setting\n"
+"Permissions,,Assigning File Permissions,libc,The GNU C Library\n"
+"Reference Manual}, for more on how to use umasks."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:1580
+msgid ""
+"E.g., @code{(umask #o022)} sets the mask to octal 22/decimal 18.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:1589
+msgid ""
+"@deffn {Scheme Procedure} chroot path\n"
+"@deffnx {C Function} scm_chroot (path)\n"
+"Change the root directory to that specified in @var{path}.\n"
+"This directory will be used for path names beginning with\n"
+"@file{/}.  The root directory is inherited by all children\n"
+"of the current process.  Only the superuser may change the\n"
+"root directory.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:1594
+msgid ""
+"@deffn {Scheme Procedure} getpid\n"
+"@deffnx {C Function} scm_getpid ()\n"
+"Return an integer representing the current process ID.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:1600
+msgid ""
+"@deffn {Scheme Procedure} getgroups\n"
+"@deffnx {C Function} scm_getgroups ()\n"
+"Return a vector of integers representing the current\n"
+"supplementary group IDs.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:1606
+msgid ""
+"@deffn {Scheme Procedure} getppid\n"
+"@deffnx {C Function} scm_getppid ()\n"
+"Return an integer representing the process ID of the parent\n"
+"process.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:1611
+msgid ""
+"@deffn {Scheme Procedure} getuid\n"
+"@deffnx {C Function} scm_getuid ()\n"
+"Return an integer representing the current real user ID.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:1616
+msgid ""
+"@deffn {Scheme Procedure} getgid\n"
+"@deffnx {C Function} scm_getgid ()\n"
+"Return an integer representing the current real group ID.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:1624
+msgid ""
+"@deffn {Scheme Procedure} geteuid\n"
+"@deffnx {C Function} scm_geteuid ()\n"
+"Return an integer representing the current effective user ID.\n"
+"If the system does not support effective IDs, then the real ID\n"
+"is returned.  @code{(provided? 'EIDs)} reports whether the\n"
+"system supports effective IDs.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:1632
+msgid ""
+"@deffn {Scheme Procedure} getegid\n"
+"@deffnx {C Function} scm_getegid ()\n"
+"Return an integer representing the current effective group ID.\n"
+"If the system does not support effective IDs, then the real ID\n"
+"is returned.  @code{(provided? 'EIDs)} reports whether the\n"
+"system supports effective IDs.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:1637
+msgid ""
+"@deffn {Scheme Procedure} setgroups vec\n"
+"@deffnx {C Function} scm_setgroups (vec)\n"
+"Set the current set of supplementary group IDs to the integers in the\n"
+"given vector @var{vec}.  The return value is unspecified."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:1642
+msgid ""
+"Generally only the superuser can set the process group IDs\n"
+"(@pxref{Setting Groups, Setting the Group IDs,, libc, The GNU C\n"
+"Library Reference Manual}).\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:1649
+msgid ""
+"@deffn {Scheme Procedure} setuid id\n"
+"@deffnx {C Function} scm_setuid (id)\n"
+"Sets both the real and effective user IDs to the integer @var{id}, provided\n"
+"the process has appropriate privileges.\n"
+"The return value is unspecified.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:1656
+msgid ""
+"@deffn {Scheme Procedure} setgid id\n"
+"@deffnx {C Function} scm_setgid (id)\n"
+"Sets both the real and effective group IDs to the integer @var{id}, "
+"provided\n"
+"the process has appropriate privileges.\n"
+"The return value is unspecified.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:1665
+msgid ""
+"@deffn {Scheme Procedure} seteuid id\n"
+"@deffnx {C Function} scm_seteuid (id)\n"
+"Sets the effective user ID to the integer @var{id}, provided the process\n"
+"has appropriate privileges.  If effective IDs are not supported, the\n"
+"real ID is set instead---@code{(provided? 'EIDs)} reports whether the\n"
+"system supports effective IDs.\n"
+"The return value is unspecified.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:1674
+msgid ""
+"@deffn {Scheme Procedure} setegid id\n"
+"@deffnx {C Function} scm_setegid (id)\n"
+"Sets the effective group ID to the integer @var{id}, provided the process\n"
+"has appropriate privileges.  If effective IDs are not supported, the\n"
+"real ID is set instead---@code{(provided? 'EIDs)} reports whether the\n"
+"system supports effective IDs.\n"
+"The return value is unspecified.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:1680
+msgid ""
+"@deffn {Scheme Procedure} getpgrp\n"
+"@deffnx {C Function} scm_getpgrp ()\n"
+"Return an integer representing the current process group ID.\n"
+"This is the @acronym{POSIX} definition, not @acronym{BSD}.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:1689
+msgid ""
+"@deffn {Scheme Procedure} setpgid pid pgid\n"
+"@deffnx {C Function} scm_setpgid (pid, pgid)\n"
+"Move the process @var{pid} into the process group @var{pgid}.  @var{pid} or\n"
+"@var{pgid} must be integers: they can be zero to indicate the ID of the\n"
+"current process.\n"
+"Fails on systems that do not support job control.\n"
+"The return value is unspecified.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:1697
+msgid ""
+"@deffn {Scheme Procedure} setsid\n"
+"@deffnx {C Function} scm_setsid ()\n"
+"Creates a new session.  The current process becomes the session leader\n"
+"and is put in a new process group.  The process will be detached\n"
+"from its controlling terminal if it has one.\n"
+"The return value is an integer representing the new process group ID.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:1703
+msgid ""
+"@deffn {Scheme Procedure} getsid pid\n"
+"@deffnx {C Function} scm_getsid (pid)\n"
+"Returns the session ID of process @var{pid}.  (The session\n"
+"ID of a process is the process group ID of its session leader.)\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:1710
+msgid ""
+"@deffn {Scheme Procedure} waitpid pid [options]\n"
+"@deffnx {C Function} scm_waitpid (pid, options)\n"
+"This procedure collects status information from a child process which\n"
+"has terminated or (optionally) stopped.  Normally it will\n"
+"suspend the calling process until this can be done.  If more than one\n"
+"child process is eligible then one will be chosen by the operating system."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:1712
+msgid "The value of @var{pid} determines the behaviour:"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:1727
+msgid ""
+"@table @asis\n"
+"@item @var{pid} greater than 0\n"
+"Request status information from the specified child process.\n"
+"@item @var{pid} equal to -1 or @code{WAIT_ANY}\n"
+"@vindex WAIT_ANY\n"
+"Request status information for any child process.\n"
+"@item @var{pid} equal to 0 or @code{WAIT_MYPGRP}\n"
+"@vindex WAIT_MYPGRP\n"
+"Request status information for any child process in the current process\n"
+"group.\n"
+"@item @var{pid} less than -1\n"
+"Request status information for any child process whose process group ID\n"
+"is @minus{}@var{pid}.\n"
+"@end table"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:1730
+msgid ""
+"The @var{options} argument, if supplied, should be the bitwise OR of the\n"
+"values of zero or more of the following variables:"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:1734
+msgid ""
+"@defvar WNOHANG\n"
+"Return immediately even if there are no child processes to be collected.\n"
+"@end defvar"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:1739
+msgid ""
+"@defvar WUNTRACED\n"
+"Report status information for stopped processes as well as terminated\n"
+"processes.\n"
+"@end defvar"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:1741
+msgid "The return value is a pair containing:"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:1750
+msgid ""
+"@enumerate\n"
+"@item\n"
+"The process ID of the child process, or 0 if @code{WNOHANG} was\n"
+"specified and no process was collected.\n"
+"@item\n"
+"The integer status value.\n"
+"@end enumerate\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:1754
+msgid ""
+"The following three\n"
+"functions can be used to decode the process status code returned\n"
+"by @code{waitpid}."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:1761
+msgid ""
+"@deffn {Scheme Procedure} status:exit-val status\n"
+"@deffnx {C Function} scm_status_exit_val (status)\n"
+"Return the exit status value, as would be set if a process\n"
+"ended normally through a call to @code{exit} or @code{_exit},\n"
+"if any, otherwise @code{#f}.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:1767
+msgid ""
+"@deffn {Scheme Procedure} status:term-sig status\n"
+"@deffnx {C Function} scm_status_term_sig (status)\n"
+"Return the signal number which terminated the process, if any,\n"
+"otherwise @code{#f}.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:1773
+msgid ""
+"@deffn {Scheme Procedure} status:stop-sig status\n"
+"@deffnx {C Function} scm_status_stop_sig (status)\n"
+"Return the signal number which stopped the process, if any,\n"
+"otherwise @code{#f}.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:1781
+msgid ""
+"@deffn {Scheme Procedure} system [cmd]\n"
+"@deffnx {C Function} scm_system (cmd)\n"
+"Execute @var{cmd} using the operating system's ``command\n"
+"processor''.  Under Unix this is usually the default shell\n"
+"@code{sh}.  The value returned is @var{cmd}'s exit status as\n"
+"returned by @code{waitpid}, which can be interpreted using the\n"
+"functions above."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:1785
+msgid ""
+"If @code{system} is called without arguments, return a boolean\n"
+"indicating whether the command processor is available.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:1792
+msgid ""
+"@deffn {Scheme Procedure} system* arg1 arg2 @dots{}\n"
+"@deffnx {C Function} scm_system_star (args)\n"
+"Execute the command indicated by @var{arg1} @var{arg2} @enddots{}.  The\n"
+"first element must be a string indicating the command to be executed,\n"
+"and the remaining items must be strings representing each of the\n"
+"arguments to that command."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:1796
+msgid ""
+"This function returns the exit status of the command as provided by\n"
+"@code{waitpid}.  This value can be handled with @code{status:exit-val}\n"
+"and the related functions."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:1802
+msgid ""
+"@code{system*} is similar to @code{system}, but accepts only one\n"
+"string per-argument, and performs no shell interpretation.  The\n"
+"command is executed using fork and execlp.  Accordingly this function\n"
+"may be safer than @code{system} in situations where shell\n"
+"interpretation is not required."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:1805
+msgid ""
+"Example: (system* \"echo\" \"foo\" \"bar\")\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:1813
+msgid ""
+"@deffn {Scheme Procedure} quit [status]\n"
+"@deffnx {Scheme Procedure} exit [status]\n"
+"Terminate the current process with proper unwinding of the Scheme stack.\n"
+"The exit status zero if @var{status} is not supplied.  If @var{status}\n"
+"is supplied, and it is an integer, that integer is used as the exit\n"
+"status.  If @var{status} is @code{#t} or @code{#f}, the exit status is\n"
+"@var{EXIT_SUCCESS} or @var{EXIT_FAILURE}, respectively."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:1817
+msgid ""
+"The procedure @code{exit} is an alias of @code{quit}.  They have the\n"
+"same functionality.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:1823
+msgid ""
+"@defvr {Scheme Variable} EXIT_SUCCESS\n"
+"@defvrx {Scheme Variable} EXIT_FAILURE\n"
+"These constants represent the standard exit codes for success (zero) or\n"
+"failure (one.)\n"
+"@end defvr"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:1830
+msgid ""
+"@deffn {Scheme Procedure} primitive-exit [status]\n"
+"@deffnx {Scheme Procedure} primitive-_exit [status]\n"
+"@deffnx {C Function} scm_primitive_exit (status)\n"
+"@deffnx {C Function} scm_primitive__exit (status)\n"
+"Terminate the current process without unwinding the Scheme stack.  The\n"
+"exit status is @var{status} if supplied, otherwise zero."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:1835
+msgid ""
+"@code{primitive-exit} uses the C @code{exit} function and hence runs\n"
+"usual C level cleanups (flush output streams, call @code{atexit}\n"
+"functions, etc, see @ref{Normal Termination,,, libc, The GNU C Library\n"
+"Reference Manual}))."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:1840
+msgid ""
+"@code{primitive-_exit} is the @code{_exit} system call\n"
+"(@pxref{Termination Internals,,, libc, The GNU C Library Reference\n"
+"Manual}).  This terminates the program immediately, with neither\n"
+"Scheme-level nor C-level cleanups."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:1848
+msgid ""
+"The typical use for @code{primitive-_exit} is from a child process\n"
+"created with @code{primitive-fork}.  For example in a Gdk program the\n"
+"child process inherits the X server connection and a C-level\n"
+"@code{atexit} cleanup which will close that connection.  But closing\n"
+"in the child would upset the protocol in the parent, so\n"
+"@code{primitive-_exit} should be used to exit without that.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:1856
+msgid ""
+"@deffn {Scheme Procedure} execl filename arg @dots{}\n"
+"@deffnx {C Function} scm_execl (filename, args)\n"
+"Executes the file named by @var{filename} as a new process image.\n"
+"The remaining arguments are supplied to the process; from a C program\n"
+"they are accessible as the @code{argv} argument to @code{main}.\n"
+"Conventionally the first @var{arg} is the same as @var{filename}.\n"
+"All arguments must be strings."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:1859
+msgid ""
+"If @var{arg} is missing, @var{filename} is executed with a null\n"
+"argument list, which may have system-dependent side-effects."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:1863
+msgid ""
+"This procedure is currently implemented using the @code{execv} system\n"
+"call, but we call it @code{execl} because of its Scheme calling interface.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:1870
+msgid ""
+"@deffn {Scheme Procedure} execlp filename arg @dots{}\n"
+"@deffnx {C Function} scm_execlp (filename, args)\n"
+"Similar to @code{execl}, however if\n"
+"@var{filename} does not contain a slash\n"
+"then the file to execute will be located by searching the\n"
+"directories listed in the @code{PATH} environment variable."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:1874
+msgid ""
+"This procedure is currently implemented using the @code{execvp} system\n"
+"call, but we call it @code{execlp} because of its Scheme calling interface.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:1880
+msgid ""
+"@deffn {Scheme Procedure} execle filename env arg @dots{}\n"
+"@deffnx {C Function} scm_execle (filename, env, args)\n"
+"Similar to @code{execl}, but the environment of the new process is\n"
+"specified by @var{env}, which must be a list of strings as returned by the\n"
+"@code{environ} procedure."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:1884
+msgid ""
+"This procedure is currently implemented using the @code{execve} system\n"
+"call, but we call it @code{execle} because of its Scheme calling interface.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:1890
+msgid ""
+"@deffn {Scheme Procedure} primitive-fork\n"
+"@deffnx {C Function} scm_fork ()\n"
+"Creates a new ``child'' process by duplicating the current ``parent'' "
+"process.\n"
+"In the child the return value is 0.  In the parent the return value is\n"
+"the integer process ID of the child."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:1899
+msgid ""
+"Note that it is unsafe to fork a process that has multiple threads\n"
+"running, as only the thread that calls @code{primitive-fork} will\n"
+"persist in the child.  Any resources that other threads held, such as\n"
+"locked mutexes or open file descriptors, are lost.  Indeed,\n"
+"@acronym{POSIX} specifies that only async-signal-safe procedures are\n"
+"safe to call after a multithreaded fork, which is a very limited set.\n"
+"Guile issues a warning if it detects a fork from a multi-threaded\n"
+"program."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:1904
+msgid ""
+"If you are going to @code{exec} soon after forking, the procedures in\n"
+"@code{(ice-9 popen)} may be useful to you, as they fork and exec within\n"
+"an async-signal-safe function carefully written to ensure robust program\n"
+"behavior, even in the presence of threads.  @xref{Pipes}, for more."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:1908
+msgid ""
+"This procedure has been renamed from @code{fork} to avoid a naming conflict\n"
+"with the scsh fork.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:1916
+msgid ""
+"@deffn {Scheme Procedure} nice incr\n"
+"@deffnx {C Function} scm_nice (incr)\n"
+"@cindex process priority\n"
+"Increment the priority of the current process by @var{incr}.  A higher\n"
+"priority value means that the process runs less often.\n"
+"The return value is unspecified.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:1936
+msgid ""
+"@deffn {Scheme Procedure} setpriority which who prio\n"
+"@deffnx {C Function} scm_setpriority (which, who, prio)\n"
+"@vindex PRIO_PROCESS\n"
+"@vindex PRIO_PGRP\n"
+"@vindex PRIO_USER\n"
+"Set the scheduling priority of the process, process group\n"
+"or user, as indicated by @var{which} and @var{who}. @var{which}\n"
+"is one of the variables @code{PRIO_PROCESS}, @code{PRIO_PGRP}\n"
+"or @code{PRIO_USER}, and @var{who} is interpreted relative to\n"
+"@var{which} (a process identifier for @code{PRIO_PROCESS},\n"
+"process group identifier for @code{PRIO_PGRP}, and a user\n"
+"identifier for @code{PRIO_USER}.  A zero value of @var{who}\n"
+"denotes the current process, process group, or user.\n"
+"@var{prio} is a value in the range [@minus{}20,20].  The default\n"
+"priority is 0; lower priorities (in numerical terms) cause more\n"
+"favorable scheduling.  Sets the priority of all of the specified\n"
+"processes.  Only the super-user may lower priorities.  The return\n"
+"value is not specified.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:1953
+msgid ""
+"@deffn {Scheme Procedure} getpriority which who\n"
+"@deffnx {C Function} scm_getpriority (which, who)\n"
+"@vindex PRIO_PROCESS\n"
+"@vindex PRIO_PGRP\n"
+"@vindex PRIO_USER\n"
+"Return the scheduling priority of the process, process group\n"
+"or user, as indicated by @var{which} and @var{who}. @var{which}\n"
+"is one of the variables @code{PRIO_PROCESS}, @code{PRIO_PGRP}\n"
+"or @code{PRIO_USER}, and @var{who} should be interpreted depending on\n"
+"@var{which} (a process identifier for @code{PRIO_PROCESS},\n"
+"process group identifier for @code{PRIO_PGRP}, and a user\n"
+"identifier for @code{PRIO_USER}).  A zero value of @var{who}\n"
+"denotes the current process, process group, or user.  Return\n"
+"the highest priority (lowest numerical value) of any of the\n"
+"specified processes.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:1955
+msgid "@cindex affinity, CPU"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:1963
+msgid ""
+"@deffn {Scheme Procedure} getaffinity pid\n"
+"@deffnx {C Function} scm_getaffinity (pid)\n"
+"Return a bitvector representing the CPU affinity mask for\n"
+"process @var{pid}.  Each CPU the process has affinity with\n"
+"has its corresponding bit set in the returned bitvector.\n"
+"The number of bits set is a good estimate of how many CPUs\n"
+"Guile can use without stepping on other processes' toes."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:1968
+msgid ""
+"Currently this procedure is only defined on GNU variants\n"
+"(@pxref{CPU Affinity, @code{sched_getaffinity},, libc, The\n"
+"GNU C Library Reference Manual}).\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:1974
+msgid ""
+"@deffn {Scheme Procedure} setaffinity pid mask\n"
+"@deffnx {C Function} scm_setaffinity (pid, mask)\n"
+"Install the CPU affinity mask @var{mask}, a bitvector, for\n"
+"the process or thread with ID @var{pid}.  The return value\n"
+"is unspecified."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:1979
+msgid ""
+"Currently this procedure is only defined on GNU variants\n"
+"(@pxref{CPU Affinity, @code{sched_setaffinity},, libc, The\n"
+"GNU C Library Reference Manual}).\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:1982
+msgid ""
+"@xref{Threads}, for information on how get the number of processors\n"
+"available on a system."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:1987
+msgid ""
+"@node Signals\n"
+"@subsection Signals\n"
+"@cindex signal"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:1989
+msgid "The following procedures raise, handle and wait for signals."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:1995
+msgid ""
+"Scheme code signal handlers are run via an async (@pxref{Asyncs}), so\n"
+"they're called in the handler's thread at the next safe opportunity.\n"
+"Generally this is after any currently executing primitive procedure\n"
+"finishes (which could be a long time for primitives that wait for an\n"
+"external event)."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:1999
+msgid ""
+"@deffn {Scheme Procedure} kill pid sig\n"
+"@deffnx {C Function} scm_kill (pid, sig)\n"
+"Sends a signal to the specified process or group of processes."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:2001
+msgid "@var{pid} specifies the processes to which the signal is sent:"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:2014
+msgid ""
+"@table @asis\n"
+"@item @var{pid} greater than 0\n"
+"The process whose identifier is @var{pid}.\n"
+"@item @var{pid} equal to 0\n"
+"All processes in the current process group.\n"
+"@item @var{pid} less than -1\n"
+"The process group whose identifier is -@var{pid}\n"
+"@item @var{pid} equal to -1\n"
+"If the process is privileged, all processes except for some special\n"
+"system processes.  Otherwise, all processes with the current effective\n"
+"user ID.\n"
+"@end table"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:2017
+msgid ""
+"@var{sig} should be specified using a variable corresponding to\n"
+"the Unix symbolic name, e.g.,"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:2021
+msgid ""
+"@defvar SIGHUP\n"
+"Hang-up signal.\n"
+"@end defvar"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:2025
+msgid ""
+"@defvar SIGINT\n"
+"Interrupt signal.\n"
+"@end defvar"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:2029
+msgid ""
+"A full list of signals on the GNU system may be found in @ref{Standard\n"
+"Signals,,,libc,The GNU C Library Reference Manual}.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:2035
+msgid ""
+"@deffn {Scheme Procedure} raise sig\n"
+"@deffnx {C Function} scm_raise (sig)\n"
+"Sends a specified signal @var{sig} to the current process, where\n"
+"@var{sig} is as described for the @code{kill} procedure.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:2040
+msgid ""
+"@deffn {Scheme Procedure} sigaction signum [handler [flags [thread]]]\n"
+"@deffnx {C Function} scm_sigaction (signum, handler, flags)\n"
+"@deffnx {C Function} scm_sigaction_for_thread (signum, handler, flags, "
+"thread)\n"
+"Install or report the signal handler for a specified signal."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:2043
+msgid ""
+"@var{signum} is the signal number, which can be specified using the value\n"
+"of variables such as @code{SIGINT}."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:2051
+msgid ""
+"If @var{handler} is omitted, @code{sigaction} returns a pair: the\n"
+"@acronym{CAR} is the current signal hander, which will be either an\n"
+"integer with the value @code{SIG_DFL} (default action) or\n"
+"@code{SIG_IGN} (ignore), or the Scheme procedure which handles the\n"
+"signal, or @code{#f} if a non-Scheme procedure handles the signal.\n"
+"The @acronym{CDR} contains the current @code{sigaction} flags for the\n"
+"handler."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:2060
+msgid ""
+"If @var{handler} is provided, it is installed as the new handler for\n"
+"@var{signum}.  @var{handler} can be a Scheme procedure taking one\n"
+"argument, or the value of @code{SIG_DFL} (default action) or\n"
+"@code{SIG_IGN} (ignore), or @code{#f} to restore whatever signal handler\n"
+"was installed before @code{sigaction} was first used.  When a scheme\n"
+"procedure has been specified, that procedure will run in the given\n"
+"@var{thread}.  When no thread has been given, the thread that made this\n"
+"call to @code{sigaction} is used."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:2063
+msgid ""
+"@var{flags} is a @code{logior} (@pxref{Bitwise Operations}) of the\n"
+"following (where provided by the system), or @code{0} for none."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:2069
+msgid ""
+"@defvar SA_NOCLDSTOP\n"
+"By default, @code{SIGCHLD} is signalled when a child process stops\n"
+"(ie.@: receives @code{SIGSTOP}), and when a child process terminates.\n"
+"With the @code{SA_NOCLDSTOP} flag, @code{SIGCHLD} is only signalled\n"
+"for termination, not stopping."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:2073
+msgid ""
+"@code{SA_NOCLDSTOP} has no effect on signals other than\n"
+"@code{SIGCHLD}.\n"
+"@end defvar"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:2079
+msgid ""
+"@defvar SA_RESTART\n"
+"If a signal occurs while in a system call, deliver the signal then\n"
+"restart the system call (as opposed to returning an @code{EINTR} error\n"
+"from that call).\n"
+"@end defvar"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:2086
+msgid ""
+"Guile handles signals asynchronously.  When it receives a signal, the\n"
+"synchronous signal handler just records the fact that a signal was\n"
+"received and sets a flag to tell the relevant Guile thread that it has a\n"
+"pending signal.  When the Guile thread checks the pending-interrupt\n"
+"flag, it will arrange to run the asynchronous part of the signal\n"
+"handler, which is the handler attached by @code{sigaction}."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:2095
+msgid ""
+"This strategy has some perhaps-unexpected interactions with the\n"
+"@code{SA_RESTART} flag, though: because the synchronous handler doesn't\n"
+"do very much, and notably it doesn't run the Guile handler, it's\n"
+"impossible to interrupt a thread stuck in a long-running system call via\n"
+"a signal handler that is installed with @code{SA_RESTART}: the\n"
+"synchronous handler just records the pending interrupt, but then the\n"
+"system call resumes and Guile doesn't have a chance to actually check\n"
+"the flag and run the asynchronous handler.  That's just how it is."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:2098
+msgid ""
+"The return value is a pair with information about the old handler as\n"
+"described above."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:2104
+msgid ""
+"This interface does not provide access to the ``signal blocking''\n"
+"facility.  Maybe this is not needed, since the thread support may\n"
+"provide solutions to the problem of consistent access to data\n"
+"structures.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:2110
+msgid ""
+"@deffn {Scheme Procedure} restore-signals\n"
+"@deffnx {C Function} scm_restore_signals ()\n"
+"Return all signal handlers to the values they had before any call to\n"
+"@code{sigaction} was made.  The return value is unspecified.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:2118
+msgid ""
+"@deffn {Scheme Procedure} alarm i\n"
+"@deffnx {C Function} scm_alarm (i)\n"
+"Set a timer to raise a @code{SIGALRM} signal after the specified\n"
+"number of seconds (an integer).  It's advisable to install a signal\n"
+"handler for\n"
+"@code{SIGALRM} beforehand, since the default action is to terminate\n"
+"the process."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:2123
+msgid ""
+"The return value indicates the time remaining for the previous alarm,\n"
+"if any.  The new value replaces the previous alarm.  If there was\n"
+"no previous alarm, the return value is zero.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:2130
+msgid ""
+"@deffn {Scheme Procedure} pause\n"
+"@deffnx {C Function} scm_pause ()\n"
+"Pause the current process (thread?) until a signal arrives whose\n"
+"action is to either terminate the current process or invoke a\n"
+"handler procedure.  The return value is unspecified.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:2139
+msgid ""
+"@deffn {Scheme Procedure} sleep secs\n"
+"@deffnx {Scheme Procedure} usleep usecs\n"
+"@deffnx {C Function} scm_sleep (secs)\n"
+"@deffnx {C Function} scm_usleep (usecs)\n"
+"Wait the given period @var{secs} seconds or @var{usecs} microseconds\n"
+"(both integers).  If a signal arrives the wait stops and the return\n"
+"value is the time remaining, in seconds or microseconds respectively.\n"
+"If the period elapses with no signal the return is zero."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:2143
+msgid ""
+"On most systems the process scheduler is not microsecond accurate and\n"
+"the actual period slept by @code{usleep} might be rounded to a system\n"
+"clock tick boundary, which might be 10 milliseconds for instance."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:2147
+msgid ""
+"See @code{scm_std_sleep} and @code{scm_std_usleep} for equivalents at\n"
+"the C level (@pxref{Blocking}).\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:2153
+msgid ""
+"@deffn {Scheme Procedure} getitimer which_timer\n"
+"@deffnx {Scheme Procedure} setitimer which_timer interval_seconds "
+"interval_microseconds value_seconds value_microseconds\n"
+"@deffnx {C Function} scm_getitimer (which_timer)\n"
+"@deffnx {C Function} scm_setitimer (which_timer, interval_seconds, "
+"interval_microseconds, value_seconds, value_microseconds)\n"
+"Get or set the periods programmed in certain system timers."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:2158
+msgid ""
+"These timers have two settings.  The first setting, the interval, is the\n"
+"value at which the timer will be reset when the current timer expires.\n"
+"The second is the current value of the timer, indicating when the next\n"
+"expiry will be signalled."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:2160
+msgid "@var{which_timer} is one of the following values:"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:2166
+msgid ""
+"@defvar ITIMER_REAL\n"
+"A real-time timer, counting down elapsed real time.  At zero it raises\n"
+"@code{SIGALRM}.  This is like @code{alarm} above, but with a higher\n"
+"resolution period.\n"
+"@end defvar"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:2171
+msgid ""
+"@defvar ITIMER_VIRTUAL\n"
+"A virtual-time timer, counting down while the current process is\n"
+"actually using CPU.  At zero it raises @code{SIGVTALRM}.\n"
+"@end defvar"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:2176
+msgid ""
+"@defvar ITIMER_PROF\n"
+"A profiling timer, counting down while the process is running (like\n"
+"@code{ITIMER_VIRTUAL}) and also while system calls are running on the\n"
+"process's behalf.  At zero it raises a @code{SIGPROF}."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:2180
+msgid ""
+"This timer is intended for profiling where a program is spending its\n"
+"time (by looking where it is when the timer goes off).\n"
+"@end defvar"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:2185
+msgid ""
+"@code{getitimer} returns the restart timer value and its current value,\n"
+"as a list containing two pairs.  Each pair is a time in seconds and\n"
+"microseconds: @code{((@var{interval_secs} . @var{interval_usecs})\n"
+"(@var{value_secs} . @var{value_usecs}))}."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:2190
+msgid ""
+"@code{setitimer} sets the timer values similarly, in seconds and\n"
+"microseconds (which must be integers).  The interval value can be zero\n"
+"to have the timer run down just once.  The return value is the timer's\n"
+"previous setting, in the same form as @code{getitimer} returns."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:2196
+msgid ""
+"@example\n"
+"(setitimer ITIMER_REAL\n"
+"           5 500000     ;; Raise SIGALRM every 5.5 seconds\n"
+"           2 0)         ;; with the first SIGALRM in 2 seconds\n"
+"@end example"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:2199
+msgid ""
+"Although the timers are programmed in microseconds, the actual\n"
+"accuracy might not be that high."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:2207
+msgid ""
+"Note that @code{ITIMER_PROF} and @code{ITIMER_VIRTUAL} are not\n"
+"functional on all platforms and may always error when called.\n"
+"@code{(provided? 'ITIMER_PROF)} and @code{(provided? 'ITIMER_VIRTUAL)}\n"
+"can be used to test if the those itimers are supported on the given\n"
+"host.  @code{ITIMER_REAL} is supported on all platforms that support\n"
+"@code{setitimer}.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:2211
+msgid ""
+"@node Terminals and Ptys\n"
+"@subsection Terminals and Ptys"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:2218
+msgid ""
+"@deffn {Scheme Procedure} isatty? port\n"
+"@deffnx {C Function} scm_isatty_p (port)\n"
+"@cindex terminal\n"
+"Return @code{#t} if @var{port} is using a serial non--file\n"
+"device, otherwise @code{#f}.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:2225
+msgid ""
+"@deffn {Scheme Procedure} ttyname port\n"
+"@deffnx {C Function} scm_ttyname (port)\n"
+"@cindex terminal\n"
+"Return a string with the name of the serial terminal device\n"
+"underlying @var{port}.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:2232
+msgid ""
+"@deffn {Scheme Procedure} ctermid\n"
+"@deffnx {C Function} scm_ctermid ()\n"
+"@cindex terminal\n"
+"Return a string containing the file name of the controlling\n"
+"terminal for the current process.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:2239
+msgid ""
+"@deffn {Scheme Procedure} tcgetpgrp port\n"
+"@deffnx {C Function} scm_tcgetpgrp (port)\n"
+"@cindex process group\n"
+"Return the process group ID of the foreground process group\n"
+"associated with the terminal open on the file descriptor\n"
+"underlying @var{port}."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:2247
+msgid ""
+"If there is no foreground process group, the return value is a\n"
+"number greater than 1 that does not match the process group ID\n"
+"of any existing process group.  This can happen if all of the\n"
+"processes in the job that was formerly the foreground job have\n"
+"terminated, and no other job has yet been moved into the\n"
+"foreground.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:2257
+msgid ""
+"@deffn {Scheme Procedure} tcsetpgrp port pgid\n"
+"@deffnx {C Function} scm_tcsetpgrp (port, pgid)\n"
+"@cindex process group\n"
+"Set the foreground process group ID for the terminal used by the file\n"
+"descriptor underlying @var{port} to the integer @var{pgid}.\n"
+"The calling process\n"
+"must be a member of the same session as @var{pgid} and must have the same\n"
+"controlling terminal.  The return value is unspecified.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:2261
+msgid ""
+"@node Pipes\n"
+"@subsection Pipes\n"
+"@cindex pipe"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:2266
+msgid ""
+"The following procedures are similar to the @code{popen} and\n"
+"@code{pclose} system routines.  The code is in a separate ``popen''\n"
+"module@footnote{This module is only available on systems where the\n"
+"@code{popen} feature is provided (@pxref{Common Feature Symbols}).}:"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:2270
+msgid ""
+"@lisp\n"
+"(use-modules (ice-9 popen))\n"
+"@end lisp"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:2276
+msgid ""
+"@findex popen\n"
+"@deffn {Scheme Procedure} open-pipe command mode\n"
+"@deffnx {Scheme Procedure} open-pipe* mode prog [args...]\n"
+"Execute a command in a subprocess, with a pipe to it or from it, or\n"
+"with pipes in both directions."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:2280
+msgid ""
+"@code{open-pipe} runs the shell @var{command} using @samp{/bin/sh -c}.\n"
+"@code{open-pipe*} executes @var{prog} directly, with the optional\n"
+"@var{args} arguments (all strings)."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:2284
+msgid ""
+"@var{mode} should be one of the following values.  @code{OPEN_READ} is\n"
+"an input pipe, ie.@: to read from the subprocess.  @code{OPEN_WRITE}\n"
+"is an output pipe, ie.@: to write to it."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:2289
+msgid ""
+"@defvar OPEN_READ\n"
+"@defvarx OPEN_WRITE\n"
+"@defvarx OPEN_BOTH\n"
+"@end defvar"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:2296
+msgid ""
+"For an input pipe, the child's standard output is the pipe and\n"
+"standard input is inherited from @code{current-input-port}.  For an\n"
+"output pipe, the child's standard input is the pipe and standard\n"
+"output is inherited from @code{current-output-port}.  In all cases\n"
+"the child's standard error is inherited from\n"
+"@code{current-error-port} (@pxref{Default Ports})."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:2300
+msgid ""
+"If those @code{current-X-ports} are not files of some kind, and hence\n"
+"don't have file descriptors for the child, then @file{/dev/null} is\n"
+"used instead."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:2307
+msgid ""
+"Care should be taken with @code{OPEN_BOTH}, a deadlock will occur if\n"
+"both parent and child are writing, and waiting until the write completes\n"
+"before doing any reading.  Each direction has @code{PIPE_BUF} bytes of\n"
+"buffering (@pxref{Buffering}), which will be enough for small writes,\n"
+"but not for say putting a big file through a filter.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:2310
+msgid ""
+"@deffn {Scheme Procedure} open-input-pipe command\n"
+"Equivalent to @code{open-pipe} with mode @code{OPEN_READ}."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:2319
+msgid ""
+"@lisp\n"
+"(let* ((port (open-input-pipe \"date --utc\"))\n"
+"       (str  (read-line port)))\n"
+"  (close-pipe port)\n"
+"  str)\n"
+"@result{} \"Mon Mar 11 20:10:44 UTC 2002\"\n"
+"@end lisp\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:2322
+msgid ""
+"@deffn {Scheme Procedure} open-output-pipe command\n"
+"Equivalent to @code{open-pipe} with mode @code{OPEN_WRITE}."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:2330
+msgid ""
+"@lisp\n"
+"(let ((port (open-output-pipe \"lpr\")))\n"
+"  (display \"Something for the line printer.\\n"
+"\" port)\n"
+"  (if (not (eqv? 0 (status:exit-val (close-pipe port))))\n"
+"      (error \"Cannot print\")))\n"
+"@end lisp\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:2334
+msgid ""
+"@deffn {Scheme Procedure} open-input-output-pipe command\n"
+"Equivalent to @code{open-pipe} with mode @code{OPEN_BOTH}.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:2342
+msgid ""
+"@findex pclose\n"
+"@deffn {Scheme Procedure} close-pipe port\n"
+"Close a pipe created by @code{open-pipe}, wait for the process to\n"
+"terminate, and return the wait status code.  The status is as per\n"
+"@code{waitpid} and can be decoded with @code{status:exit-val} etc\n"
+"(@pxref{Processes})\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:2347
+msgid ""
+"@sp 1\n"
+"@code{waitpid WAIT_ANY} should not be used when pipes are open, since\n"
+"it can reap a pipe's child process, causing an error from a subsequent\n"
+"@code{close-pipe}."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:2350
+msgid ""
+"@code{close-port} (@pxref{Ports}) can close a pipe, but it doesn't reap\n"
+"the child process."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:2355
+msgid ""
+"The garbage collector will close a pipe no longer in use, and reap the\n"
+"child process with @code{waitpid}.  If the child hasn't yet terminated\n"
+"the garbage collector doesn't block, but instead checks again in the\n"
+"next GC."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:2360
+msgid ""
+"Many systems have per-user and system-wide limits on the number of\n"
+"processes, and a system-wide limit on the number of pipes, so pipes\n"
+"should be closed explicitly when no longer needed, rather than letting\n"
+"the garbage collector pick them up at some later time."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:2365
+msgid ""
+"@node Networking\n"
+"@subsection Networking\n"
+"@cindex network"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:2373
+msgid ""
+"@menu\n"
+"* Network Address Conversion::  \n"
+"* Network Databases::           \n"
+"* Network Socket Address::      \n"
+"* Network Sockets and Communication::  \n"
+"* Internet Socket Examples::    \n"
+"@end menu"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:2377
+msgid ""
+"@node Network Address Conversion\n"
+"@subsubsection Network Address Conversion\n"
+"@cindex network address"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:2380
+msgid ""
+"This section describes procedures which convert internet addresses\n"
+"between numeric and string formats."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:2383
+msgid ""
+"@subsubheading IPv4 Address Conversion\n"
+"@cindex IPv4"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:2387
+msgid ""
+"An IPv4 Internet address is a 4-byte value, represented in Guile as an\n"
+"integer in host byte order, so that say ``0.0.0.1'' is 1, or\n"
+"``1.0.0.0'' is 16777216."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:2391
+msgid ""
+"Some underlying C functions use network byte order for addresses,\n"
+"Guile converts as necessary so that at the Scheme level its host byte\n"
+"order everywhere."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:2397
+msgid ""
+"@defvar INADDR_ANY\n"
+"For a server, this can be used with @code{bind} (@pxref{Network\n"
+"Sockets and Communication}) to allow connections from any interface on\n"
+"the machine.\n"
+"@end defvar"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:2401
+msgid ""
+"@defvar INADDR_BROADCAST\n"
+"The broadcast address on the local network.\n"
+"@end defvar"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:2406
+msgid ""
+"@defvar INADDR_LOOPBACK\n"
+"The address of the local host using the loopback device, ie.@:\n"
+"@samp{127.0.0.1}.\n"
+"@end defvar"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:2416
+msgid ""
+"@c  INADDR_NONE is defined in the code, but serves no purpose.\n"
+"@c  inet_addr() returns it as an error indication, but that function\n"
+"@c  isn't provided, for the good reason that inet_aton() does the same\n"
+"@c  job and gives an unambiguous error indication.  (INADDR_NONE is a\n"
+"@c  valid 4-byte value, in glibc it's the same as INADDR_BROADCAST.)\n"
+"@c\n"
+"@c  @defvar INADDR_NONE\n"
+"@c  No address.\n"
+"@c  @end defvar"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:2420
+msgid ""
+"@deffn {Scheme Procedure} inet-aton address\n"
+"@deffnx {C Function} scm_inet_aton (address)\n"
+"This function is deprecated in favor of @code{inet-pton}."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:2423
+msgid ""
+"Convert an IPv4 Internet address from printable string\n"
+"(dotted decimal notation) to an integer.  E.g.,"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:2428
+msgid ""
+"@lisp\n"
+"(inet-aton \"127.0.0.1\") @result{} 2130706433\n"
+"@end lisp\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:2432
+msgid ""
+"@deffn {Scheme Procedure} inet-ntoa inetid\n"
+"@deffnx {C Function} scm_inet_ntoa (inetid)\n"
+"This function is deprecated in favor of @code{inet-ntop}."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:2435
+msgid ""
+"Convert an IPv4 Internet address to a printable\n"
+"(dotted decimal notation) string.  E.g.,"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:2440
+msgid ""
+"@lisp\n"
+"(inet-ntoa 2130706433) @result{} \"127.0.0.1\"\n"
+"@end lisp\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:2445
+msgid ""
+"@deffn {Scheme Procedure} inet-netof address\n"
+"@deffnx {C Function} scm_inet_netof (address)\n"
+"Return the network number part of the given IPv4\n"
+"Internet address.  E.g.,"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:2450
+msgid ""
+"@lisp\n"
+"(inet-netof 2130706433) @result{} 127\n"
+"@end lisp\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:2456
+msgid ""
+"@deffn {Scheme Procedure} inet-lnaof address\n"
+"@deffnx {C Function} scm_lnaof (address)\n"
+"Return the local-address-with-network part of the given\n"
+"IPv4 Internet address, using the obsolete class A/B/C system.\n"
+"E.g.,"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:2461
+msgid ""
+"@lisp\n"
+"(inet-lnaof 2130706433) @result{} 1\n"
+"@end lisp\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:2467
+msgid ""
+"@deffn {Scheme Procedure} inet-makeaddr net lna\n"
+"@deffnx {C Function} scm_inet_makeaddr (net, lna)\n"
+"Make an IPv4 Internet address by combining the network number\n"
+"@var{net} with the local-address-within-network number\n"
+"@var{lna}.  E.g.,"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:2472
+msgid ""
+"@lisp\n"
+"(inet-makeaddr 127 1) @result{} 2130706433\n"
+"@end lisp\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:2475
+msgid ""
+"@subsubheading IPv6 Address Conversion\n"
+"@cindex IPv6"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:2478
+msgid ""
+"An IPv6 Internet address is a 16-byte value, represented in Guile as\n"
+"an integer in host byte order, so that say ``::1'' is 1."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:2483
+msgid ""
+"@deffn {Scheme Procedure} inet-ntop family address\n"
+"@deffnx {C Function} scm_inet_ntop (family, address)\n"
+"Convert a network address from an integer to a printable string.\n"
+"@var{family} can be @code{AF_INET} or @code{AF_INET6}.  E.g.,"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:2490
+msgid ""
+"@lisp\n"
+"(inet-ntop AF_INET 2130706433) @result{} \"127.0.0.1\"\n"
+"(inet-ntop AF_INET6 (- (expt 2 128) 1))\n"
+"  @result{} \"ffff:ffff:ffff:ffff:ffff:ffff:ffff:ffff\"\n"
+"@end lisp\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:2496
+msgid ""
+"@deffn {Scheme Procedure} inet-pton family address\n"
+"@deffnx {C Function} scm_inet_pton (family, address)\n"
+"Convert a string containing a printable network address to an integer\n"
+"address.  @var{family} can be @code{AF_INET} or @code{AF_INET6}.\n"
+"E.g.,"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:2502
+msgid ""
+"@lisp\n"
+"(inet-pton AF_INET \"127.0.0.1\") @result{} 2130706433\n"
+"(inet-pton AF_INET6 \"::1\") @result{} 1\n"
+"@end lisp\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:2507
+msgid ""
+"@node Network Databases\n"
+"@subsubsection Network Databases\n"
+"@cindex network database"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:2511
+msgid ""
+"This section describes procedures which query various network databases.\n"
+"Care should be taken when using the database routines since they are not\n"
+"reentrant."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:2513
+msgid "@subsubheading @code{getaddrinfo}"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:2517
+msgid ""
+"@cindex @code{addrinfo} object type\n"
+"@cindex host name lookup\n"
+"@cindex service name lookup"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:2520
+msgid ""
+"The @code{getaddrinfo} procedure maps host and service names to socket "
+"addresses\n"
+"and associated information in a protocol-independent way."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:2527
+msgid ""
+"@deffn {Scheme Procedure} getaddrinfo name service [hint_flags [hint_family ["
+"hint_socktype [hint_protocol]]]]\n"
+"@deffnx {C Function} scm_getaddrinfo (name, service, hint_flags, "
+"hint_family, hint_socktype, hint_protocol)\n"
+"Return a list of @code{addrinfo} structures containing\n"
+"a socket address and associated information for host @var{name}\n"
+"and/or @var{service} to be used in creating a socket with\n"
+"which to address the specified service."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:2535
+msgid ""
+"@example\n"
+"(let* ((ai (car (getaddrinfo \"www.gnu.org\" \"http\")))\n"
+"       (s  (socket (addrinfo:fam ai) (addrinfo:socktype ai)\n"
+"                   (addrinfo:protocol ai))))\n"
+"  (connect s (addrinfo:addr ai))\n"
+"  s)\n"
+"@end example"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:2540
+msgid ""
+"When @var{service} is omitted or is @code{#f}, return\n"
+"network-level addresses for @var{name}.  When @var{name}\n"
+"is @code{#f} @var{service} must be provided and service\n"
+"locations local to the caller are returned."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:2544
+msgid ""
+"Additional hints can be provided.  When specified,\n"
+"@var{hint_flags} should be a bitwise-or of zero or more\n"
+"constants among the following:"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:2548
+msgid ""
+"@table @code\n"
+"@item AI_PASSIVE\n"
+"Socket address is intended for @code{bind}."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:2553
+msgid ""
+"@item AI_CANONNAME\n"
+"Request for canonical host name, available via\n"
+"@code{addrinfo:canonname}.  This makes sense mainly when\n"
+"DNS lookups are involved."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:2558
+msgid ""
+"@item AI_NUMERICHOST\n"
+"Specifies that @var{name} is a numeric host address string\n"
+"(e.g., @code{\"127.0.0.1\"}), meaning that name resolution\n"
+"will not be used."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:2562
+msgid ""
+"@item AI_NUMERICSERV\n"
+"Likewise, specifies that @var{service} is a numeric port\n"
+"string (e.g., @code{\"80\"})."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:2569
+msgid ""
+"@item AI_ADDRCONFIG\n"
+"Return only addresses configured on the local system  It is\n"
+"highly recommended to provide this flag when the returned\n"
+"socket addresses are to be used to make connections;\n"
+"otherwise, some of the returned addresses could be unreachable\n"
+"or use a protocol that is not supported."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:2573
+msgid ""
+"@item AI_V4MAPPED\n"
+"When looking up IPv6 addresses, return mapped IPv4 addresses if\n"
+"there is no IPv6 address available at all."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:2579
+msgid ""
+"@item AI_ALL\n"
+"If this flag is set along with @code{AI_V4MAPPED} when looking up IPv6\n"
+"addresses, return all IPv6 addresses as well as all IPv4 addresses, the "
+"latter\n"
+"mapped to IPv6 format.\n"
+"@end table"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:2586
+msgid ""
+"When given, @var{hint_family} should specify the requested\n"
+"address family, e.g., @code{AF_INET6}.  Similarly,\n"
+"@var{hint_socktype} should specify the requested socket type\n"
+"(e.g., @code{SOCK_DGRAM}), and @var{hint_protocol} should\n"
+"specify the requested protocol (its value is interpreted\n"
+"as in calls to @code{socket})."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:2589
+msgid ""
+"On error, an exception with key @code{getaddrinfo-error} is\n"
+"thrown, with an error code (an integer) as its argument:"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:2603
+msgid ""
+"@example\n"
+"(catch 'getaddrinfo-error\n"
+"  (lambda ()\n"
+"    (getaddrinfo \"www.gnu.org\" \"gopher\"))\n"
+"  (lambda (key errcode)\n"
+"    (cond ((= errcode EAI_SERVICE)\n"
+"\t   (display \"doesn't know about Gopher!\\n"
+"\"))\n"
+"\t  ((= errcode EAI_NONAME)\n"
+"\t   (display \"www.gnu.org not found\\\\n"
+"\"))\n"
+"\t  (else\n"
+"\t   (format #t \"something wrong: ~a\\n"
+"\"\n"
+"\t\t   (gai-strerror errcode))))))\n"
+"@end example"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:2605
+msgid "Error codes are:"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:2610
+msgid ""
+"@table @code\n"
+"@item EAI_AGAIN\n"
+"The name or service could not be resolved at this time. Future\n"
+"attempts may succeed."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:2613
+msgid ""
+"@item EAI_BADFLAGS\n"
+"@var{hint_flags} contains an invalid value."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:2617
+msgid ""
+"@item EAI_FAIL\n"
+"A non-recoverable error occurred when attempting to\n"
+"resolve the name."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:2620
+msgid ""
+"@item EAI_FAMILY\n"
+"@var{hint_family} was not recognized."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:2624
+msgid ""
+"@item EAI_NONAME\n"
+"Either @var{name} does not resolve for the supplied parameters,\n"
+"or neither @var{name} nor @var{service} were supplied."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:2630
+msgid ""
+"@item EAI_NODATA\n"
+"This non-POSIX error code can be returned on some systems (GNU\n"
+"and Darwin, at least), for example when @var{name} is known\n"
+"but requests that were made turned out no data.  Error handling\n"
+"code should be prepared to handle it when it is defined."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:2633
+msgid ""
+"@item EAI_SERVICE\n"
+"@var{service} was not recognized for the specified socket type."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:2636
+msgid ""
+"@item EAI_SOCKTYPE\n"
+"@var{hint_socktype} was not recognized."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:2644
+msgid ""
+"@item EAI_SYSTEM\n"
+"A system error occurred.  In C, the error code can be found in\n"
+"@code{errno}; this value is not accessible from Scheme, but in\n"
+"practice it provides little information about the actual error\n"
+"cause.\n"
+"@c See <http://bugs.gnu.org/13958>.\n"
+"@end table"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:2649
+msgid ""
+"Users are encouraged to read the\n"
+"@url{http://www.opengroup.org/onlinepubs/9699919799/functions/getaddrinfo.htm"
+"l,\n"
+"\"POSIX specification} for more details.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:2652
+msgid ""
+"The following procedures take an @code{addrinfo} object as returned by\n"
+"@code{getaddrinfo}:"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:2656
+msgid ""
+"@deffn {Scheme Procedure} addrinfo:flags ai\n"
+"Return flags for @var{ai} as a bitwise or of @code{AI_} values (see above).\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:2660
+msgid ""
+"@deffn {Scheme Procedure} addrinfo:fam ai\n"
+"Return the address family of @var{ai} (a @code{AF_} value).\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:2664
+msgid ""
+"@deffn {Scheme Procedure} addrinfo:socktype ai\n"
+"Return the socket type for @var{ai} (a @code{SOCK_} value).\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:2668
+msgid ""
+"@deffn {Scheme Procedure} addrinfo:protocol ai\n"
+"Return the protocol of @var{ai}.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:2673
+msgid ""
+"@deffn {Scheme Procedure} addrinfo:addr ai\n"
+"Return the socket address associated with @var{ai} as a @code{sockaddr}\n"
+"object (@pxref{Network Socket Address}).\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:2678
+msgid ""
+"@deffn {Scheme Procedure} addrinfo:canonname ai\n"
+"Return a string for the canonical name associated with @var{ai} if\n"
+"the @code{AI_CANONNAME} flag was supplied.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:2682
+msgid ""
+"@subsubheading The Host Database\n"
+"@cindex @file{/etc/hosts}\n"
+"@cindex network database"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:2686
+msgid ""
+"A @dfn{host object} is a structure that represents what is known about a\n"
+"network host, and is the usual way of representing a system's network\n"
+"identity inside software."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:2689
+msgid ""
+"The following functions accept a host object and return a selected\n"
+"component:"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:2708
+msgid ""
+"@deffn {Scheme Procedure} hostent:name host\n"
+"The ``official'' hostname for @var{host}.\n"
+"@end deffn\n"
+"@deffn {Scheme Procedure} hostent:aliases host\n"
+"A list of aliases for @var{host}.\n"
+"@end deffn\n"
+"@deffn {Scheme Procedure} hostent:addrtype host\n"
+"The host address type, one of the @code{AF} constants, such as\n"
+"@code{AF_INET} or @code{AF_INET6}.\n"
+"@end deffn\n"
+"@deffn {Scheme Procedure} hostent:length host\n"
+"The length of each address for @var{host}, in bytes.\n"
+"@end deffn\n"
+"@deffn {Scheme Procedure} hostent:addr-list host\n"
+"The list of network addresses associated with @var{host}.  For\n"
+"@code{AF_INET} these are integer IPv4 address (@pxref{Network Address\n"
+"Conversion}).\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:2712
+msgid ""
+"The following procedures can be used to search the host database.  However,\n"
+"@code{getaddrinfo} should be preferred over them since it's more generic "
+"and\n"
+"thread-safe."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:2726
+msgid ""
+"@deffn {Scheme Procedure} gethost [host]\n"
+"@deffnx {Scheme Procedure} gethostbyname hostname\n"
+"@deffnx {Scheme Procedure} gethostbyaddr address\n"
+"@deffnx {C Function} scm_gethost (host)\n"
+"Look up a host by name or address, returning a host object.  The\n"
+"@code{gethost} procedure will accept either a string name or an integer\n"
+"address; if given no arguments, it behaves like @code{gethostent} (see\n"
+"below).  If a name or address is supplied but the address can not be\n"
+"found, an error will be thrown to one of the keys:\n"
+"@code{host-not-found}, @code{try-again}, @code{no-recovery} or\n"
+"@code{no-data}, corresponding to the equivalent @code{h_error} values.\n"
+"Unusual conditions may result in errors thrown to the\n"
+"@code{system-error} or @code{misc_error} keys."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:2730
+msgid ""
+"@lisp\n"
+"(gethost \"www.gnu.org\")\n"
+"@result{} #(\"www.gnu.org\" () 2 4 (3353880842))"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:2735
+msgid ""
+"(gethostbyname \"www.emacs.org\")\n"
+"@result{} #(\"emacs.org\" (\"www.emacs.org\") 2 4 (1073448978))\n"
+"@end lisp\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:2738
+msgid ""
+"The following procedures may be used to step through the host\n"
+"database from beginning to end."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:2747
+msgid ""
+"@deffn {Scheme Procedure} sethostent [stayopen]\n"
+"Initialize an internal stream from which host objects may be read.  This\n"
+"procedure must be called before any calls to @code{gethostent}, and may\n"
+"also be called afterward to reset the host entry stream.  If\n"
+"@var{stayopen} is supplied and is not @code{#f}, the database is not\n"
+"closed by subsequent @code{gethostbyname} or @code{gethostbyaddr} calls,\n"
+"possibly giving an efficiency gain.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:2753
+msgid ""
+"@deffn {Scheme Procedure} gethostent\n"
+"Return the next host object from the host database, or @code{#f} if\n"
+"there are no more hosts to be found (or an error has been encountered).\n"
+"This procedure may not be used before @code{sethostent} has been called.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:2757
+msgid ""
+"@deffn {Scheme Procedure} endhostent\n"
+"Close the stream used by @code{gethostent}.  The return value is unspecified."
+"\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:2763
+msgid ""
+"@deffn {Scheme Procedure} sethost [stayopen]\n"
+"@deffnx {C Function} scm_sethost (stayopen)\n"
+"If @var{stayopen} is omitted, this is equivalent to @code{endhostent}.\n"
+"Otherwise it is equivalent to @code{sethostent stayopen}.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:2766
+msgid ""
+"@subsubheading The Network Database\n"
+"@cindex network database"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:2769
+msgid ""
+"The following functions accept an object representing a network\n"
+"and return a selected component:"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:2783
+msgid ""
+"@deffn {Scheme Procedure} netent:name net\n"
+"The ``official'' network name.\n"
+"@end deffn\n"
+"@deffn {Scheme Procedure} netent:aliases net\n"
+"A list of aliases for the network.\n"
+"@end deffn\n"
+"@deffn {Scheme Procedure} netent:addrtype net\n"
+"The type of the network number.  Currently, this returns only\n"
+"@code{AF_INET}.\n"
+"@end deffn\n"
+"@deffn {Scheme Procedure} netent:net net\n"
+"The network number.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:2785
+msgid "The following procedures are used to search the network database:"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:2796
+msgid ""
+"@deffn {Scheme Procedure} getnet [net]\n"
+"@deffnx {Scheme Procedure} getnetbyname net-name\n"
+"@deffnx {Scheme Procedure} getnetbyaddr net-number\n"
+"@deffnx {C Function} scm_getnet (net)\n"
+"Look up a network by name or net number in the network database.  The\n"
+"@var{net-name} argument must be a string, and the @var{net-number}\n"
+"argument must be an integer.  @code{getnet} will accept either type of\n"
+"argument, behaving like @code{getnetent} (see below) if no arguments are\n"
+"given.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:2799
+msgid ""
+"The following procedures may be used to step through the network\n"
+"database from beginning to end."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:2808
+msgid ""
+"@deffn {Scheme Procedure} setnetent [stayopen]\n"
+"Initialize an internal stream from which network objects may be read.  This\n"
+"procedure must be called before any calls to @code{getnetent}, and may\n"
+"also be called afterward to reset the net entry stream.  If\n"
+"@var{stayopen} is supplied and is not @code{#f}, the database is not\n"
+"closed by subsequent @code{getnetbyname} or @code{getnetbyaddr} calls,\n"
+"possibly giving an efficiency gain.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:2812
+msgid ""
+"@deffn {Scheme Procedure} getnetent\n"
+"Return the next entry from the network database.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:2816
+msgid ""
+"@deffn {Scheme Procedure} endnetent\n"
+"Close the stream used by @code{getnetent}.  The return value is unspecified."
+"\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:2822
+msgid ""
+"@deffn {Scheme Procedure} setnet [stayopen]\n"
+"@deffnx {C Function} scm_setnet (stayopen)\n"
+"If @var{stayopen} is omitted, this is equivalent to @code{endnetent}.\n"
+"Otherwise it is equivalent to @code{setnetent stayopen}.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:2827
+msgid ""
+"@subsubheading The Protocol Database\n"
+"@cindex @file{/etc/protocols}\n"
+"@cindex protocols\n"
+"@cindex network protocols"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:2830
+msgid ""
+"The following functions accept an object representing a protocol\n"
+"and return a selected component:"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:2840
+msgid ""
+"@deffn {Scheme Procedure} protoent:name protocol\n"
+"The ``official'' protocol name.\n"
+"@end deffn\n"
+"@deffn {Scheme Procedure} protoent:aliases protocol\n"
+"A list of aliases for the protocol.\n"
+"@end deffn\n"
+"@deffn {Scheme Procedure} protoent:proto protocol\n"
+"The protocol number.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:2842
+msgid "The following procedures are used to search the protocol database:"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:2852
+msgid ""
+"@deffn {Scheme Procedure} getproto [protocol]\n"
+"@deffnx {Scheme Procedure} getprotobyname name\n"
+"@deffnx {Scheme Procedure} getprotobynumber number\n"
+"@deffnx {C Function} scm_getproto (protocol)\n"
+"Look up a network protocol by name or by number.  @code{getprotobyname}\n"
+"takes a string argument, and @code{getprotobynumber} takes an integer\n"
+"argument.  @code{getproto} will accept either type, behaving like\n"
+"@code{getprotoent} (see below) if no arguments are supplied.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:2855
+msgid ""
+"The following procedures may be used to step through the protocol\n"
+"database from beginning to end."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:2864
+msgid ""
+"@deffn {Scheme Procedure} setprotoent [stayopen]\n"
+"Initialize an internal stream from which protocol objects may be read.  "
+"This\n"
+"procedure must be called before any calls to @code{getprotoent}, and may\n"
+"also be called afterward to reset the protocol entry stream.  If\n"
+"@var{stayopen} is supplied and is not @code{#f}, the database is not\n"
+"closed by subsequent @code{getprotobyname} or @code{getprotobynumber} calls,"
+"\n"
+"possibly giving an efficiency gain.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:2868
+msgid ""
+"@deffn {Scheme Procedure} getprotoent\n"
+"Return the next entry from the protocol database.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:2872
+msgid ""
+"@deffn {Scheme Procedure} endprotoent\n"
+"Close the stream used by @code{getprotoent}.  The return value is "
+"unspecified.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:2878
+msgid ""
+"@deffn {Scheme Procedure} setproto [stayopen]\n"
+"@deffnx {C Function} scm_setproto (stayopen)\n"
+"If @var{stayopen} is omitted, this is equivalent to @code{endprotoent}.\n"
+"Otherwise it is equivalent to @code{setprotoent stayopen}.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:2883
+msgid ""
+"@subsubheading The Service Database\n"
+"@cindex @file{/etc/services}\n"
+"@cindex services\n"
+"@cindex network services"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:2886
+msgid ""
+"The following functions accept an object representing a service\n"
+"and return a selected component:"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:2900
+msgid ""
+"@deffn {Scheme Procedure} servent:name serv\n"
+"The ``official'' name of the network service.\n"
+"@end deffn\n"
+"@deffn {Scheme Procedure} servent:aliases serv\n"
+"A list of aliases for the network service.\n"
+"@end deffn\n"
+"@deffn {Scheme Procedure} servent:port serv\n"
+"The Internet port used by the service.\n"
+"@end deffn\n"
+"@deffn {Scheme Procedure} servent:proto serv\n"
+"The protocol used by the service.  A service may be listed many times\n"
+"in the database under different protocol names.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:2902
+msgid "The following procedures are used to search the service database:"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:2911
+msgid ""
+"@deffn {Scheme Procedure} getserv [name [protocol]]\n"
+"@deffnx {Scheme Procedure} getservbyname name protocol\n"
+"@deffnx {Scheme Procedure} getservbyport port protocol\n"
+"@deffnx {C Function} scm_getserv (name, protocol)\n"
+"Look up a network service by name or by service number, and return a\n"
+"network service object.  The @var{protocol} argument specifies the name\n"
+"of the desired protocol; if the protocol found in the network service\n"
+"database does not match this name, a system error is signalled."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:2915
+msgid ""
+"The @code{getserv} procedure will take either a service name or number\n"
+"as its first argument; if given no arguments, it behaves like\n"
+"@code{getservent} (see below)."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:2919
+msgid ""
+"@lisp\n"
+"(getserv \"imap\" \"tcp\")\n"
+"@result{} #(\"imap2\" (\"imap\") 143 \"tcp\")"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:2924
+msgid ""
+"(getservbyport 88 \"udp\")\n"
+"@result{} #(\"kerberos\" (\"kerberos5\" \"krb5\") 88 \"udp\")\n"
+"@end lisp\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:2927
+msgid ""
+"The following procedures may be used to step through the service\n"
+"database from beginning to end."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:2936
+msgid ""
+"@deffn {Scheme Procedure} setservent [stayopen]\n"
+"Initialize an internal stream from which service objects may be read.  This\n"
+"procedure must be called before any calls to @code{getservent}, and may\n"
+"also be called afterward to reset the service entry stream.  If\n"
+"@var{stayopen} is supplied and is not @code{#f}, the database is not\n"
+"closed by subsequent @code{getservbyname} or @code{getservbyport} calls,\n"
+"possibly giving an efficiency gain.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:2940
+msgid ""
+"@deffn {Scheme Procedure} getservent\n"
+"Return the next entry from the services database.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:2944
+msgid ""
+"@deffn {Scheme Procedure} endservent\n"
+"Close the stream used by @code{getservent}.  The return value is unspecified."
+"\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:2950
+msgid ""
+"@deffn {Scheme Procedure} setserv [stayopen]\n"
+"@deffnx {C Function} scm_setserv (stayopen)\n"
+"If @var{stayopen} is omitted, this is equivalent to @code{endservent}.\n"
+"Otherwise it is equivalent to @code{setservent stayopen}.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:2957
+msgid ""
+"@node Network Socket Address\n"
+"@subsubsection Network Socket Address\n"
+"@cindex socket address\n"
+"@cindex network socket address\n"
+"@tpindex Socket address"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:2964
+msgid ""
+"A @dfn{socket address} object identifies a socket endpoint for\n"
+"communication.  In the case of @code{AF_INET} for instance, the socket\n"
+"address object comprises the host address (or interface on the host)\n"
+"and a port number which specifies a particular open socket in a\n"
+"running client or server process.  A socket address object can be\n"
+"created with,"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:2972
+msgid ""
+"@deffn {Scheme Procedure} make-socket-address AF_INET ipv4addr port\n"
+"@deffnx {Scheme Procedure} make-socket-address AF_INET6 ipv6addr port ["
+"flowinfo [scopeid]]\n"
+"@deffnx {Scheme Procedure} make-socket-address AF_UNIX path\n"
+"@deffnx {C Function} scm_make_socket_address (family, address, arglist)\n"
+"Return a new socket address object.  The first argument is the address\n"
+"family, one of the @code{AF} constants, then the arguments vary\n"
+"according to the family."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:2975
+msgid ""
+"For @code{AF_INET} the arguments are an IPv4 network address number\n"
+"(@pxref{Network Address Conversion}), and a port number."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:2979
+msgid ""
+"For @code{AF_INET6} the arguments are an IPv6 network address number\n"
+"and a port number.  Optional @var{flowinfo} and @var{scopeid}\n"
+"arguments may be given (both integers, default 0)."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:2981
+msgid "For @code{AF_UNIX} the argument is a filename (a string)."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:2988
+msgid ""
+"The C function @code{scm_make_socket_address} takes the @var{family}\n"
+"and @var{address} arguments directly, then @var{arglist} is a list of\n"
+"further arguments, being the port for IPv4, port and optional flowinfo\n"
+"and scopeid for IPv6, or the empty list @code{SCM_EOL} for Unix\n"
+"domain.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:2991
+msgid ""
+"@noindent\n"
+"The following functions access the fields of a socket address object,"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:2996
+msgid ""
+"@deffn {Scheme Procedure} sockaddr:fam sa\n"
+"Return the address family from socket address object @var{sa}.  This\n"
+"is one of the @code{AF} constants (e.g.@: @code{AF_INET}).\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:3001
+msgid ""
+"@deffn {Scheme Procedure} sockaddr:path sa\n"
+"For an @code{AF_UNIX} socket address object @var{sa}, return the\n"
+"filename.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:3006
+msgid ""
+"@deffn {Scheme Procedure} sockaddr:addr sa\n"
+"For an @code{AF_INET} or @code{AF_INET6} socket address object\n"
+"@var{sa}, return the network address number.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:3011
+msgid ""
+"@deffn {Scheme Procedure} sockaddr:port sa\n"
+"For an @code{AF_INET} or @code{AF_INET6} socket address object\n"
+"@var{sa}, return the port number.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:3016
+msgid ""
+"@deffn {Scheme Procedure} sockaddr:flowinfo sa\n"
+"For an @code{AF_INET6} socket address object @var{sa}, return the\n"
+"flowinfo value.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:3021
+msgid ""
+"@deffn {Scheme Procedure} sockaddr:scopeid sa\n"
+"For an @code{AF_INET6} socket address object @var{sa}, return the\n"
+"scope ID value.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:3029
+msgid ""
+"@tpindex @code{struct sockaddr}\n"
+"@tpindex @code{sockaddr}\n"
+"The functions below convert to and from the C @code{struct sockaddr}\n"
+"(@pxref{Address Formats,,, libc, The GNU C Library Reference Manual}).\n"
+"That structure is a generic type, an application can cast to or from\n"
+"@code{struct sockaddr_in}, @code{struct sockaddr_in6} or @code{struct\n"
+"sockaddr_un} according to the address family."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:3039
+msgid ""
+"In a @code{struct sockaddr} taken or returned, the byte ordering in\n"
+"the fields follows the C conventions (@pxref{Byte Order,, Byte Order\n"
+"Conversion, libc, The GNU C Library Reference Manual}).  This means\n"
+"network byte order for @code{AF_INET} host address\n"
+"(@code{sin_addr.s_addr}) and port number (@code{sin_port}), and\n"
+"@code{AF_INET6} port number (@code{sin6_port}).  But at the Scheme\n"
+"level these values are taken or returned in host byte order, so the\n"
+"port is an ordinary integer, and the host address likewise is an\n"
+"ordinary integer (as described in @ref{Network Address Conversion})."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:3043
+msgid ""
+"@deftypefn {C Function} {struct sockaddr *} scm_c_make_socket_address (SCM "
+"family, SCM address, SCM args, size_t *outsize)\n"
+"Return a newly-@code{malloc}ed @code{struct sockaddr} created from\n"
+"arguments like those taken by @code{scm_make_socket_address} above."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:3048
+msgctxt "/home/bear/work/guile/doc/guile/en/posix.texi:3048"
+msgid ""
+"The size (in bytes) of the @code{struct sockaddr} return is stored\n"
+"into @code{*@var{outsize}}.  An application must call @code{free} to\n"
+"release the returned structure when no longer required.\n"
+"@end deftypefn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:3053
+msgid ""
+"@deftypefn {C Function} SCM scm_from_sockaddr (const struct sockaddr *"
+"address, unsigned address_size)\n"
+"Return a Scheme socket address object from the C @var{address}\n"
+"structure.  @var{address_size} is the size in bytes of @var{address}.\n"
+"@end deftypefn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:3057
+msgid ""
+"@deftypefn {C Function} {struct sockaddr *} scm_to_sockaddr (SCM address, "
+"size_t *address_size)\n"
+"Return a newly-@code{malloc}ed @code{struct sockaddr} from a Scheme\n"
+"level socket address object."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:3062
+msgctxt "/home/bear/work/guile/doc/guile/en/posix.texi:3062"
+msgid ""
+"The size (in bytes) of the @code{struct sockaddr} return is stored\n"
+"into @code{*@var{outsize}}.  An application must call @code{free} to\n"
+"release the returned structure when no longer required.\n"
+"@end deftypefn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:3068
+msgid ""
+"@node Network Sockets and Communication\n"
+"@subsubsection Network Sockets and Communication\n"
+"@cindex socket\n"
+"@cindex network socket"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:3073
+msgid ""
+"Socket ports can be created using @code{socket} and @code{socketpair}.\n"
+"The ports are initially unbuffered, to make reading and writing to the\n"
+"same port more reliable.  A buffer can be added to the port using\n"
+"@code{setvbuf} (@pxref{Buffering})."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:3077
+msgid ""
+"Most systems have limits on how many files and sockets can be open, so\n"
+"it's strongly recommended that socket ports be closed explicitly when\n"
+"no longer required (@pxref{Ports})."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:3082
+msgid ""
+"Some of the underlying C functions take values in network byte order,\n"
+"but the convention in Guile is that at the Scheme level everything is\n"
+"ordinary host byte order and conversions are made automatically where\n"
+"necessary."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:3089
+msgid ""
+"@deffn {Scheme Procedure} socket family style proto\n"
+"@deffnx {C Function} scm_socket (family, style, proto)\n"
+"Return a new socket port of the type specified by @var{family},\n"
+"@var{style} and @var{proto}.  All three parameters are integers.  The\n"
+"possible values for @var{family} are as follows, where supported by\n"
+"the system,"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:3094
+msgid ""
+"@defvar PF_UNIX\n"
+"@defvarx PF_INET\n"
+"@defvarx PF_INET6\n"
+"@end defvar"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:3097
+msgid ""
+"The possible values for @var{style} are as follows, again where\n"
+"supported by the system,"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:3104
+msgid ""
+"@defvar SOCK_STREAM\n"
+"@defvarx SOCK_DGRAM\n"
+"@defvarx SOCK_RAW\n"
+"@defvarx SOCK_RDM\n"
+"@defvarx SOCK_SEQPACKET\n"
+"@end defvar"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:3108
+msgid ""
+"@var{proto} can be obtained from a protocol name using\n"
+"@code{getprotobyname} (@pxref{Network Databases}).  A value of zero\n"
+"means the default protocol, which is usually right."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:3112
+msgid ""
+"A socket cannot by used for communication until it has been connected\n"
+"somewhere, usually with either @code{connect} or @code{accept} below.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:3118
+msgid ""
+"@deffn {Scheme Procedure} socketpair family style proto\n"
+"@deffnx {C Function} scm_socketpair (family, style, proto)\n"
+"Return a pair, the @code{car} and @code{cdr} of which are two unnamed\n"
+"socket ports connected to each other.  The connection is full-duplex,\n"
+"so data can be transferred in either direction between the two."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:3124
+msgid ""
+"@var{family}, @var{style} and @var{proto} are as per @code{socket}\n"
+"above.  But many systems only support socket pairs in the\n"
+"@code{PF_UNIX} family.  Zero is likely to be the only meaningful value\n"
+"for @var{proto}.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:3132
+msgid ""
+"@deffn {Scheme Procedure} getsockopt sock level optname\n"
+"@deffnx {Scheme Procedure} setsockopt sock level optname value\n"
+"@deffnx {C Function} scm_getsockopt (sock, level, optname)\n"
+"@deffnx {C Function} scm_setsockopt (sock, level, optname, value)\n"
+"Get or set an option on socket port @var{sock}.  @code{getsockopt}\n"
+"returns the current value.  @code{setsockopt} sets a value and the\n"
+"return is unspecified."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:3137
+msgid ""
+"@var{level} is an integer specifying a protocol layer, either\n"
+"@code{SOL_SOCKET} for socket level options, or a protocol number from\n"
+"the @code{IPPROTO} constants or @code{getprotoent} (@pxref{Network\n"
+"Databases})."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:3143
+msgid ""
+"@defvar SOL_SOCKET\n"
+"@defvarx IPPROTO_IP\n"
+"@defvarx IPPROTO_TCP\n"
+"@defvarx IPPROTO_UDP\n"
+"@end defvar"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:3146
+msgid ""
+"@var{optname} is an integer specifying an option within the protocol\n"
+"layer."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:3151
+msgid ""
+"For @code{SOL_SOCKET} level the following @var{optname}s are defined\n"
+"(when provided by the system).  For their meaning see\n"
+"@ref{Socket-Level Options,,, libc, The GNU C Library Reference\n"
+"Manual}, or @command{man 7 socket}."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:3168
+msgid ""
+"@defvar SO_DEBUG\n"
+"@defvarx SO_REUSEADDR\n"
+"@defvarx SO_STYLE\n"
+"@defvarx SO_TYPE\n"
+"@defvarx SO_ERROR\n"
+"@defvarx SO_DONTROUTE\n"
+"@defvarx SO_BROADCAST\n"
+"@defvarx SO_SNDBUF\n"
+"@defvarx SO_RCVBUF\n"
+"@defvarx SO_KEEPALIVE\n"
+"@defvarx SO_OOBINLINE\n"
+"@defvarx SO_NO_CHECK\n"
+"@defvarx SO_PRIORITY\n"
+"@defvarx SO_REUSEPORT\n"
+"The @var{value} taken or returned is an integer.\n"
+"@end defvar"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:3175
+msgid ""
+"@defvar SO_LINGER\n"
+"The @var{value} taken or returned is a pair of integers\n"
+"@code{(@var{ENABLE} . @var{TIMEOUT})}.  On old systems without timeout\n"
+"support (ie.@: without @code{struct linger}), only @var{ENABLE} has an\n"
+"effect but the value in Guile is always a pair.\n"
+"@end defvar"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:3182
+msgid ""
+"@c  Note that we refer only to ``man ip'' here.  On GNU/Linux it's\n"
+"@c  ``man 7 ip'' but on NetBSD it's ``man 4 ip''.\n"
+"@c \n"
+"For IP level (@code{IPPROTO_IP}) the following @var{optname}s are\n"
+"defined (when provided by the system).  See @command{man ip} for what\n"
+"they mean."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:3186
+msgid ""
+"@defvar IP_MULTICAST_IF\n"
+"This sets the source interface used by multicast traffic.\n"
+"@end defvar"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:3192
+msgid ""
+"@defvar IP_MULTICAST_TTL\n"
+"This sets the default TTL for multicast traffic. This defaults\n"
+"to 1 and should be increased to allow traffic to pass beyond the\n"
+"local network.\n"
+"@end defvar"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:3205
+msgid ""
+"@defvar IP_ADD_MEMBERSHIP\n"
+"@defvarx IP_DROP_MEMBERSHIP\n"
+"These can be used only with @code{setsockopt}, not @code{getsockopt}.\n"
+"@var{value} is a pair @code{(@var{MULTIADDR} . @var{INTERFACEADDR})}\n"
+"of integer IPv4 addresses (@pxref{Network Address Conversion}).\n"
+"@var{MULTIADDR} is a multicast address to be added to or dropped from\n"
+"the interface @var{INTERFACEADDR}.  @var{INTERFACEADDR} can be\n"
+"@code{INADDR_ANY} to have the system select the interface.\n"
+"@var{INTERFACEADDR} can also be an interface index number, on systems\n"
+"supporting that.\n"
+"@end defvar\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:3209
+msgid ""
+"For @code{IPPROTO_TCP} level the following @var{optname}s are defined\n"
+"(when provided by the system).  For their meaning see @command{man 7\n"
+"tcp}."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:3214
+msgid ""
+"@defvar TCP_NODELAY\n"
+"@defvarx TCP_CORK\n"
+"The @var{value} taken or returned is an integer.\n"
+"@end defvar"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:3221
+msgid ""
+"@deffn {Scheme Procedure} shutdown sock how\n"
+"@deffnx {C Function} scm_shutdown (sock, how)\n"
+"Sockets can be closed simply by using @code{close-port}.  The\n"
+"@code{shutdown} procedure allows reception or transmission on a\n"
+"connection to be shut down individually, according to the parameter\n"
+"@var{how}:"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:3232
+msgid ""
+"@table @asis\n"
+"@item 0\n"
+"Stop receiving data for this socket.  If further data arrives, reject it.\n"
+"@item 1\n"
+"Stop trying to transmit data from this socket.  Discard any\n"
+"data waiting to be sent.  Stop looking for acknowledgement of\n"
+"data already sent; don't retransmit it if it is lost.\n"
+"@item 2\n"
+"Stop both reception and transmission.\n"
+"@end table"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:3235
+msgctxt "/home/bear/work/guile/doc/guile/en/posix.texi:3235"
+msgid ""
+"The return value is unspecified.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:3247
+msgid ""
+"@deffn {Scheme Procedure} connect sock sockaddr\n"
+"@deffnx {Scheme Procedure} connect sock AF_INET ipv4addr port\n"
+"@deffnx {Scheme Procedure} connect sock AF_INET6 ipv6addr port [flowinfo "
+"[scopeid]]\n"
+"@deffnx {Scheme Procedure} connect sock AF_UNIX path\n"
+"@deffnx {C Function} scm_connect (sock, fam, address, args)\n"
+"Initiate a connection on socket port @var{sock} to a given address.  The\n"
+"destination is either a socket address object, or arguments the same as\n"
+"@code{make-socket-address} would take to make such an object\n"
+"(@pxref{Network Socket Address}).  Return true unless the socket was\n"
+"configured as non-blocking and the connection could not be made\n"
+"immediately."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:3253
+msgid ""
+"@example\n"
+"(connect sock AF_INET INADDR_LOOPBACK 23)\n"
+"(connect sock (make-socket-address AF_INET INADDR_LOOPBACK 23))\n"
+"@end example\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:3263
+msgid ""
+"@deffn {Scheme Procedure} bind sock sockaddr\n"
+"@deffnx {Scheme Procedure} bind sock AF_INET ipv4addr port\n"
+"@deffnx {Scheme Procedure} bind sock AF_INET6 ipv6addr port [flowinfo "
+"[scopeid]]\n"
+"@deffnx {Scheme Procedure} bind sock AF_UNIX path\n"
+"@deffnx {C Function} scm_bind (sock, fam, address, args)\n"
+"Bind socket port @var{sock} to the given address.  The address is\n"
+"either a socket address object, or arguments the same as\n"
+"@code{make-socket-address} would take to make such an object\n"
+"(@pxref{Network Socket Address}).  The return value is unspecified."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:3268
+msgid ""
+"Generally a socket is only explicitly bound to a particular address\n"
+"when making a server, i.e.@: to listen on a particular port.  For an\n"
+"outgoing connection the system will assign a local address\n"
+"automatically, if not already bound."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:3274
+msgid ""
+"@example\n"
+"(bind sock AF_INET INADDR_ANY 12345)\n"
+"(bind sock (make-socket-address AF_INET INADDR_ANY 12345))\n"
+"@end example\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:3283
+msgid ""
+"@deffn {Scheme Procedure} listen sock backlog\n"
+"@deffnx {C Function} scm_listen (sock, backlog)\n"
+"Enable @var{sock} to accept connection\n"
+"requests.  @var{backlog} is an integer specifying\n"
+"the maximum length of the queue for pending connections.\n"
+"If the queue fills, new clients will fail to connect until\n"
+"the server calls @code{accept} to accept a connection from\n"
+"the queue."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:3286
+msgctxt "/home/bear/work/guile/doc/guile/en/posix.texi:3286"
+msgid ""
+"The return value is unspecified.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:3291
+msgid ""
+"@deffn {Scheme Procedure} accept sock [flags]\n"
+"@deffnx {C Function} scm_accept (sock)\n"
+"Accept a connection from socket port @var{sock} which has been enabled\n"
+"for listening with @code{listen} above."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:3295
+msgid ""
+"If there are no incoming connections in the queue, there are two\n"
+"possible behaviors, depending on whether @var{sock} has been configured\n"
+"for non-blocking operation or not:"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:3301
+msgid ""
+"@itemize\n"
+"@item\n"
+"If there is no connection waiting and the socket was set to non-blocking\n"
+"mode with the @code{O_NONBLOCK} port option (@pxref{Ports and File\n"
+"Descriptors,@code{fcntl}}), return @code{#f} directly."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:3305
+msgid ""
+"@item\n"
+"Otherwise wait until a connection is available.\n"
+"@end itemize"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:3310
+msgid ""
+"The return value is a pair.  The @code{car} is a new socket port,\n"
+"connected and ready to communicate.  The @code{cdr} is a socket address\n"
+"object (@pxref{Network Socket Address}) which is where the remote\n"
+"connection is from (like @code{getpeername} below)."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:3314
+msgid ""
+"@var{flags}, if given, may include @code{SOCK_CLOEXEC} or\n"
+"@code{SOCK_NONBLOCK}, which like @code{O_CLOEXEC} and @code{O_NONBLOCK}\n"
+"apply to the newly accepted socket."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:3319
+msgid ""
+"All communication takes place using the new socket returned.  The\n"
+"given @var{sock} remains bound and listening, and @code{accept} may be\n"
+"called on it again to get another incoming connection when desired.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:3327
+msgid ""
+"@deffn {Scheme Procedure} getsockname sock\n"
+"@deffnx {C Function} scm_getsockname (sock)\n"
+"Return a socket address object which is the where @var{sock} is bound\n"
+"locally.  @var{sock} may have obtained its local address from\n"
+"@code{bind} (above), or if a @code{connect} is done with an otherwise\n"
+"unbound socket (which is usual) then the system will have assigned an\n"
+"address."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:3331
+msgctxt "/home/bear/work/guile/doc/guile/en/posix.texi:3331"
+msgid ""
+"Note that on many systems the address of a socket in the\n"
+"@code{AF_UNIX} namespace cannot be read.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:3336
+msgid ""
+"@deffn {Scheme Procedure} getpeername sock\n"
+"@deffnx {C Function} scm_getpeername (sock)\n"
+"Return a socket address object which is where @var{sock} is connected\n"
+"to, i.e.@: the remote endpoint."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:3340
+msgctxt "/home/bear/work/guile/doc/guile/en/posix.texi:3340"
+msgid ""
+"Note that on many systems the address of a socket in the\n"
+"@code{AF_UNIX} namespace cannot be read.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:3353
+msgid ""
+"@deffn {Scheme Procedure} recv! sock buf [flags]\n"
+"@deffnx {C Function} scm_recv (sock, buf, flags)\n"
+"Receive data from a socket port.\n"
+"@var{sock} must already\n"
+"be bound to the address from which data is to be received.\n"
+"@var{buf} is a bytevector into which\n"
+"the data will be written.  The size of @var{buf} limits\n"
+"the amount of\n"
+"data which can be received: in the case of packet\n"
+"protocols, if a packet larger than this limit is encountered\n"
+"then some data\n"
+"will be irrevocably lost."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:3359
+msgid ""
+"@vindex MSG_OOB\n"
+"@vindex MSG_PEEK\n"
+"@vindex MSG_DONTROUTE\n"
+"The optional @var{flags} argument is a value or bitwise OR of\n"
+"@code{MSG_OOB}, @code{MSG_PEEK}, @code{MSG_DONTROUTE} etc."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:3362
+msgid ""
+"The value returned is the number of bytes read from the\n"
+"socket."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:3367
+msgid ""
+"Note that the data is read directly from the socket file\n"
+"descriptor:\n"
+"any unread buffered port data is ignored.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:3379
+msgid ""
+"@deffn {Scheme Procedure} send sock message [flags]\n"
+"@deffnx {C Function} scm_send (sock, message, flags)\n"
+"@vindex MSG_OOB\n"
+"@vindex MSG_PEEK\n"
+"@vindex MSG_DONTROUTE\n"
+"Transmit bytevector @var{message} on socket port @var{sock}.\n"
+"@var{sock} must already be bound to a destination address.  The value\n"
+"returned is the number of bytes transmitted---it's possible for this\n"
+"to be less than the length of @var{message} if the socket is set to be\n"
+"non-blocking.  The optional @var{flags} argument is a value or bitwise\n"
+"OR of @code{MSG_OOB}, @code{MSG_PEEK}, @code{MSG_DONTROUTE} etc."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:3384
+msgid ""
+"Note that the data is written directly to the socket\n"
+"file descriptor:\n"
+"any unflushed buffered port data is ignored.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:3390
+msgid ""
+"@deffn {Scheme Procedure} recvfrom! sock buf [flags [start [end]]]\n"
+"@deffnx {C Function} scm_recvfrom (sock, buf, flags, start, end)\n"
+"Receive data from socket port @var{sock}, returning the originating\n"
+"address as well as the data.  This function is usually for datagram\n"
+"sockets, but can be used on stream-oriented sockets too."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:3397
+msgid ""
+"The data received is stored in bytevector @var{buf}, using\n"
+"either the whole bytevector or just the region between the optional\n"
+"@var{start} and @var{end} positions.  The size of @var{buf}\n"
+"limits the amount of data that can be received.  For datagram\n"
+"protocols if a packet larger than this is received then excess\n"
+"bytes are irrevocably lost."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:3402
+msgid ""
+"The return value is a pair.  The @code{car} is the number of bytes\n"
+"read.  The @code{cdr} is a socket address object (@pxref{Network\n"
+"Socket Address}) which is where the data came from, or @code{#f} if\n"
+"the origin is unknown."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:3408
+msgid ""
+"@vindex MSG_OOB\n"
+"@vindex MSG_PEEK\n"
+"@vindex MSG_DONTROUTE\n"
+"The optional @var{flags} argument is a or bitwise-OR (@code{logior})\n"
+"of @code{MSG_OOB}, @code{MSG_PEEK}, @code{MSG_DONTROUTE} etc."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:3411
+msgid ""
+"Data is read directly from the socket file descriptor, any buffered\n"
+"port data is ignored."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:3420
+msgid ""
+"@c  This was linux kernel 2.6.15 and glibc 2.3.6, not sure what any\n"
+"@c  specs are supposed to say about recvfrom threading.\n"
+"@c\n"
+"On a GNU/Linux system @code{recvfrom!} is not multi-threading, all\n"
+"threads stop while a @code{recvfrom!} call is in progress.  An\n"
+"application may need to use @code{select}, @code{O_NONBLOCK} or\n"
+"@code{MSG_DONTWAIT} to avoid this.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:3431
+msgid ""
+"@deffn {Scheme Procedure} sendto sock message sockaddr [flags]\n"
+"@deffnx {Scheme Procedure} sendto sock message AF_INET ipv4addr port [flags]"
+"\n"
+"@deffnx {Scheme Procedure} sendto sock message AF_INET6 ipv6addr port ["
+"flowinfo [scopeid [flags]]]\n"
+"@deffnx {Scheme Procedure} sendto sock message AF_UNIX path [flags]\n"
+"@deffnx {C Function} scm_sendto (sock, message, fam, address, args_and_flags)"
+"\n"
+"Transmit bytevector @var{message} as a datagram socket port\n"
+"@var{sock}.  The destination is specified either as a socket address\n"
+"object, or as arguments the same as would be taken by\n"
+"@code{make-socket-address} to create such an object (@pxref{Network\n"
+"Socket Address})."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:3435
+msgid ""
+"The destination address may be followed by an optional @var{flags}\n"
+"argument which is a @code{logior} (@pxref{Bitwise Operations}) of\n"
+"@code{MSG_OOB}, @code{MSG_PEEK}, @code{MSG_DONTROUTE} etc."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:3445
+msgid ""
+"The value returned is the number of bytes transmitted --\n"
+"it's possible for\n"
+"this to be less than the length of @var{message} if the\n"
+"socket is\n"
+"set to be non-blocking.\n"
+"Note that the data is written directly to the socket\n"
+"file descriptor:\n"
+"any unflushed buffered port data is ignored.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:3451
+msgid ""
+"@node Internet Socket Examples\n"
+"@subsubsection Network Socket Examples\n"
+"@cindex network examples\n"
+"@cindex socket examples"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:3453
+msgid "The following give examples of how to use network sockets."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:3455
+msgid "@subsubheading Internet Socket Client Example"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:3460
+msgid ""
+"@cindex socket client example\n"
+"The following example demonstrates an Internet socket client.\n"
+"It connects to the HTTP daemon running on the local machine and\n"
+"returns the contents of the root index URL."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:3465
+msgid ""
+"@example\n"
+"(let ((s (socket PF_INET SOCK_STREAM 0)))\n"
+"  (connect s AF_INET (inet-pton AF_INET \"127.0.0.1\") 80)\n"
+"  (display \"GET / HTTP/1.0\\r\\n"
+"\\r\\n"
+"\" s)"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:3471
+msgid ""
+"  (do ((line (read-line s) (read-line s)))\n"
+"      ((eof-object? line))\n"
+"    (display line)\n"
+"    (newline)))\n"
+"@end example"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:3474
+msgid "@subsubheading Internet Socket Server Example"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:3479
+msgid ""
+"@cindex socket server example\n"
+"The following example shows a simple Internet server which listens on\n"
+"port 2904 for incoming connections and sends a greeting back to the\n"
+"client."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:3487
+msgid ""
+"@example\n"
+"(let ((s (socket PF_INET SOCK_STREAM 0)))\n"
+"  (setsockopt s SOL_SOCKET SO_REUSEADDR 1)\n"
+"  ;; @r{Specific address?}\n"
+"  ;; @r{(bind s AF_INET (inet-pton AF_INET \"127.0.0.1\") 2904)}\n"
+"  (bind s AF_INET INADDR_ANY 2904)\n"
+"  (listen s 5)"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:3490
+msgid ""
+"  (simple-format #t \"Listening for clients in pid: ~S\" (getpid))\n"
+"  (newline)"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:3506
+msgid ""
+"  (while #t\n"
+"    (let* ((client-connection (accept s))\n"
+"           (client-details (cdr client-connection))\n"
+"           (client (car client-connection)))\n"
+"      (simple-format #t \"Got new client connection: ~S\"\n"
+"                     client-details)\n"
+"      (newline)\n"
+"      (simple-format #t \"Client address: ~S\"\n"
+"                     (gethostbyaddr\n"
+"                      (sockaddr:addr client-details)))\n"
+"      (newline)\n"
+"      ;; @r{Send back the greeting to the client port}\n"
+"      (display \"Hello client\\r\\n"
+"\" client)\n"
+"      (close client))))\n"
+"@end example"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:3511
+msgid ""
+"@node System Identification\n"
+"@subsection System Identification\n"
+"@cindex system name"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:3514
+msgid ""
+"This section lists the various procedures Guile provides for accessing\n"
+"information about the system it runs on."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:3519
+msgid ""
+"@deffn {Scheme Procedure} uname\n"
+"@deffnx {C Function} scm_uname ()\n"
+"Return an object with some information about the computer\n"
+"system the program is running on."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:3522
+msgid ""
+"The following procedures accept an object as returned by @code{uname}\n"
+"and return a selected component (all of which are strings)."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:3539
+msgid ""
+"@deffn {Scheme Procedure} utsname:sysname un\n"
+"The name of the operating system.\n"
+"@end deffn\n"
+"@deffn {Scheme Procedure} utsname:nodename un\n"
+"The network name of the computer.\n"
+"@end deffn\n"
+"@deffn {Scheme Procedure} utsname:release un\n"
+"The current release level of the operating system implementation.\n"
+"@end deffn\n"
+"@deffn {Scheme Procedure} utsname:version un\n"
+"The current version level within the release of the operating system.\n"
+"@end deffn\n"
+"@deffn {Scheme Procedure} utsname:machine un\n"
+"A description of the hardware.\n"
+"@end deffn\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:3545
+msgid ""
+"@deffn {Scheme Procedure} gethostname\n"
+"@deffnx {C Function} scm_gethostname ()\n"
+"@cindex host name\n"
+"Return the host name of the current processor.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:3552
+msgid ""
+"@deffn {Scheme Procedure} sethostname name\n"
+"@deffnx {C Function} scm_sethostname (name)\n"
+"Set the host name of the current processor to @var{name}. May\n"
+"only be used by the superuser.  The return value is not\n"
+"specified.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:3556
+msgid ""
+"@node Locales\n"
+"@subsection Locales\n"
+"@cindex locale"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:3561
+msgid ""
+"@deffn {Scheme Procedure} setlocale category [locale]\n"
+"@deffnx {C Function} scm_setlocale (category, locale)\n"
+"Get or set the current locale, used for various internationalizations.\n"
+"Locales are strings, such as @samp{sv_SE}."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:3567
+msgid ""
+"If @var{locale} is given then the locale for the given @var{category}\n"
+"is set and the new value returned.  If @var{locale} is not given then\n"
+"the current value is returned.  @var{category} should be one of the\n"
+"following values (@pxref{Locale Categories, Categories of Activities\n"
+"that Locales Affect,, libc, The GNU C Library Reference Manual}):"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:3576
+msgid ""
+"@defvar LC_ALL\n"
+"@defvarx LC_COLLATE\n"
+"@defvarx LC_CTYPE\n"
+"@defvarx LC_MESSAGES\n"
+"@defvarx LC_MONETARY\n"
+"@defvarx LC_NUMERIC\n"
+"@defvarx LC_TIME\n"
+"@end defvar"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:3583
+msgid ""
+"@cindex @code{LANG}\n"
+"A common usage is @samp{(setlocale LC_ALL \"\")}, which initializes all\n"
+"categories based on standard environment variables (@code{LANG} etc).\n"
+"For full details on categories and locale names @pxref{Locales,,\n"
+"Locales and Internationalization, libc, The GNU C Library Reference\n"
+"Manual}."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:3588
+msgid ""
+"Note that @code{setlocale} affects locale settings for the whole\n"
+"process.  @xref{i18n Introduction, locale objects and\n"
+"@code{make-locale}}, for a thread-safe alternative.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:3592
+msgid ""
+"@node Encryption\n"
+"@subsection Encryption\n"
+"@cindex encryption"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:3599
+msgid ""
+"Please note that the procedures in this section are not suited for\n"
+"strong encryption, they are only interfaces to the well-known and\n"
+"common system library functions of the same name.  They are just as good\n"
+"(or bad) as the underlying functions, so you should refer to your system\n"
+"documentation before using them (@pxref{crypt,, Encrypting Passwords,\n"
+"libc, The GNU C Library Reference Manual})."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:3605
+msgid ""
+"@deffn {Scheme Procedure} crypt key salt\n"
+"@deffnx {C Function} scm_crypt (key, salt)\n"
+"Encrypt @var{key}, with the addition of @var{salt} (both strings),\n"
+"using the @code{crypt} C library call.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:3608
+msgid ""
+"Although @code{getpass} is not an encryption procedure per se, it\n"
+"appears here because it is often used in combination with @code{crypt}:"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:3620
+msgid ""
+"@deffn {Scheme Procedure} getpass prompt\n"
+"@deffnx {C Function} scm_getpass (prompt)\n"
+"@cindex password\n"
+"Display @var{prompt} to the standard error output and read\n"
+"a password from @file{/dev/tty}.  If this file is not\n"
+"accessible, it reads from standard input.  The password may be\n"
+"up to 127 characters in length.  Additional characters and the\n"
+"terminating newline character are discarded.  While reading\n"
+"the password, echoing and the generation of signals by special\n"
+"characters is disabled.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/posix.texi:3624
+msgid ""
+"@c Local Variables:\n"
+"@c TeX-master: \"guile.texi\"\n"
+"@c End:"
+msgstr ""

@@ -1,0 +1,1542 @@
+#. extracted from /home/bear/work/guile/doc/guile/en/api-scheduling.texi
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2018-05-07 12:37+0300\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Generator: Translate Toolkit 2.2.5\n"
+
+#: /home/bear/work/guile/doc/guile/en/api-scheduling.texi:6
+msgid ""
+"@c -*-texinfo-*-\n"
+"@c This is part of the GNU Guile Reference Manual.\n"
+"@c Copyright (C)  1996, 1997, 2000, 2001, 2002, 2003, 2004, 2007, 2009, "
+"2010, 2012, 2013\n"
+"@c   Free Software Foundation, Inc.\n"
+"@c See the file guile.texi for copying conditions."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-scheduling.texi:9
+msgid ""
+"@node Scheduling\n"
+"@section Threads, Mutexes, Asyncs and Dynamic Roots"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-scheduling.texi:20
+msgid ""
+"@menu\n"
+"* Threads::                     Multiple threads of execution.\n"
+"* Thread Local Variables::      Some fluids are thread-local.\n"
+"* Asyncs::                      Asynchronous interrupts.\n"
+"* Atomics::                     Atomic references.\n"
+"* Mutexes and Condition Variables:: Synchronization primitives.\n"
+"* Blocking::                    How to block properly in guile mode.\n"
+"* Futures::                     Fine-grain parallelism.\n"
+"* Parallel Forms::              Parallel execution of forms.\n"
+"@end menu"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-scheduling.texi:27
+msgid ""
+"@node Threads\n"
+"@subsection Threads\n"
+"@cindex threads\n"
+"@cindex Guile threads\n"
+"@cindex POSIX threads"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-scheduling.texi:32
+msgid ""
+"Guile supports POSIX threads, unless it was configured with\n"
+"@code{--without-threads} or the host lacks POSIX thread support.  When\n"
+"thread support is available, the @code{threads} feature is provided\n"
+"(@pxref{Feature Manipulation, @code{provided?}})."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-scheduling.texi:37
+msgid ""
+"The procedures below manipulate Guile threads, which are wrappers around\n"
+"the system's POSIX threads.  For application-level parallelism, using\n"
+"higher-level constructs, such as futures, is recommended\n"
+"(@pxref{Futures})."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-scheduling.texi:39
+msgctxt "/home/bear/work/guile/doc/guile/en/api-scheduling.texi:39"
+msgid "To use these facilities, load the @code{(ice-9 threads)} module."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-scheduling.texi:43
+msgctxt "/home/bear/work/guile/doc/guile/en/api-scheduling.texi:43"
+msgid ""
+"@example\n"
+"(use-modules (ice-9 threads))\n"
+"@end example"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-scheduling.texi:48
+msgid ""
+"@deffn {Scheme Procedure} all-threads\n"
+"@deffnx {C Function} scm_all_threads ()\n"
+"Return a list of all threads.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-scheduling.texi:53
+msgid ""
+"@deffn {Scheme Procedure} current-thread\n"
+"@deffnx {C Function} scm_current_thread ()\n"
+"Return the thread that called this function.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-scheduling.texi:58
+msgid ""
+"@deffn {Scheme Procedure} call-with-new-thread thunk [handler]\n"
+"Call @code{thunk} in a new thread and with a new dynamic state,\n"
+"returning the new thread.  The procedure @var{thunk} is called via\n"
+"@code{with-continuation-barrier}."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-scheduling.texi:62
+msgid ""
+"When @var{handler} is specified, then @var{thunk} is called from\n"
+"within a @code{catch} with tag @code{#t} that has @var{handler} as its\n"
+"handler.  This catch is established inside the continuation barrier."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-scheduling.texi:66
+msgid ""
+"Once @var{thunk} or @var{handler} returns, the return value is made\n"
+"the @emph{exit value} of the thread and the thread is terminated.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-scheduling.texi:71
+msgid ""
+"@deftypefn {C Function} SCM scm_spawn_thread (scm_t_catch_body body, void *"
+"body_data, scm_t_catch_handler handler, void *handler_data)\n"
+"Call @var{body} in a new thread, passing it @var{body_data}, returning\n"
+"the new thread.  The function @var{body} is called via\n"
+"@code{scm_c_with_continuation_barrier}."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-scheduling.texi:76
+msgid ""
+"When @var{handler} is non-@code{NULL}, @var{body} is called via\n"
+"@code{scm_internal_catch} with tag @code{SCM_BOOL_T} that has\n"
+"@var{handler} and @var{handler_data} as the handler and its data.  This\n"
+"catch is established inside the continuation barrier."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-scheduling.texi:80
+msgid ""
+"Once @var{body} or @var{handler} returns, the return value is made the\n"
+"@emph{exit value} of the thread and the thread is terminated.\n"
+"@end deftypefn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-scheduling.texi:86
+msgid ""
+"@deffn {Scheme Procedure} thread? obj\n"
+"@deffnx {C Function} scm_thread_p (obj)\n"
+"Return @code{#t} ff @var{obj} is a thread; otherwise, return\n"
+"@code{#f}.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-scheduling.texi:94
+msgid ""
+"@deffn {Scheme Procedure} join-thread thread [timeout [timeoutval]]\n"
+"@deffnx {C Function} scm_join_thread (thread)\n"
+"@deffnx {C Function} scm_join_thread_timed (thread, timeout, timeoutval)\n"
+"Wait for @var{thread} to terminate and return its exit value.  Only\n"
+"threads that were created with @code{call-with-new-thread} or\n"
+"@code{scm_spawn_thread} can be joinable; attempting to join a foreign\n"
+"thread will raise an error."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-scheduling.texi:101
+msgid ""
+"When @var{timeout} is given, it specifies a point in time where the\n"
+"waiting should be aborted.  It can be either an integer as returned by\n"
+"@code{current-time} or a pair as returned by @code{gettimeofday}.  When\n"
+"the waiting is aborted, @var{timeoutval} is returned (if it is\n"
+"specified; @code{#f} is returned otherwise).\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-scheduling.texi:106
+msgid ""
+"@deffn {Scheme Procedure} thread-exited? thread\n"
+"@deffnx {C Function} scm_thread_exited_p (thread)\n"
+"Return @code{#t} if @var{thread} has exited, or @code{#f} otherwise.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-scheduling.texi:112
+msgid ""
+"@deffn {Scheme Procedure} yield\n"
+"@deffnx {C Function} scm_yield (thread)\n"
+"If one or more threads are waiting to execute, calling yield forces an\n"
+"immediate context switch to one of them. Otherwise, yield has no effect.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-scheduling.texi:120
+msgid ""
+"@deffn {Scheme Procedure} cancel-thread thread . values\n"
+"@deffnx {C Function} scm_cancel_thread (thread)\n"
+"Asynchronously interrupt @var{thread} and ask it to terminate.\n"
+"@code{dynamic-wind} post thunks will run, but throw handlers will not.\n"
+"If @var{thread} has already terminated or been signaled to terminate,\n"
+"this function is a no-op.  Calling @code{join-thread} on the thread will\n"
+"return the given @var{values}, if the cancel succeeded."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-scheduling.texi:125
+msgid ""
+"Under the hood, thread cancellation uses @code{system-async-mark} and\n"
+"@code{abort-to-prompt}.  @xref{Asyncs} for more on asynchronous\n"
+"interrupts.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-scheduling.texi:132
+msgid ""
+"@deffn macro make-thread proc arg @dots{}\n"
+"Apply @var{proc} to @var{arg} @dots{} in a new thread formed by\n"
+"@code{call-with-new-thread} using a default error handler that display\n"
+"the error to the current error port.  The @var{arg} @dots{}\n"
+"expressions are evaluated in the new thread.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-scheduling.texi:138
+msgid ""
+"@deffn macro begin-thread expr1 expr2 @dots{}\n"
+"Evaluate forms @var{expr1} @var{expr2} @dots{} in a new thread formed by\n"
+"@code{call-with-new-thread} using a default error handler that display\n"
+"the error to the current error port.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-scheduling.texi:142
+msgid ""
+"One often wants to limit the number of threads running to be\n"
+"proportional to the number of available processors.  These interfaces\n"
+"are therefore exported by (ice-9 threads) as well."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-scheduling.texi:148
+msgid ""
+"@deffn {Scheme Procedure} total-processor-count\n"
+"@deffnx {C Function} scm_total_processor_count ()\n"
+"Return the total number of processors of the machine, which\n"
+"is guaranteed to be at least 1.  A ``processor'' here is a\n"
+"thread execution unit, which can be either:"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-scheduling.texi:155
+msgid ""
+"@itemize\n"
+"@item an execution core in a (possibly multi-core) chip, in a\n"
+"  (possibly multi- chip) module, in a single computer, or\n"
+"@item a thread execution unit inside a core in the case of\n"
+"  @dfn{hyper-threaded} CPUs.\n"
+"@end itemize"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-scheduling.texi:158
+msgid ""
+"Which of the two definitions is used, is unspecified.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-scheduling.texi:166
+msgid ""
+"@deffn {Scheme Procedure} current-processor-count\n"
+"@deffnx {C Function} scm_current_processor_count ()\n"
+"Like @code{total-processor-count}, but return the number of\n"
+"processors available to the current process.  See\n"
+"@code{setaffinity} and @code{getaffinity} for more\n"
+"information.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-scheduling.texi:170
+msgid ""
+"@node Thread Local Variables\n"
+"@subsection Thread-Local Variables"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-scheduling.texi:173
+msgid ""
+"Sometimes you want to establish a variable binding that is only valid\n"
+"for a given thread: a ``thread-local variable''."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-scheduling.texi:182
+msgid ""
+"You would think that fluids or parameters would be Guile's answer for\n"
+"thread-local variables, since establishing a new fluid binding doesn't\n"
+"affect bindings in other threads.  @xref{Fluids and Dynamic States}, or\n"
+"@xref{Parameters}.  However, new threads inherit the fluid bindings that\n"
+"were in place in their creator threads.  In this way, a binding\n"
+"established using a fluid (or a parameter) in a thread can escape to\n"
+"other threads, which might not be what you want.  Or, it might escape\n"
+"via explicit reification via @code{current-dynamic-state}."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-scheduling.texi:190
+msgid ""
+"Of course, this dynamic scoping might be exactly what you want; that's\n"
+"why fluids and parameters work this way, and is what you want for for\n"
+"many common parameters such as the current input and output ports, the\n"
+"current locale conversion parameters, and the like.  Perhaps this is the\n"
+"case for most parameters, even.  If your use case for thread-local\n"
+"bindings comes from a desire to isolate a binding from its setting in\n"
+"unrelated threads, then fluids and parameters apply nicely."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-scheduling.texi:196
+msgid ""
+"On the other hand, if your use case is to prevent concurrent access to a\n"
+"value from multiple threads, then using vanilla fluids or parameters is\n"
+"not appropriate.  For this purpose, Guile has @dfn{thread-local fluids}.\n"
+"A fluid created with @code{make-thread-local-fluid} won't be captured by\n"
+"@code{current-dynamic-state} and won't be propagated to new threads."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-scheduling.texi:205
+msgid ""
+"@deffn {Scheme Procedure} make-thread-local-fluid [dflt]\n"
+"@deffnx {C Function} scm_make_thread_local_fluid (dflt)\n"
+"Return a newly created fluid, whose initial value is @var{dflt}, or\n"
+"@code{#f} if @var{dflt} is not given.  Unlike fluids made with\n"
+"@code{make-fluid}, thread local fluids are not captured by\n"
+"@code{make-dynamic-state}.  Similarly, a newly spawned child thread does\n"
+"not inherit thread-local fluid values from the parent thread.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-scheduling.texi:211
+msgid ""
+"@deffn {Scheme Procedure} fluid-thread-local? fluid\n"
+"@deffnx {C Function} scm_fluid_thread_local_p (fluid)\n"
+"Return @code{#t} if the fluid @var{fluid} is is thread-local, or\n"
+"@code{#f} otherwise.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-scheduling.texi:213
+msgid "For example:"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-scheduling.texi:216
+msgid ""
+"@example\n"
+"(define %thread-local (make-thread-local-fluid))"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-scheduling.texi:220
+msgid ""
+"(with-fluids ((%thread-local (compute-data)))\n"
+"  ... (fluid-ref %thread-local) ...)\n"
+"@end example"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-scheduling.texi:223
+msgid ""
+"You can also make a thread-local parameter out of a thread-local fluid\n"
+"using the normal @code{fluid->parameter}:"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-scheduling.texi:226
+msgid ""
+"@example\n"
+"(define param (fluid->parameter (make-thread-local-fluid)))"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-scheduling.texi:230
+msgid ""
+"(parameterize ((param (compute-data)))\n"
+"  ... (param) ...)\n"
+"@end example"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-scheduling.texi:234
+msgid ""
+"@node Asyncs\n"
+"@subsection Asynchronous Interrupts"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-scheduling.texi:238
+msgid ""
+"@cindex asyncs\n"
+"@cindex asynchronous interrupts\n"
+"@cindex interrupts"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-scheduling.texi:243
+msgid ""
+"Every Guile thread can be interrupted.  Threads running Guile code will\n"
+"periodically check if there are pending interrupts and run them if\n"
+"necessary.  To interrupt a thread, call @code{system-async-mark} on that\n"
+"thread."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-scheduling.texi:253
+msgid ""
+"@deffn {Scheme Procedure} system-async-mark proc [thread]\n"
+"@deffnx {C Function} scm_system_async_mark (proc)\n"
+"@deffnx {C Function} scm_system_async_mark_for_thread (proc, thread)\n"
+"Enqueue @var{proc} (a procedure with zero arguments) for future\n"
+"execution in @var{thread}.  When @var{proc} has already been enqueued\n"
+"for @var{thread} but has not been executed yet, this call has no effect.\n"
+"When @var{thread} is omitted, the thread that called\n"
+"@code{system-async-mark} is used.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-scheduling.texi:258
+msgid ""
+"Note that @code{scm_system_async_mark_for_thread} is not\n"
+"``async-signal-safe'' and so cannot be called from a C signal handler.\n"
+"(Indeed in general, @code{libguile} functions are not safe to call from\n"
+"C signal handlers.)"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-scheduling.texi:268
+msgid ""
+"Though an interrupt procedure can have any side effect permitted to\n"
+"Guile code, asynchronous interrupts are generally used either for\n"
+"profiling or for prematurely cancelling a computation.  The former case\n"
+"is mostly transparent to the program being run, by design, but the\n"
+"latter case can introduce bugs.  Like finalizers (@pxref{Foreign Object\n"
+"Memory Management}), asynchronous interrupts introduce concurrency in a\n"
+"program.  An asyncronous interrupt can run in the middle of some\n"
+"mutex-protected operation, for example, and potentially corrupt the\n"
+"program's state."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-scheduling.texi:275
+msgid ""
+"If some bit of Guile code needs to temporarily inhibit interrupts, it\n"
+"can use @code{call-with-blocked-asyncs}.  This function works by\n"
+"temporarily increasing the @emph{async blocking level} of the current\n"
+"thread while a given procedure is running.  The blocking level starts\n"
+"out at zero, and whenever a safe point is reached, a blocking level\n"
+"greater than zero will prevent the execution of queued asyncs."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-scheduling.texi:280
+msgid ""
+"Analogously, the procedure @code{call-with-unblocked-asyncs} will\n"
+"temporarily decrease the blocking level of the current thread.  You\n"
+"can use it when you want to disable asyncs by default and only allow\n"
+"them temporarily."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-scheduling.texi:286
+msgid ""
+"In addition to the C versions of @code{call-with-blocked-asyncs} and\n"
+"@code{call-with-unblocked-asyncs}, C code can use\n"
+"@code{scm_dynwind_block_asyncs} and @code{scm_dynwind_unblock_asyncs}\n"
+"inside a @dfn{dynamic context} (@pxref{Dynamic Wind}) to block or\n"
+"unblock asyncs temporarily."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-scheduling.texi:294
+msgid ""
+"@deffn {Scheme Procedure} call-with-blocked-asyncs proc\n"
+"@deffnx {C Function} scm_call_with_blocked_asyncs (proc)\n"
+"Call @var{proc} and block the execution of asyncs by one level for the\n"
+"current thread while it is running.  Return the value returned by\n"
+"@var{proc}.  For the first two variants, call @var{proc} with no\n"
+"arguments; for the third, call it with @var{data}.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-scheduling.texi:298
+msgid ""
+"@deftypefn {C Function} {void *} scm_c_call_with_blocked_asyncs (void * "
+"(*proc) (void *data), void *data)\n"
+"The same but with a C function @var{proc} instead of a Scheme thunk.\n"
+"@end deftypefn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-scheduling.texi:306
+msgid ""
+"@deffn {Scheme Procedure} call-with-unblocked-asyncs proc\n"
+"@deffnx {C Function} scm_call_with_unblocked_asyncs (proc)\n"
+"Call @var{proc} and unblock the execution of asyncs by one level for the\n"
+"current thread while it is running.  Return the value returned by\n"
+"@var{proc}.  For the first two variants, call @var{proc} with no\n"
+"arguments; for the third, call it with @var{data}.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-scheduling.texi:310
+msgid ""
+"@deftypefn {C Function} {void *} scm_c_call_with_unblocked_asyncs (void "
+"*(*proc) (void *data), void *data)\n"
+"The same but with a C function @var{proc} instead of a Scheme thunk.\n"
+"@end deftypefn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-scheduling.texi:317
+msgid ""
+"@deftypefn {C Function} void scm_dynwind_block_asyncs ()\n"
+"During the current dynwind context, increase the blocking of asyncs by\n"
+"one level.  This function must be used inside a pair of calls to\n"
+"@code{scm_dynwind_begin} and @code{scm_dynwind_end} (@pxref{Dynamic\n"
+"Wind}).\n"
+"@end deftypefn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-scheduling.texi:324
+msgid ""
+"@deftypefn {C Function} void scm_dynwind_unblock_asyncs ()\n"
+"During the current dynwind context, decrease the blocking of asyncs by\n"
+"one level.  This function must be used inside a pair of calls to\n"
+"@code{scm_dynwind_begin} and @code{scm_dynwind_end} (@pxref{Dynamic\n"
+"Wind}).\n"
+"@end deftypefn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-scheduling.texi:329
+msgid ""
+"Sometimes you want to interrupt a thread that might be waiting for\n"
+"something to happen, for example on a file descriptor or a condition\n"
+"variable.  In that case you can inform Guile of how to interrupt that\n"
+"wait using the following procedures:"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-scheduling.texi:337
+msgid ""
+"@deftypefn {C Function} int scm_c_prepare_to_wait_on_fd (int fd)\n"
+"Inform Guile that the current thread is about to sleep, and that if an\n"
+"asynchronous interrupt is signalled on this thread, Guile should wake up\n"
+"the thread by writing a zero byte to @var{fd}.  Returns zero if the\n"
+"prepare succeeded, or nonzero if the thread already has a pending async\n"
+"and that it should avoid waiting.\n"
+"@end deftypefn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-scheduling.texi:347
+msgid ""
+"@deftypefn {C Function} int scm_c_prepare_to_wait_on_cond ("
+"scm_i_pthread_mutex_t *mutex, scm_i_pthread_cond_t *cond)\n"
+"Inform Guile that the current thread is about to sleep, and that if an\n"
+"asynchronous interrupt is signalled on this thread, Guile should wake up\n"
+"the thread by acquiring @var{mutex} and signalling @var{cond}.  The\n"
+"caller must already hold @var{mutex} and only drop it as part of the\n"
+"@code{pthread_cond_wait} call.  Returns zero if the prepare succeeded,\n"
+"or nonzero if the thread already has a pending async and that it should\n"
+"avoid waiting.\n"
+"@end deftypefn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-scheduling.texi:353
+msgid ""
+"@deftypefn {C Function} void scm_c_wait_finished (void)\n"
+"Inform Guile that the current thread has finished waiting, and that\n"
+"asynchronous interrupts no longer need any special wakeup action; the\n"
+"current thread will periodically poll its internal queue instead.\n"
+"@end deftypefn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-scheduling.texi:356
+msgid ""
+"Guile's own interface to @code{sleep}, @code{wait-condition-variable},\n"
+"@code{select}, and so on all call the above routines as appropriate."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-scheduling.texi:363
+msgid ""
+"Finally, note that threads can also be interrupted via POSIX signals.\n"
+"@xref{Signals}.  As an implementation detail, signal handlers will\n"
+"effectively call @code{system-async-mark} in a signal-safe way,\n"
+"eventually running the signal handler using the same async mechanism.\n"
+"In this way you can temporarily inhibit signal handlers from running\n"
+"using the above interfaces."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-scheduling.texi:367
+msgid ""
+"@node Atomics\n"
+"@subsection Atomics"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-scheduling.texi:375
+msgid ""
+"When accessing data in parallel from multiple threads, updates made by\n"
+"one thread are not generally guaranteed to be visible by another thread.\n"
+"It could be that your hardware requires special instructions to be\n"
+"emitted to propagate a change from one CPU core to another.  Or, it\n"
+"could be that your hardware updates values with a sequence of\n"
+"instructions, and a parallel thread could see a value that is in the\n"
+"process of being updated but not fully updated."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-scheduling.texi:380
+msgid ""
+"Atomic references solve this problem.  Atomics are a standard, primitive\n"
+"facility to allow for concurrent access and update of mutable variables\n"
+"from multiple threads with guaranteed forward-progress and well-defined\n"
+"intermediate states."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-scheduling.texi:387
+msgid ""
+"Atomic references serve not only as a hardware memory barrier but also\n"
+"as a compiler barrier.  Normally a compiler might choose to reorder or\n"
+"elide certain memory accesses due to optimizations like common\n"
+"subexpression elimination.  Atomic accesses however will not be\n"
+"reordered relative to each other, and normal memory accesses will not be\n"
+"reordered across atomic accesses."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-scheduling.texi:393
+msgid ""
+"As an implementation detail, currently all atomic accesses and updates\n"
+"use the sequential consistency memory model from C11.  We may relax this\n"
+"in the future to the acquire/release semantics, which still issues a\n"
+"memory barrier so that non-atomic updates are not reordered across\n"
+"atomic accesses or updates."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-scheduling.texi:395
+msgid ""
+"To use Guile's atomic operations, load the @code{(ice-9 atomic)} module:"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-scheduling.texi:399
+msgid ""
+"@example\n"
+"(use-modules (ice-9 atomic))\n"
+"@end example"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-scheduling.texi:403
+msgid ""
+"@deffn {Scheme Procedure} make-atomic-box init\n"
+"Return an atomic box initialized to value @var{init}.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-scheduling.texi:408
+msgid ""
+"@deffn {Scheme Procedure} atomic-box? obj\n"
+"Return @code{#t} if @var{obj} is an atomic-box object, else\n"
+"return @code{#f}.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-scheduling.texi:412
+msgid ""
+"@deffn {Scheme Procedure} atomic-box-ref box\n"
+"Fetch the value stored in the atomic box @var{box} and return it.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-scheduling.texi:416
+msgid ""
+"@deffn {Scheme Procedure} atomic-box-set! box  val\n"
+"Store @var{val} into the atomic box @var{box}.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-scheduling.texi:421
+msgid ""
+"@deffn {Scheme Procedure} atomic-box-swap! box val\n"
+"Store @var{val} into the atomic box @var{box}, and return the value that\n"
+"was previously stored in the box.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-scheduling.texi:429
+msgid ""
+"@deffn {Scheme Procedure} atomic-box-compare-and-swap! box expected desired\n"
+"If the value of the atomic box @var{box} is the same as, @var{expected}\n"
+"(in the sense of @code{eq?}), replace the contents of the box with\n"
+"@var{desired}.  Otherwise does not update the box.  Returns the previous\n"
+"value of the box in either case, so you can know if the swap worked by\n"
+"checking if the return value is @code{eq?} to @var{expected}.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-scheduling.texi:435
+msgid ""
+"@node Mutexes and Condition Variables\n"
+"@subsection Mutexes and Condition Variables\n"
+"@cindex mutex\n"
+"@cindex condition variable"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-scheduling.texi:443
+msgid ""
+"Mutexes are low-level primitives used to coordinate concurrent access to\n"
+"mutable data.  Short for ``mutual exclusion'', the name ``mutex''\n"
+"indicates that only one thread at a time can acquire access to data that\n"
+"is protected by a mutex -- threads are excluded from accessing data at\n"
+"the same time.  If one thread has locked a mutex, then another thread\n"
+"attempting to lock that same mutex will wait until the first thread is\n"
+"done."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-scheduling.texi:455
+msgid ""
+"Mutexes can be used to build robust multi-threaded programs that take\n"
+"advantage of multiple cores.  However, they provide very low-level\n"
+"functionality and are somewhat dangerous; usually you end up wanting to\n"
+"acquire multiple mutexes at the same time to perform a multi-object\n"
+"access, but this can easily lead to deadlocks if the program is not\n"
+"carefully written.  For example, if objects A and B are protected by\n"
+"associated mutexes M and N, respectively, then to access both of them\n"
+"then you need to acquire both mutexes.  But what if one thread acquires\n"
+"M first and then N, at the same time that another thread acquires N them\n"
+"M?  You can easily end up in a situation where one is waiting for the\n"
+"other."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-scheduling.texi:460
+msgid ""
+"There's no easy way around this problem on the language level.  A\n"
+"function A that uses mutexes does not necessarily compose nicely with a\n"
+"function B that uses mutexes.  For this reason we suggest using atomic\n"
+"variables when you can (@pxref{Atomics}), as they do not have this problem."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-scheduling.texi:469
+msgid ""
+"Still, if you as a programmer are responsible for a whole system, then\n"
+"you can use mutexes as a primitive to provide safe concurrent\n"
+"abstractions to your users.  (For example, given all locks in a system,\n"
+"if you establish an order such that M is consistently acquired before N,\n"
+"you can avoid the ``deadly-embrace'' deadlock described above.  The\n"
+"problem is enumerating all mutexes and establishing this order from a\n"
+"system perspective.)  Guile gives you the low-level facilities to build\n"
+"such systems."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-scheduling.texi:478
+msgid ""
+"In Guile there are additional considerations beyond the usual ones in\n"
+"other programming languages: non-local control flow and asynchronous\n"
+"interrupts.  What happens if you hold a mutex, but somehow you cause an\n"
+"exception to be thrown?  There is no one right answer.  You might want\n"
+"to keep the mutex locked to prevent any other code from ever entering\n"
+"that critical section again.  Or, your critical section might be fine if\n"
+"you unlock the mutex ``on the way out'', via a catch handler or\n"
+"@code{dynamic-wind}.  @xref{Catch}, and @xref{Dynamic Wind}."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-scheduling.texi:485
+msgid ""
+"But if you arrange to unlock the mutex when leaving a dynamic extent via\n"
+"@code{dynamic-wind}, what to do if control re-enters that dynamic extent\n"
+"via a continuation invocation?  Surely re-entering the dynamic extent\n"
+"without the lock is a bad idea, so there are two options on the table:\n"
+"either prevent re-entry via @code{with-continuation-barrier} or similar,\n"
+"or reacquire the lock in the entry thunk of a @code{dynamic-wind}."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-scheduling.texi:492
+msgid ""
+"You might think that because you don't use continuations, that you don't\n"
+"have to think about this, and you might be right.  If you control the\n"
+"whole system, you can reason about continuation use globally.  Or, if\n"
+"you know all code that can be called in a dynamic extent, and none of\n"
+"that code can call continuations, then you don't have to worry about\n"
+"re-entry, and you might not have to worry about early exit either."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-scheduling.texi:502
+msgid ""
+"However, do consider the possibility of asynchronous interrupts\n"
+"(@pxref{Asyncs}).  If the user interrupts your code interactively, that\n"
+"can cause an exception; or your thread might be cancelled, which does\n"
+"the same; or the user could be running your code under some pre-emptive\n"
+"system that periodically causes lightweight task switching.  (Guile does\n"
+"not currently include such a system, but it's possible to implement as a\n"
+"library.)  Probably you also want to defer asynchronous interrupt\n"
+"processing while you hold the mutex, and probably that also means that\n"
+"you should not hold the mutex for very long."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-scheduling.texi:509
+msgid ""
+"All of these additional Guile-specific considerations mean that from a\n"
+"system perspective, you would do well to avoid these hazards if you can\n"
+"by not requiring mutexes.  Instead, work with immutable data that can be\n"
+"shared between threads without hazards, or use persistent data\n"
+"structures with atomic updates based on the atomic variable library\n"
+"(@pxref{Atomics})."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-scheduling.texi:512
+msgid ""
+"There are three types of mutexes in Guile: ``standard'', ``recursive'',\n"
+"and ``unowned''."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-scheduling.texi:518
+msgid ""
+"Calling @code{make-mutex} with no arguments makes a standard mutex.  A\n"
+"standard mutex can only be locked once.  If you try to lock it again\n"
+"from the thread that locked it to begin with (the \"owner\" thread), it\n"
+"throws an error.  It can only be unlocked from the thread that locked it\n"
+"in the first place."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-scheduling.texi:524
+msgid ""
+"Calling @code{make-mutex} with the symbol @code{recursive} as the\n"
+"argument, or calling @code{make-recursive-mutex}, will give you a\n"
+"recursive mutex.  A recursive mutex can be locked multiple times by its\n"
+"owner.  It then has to be unlocked the corresponding number of times,\n"
+"and like standard mutexes can only be unlocked by the owner thread."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-scheduling.texi:533
+msgid ""
+"Finally, calling @code{make-mutex} with the symbol\n"
+"@code{allow-external-unlock} creates an unowned mutex.  An unowned mutex\n"
+"is like a standard mutex, except that it can be unlocked by any thread.\n"
+"A corollary of this behavior is that a thread's attempt to lock a mutex\n"
+"that it already owns will block instead of signalling an error, as it\n"
+"could be that some other thread unlocks the mutex, allowing the owner\n"
+"thread to proceed.  This kind of mutex is a bit strange and is here for\n"
+"use by SRFI-18."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-scheduling.texi:535
+msgid ""
+"The mutex procedures in Guile can operate on all three kinds of mutexes."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-scheduling.texi:537
+msgctxt "/home/bear/work/guile/doc/guile/en/api-scheduling.texi:537"
+msgid "To use these facilities, load the @code{(ice-9 threads)} module."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-scheduling.texi:541
+msgctxt "/home/bear/work/guile/doc/guile/en/api-scheduling.texi:541"
+msgid ""
+"@example\n"
+"(use-modules (ice-9 threads))\n"
+"@end example"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-scheduling.texi:552
+msgid ""
+"@sp 1\n"
+"@deffn {Scheme Procedure} make-mutex [kind]\n"
+"@deffnx {C Function} scm_make_mutex ()\n"
+"@deffnx {C Function} scm_make_mutex_with_kind (SCM kind)\n"
+"Return a new mutex.  It will be a standard non-recursive mutex, unless\n"
+"the @code{recursive} symbol is passed as the optional @var{kind}\n"
+"argument, in which case it will be recursive.  It's also possible to\n"
+"pass @code{unowned} for semantics tailored to SRFI-18's use case; see\n"
+"above for details.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-scheduling.texi:558
+msgid ""
+"@deffn {Scheme Procedure} mutex? obj\n"
+"@deffnx {C Function} scm_mutex_p (obj)\n"
+"Return @code{#t} if @var{obj} is a mutex; otherwise, return\n"
+"@code{#f}.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-scheduling.texi:565
+msgid ""
+"@deffn {Scheme Procedure} make-recursive-mutex\n"
+"@deffnx {C Function} scm_make_recursive_mutex ()\n"
+"Create a new recursive mutex.  It is initially unlocked.  Calling this\n"
+"function is equivalent to calling @code{make-mutex} with the\n"
+"@code{recursive} kind.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-scheduling.texi:571
+msgid ""
+"@deffn {Scheme Procedure} lock-mutex mutex [timeout]\n"
+"@deffnx {C Function} scm_lock_mutex (mutex)\n"
+"@deffnx {C Function} scm_timed_lock_mutex (mutex, timeout)\n"
+"Lock @var{mutex} and return @code{#t}.  If the mutex is already locked,\n"
+"then block and return only when @var{mutex} has been acquired."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-scheduling.texi:576
+msgid ""
+"When @var{timeout} is given, it specifies a point in time where the\n"
+"waiting should be aborted.  It can be either an integer as returned\n"
+"by @code{current-time} or a pair as returned by @code{gettimeofday}.\n"
+"When the waiting is aborted, @code{#f} is returned."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-scheduling.texi:579
+msgid ""
+"For standard mutexes (@code{make-mutex}), an error is signalled if the\n"
+"thread has itself already locked @var{mutex}."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-scheduling.texi:584
+msgid ""
+"For a recursive mutex (@code{make-recursive-mutex}), if the thread has\n"
+"itself already locked @var{mutex}, then a further @code{lock-mutex}\n"
+"call increments the lock count.  An additional @code{unlock-mutex}\n"
+"will be required to finally release."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-scheduling.texi:589
+msgid ""
+"When an asynchronous interrupt (@pxref{Asyncs}) is scheduled for a\n"
+"thread blocked in @code{lock-mutex}, Guile will interrupt the wait, run\n"
+"the interrupts, and then resume the wait.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-scheduling.texi:594
+msgid ""
+"@deftypefn {C Function} void scm_dynwind_lock_mutex (SCM mutex)\n"
+"Arrange for @var{mutex} to be locked whenever the current dynwind\n"
+"context is entered and to be unlocked when it is exited.\n"
+"@end deftypefn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-scheduling.texi:601
+msgid ""
+"@deffn {Scheme Procedure} try-mutex mx\n"
+"@deffnx {C Function} scm_try_mutex (mx)\n"
+"Try to lock @var{mutex} and return @code{#t} if successful, or @code{#f}\n"
+"otherwise.  This is like calling @code{lock-mutex} with an expired\n"
+"timeout.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-scheduling.texi:605
+msgid ""
+"@deffn {Scheme Procedure} unlock-mutex mutex\n"
+"@deffnx {C Function} scm_unlock_mutex (mutex)\n"
+"Unlock @var{mutex}.  An error is signalled if @var{mutex} is not locked."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-scheduling.texi:610
+msgid ""
+"``Standard'' and ``recursive'' mutexes can only be unlocked by the\n"
+"thread that locked them; Guile detects this situation and signals an\n"
+"error.  ``Unowned'' mutexes can be unlocked by any thread.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-scheduling.texi:617
+msgid ""
+"@deffn {Scheme Procedure} mutex-owner mutex\n"
+"@deffnx {C Function} scm_mutex_owner (mutex)\n"
+"Return the current owner of @var{mutex}, in the form of a thread or\n"
+"@code{#f} (indicating no owner).  Note that a mutex may be unowned but\n"
+"still locked.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-scheduling.texi:625
+msgid ""
+"@deffn {Scheme Procedure} mutex-level mutex\n"
+"@deffnx {C Function} scm_mutex_level (mutex)\n"
+"Return the current lock level of @var{mutex}.  If @var{mutex} is\n"
+"currently unlocked, this value will be 0; otherwise, it will be the\n"
+"number of times @var{mutex} has been recursively locked by its current\n"
+"owner.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-scheduling.texi:631
+msgid ""
+"@deffn {Scheme Procedure} mutex-locked? mutex\n"
+"@deffnx {C Function} scm_mutex_locked_p (mutex)\n"
+"Return @code{#t} if @var{mutex} is locked, regardless of ownership;\n"
+"otherwise, return @code{#f}.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-scheduling.texi:636
+msgid ""
+"@deffn {Scheme Procedure} make-condition-variable\n"
+"@deffnx {C Function} scm_make_condition_variable ()\n"
+"Return a new condition variable.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-scheduling.texi:642
+msgid ""
+"@deffn {Scheme Procedure} condition-variable? obj\n"
+"@deffnx {C Function} scm_condition_variable_p (obj)\n"
+"Return @code{#t} if @var{obj} is a condition variable; otherwise,\n"
+"return @code{#f}.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-scheduling.texi:654
+msgid ""
+"@deffn {Scheme Procedure} wait-condition-variable condvar mutex [time]\n"
+"@deffnx {C Function} scm_wait_condition_variable (condvar, mutex, time)\n"
+"Wait until @var{condvar} has been signalled.  While waiting,\n"
+"@var{mutex} is atomically unlocked (as with @code{unlock-mutex}) and\n"
+"is locked again when this function returns.  When @var{time} is given,\n"
+"it specifies a point in time where the waiting should be aborted.  It\n"
+"can be either a integer as returned by @code{current-time} or a pair\n"
+"as returned by @code{gettimeofday}.  When the waiting is aborted,\n"
+"@code{#f} is returned.  When the condition variable has in fact been\n"
+"signalled, @code{#t} is returned.  The mutex is re-locked in any case\n"
+"before @code{wait-condition-variable} returns."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-scheduling.texi:661
+msgid ""
+"When an async is activated for a thread that is blocked in a call to\n"
+"@code{wait-condition-variable}, the waiting is interrupted, the mutex is\n"
+"locked, and the async is executed.  When the async returns, the mutex is\n"
+"unlocked again and the waiting is resumed.  When the thread block while\n"
+"re-acquiring the mutex, execution of asyncs is blocked.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-scheduling.texi:666
+msgid ""
+"@deffn {Scheme Procedure} signal-condition-variable condvar\n"
+"@deffnx {C Function} scm_signal_condition_variable (condvar)\n"
+"Wake up one thread that is waiting for @var{condvar}.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-scheduling.texi:671
+msgid ""
+"@deffn {Scheme Procedure} broadcast-condition-variable condvar\n"
+"@deffnx {C Function} scm_broadcast_condition_variable (condvar)\n"
+"Wake up all threads that are waiting for @var{condvar}.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-scheduling.texi:674
+msgid ""
+"Guile also includes some higher-level abstractions for working with\n"
+"mutexes."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-scheduling.texi:679
+msgid ""
+"@deffn macro with-mutex mutex body1 body2 @dots{}\n"
+"Lock @var{mutex}, evaluate the body @var{body1} @var{body2} @dots{},\n"
+"then unlock @var{mutex}.  The return value is that returned by the last\n"
+"body form."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-scheduling.texi:685
+msgid ""
+"The lock, body and unlock form the branches of a @code{dynamic-wind}\n"
+"(@pxref{Dynamic Wind}), so @var{mutex} is automatically unlocked if an\n"
+"error or new continuation exits the body, and is re-locked if\n"
+"the body is re-entered by a captured continuation.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-scheduling.texi:690
+msgid ""
+"@deffn macro monitor body1 body2 @dots{}\n"
+"Evaluate the body form @var{body1} @var{body2} @dots{} with a mutex\n"
+"locked so only one thread can execute that code at any one time.  The\n"
+"return value is the return from the last body form."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-scheduling.texi:695
+msgid ""
+"Each @code{monitor} form has its own private mutex and the locking and\n"
+"evaluation is as per @code{with-mutex} above.  A standard mutex\n"
+"(@code{make-mutex}) is used, which means the body must not\n"
+"recursively re-enter the @code{monitor} form."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-scheduling.texi:700
+msgid ""
+"The term ``monitor'' comes from operating system theory, where it\n"
+"means a particular bit of code managing access to some resource and\n"
+"which only ever executes on behalf of one process at any one time.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-scheduling.texi:704
+msgid ""
+"@node Blocking\n"
+"@subsection Blocking in Guile Mode"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-scheduling.texi:712
+msgid ""
+"Up to Guile version 1.8, a thread blocked in guile mode would prevent\n"
+"the garbage collector from running.  Thus threads had to explicitly\n"
+"leave guile mode with @code{scm_without_guile ()} before making a\n"
+"potentially blocking call such as a mutex lock, a @code{select ()}\n"
+"system call, etc.  The following functions could be used to temporarily\n"
+"leave guile mode or to perform some common blocking operations in a\n"
+"supported way."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-scheduling.texi:718
+msgid ""
+"Starting from Guile 2.0, blocked threads no longer hinder garbage\n"
+"collection.  Thus, the functions below are not needed anymore.  They can\n"
+"still be used to inform the GC that a thread is about to block, giving\n"
+"it a (small) optimization opportunity for ``stop the world'' garbage\n"
+"collections, should they occur while the thread is blocked."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-scheduling.texi:722
+msgid ""
+"@deftypefn {C Function} {void *} scm_without_guile (void *(*func) (void *), "
+"void *data)\n"
+"Leave guile mode, call @var{func} on @var{data}, enter guile mode and\n"
+"return the result of calling @var{func}."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-scheduling.texi:728
+msgid ""
+"While a thread has left guile mode, it must not call any libguile\n"
+"functions except @code{scm_with_guile} or @code{scm_without_guile} and\n"
+"must not use any libguile macros.  Also, local variables of type\n"
+"@code{SCM} that are allocated while not in guile mode are not\n"
+"protected from the garbage collector."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-scheduling.texi:734
+msgid ""
+"When used from non-guile mode, calling @code{scm_without_guile} is\n"
+"still allowed: it simply calls @var{func}.  In that way, you can leave\n"
+"guile mode without having to know whether the current thread is in\n"
+"guile mode or not.\n"
+"@end deftypefn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-scheduling.texi:739
+msgid ""
+"@deftypefn {C Function} int scm_pthread_mutex_lock (pthread_mutex_t *mutex)\n"
+"Like @code{pthread_mutex_lock}, but leaves guile mode while waiting for\n"
+"the mutex.\n"
+"@end deftypefn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-scheduling.texi:745
+msgid ""
+"@deftypefn  {C Function} int scm_pthread_cond_wait (pthread_cond_t *cond, "
+"pthread_mutex_t *mutex)\n"
+"@deftypefnx {C Function} int scm_pthread_cond_timedwait (pthread_cond_t *"
+"cond, pthread_mutex_t *mutex, struct timespec *abstime)\n"
+"Like @code{pthread_cond_wait} and @code{pthread_cond_timedwait}, but\n"
+"leaves guile mode while waiting for the condition variable.\n"
+"@end deftypefn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-scheduling.texi:751
+msgid ""
+"@deftypefn {C Function} int scm_std_select (int nfds, fd_set *readfds, "
+"fd_set *writefds, fd_set *exceptfds, struct timeval *timeout)\n"
+"Like @code{select} but leaves guile mode while waiting.  Also, the\n"
+"delivery of an async causes this function to be interrupted with error\n"
+"code @code{EINTR}.\n"
+"@end deftypefn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-scheduling.texi:756
+msgid ""
+"@deftypefn {C Function} {unsigned int} scm_std_sleep ({unsigned int} seconds)"
+"\n"
+"Like @code{sleep}, but leaves guile mode while sleeping.  Also, the\n"
+"delivery of an async causes this function to be interrupted.\n"
+"@end deftypefn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-scheduling.texi:761
+msgid ""
+"@deftypefn {C Function} {unsigned long} scm_std_usleep ({unsigned long} "
+"usecs)\n"
+"Like @code{usleep}, but leaves guile mode while sleeping.  Also, the\n"
+"delivery of an async causes this function to be interrupted.\n"
+"@end deftypefn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-scheduling.texi:768
+msgid ""
+"@node Futures\n"
+"@subsection Futures\n"
+"@cindex futures\n"
+"@cindex fine-grain parallelism\n"
+"@cindex parallelism"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-scheduling.texi:775
+msgid ""
+"The @code{(ice-9 futures)} module provides @dfn{futures}, a construct\n"
+"for fine-grain parallelism.  A future is a wrapper around an expression\n"
+"whose computation may occur in parallel with the code of the calling\n"
+"thread, and possibly in parallel with other futures.  Like promises,\n"
+"futures are essentially proxies that can be queried to obtain the value\n"
+"of the enclosed expression:"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-scheduling.texi:780
+msgid ""
+"@lisp\n"
+"(touch (future (+ 2 3)))\n"
+"@result{} 5\n"
+"@end lisp"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-scheduling.texi:785
+msgid ""
+"However, unlike promises, the expression associated with a future may be\n"
+"evaluated on another CPU core, should one be available.  This supports\n"
+"@dfn{fine-grain parallelism}, because even relatively small computations\n"
+"can be embedded in futures.  Consider this sequential code:"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-scheduling.texi:791
+msgid ""
+"@lisp\n"
+"(define (find-prime lst1 lst2)\n"
+"  (or (find prime? lst1)\n"
+"      (find prime? lst2)))\n"
+"@end lisp"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-scheduling.texi:796
+msgid ""
+"The two arms of @code{or} are potentially computation-intensive.  They\n"
+"are independent of one another, yet, they are evaluated sequentially\n"
+"when the first one returns @code{#f}.  Using futures, one could rewrite\n"
+"it like this:"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-scheduling.texi:803
+msgid ""
+"@lisp\n"
+"(define (find-prime lst1 lst2)\n"
+"  (let ((f (future (find prime? lst2))))\n"
+"    (or (find prime? lst1)\n"
+"        (touch f))))\n"
+"@end lisp"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-scheduling.texi:808
+msgid ""
+"This preserves the semantics of @code{find-prime}.  On a multi-core\n"
+"machine, though, the computation of @code{(find prime? lst2)} may be\n"
+"done in parallel with that of the other @code{find} call, which can\n"
+"reduce the execution time of @code{find-prime}."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-scheduling.texi:813
+msgid ""
+"Futures may be nested: a future can itself spawn and then @code{touch}\n"
+"other futures, leading to a directed acyclic graph of futures.  Using\n"
+"this facility, a parallel @code{map} procedure can be defined along\n"
+"these lines:"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-scheduling.texi:816
+msgid ""
+"@lisp\n"
+"(use-modules (ice-9 futures) (ice-9 match))"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-scheduling.texi:826
+msgid ""
+"(define (par-map proc lst)\n"
+"  (match lst\n"
+"    (()\n"
+"     '())\n"
+"    ((head tail ...)\n"
+"     (let ((tail (future (par-map proc tail)))\n"
+"           (head (proc head)))\n"
+"       (cons head (touch tail))))))\n"
+"@end lisp"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-scheduling.texi:831
+msgid ""
+"Note that futures are intended for the evaluation of purely functional\n"
+"expressions.  Expressions that have side-effects or rely on I/O may\n"
+"require additional care, such as explicit synchronization\n"
+"(@pxref{Mutexes and Condition Variables})."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-scheduling.texi:839
+msgid ""
+"Guile's futures are implemented on top of POSIX threads\n"
+"(@pxref{Threads}).  Internally, a fixed-size pool of threads is used to\n"
+"evaluate futures, such that offloading the evaluation of an expression\n"
+"to another thread doesn't incur thread creation costs.  By default, the\n"
+"pool contains one thread per available CPU core, minus one, to account\n"
+"for the main thread.  The number of available CPU cores is determined\n"
+"using @code{current-processor-count} (@pxref{Processes})."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-scheduling.texi:848
+msgid ""
+"When a thread touches a future that has not completed yet, it processes\n"
+"any pending future while waiting for it to complete, or just waits if\n"
+"there are no pending futures.  When @code{touch} is called from within a\n"
+"future, the execution of the calling future is suspended, allowing its\n"
+"host thread to process other futures, and resumed when the touched\n"
+"future has completed.  This suspend/resume is achieved by capturing the\n"
+"calling future's continuation, and later reinstating it (@pxref{Prompts,\n"
+"delimited continuations})."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-scheduling.texi:851
+msgid ""
+"@deffn {Scheme Syntax} future exp\n"
+"Return a future for expression @var{exp}.  This is equivalent to:"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-scheduling.texi:856
+msgid ""
+"@lisp\n"
+"(make-future (lambda () exp))\n"
+"@end lisp\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-scheduling.texi:859
+msgid ""
+"@deffn {Scheme Procedure} make-future thunk\n"
+"Return a future for @var{thunk}, a zero-argument procedure."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-scheduling.texi:864
+msgid ""
+"This procedure returns immediately.  Execution of @var{thunk} may begin\n"
+"in parallel with the calling thread's computations, if idle CPU cores\n"
+"are available, or it may start when @code{touch} is invoked on the\n"
+"returned future."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-scheduling.texi:868
+msgid ""
+"If the execution of @var{thunk} throws an exception, that exception will\n"
+"be re-thrown when @code{touch} is invoked on the returned future.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-scheduling.texi:872
+msgid ""
+"@deffn {Scheme Procedure} future? obj\n"
+"Return @code{#t} if @var{obj} is a future.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-scheduling.texi:875
+msgid ""
+"@deffn {Scheme Procedure} touch f\n"
+"Return the result of the expression embedded in future @var{f}."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-scheduling.texi:881
+msgid ""
+"If the result was already computed in parallel, @code{touch} returns\n"
+"instantaneously.  Otherwise, it waits for the computation to complete,\n"
+"if it already started, or initiates it.  In the former case, the calling\n"
+"thread may process other futures in the meantime.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-scheduling.texi:886
+msgid ""
+"@node Parallel Forms\n"
+"@subsection Parallel forms\n"
+"@cindex parallel forms"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-scheduling.texi:888
+msgid "The functions described in this section are available from"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-scheduling.texi:892
+msgctxt "/home/bear/work/guile/doc/guile/en/api-scheduling.texi:892"
+msgid ""
+"@example\n"
+"(use-modules (ice-9 threads))\n"
+"@end example"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-scheduling.texi:897
+msgid ""
+"They provide high-level parallel constructs.  The following functions\n"
+"are implemented in terms of futures (@pxref{Futures}).  Thus they are\n"
+"relatively cheap as they re-use existing threads, and portable, since\n"
+"they automatically use one thread per available CPU core."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-scheduling.texi:903
+msgid ""
+"@deffn syntax parallel expr @dots{}\n"
+"Evaluate each @var{expr} expression in parallel, each in its own thread.\n"
+"Return the results of @var{n} expressions as a set of @var{n} multiple\n"
+"values (@pxref{Multiple Values}).\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-scheduling.texi:908
+msgid ""
+"@deffn syntax letpar ((var expr) @dots{}) body1 body2 @dots{}\n"
+"Evaluate each @var{expr} in parallel, each in its own thread, then bind\n"
+"the results to the corresponding @var{var} variables, and then evaluate\n"
+"@var{body1} @var{body2} @enddots{}"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-scheduling.texi:912
+msgid ""
+"@code{letpar} is like @code{let} (@pxref{Local Bindings}), but all the\n"
+"expressions for the bindings are evaluated in parallel.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-scheduling.texi:919
+msgid ""
+"@deffn {Scheme Procedure} par-map proc lst1 lst2 @dots{}\n"
+"@deffnx {Scheme Procedure} par-for-each proc lst1 lst2 @dots{}\n"
+"Call @var{proc} on the elements of the given lists.  @code{par-map}\n"
+"returns a list comprising the return values from @var{proc}.\n"
+"@code{par-for-each} returns an unspecified value, but waits for all\n"
+"calls to complete."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-scheduling.texi:924
+msgid ""
+"The @var{proc} calls are @code{(@var{proc} @var{elem1} @var{elem2}\n"
+"@dots{})}, where each @var{elem} is from the corresponding @var{lst} .\n"
+"Each @var{lst} must be the same length.  The calls are potentially made\n"
+"in parallel, depending on the number of CPU cores available."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-scheduling.texi:928
+msgid ""
+"These functions are like @code{map} and @code{for-each} (@pxref{List\n"
+"Mapping}), but make their @var{proc} calls in parallel.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-scheduling.texi:936
+msgid ""
+"Unlike those above, the functions described below take a number of\n"
+"threads as an argument.  This makes them inherently non-portable since\n"
+"the specified number of threads may differ from the number of available\n"
+"CPU cores as returned by @code{current-processor-count}\n"
+"(@pxref{Processes}).  In addition, these functions create the specified\n"
+"number of threads when they are called and terminate them upon\n"
+"completion, which makes them quite expensive."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-scheduling.texi:938
+msgid "Therefore, they should be avoided."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-scheduling.texi:945
+msgid ""
+"@deffn {Scheme Procedure} n-par-map n proc lst1 lst2 @dots{}\n"
+"@deffnx {Scheme Procedure} n-par-for-each n proc lst1 lst2 @dots{}\n"
+"Call @var{proc} on the elements of the given lists, in the same way as\n"
+"@code{par-map} and @code{par-for-each} above, but use no more than\n"
+"@var{n} threads at any one time.  The order in which calls are\n"
+"initiated within that threads limit is unspecified."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-scheduling.texi:951
+msgid ""
+"These functions are good for controlling resource consumption if\n"
+"@var{proc} calls might be costly, or if there are many to be made.  On\n"
+"a dual-CPU system for instance @math{@var{n}=4} might be enough to\n"
+"keep the CPUs utilized, and not consume too much memory.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-scheduling.texi:957
+msgid ""
+"@deffn {Scheme Procedure} n-for-each-par-map n sproc pproc lst1 lst2 @dots{}"
+"\n"
+"Apply @var{pproc} to the elements of the given lists, and apply\n"
+"@var{sproc} to each result returned by @var{pproc}.  The final return\n"
+"value is unspecified, but all calls will have been completed before\n"
+"returning."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-scheduling.texi:961
+msgid ""
+"The calls made are @code{(@var{sproc} (@var{pproc} @var{elem1} @dots{}\n"
+"@var{elemN}))}, where each @var{elem} is from the corresponding\n"
+"@var{lst}.  Each @var{lst} must have the same number of elements."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-scheduling.texi:965
+msgid ""
+"The @var{pproc} calls are made in parallel, in separate threads.  No more\n"
+"than @var{n} threads are used at any one time.  The order in which\n"
+"@var{pproc} calls are initiated within that limit is unspecified."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-scheduling.texi:970
+msgid ""
+"The @var{sproc} calls are made serially, in list element order, one at\n"
+"a time.  @var{pproc} calls on later elements may execute in parallel\n"
+"with the @var{sproc} calls.  Exactly which thread makes each\n"
+"@var{sproc} call is unspecified."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-scheduling.texi:976
+msgid ""
+"This function is designed for individual calculations that can be done\n"
+"in parallel, but with results needing to be handled serially, for\n"
+"instance to write them to a file.  The @var{n} limit on threads\n"
+"controls system resource usage when there are many calculations or\n"
+"when they might be costly."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-scheduling.texi:979
+msgid ""
+"It will be seen that @code{n-for-each-par-map} is like a combination\n"
+"of @code{n-par-map} and @code{for-each},"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-scheduling.texi:983
+msgid ""
+"@example\n"
+"(for-each sproc (n-par-map n pproc lst1 ... lstN))\n"
+"@end example"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-scheduling.texi:989
+msgid ""
+"@noindent\n"
+"But the actual implementation is more efficient since each @var{sproc}\n"
+"call, in turn, can be initiated once the relevant @var{pproc} call has\n"
+"completed, it doesn't need to wait for all to finish.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-scheduling.texi:994
+msgid ""
+"@c Local Variables:\n"
+"@c TeX-master: \"guile.texi\"\n"
+"@c End:"
+msgstr ""

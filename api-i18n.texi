@@ -1,0 +1,625 @@
+@c -*-texinfo-*-
+@c This is part of the GNU Guile Reference Manual.
+@c Copyright (C)  1996, 1997, 2000, 2001, 2002, 2003, 2004, 2006, 2007,
+@c   2009, 2010, 2017 Free Software Foundation, Inc.
+@c See the file guile.texi for copying conditions.
+
+@node Internationalization
+@section Support for Internationalization
+
+@cindex internationalization
+@cindex i18n
+
+Guile provides internationalization@footnote{For concision and style,
+programmers often like to refer to internationalization as ``i18n''.}
+support for Scheme programs in two ways.  First, procedures to
+manipulate text and data in a way that conforms to particular cultural
+conventions (i.e., in a ``locale-dependent'' way) are provided in the
+@code{(ice-9 i18n)}.  Second, Guile allows the use of GNU
+@code{gettext} to translate program message strings.
+
+@menu
+* i18n Introduction::             Introduction to Guile's i18n support.
+* Text Collation::                Sorting strings and characters.
+* Character Case Mapping::        Case mapping.
+* Number Input and Output::       Parsing and printing numbers.
+* Accessing Locale Information::  Detailed locale information.
+* Gettext Support::               Translating message strings.
+@end menu
+
+@node i18n Introduction, Text Collation, Internationalization, Internationalization
+@subsection Internationalization with Guile
+
+In order to make use of the functions described thereafter, the
+@code{(ice-9 i18n)} module must be imported in the usual way:
+
+@example
+(use-modules (ice-9 i18n))
+@end example
+
+@cindex cultural conventions
+
+The @code{(ice-9 i18n)} module provides procedures to manipulate text
+and other data in a way that conforms to the cultural conventions
+chosen by the user.  Each region of the world or language has its own
+customs to, for instance, represent real numbers, classify characters,
+collate text, etc.  All these aspects comprise the so-called
+``cultural conventions'' of that region or language.
+
+@cindex locale
+@cindex locale category
+
+Computer systems typically refer to a set of cultural conventions as a
+@dfn{locale}.  For each particular aspect that comprise those cultural
+conventions, a @dfn{locale category} is defined.  For instance, the
+way characters are classified is defined by the @code{LC_CTYPE}
+category, while the language in which program messages are issued to
+the user is defined by the @code{LC_MESSAGES} category
+(@pxref{Locales, General Locale Information} for details).
+
+@cindex locale object
+
+The procedures provided by this module allow the development of
+programs that adapt automatically to any locale setting.  As we will
+see later, many of these procedures can optionally take a @dfn{locale
+object} argument.  This additional argument defines the locale
+settings that must be followed by the invoked procedure.  When it is
+omitted, then the current locale settings of the process are followed
+(@pxref{Locales, @code{setlocale}}).
+
+The following procedures allow the manipulation of such locale
+objects.
+
+@deffn {Scheme Procedure} make-locale category-list locale-name [base-locale]
+@deffnx {C Function} scm_make_locale (category_list, locale_name, base_locale)
+Return a reference to a data structure representing a set of locale
+datasets.  @var{locale-name} should be a string denoting a particular
+locale (e.g., @code{"aa_DJ"}) and @var{category-list} should be either
+a list of locale categories or a single category as used with
+@code{setlocale} (@pxref{Locales, @code{setlocale}}).  Optionally, if
+@code{base-locale} is passed, it should be a locale object denoting
+settings for categories not listed in @var{category-list}.
+
+The following invocation creates a locale object that combines the use
+of Swedish for messages and character classification with the
+default settings for the other categories (i.e., the settings of the
+default @code{C} locale which usually represents conventions in use in
+the USA):
+
+@example
+(make-locale (list LC_MESSAGES LC_CTYPE) "sv_SE")
+@end example
+
+The following example combines the use of Esperanto messages and
+conventions with monetary conventions from Croatia:
+
+@example
+(make-locale LC_MONETARY "hr_HR"
+             (make-locale LC_ALL "eo_EO"))
+@end example
+
+A @code{system-error} exception (@pxref{Handling Errors}) is raised by
+@code{make-locale} when @var{locale-name} does not match any of the
+locales compiled on the system.  Note that on non-GNU systems, this
+error may be raised later, when the locale object is actually used.
+
+@end deffn
+
+@deffn {Scheme Procedure} locale? obj
+@deffnx {C Function} scm_locale_p (obj)
+Return true if @var{obj} is a locale object.
+@end deffn
+
+@defvr {Scheme Variable} %global-locale
+@defvrx {C Variable} scm_global_locale
+This variable is bound to a locale object denoting the current process
+locale as installed using @code{setlocale ()} (@pxref{Locales}).  It
+may be used like any other locale object, including as a third
+argument to @code{make-locale}, for instance.
+@end defvr
+
+@node Text Collation, Character Case Mapping, i18n Introduction, Internationalization
+@subsection Text Collation
+
+The following procedures provide support for text collation, i.e.,
+locale-dependent string and character sorting.
+
+@deffn {Scheme Procedure} string-locale<? s1 s2 [locale]
+@deffnx {C Function} scm_string_locale_lt (s1, s2, locale)
+@deffnx {Scheme Procedure} string-locale>? s1 s2 [locale]
+@deffnx {C Function} scm_string_locale_gt (s1, s2, locale)
+@deffnx {Scheme Procedure} string-locale-ci<? s1 s2 [locale]
+@deffnx {C Function} scm_string_locale_ci_lt (s1, s2, locale)
+@deffnx {Scheme Procedure} string-locale-ci>? s1 s2 [locale]
+@deffnx {C Function} scm_string_locale_ci_gt (s1, s2, locale)
+Compare strings @var{s1} and @var{s2} in a locale-dependent way.  If
+@var{locale} is provided, it should be locale object (as returned by
+@code{make-locale}) and will be used to perform the comparison;
+otherwise, the current system locale is used.  For the @code{-ci}
+variants, the comparison is made in a case-insensitive way.
+@end deffn
+
+@deffn {Scheme Procedure} string-locale-ci=? s1 s2 [locale]
+@deffnx {C Function} scm_string_locale_ci_eq (s1, s2, locale)
+Compare strings @var{s1} and @var{s2} in a case-insensitive, and
+locale-dependent way.  If @var{locale} is provided, it should be
+a locale object (as returned by @code{make-locale}) and will be used to
+perform the comparison; otherwise, the current system locale is used.
+@end deffn
+
+@deffn {Scheme Procedure} char-locale<? c1 c2 [locale]
+@deffnx {C Function} scm_char_locale_lt (c1, c2, locale)
+@deffnx {Scheme Procedure} char-locale>? c1 c2 [locale]
+@deffnx {C Function} scm_char_locale_gt (c1, c2, locale)
+@deffnx {Scheme Procedure} char-locale-ci<? c1 c2 [locale]
+@deffnx {C Function} scm_char_locale_ci_lt (c1, c2, locale)
+@deffnx {Scheme Procedure} char-locale-ci>? c1 c2 [locale]
+@deffnx {C Function} scm_char_locale_ci_gt (c1, c2, locale)
+Compare characters @var{c1} and @var{c2} according to either
+@var{locale} (a locale object as returned by @code{make-locale}) or
+the current locale.  For the @code{-ci} variants, the comparison is
+made in a case-insensitive way.
+@end deffn
+
+@deffn {Scheme Procedure} char-locale-ci=? c1 c2 [locale]
+@deffnx {C Function} scm_char_locale_ci_eq (c1, c2, locale)
+Return true if character @var{c1} is equal to @var{c2}, in a case
+insensitive way according to @var{locale} or to the current locale.
+@end deffn
+
+@node Character Case Mapping, Number Input and Output, Text Collation, Internationalization
+@subsection Character Case Mapping
+
+The procedures below provide support for ``character case mapping'',
+i.e., to convert characters or strings to their upper-case or
+lower-case equivalent.  Note that SRFI-13 provides procedures that
+look similar (@pxref{Alphabetic Case Mapping}).  However, the SRFI-13
+procedures are locale-independent.  Therefore, they do not take into
+account specificities of the customs in use in a particular language
+or region of the world.  For instance, while most languages using the
+Latin alphabet map lower-case letter ``i'' to upper-case letter ``I'',
+Turkish maps lower-case ``i'' to ``Latin capital letter I with dot
+above''.  The following procedures allow programmers to provide
+idiomatic character mapping.
+
+@deffn {Scheme Procedure} char-locale-downcase chr [locale]
+@deffnx {C Function} scm_char_locale_upcase (chr, locale)
+Return the lowercase character that corresponds to @var{chr} according
+to either @var{locale} or the current locale.
+@end deffn
+
+@deffn {Scheme Procedure} char-locale-upcase chr [locale]
+@deffnx {C Function} scm_char_locale_downcase (chr, locale)
+Return the uppercase character that corresponds to @var{chr} according
+to either @var{locale} or the current locale.
+@end deffn
+
+@deffn {Scheme Procedure} char-locale-titlecase chr [locale]
+@deffnx {C Function} scm_char_locale_titlecase (chr, locale)
+Return the titlecase character that corresponds to @var{chr} according
+to either @var{locale} or the current locale.
+@end deffn
+
+@deffn {Scheme Procedure} string-locale-upcase str [locale]
+@deffnx {C Function} scm_string_locale_upcase (str, locale)
+Return a new string that is the uppercase version of @var{str}
+according to either @var{locale} or the current locale.
+@end deffn
+
+@deffn {Scheme Procedure} string-locale-downcase str [locale]
+@deffnx {C Function} scm_string_locale_downcase (str, locale)
+Return a new string that is the down-case version of @var{str}
+according to either @var{locale} or the current locale.
+@end deffn
+
+@deffn {Scheme Procedure} string-locale-titlecase str [locale]
+@deffnx {C Function} scm_string_locale_titlecase (str, locale)
+Return a new string that is the titlecase version of @var{str}
+according to either @var{locale} or the current locale.
+@end deffn
+
+@node Number Input and Output, Accessing Locale Information, Character Case Mapping, Internationalization
+@subsection Number Input and Output
+
+The following procedures allow programs to read and write numbers
+written according to a particular locale.  As an example, in English,
+``ten thousand and a half'' is usually written @code{10,000.5} while
+in French it is written @code{10 000,5}.  These procedures allow such
+differences to be taken into account.
+
+@findex strtod
+@deffn {Scheme Procedure} locale-string->integer str [base [locale]]
+@deffnx {C Function} scm_locale_string_to_integer (str, base, locale)
+Convert string @var{str} into an integer according to either
+@var{locale} (a locale object as returned by @code{make-locale}) or
+the current process locale.  If @var{base} is specified, then it
+determines the base of the integer being read (e.g., @code{16} for an
+hexadecimal number, @code{10} for a decimal number); by default,
+decimal numbers are read.  Return two values (@pxref{Multiple
+Values}): an integer (on success) or @code{#f}, and the number of
+characters read from @var{str} (@code{0} on failure).
+
+This function is based on the C library's @code{strtol} function
+(@pxref{Parsing of Integers, @code{strtol},, libc, The GNU C Library
+Reference Manual}).
+@end deffn
+
+@findex strtod
+@deffn {Scheme Procedure} locale-string->inexact str [locale]
+@deffnx {C Function} scm_locale_string_to_inexact (str, locale)
+Convert string @var{str} into an inexact number according to either
+@var{locale} (a locale object as returned by @code{make-locale}) or
+the current process locale.  Return two values (@pxref{Multiple
+Values}): an inexact number (on success) or @code{#f}, and the number
+of characters read from @var{str} (@code{0} on failure).
+
+This function is based on the C library's @code{strtod} function
+(@pxref{Parsing of Floats, @code{strtod},, libc, The GNU C Library
+Reference Manual}).
+@end deffn
+
+@deffn {Scheme Procedure} number->locale-string number [fraction-digits [locale]]
+Convert @var{number} (an inexact) into a string according to the
+cultural conventions of either @var{locale} (a locale object) or the
+current locale.  By default, print as many fractional digits as
+necessary, up to an upper bound.  Optionally, @var{fraction-digits} may
+be bound to an integer specifying the number of fractional digits to be
+displayed.
+@end deffn
+
+@deffn {Scheme Procedure} monetary-amount->locale-string amount intl? [locale]
+Convert @var{amount} (an inexact denoting a monetary amount) into a
+string according to the cultural conventions of either @var{locale} (a
+locale object) or the current locale.  If @var{intl?} is true, then
+the international monetary format for the given locale is used
+(@pxref{Currency Symbol, international and locale monetary formats,,
+libc, The GNU C Library Reference Manual}).
+@end deffn
+
+@node Accessing Locale Information, Gettext Support, Number Input and Output, Internationalization
+@subsection Accessing Locale Information
+
+@findex nl_langinfo
+@cindex low-level locale information
+It is sometimes useful to obtain very specific information about a
+locale such as the word it uses for days or months, its format for
+representing floating-point figures, etc.  The @code{(ice-9 i18n)}
+module provides support for this in a way that is similar to the libc
+functions @code{nl_langinfo ()} and @code{localeconv ()}
+(@pxref{Locale Information, accessing locale information from C,,
+libc, The GNU C Library Reference Manual}).  The available functions
+are listed below.
+
+@deffn {Scheme Procedure} locale-encoding [locale]
+Return the name of the encoding (a string whose interpretation is
+system-dependent) of either @var{locale} or the current locale.
+@end deffn
+
+The following functions deal with dates and times.
+
+@deffn {Scheme Procedure} locale-day day [locale]
+@deffnx {Scheme Procedure} locale-day-short day [locale]
+@deffnx {Scheme Procedure} locale-month month [locale]
+@deffnx {Scheme Procedure} locale-month-short month [locale]
+Return the word (a string) used in either @var{locale} or the current
+locale to name the day (or month) denoted by @var{day} (or
+@var{month}), an integer between 1 and 7 (or 1 and 12).  The
+@code{-short} variants provide an abbreviation instead of a full name.
+@end deffn
+
+@deffn {Scheme Procedure} locale-am-string [locale]
+@deffnx {Scheme Procedure} locale-pm-string [locale]
+Return a (potentially empty) string that is used to denote @i{ante
+meridiem} (or @i{post meridiem}) hours in 12-hour format.
+@end deffn
+
+@deffn {Scheme Procedure} locale-date+time-format [locale]
+@deffnx {Scheme Procedure} locale-date-format [locale]
+@deffnx {Scheme Procedure} locale-time-format [locale]
+@deffnx {Scheme Procedure} locale-time+am/pm-format [locale]
+@deffnx {Scheme Procedure} locale-era-date-format [locale]
+@deffnx {Scheme Procedure} locale-era-date+time-format [locale]
+@deffnx {Scheme Procedure} locale-era-time-format [locale]
+These procedures return format strings suitable to @code{strftime}
+(@pxref{Time}) that may be used to display (part of) a date/time
+according to certain constraints and to the conventions of either
+@var{locale} or the current locale (@pxref{The Elegant and Fast Way,
+the @code{nl_langinfo ()} items,, libc, The GNU C Library Reference
+Manual}).
+@end deffn
+
+@deffn {Scheme Procedure} locale-era [locale]
+@deffnx {Scheme Procedure} locale-era-year [locale]
+These functions return, respectively, the era and the year of the
+relevant era used in @var{locale} or the current locale.  Most locales
+do not define this value.  In this case, the empty string is returned.
+An example of a locale that does define this value is the Japanese
+one.
+@end deffn
+
+The following procedures give information about number representation.
+
+@deffn {Scheme Procedure} locale-decimal-point [locale]
+@deffnx {Scheme Procedure} locale-thousands-separator [locale]
+These functions return a string denoting the representation of the
+decimal point or that of the thousand separator (respectively) for
+either @var{locale} or the current locale.
+@end deffn
+
+@deffn {Scheme Procedure} locale-digit-grouping [locale]
+Return a (potentially circular) list of integers denoting how digits
+of the integer part of a number are to be grouped, starting at the
+decimal point and going to the left.  The list contains integers
+indicating the size of the successive groups, from right to left.  If
+the list is non-circular, then no grouping occurs for digits beyond
+the last group.
+
+For instance, if the returned list is a circular list that contains
+only @code{3} and the thousand separator is @code{","} (as is the case
+with English locales), then the number @code{12345678} should be
+printed @code{12,345,678}.
+@end deffn
+
+The following procedures deal with the representation of monetary
+amounts.  Some of them take an additional @var{intl?} argument (a
+boolean) that tells whether the international or local monetary
+conventions for the given locale are to be used.
+
+@deffn {Scheme Procedure} locale-monetary-decimal-point [locale]
+@deffnx {Scheme Procedure} locale-monetary-thousands-separator [locale]
+@deffnx {Scheme Procedure} locale-monetary-grouping [locale]
+These are the monetary counterparts of the above procedures.  These
+procedures apply to monetary amounts.
+@end deffn
+
+@deffn {Scheme Procedure} locale-currency-symbol intl? [locale]
+Return the currency symbol (a string) of either @var{locale} or the
+current locale.
+
+The following example illustrates the difference between the local and
+international monetary formats:
+
+@example
+(define us (make-locale LC_MONETARY "en_US"))
+(locale-currency-symbol #f us)
+@result{} "-$"
+(locale-currency-symbol #t us)
+@result{} "USD "
+@end example
+@end deffn
+
+@deffn {Scheme Procedure} locale-monetary-fractional-digits intl? [locale]
+Return the number of fractional digits to be used when printing
+monetary amounts according to either @var{locale} or the current
+locale.  If the locale does not specify it, then @code{#f} is
+returned.
+@end deffn
+
+@deffn {Scheme Procedure} locale-currency-symbol-precedes-positive? intl? [locale]
+@deffnx {Scheme Procedure} locale-currency-symbol-precedes-negative? intl? [locale]
+@deffnx {Scheme Procedure} locale-positive-separated-by-space? intl? [locale]
+@deffnx {Scheme Procedure} locale-negative-separated-by-space? intl? [locale]
+These procedures return a boolean indicating whether the currency
+symbol should precede a positive/negative number, and whether a
+whitespace should be inserted between the currency symbol and a
+positive/negative amount.
+@end deffn
+
+@deffn {Scheme Procedure} locale-monetary-positive-sign [locale]
+@deffnx {Scheme Procedure} locale-monetary-negative-sign [locale]
+Return a string denoting the positive (respectively negative) sign
+that should be used when printing a monetary amount.
+@end deffn
+
+@deffn {Scheme Procedure} locale-positive-sign-position
+@deffnx {Scheme Procedure} locale-negative-sign-position
+These functions return a symbol telling where a sign of a
+positive/negative monetary amount is to appear when printing it.  The
+possible values are:
+
+@table @code
+@item parenthesize
+The currency symbol and quantity should be surrounded by parentheses.
+@item sign-before
+Print the sign string before the quantity and currency symbol.
+@item sign-after
+Print the sign string after the quantity and currency symbol.
+@item sign-before-currency-symbol
+Print the sign string right before the currency symbol.
+@item sign-after-currency-symbol
+Print the sign string right after the currency symbol.
+@item unspecified
+Unspecified.  We recommend you print the sign after the currency
+symbol.
+@end table
+
+@end deffn
+
+Finally, the two following procedures may be helpful when programming
+user interfaces:
+
+@deffn {Scheme Procedure} locale-yes-regexp [locale]
+@deffnx {Scheme Procedure} locale-no-regexp [locale]
+Return a string that can be used as a regular expression to recognize
+a positive (respectively, negative) response to a yes/no question.
+For the C locale, the default values are typically @code{"^[yY]"} and
+@code{"^[nN]"}, respectively.
+
+Here is an example:
+
+@example
+(use-modules (ice-9 rdelim))
+(format #t "Does Guile rock?~%")
+(let lp ((answer (read-line)))
+  (cond ((string-match (locale-yes-regexp) answer)
+         (format #t "High fives!~%"))
+        ((string-match (locale-no-regexp) answer)
+         (format #t "How about now? Does it rock yet?~%")
+         (lp (read-line)))
+        (else
+         (format #t "What do you mean?~%")
+         (lp (read-line)))))
+@end example
+
+For an internationalized yes/no string output, @code{gettext} should
+be used (@pxref{Gettext Support}).
+@end deffn
+
+Example uses of some of these functions are the implementation of the
+@code{number->locale-string} and @code{monetary-amount->locale-string}
+procedures (@pxref{Number Input and Output}), as well as that the
+SRFI-19 date and time conversion to/from strings (@pxref{SRFI-19}).
+
+@node Gettext Support,  , Accessing Locale Information, Internationalization
+@subsection Gettext Support
+
+Guile provides an interface to GNU @code{gettext} for translating
+message strings (@pxref{Introduction,,, gettext, GNU @code{gettext}
+utilities}).
+
+Messages are collected in domains, so different libraries and programs
+maintain different message catalogues.  The @var{domain} parameter in
+the functions below is a string (it becomes part of the message
+catalog filename).
+
+When @code{gettext} is not available, or if Guile was configured
+@samp{--without-nls}, dummy functions doing no translation are
+provided.  When @code{gettext} support is available in Guile, the
+@code{i18n} feature is provided (@pxref{Feature Tracking}).
+
+@deffn {Scheme Procedure} gettext msg [domain [category]]
+@deffnx {C Function} scm_gettext (msg, domain, category)
+Return the translation of @var{msg} in @var{domain}.  @var{domain} is
+optional and defaults to the domain set through @code{textdomain}
+below.  @var{category} is optional and defaults to @code{LC_MESSAGES}
+(@pxref{Locales}).
+
+Normal usage is for @var{msg} to be a literal string.
+@command{xgettext} can extract those from the source to form a message
+catalogue ready for translators (@pxref{xgettext Invocation,, Invoking
+the @command{xgettext} Program, gettext, GNU @code{gettext}
+utilities}).
+
+@example
+(display (gettext "You are in a maze of twisty passages."))
+@end example
+
+@code{_} is a commonly used shorthand, an application can make that an
+alias for @code{gettext}.  Or a library can make a definition that
+uses its specific @var{domain} (so an application can change the
+default without affecting the library).
+
+@example
+(define (_ msg) (gettext msg "mylibrary"))
+(display (_ "File not found."))
+@end example
+
+@code{_} is also a good place to perhaps strip disambiguating extra
+text from the message string, as for instance in @ref{GUI program
+problems,, How to use @code{gettext} in GUI programs, gettext, GNU
+@code{gettext} utilities}.
+@end deffn
+
+@deffn {Scheme Procedure} ngettext msg msgplural n [domain [category]]
+@deffnx {C Function} scm_ngettext (msg, msgplural, n, domain, category)
+Return the translation of @var{msg}/@var{msgplural} in @var{domain},
+with a plural form chosen appropriately for the number @var{n}.
+@var{domain} is optional and defaults to the domain set through
+@code{textdomain} below.  @var{category} is optional and defaults to
+@code{LC_MESSAGES} (@pxref{Locales}).
+
+@var{msg} is the singular form, and @var{msgplural} the plural.  When
+no translation is available, @var{msg} is used if @math{@var{n} = 1},
+or @var{msgplural} otherwise.  When translated, the message catalogue
+can have a different rule, and can have more than two possible forms.
+
+As per @code{gettext} above, normal usage is for @var{msg} and
+@var{msgplural} to be literal strings, since @command{xgettext} can
+extract them from the source to build a message catalogue.  For
+example,
+
+@example
+(define (done n)
+  (format #t (ngettext "~a file processed\n"
+                       "~a files processed\n" n)
+             n))
+
+(done 1) @print{} 1 file processed
+(done 3) @print{} 3 files processed
+@end example
+
+It's important to use @code{ngettext} rather than plain @code{gettext}
+for plurals, since the rules for singular and plural forms in English
+are not the same in other languages.  Only @code{ngettext} will allow
+translators to give correct forms (@pxref{Plural forms,, Additional
+functions for plural forms, gettext, GNU @code{gettext} utilities}).
+@end deffn
+
+@deffn {Scheme Procedure} textdomain [domain]
+@deffnx {C Function} scm_textdomain (domain)
+Get or set the default gettext domain.  When called with no parameter
+the current domain is returned.  When called with a parameter,
+@var{domain} is set as the current domain, and that new value
+returned.  For example,
+
+@example
+(textdomain "myprog")
+@result{} "myprog"
+@end example
+@end deffn
+
+@deffn {Scheme Procedure} bindtextdomain domain [directory]
+@deffnx {C Function} scm_bindtextdomain (domain, directory)
+Get or set the directory under which to find message files for
+@var{domain}.  When called without a @var{directory} the current
+setting is returned.  When called with a @var{directory},
+@var{directory} is set for @var{domain} and that new setting returned.
+For example,
+
+@example
+(bindtextdomain "myprog" "/my/tree/share/locale")
+@result{} "/my/tree/share/locale"
+@end example
+
+When using Autoconf/Automake, an application should arrange for the
+configured @code{localedir} to get into the program (by substituting,
+or by generating a config file) and set that for its domain.  This
+ensures the catalogue can be found even when installed in a
+non-standard location.
+@end deffn
+
+@deffn {Scheme Procedure} bind-textdomain-codeset domain [encoding]
+@deffnx {C Function} scm_bind_textdomain_codeset (domain, encoding)
+Get or set the text encoding to be used by @code{gettext} for messages
+from @var{domain}.  @var{encoding} is a string, the name of a coding
+system, for instance @nicode{"8859_1"}.  (On a Unix/POSIX system the
+@command{iconv} program can list all available encodings.)
+
+When called without an @var{encoding} the current setting is returned,
+or @code{#f} if none yet set.  When called with an @var{encoding}, it
+is set for @var{domain} and that new setting returned.  For example,
+
+@example
+(bind-textdomain-codeset "myprog")
+@result{} #f
+(bind-textdomain-codeset "myprog" "latin-9")
+@result{} "latin-9"
+@end example
+
+The encoding requested can be different from the translated data file,
+messages will be recoded as necessary.  But note that when there is no
+translation, @code{gettext} returns its @var{msg} unchanged, ie.@:
+without any recoding.  For that reason source message strings are best
+as plain ASCII.
+
+Currently Guile has no understanding of multi-byte characters, and
+string functions won't recognise character boundaries in multi-byte
+strings.  An application will at least be able to pass such strings
+through to some output though.  Perhaps this will change in the
+future.
+@end deffn
+
+@c Local Variables:
+@c TeX-master: "guile.texi"
+@c ispell-local-dictionary: "american"
+@c End:

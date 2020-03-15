@@ -1,0 +1,402 @@
+@c -*-texinfo-*-
+@c This is part of the GNU Guile Reference Manual.
+@c Copyright (C)  1996, 1997, 2000, 2001, 2002, 2003, 2004, 2006, 2010, 2011,
+@c   2012 Free Software Foundation, Inc.
+@c See the file guile.texi for copying conditions.
+
+@raisesections
+
+@node Hello Guile!
+@section Hello Guile!
+
+В этой главе представлена краткая экскурисия по всем способам использования
+Guile.  Есть дополнительные примеры в каталоге @file{examples/} дистрибутива
+Guile. Она также объясняет, как лучше сообщить о любых проблемах, которые
+вы найдете.
+
+В следующих примерах предполагается что Guile установлен в 
+@code{/usr/local/}.
+
+@menu
+* Running Guile Interactively::
+* Running Guile Scripts::
+* Linking Guile into Programs::
+* Writing Guile Extensions::
+* Using the Guile Module System::
+* Reporting Bugs::              
+@end menu
+
+@node Running Guile Interactively
+@subsection Запуск интерактивной сессии Guile
+
+В простейшей форме, Guile выступает в качестве интерактивного интерпретатора
+языка программирования Scheme, читает и выполняет выражения Scheme, которые
+пользователь вводит в терминале.  Вот пример взаимодействия между Guile и
+пользователем; Ввод пользователя осуществляется после приглашения @code{$} и
+@code{scheme@@(guile-user)>}:
+
+@example
+$ guile
+scheme@@(guile-user)> (+ 1 2 3)                ; add some numbers
+$1 = 6
+scheme@@(guile-user)> (define (factorial n)    ; define a function
+                       (if (zero? n) 1 (* n (factorial (- n 1)))))
+scheme@@(guile-user)> (factorial 20)
+$2 = 2432902008176640000
+scheme@@(guile-user)> (getpwnam "root")        ; look in /etc/passwd
+$3 = #("root" "x" 0 0 "root" "/root" "/bin/bash")
+scheme@@(guile-user)> @kbd{C-d}
+$
+@end example
+
+@node Running Guile Scripts
+@subsection Запуск скрипта Guile
+
+Подобно AWK, Perl, или любой другой оболочке, Guile может интерпретировать
+файлы сценариев. Сценарий Guile --- это просто файл кода Scheme  с некоторой
+дополнительной информацией в начале, которая сообщает операционной системе 
+как вызвать Guile, а затем говорит Guile как обработать код Scheme.
+
+Вот тривиальный сценарий Guile.  @xref{Guile Scripting}, для более подробной
+информации.
+
+@example
+#!/usr/local/bin/guile -s
+!#
+(display "Hello, world!")
+(newline)
+@end example
+
+@node Linking Guile into Programs
+@subsection Встраивание Guile в программу(статическая линковка)
+
+Интерпретатор Guile доступен в виде библиотеки объектов, которая должна
+быть присоединена(подлинкована_ к приложению, использующему Scheme как
+язык конфигурации или расширения.
+
+Вот @file{simple-guile.c}, исходный код программы, которая создаст
+полноценный интерпрепретатор Guile.  В дополнение к обычным функциям,
+предоставляемыми  Guile, он так же будет предлагать функцию 
+@code{my-hostname}.
+
+@example
+#include <stdlib.h>
+#include <libguile.h>
+
+static SCM
+my_hostname (void)
+@{
+  char *s = getenv ("HOSTNAME");
+  if (s == NULL)
+    return SCM_BOOL_F;
+  else
+    return scm_from_locale_string (s);
+@}
+
+static void
+inner_main (void *data, int argc, char **argv)
+@{
+  scm_c_define_gsubr ("my-hostname", 0, 0, 0, my_hostname);
+  scm_shell (argc, argv);
+@}
+
+int
+main (int argc, char **argv)
+@{
+  scm_boot_guile (argc, argv, inner_main, 0);
+  return 0; /* never reached */
+@}
+@end example
+
+Когда Guile правильно установлен в вашей системе, вышеуказанная
+программа может быть скомпилирована и связана со статическми
+библиотеками(слинкована) так:
+
+@example
+$ gcc -o simple-guile simple-guile.c \
+    `pkg-config --cflags --libs guile-@value{EFFECTIVE-VERSION}`
+@end example
+
+Когда она запускается, она ведет себя точно так же, как программа @code{guile},
+за исключением того, что вы также можете вызвать новую функцию @code{my-hostname}.
+
+@example
+$ ./simple-guile
+scheme@@(guile-user)> (+ 1 2 3)
+$1 = 6
+scheme@@(guile-user)> (my-hostname)
+"burns"
+@end example
+
+@node Writing Guile Extensions
+@subsection Написание расширений Guile
+
+Вы можете связать Guile с вашей программой и сделать Scheme доступным
+для пользователей вашей программы.  Вы также можете связать свою библиотеку
+с Guile и сделать ее функциональность доступной для всех пользователей Guile.
+
+Библиотека, которая связана с Guile, называется @dfn{расширением(extension)},
+но на самом деле это просто обычная объектная библиотека.
+
+В следующем примере показано, как написать простое расширение для  Guile
+которое делает функцию @code{j0} доступной из кода Scheme.
+
+@smallexample
+#include <math.h>
+#include <libguile.h>
+
+SCM
+j0_wrapper (SCM x)
+@{
+  return scm_from_double (j0 (scm_to_double (x)));
+@}
+
+void
+init_bessel ()
+@{
+  scm_c_define_gsubr ("j0", 1, 0, 0, j0_wrapper);
+@}
+@end smallexample
+
+Этот исходный Си файл должен быть скомпилирован в разделяемую библиотеку.  
+Вот как это делается в GNU/Linux:
+
+@smallexample
+gcc `pkg-config --cflags guile-@value{EFFECTIVE-VERSION}` \
+  -shared -o libguile-bessel.so -fPIC bessel.c
+@end smallexample
+
+Для создания переносимых разделяемых библиотек, мы рекомендуем использовать
+GNU Libtool (@pxref{Top, , Introduction, libtool, GNU Libtool}).
+
+Разделяемая библиотека может быть загружена в запущенный процесс Guile
+функцией @code{load-extension}.  Затем функция @code{j0} становиться
+доступной для выполнения:
+
+@smallexample
+$ guile
+scheme@@(guile-user)> (load-extension "./libguile-bessel" "init_bessel")
+scheme@@(guile-user)> (j0 2)
+$1 = 0.223890779141236
+@end smallexample
+
+Подробнее о том, как установить расширение, @pxref{Installing Site
+Packages}.
+
+@node Using the Guile Module System
+@subsection Использование модульной системы Guile
+
+Guile поддерживает разделение программа на модули@dfn{modules}. Используя модули,
+вы можете группировать и управлять содержанием программ, состоящих, в основном,
+из независимых частей.
+
+Для получения дополнительной информации о модульной системе сверх
+вводного материала, см. @xref{Modules}.
+
+@menu
+* Using Modules::
+* Writing new Modules::
+* Putting Extensions into Modules::
+@end menu
+
+@node Using Modules
+@subsubsection Использование Модулей
+
+Guile поставляется со множеством полезных модулей, например, для
+обработки строк или синтаксического анализа командной строки. Кроме
+того, существует множество модулей Guile написанных другими хакерами
+Guile, но которые необходимо устанавливать в ручную.
+
+Вот пример интерактивного сеанса, который показывает, как использовать
+модуль @code{(ice-9 popen)} который обеспечивает средства связи с другими
+процессами посредством pipes совместно с модулем @code{(ice-9
+rdelim)} предоставляющим функцию чтения строки @code{read-line}.
+
+@smallexample
+$ guile
+scheme@@(guile-user)> (use-modules (ice-9 popen))
+scheme@@(guile-user)> (use-modules (ice-9 rdelim))
+scheme@@(guile-user)> (define p (open-input-pipe "ls -l"))
+scheme@@(guile-user)> (read-line p)
+$1 = "total 30"
+scheme@@(guile-user)> (read-line p)
+$2 = "drwxr-sr-x    2 mgrabmue mgrabmue     1024 Mar 29 19:57 CVS"
+@end smallexample
+
+@node Writing new Modules
+@subsubsection Написание новых Модулей
+
+Вы можете создавать новые модули с помощью синтаксической формы
+@code{define-module}.  Все определения  следующие за данной формой,
+будут помещаться в этот модуль, пока не будет размещена новая 
+форма @code{define-module} обозначающая новый модуль.
+
+Один модуль обычно размещается в один файл, и этот файл устанавливается
+в том месте, где Guile может автоматически найти его. В следующем
+сеансе показан простой пример:
+
+@smallexample
+$ cat /usr/local/share/guile/site/foo/bar.scm
+
+(define-module (foo bar)
+  #:export (frob))
+
+(define (frob x) (* 2 x))
+
+$ guile
+scheme@@(guile-user)> (use-modules (foo bar))
+scheme@@(guile-user)> (frob 12)
+$1 = 24
+@end smallexample
+
+Подробнее о том, как устанавливать модули, см. @pxref{Installing Site
+Packages}.
+
+@node Putting Extensions into Modules
+@subsubsection Вставка расширений в Модуль
+
+В дополнении к коду Scheme вы также можете помещать в модуль объекты,
+которые определены в Си модулях.
+
+ВЫ сделаете это, написав небольшой файл Scheme, который определяет модуль
+и вызывает @code{load-extension} непосредственно из тела модуля.
+
+@smallexample
+$ cat /usr/local/share/guile/site/math/bessel.scm
+
+(define-module (math bessel)
+  #:export (j0))
+
+(load-extension "libguile-bessel" "init_bessel")
+
+$ file /usr/local/lib/guile/@value{EFFECTIVE-VERSION}/extensions/libguile-bessel.so
+@dots{} ELF 32-bit LSB shared object @dots{}
+$ guile
+scheme@@(guile-user)> (use-modules (math bessel))
+scheme@@(guile-user)> (j0 2)
+$1 = 0.223890779141236
+@end smallexample
+
+@xref{Modules and Extensions}, за дальнейшей информацией.
+
+@lowersections
+
+@node Reporting Bugs
+@section Сообщение об Ошибках
+
+О любых проблемах с установкой следует сообщать на
+@email{bug-guile@@gnu.org}.
+
+Если вы обнаружите ошибку в Guile, пожалуйста сообщите об том разработчикам
+Guile, чтобы они могли ее исправить. Они так же могут предложить обходные 
+пути, когда вам не удасться применить bug-fix или установить новую
+версию Guile самостоятельно.
+
+Перед отправкой отчетов об ошибке, пожалуйста ознакомьтесь со следующим
+списком, который подтвердит что вы действительно нашли ошибку.
+
+@itemize @bullet
+@item
+Всякий раз, когда документация и фактическое поведение отличаются, вы 
+наверняка обнаружили ошибку, либо в документации, либо в программе.
+
+@item
+Когда Guile "падает", это ошибка.
+
+@item
+Когда Guile зависает или берет навсегда выполнение задачи, это ошибка.
+
+@item
+Когда вычисления выдают неправильные результаты, это ошибка.
+
+@item
+Когда Guile сообщает об ошибке в корректных программх Scheme, это ошибка.
+
+@item
+Когда Guile не сигнализирует об ошибке для некорректных программ Scheme,
+это может быть ошибка, если это явно не задокументировано.
+
+@item
+Когда какая-то часть документации не ясна и не имеет для вас смысла
+даже после повторного прочтения раздела, это ошибка.
+@end itemize
+
+Прежде чем сообщать об ошибке, проверьте, загружены ли какие-либо
+программы в Guile, включая ваш файл @file{.guile}, устаровлены ли
+какие либо переменные, способные повлиять на работу Guile.  Также,
+смотрите, возникнет ли проблема в чисто загруженном Guile без
+загрузки вашего файла @file{.guile} (старт Guile с переключателем
+@code{-q} предотвращает загрузку вашего инициализационного файла).
+Если проблема не устраняется, тогда вы должны сообщить точное
+содержание любых программ, которые вы загружаете в Guile, чтобы
+вызвать проблему.
+
+Когда вы пишете отчет об ошибке, обязательно указывайте как можно больше
+информации в отчете описанной ниже. Если вы не можете понять некоторые
+элементы, это не проблема, но чем больше информации мы получаем,
+тем более вероятно, что мы сможем диагностировать и исправить ошибку.
+
+@itemize @bullet
+@item
+Номер версии Guile. Вы можете получить эту инофрмацию при вызове 
+@samp{guile --version} в вашей оболочке или вызвав
+@code{(version)} изнутри Guile.
+
+@item
+Тип вашей машины, определяемый скриптом оболочки @code{config.guess}.
+Если вы проверите Guile, этот файл находиться в директории @code{build-aux}; 
+иначе вы его можете получить его полную версию по ссылке:
+@uref{http://git.savannah.gnu.org/gitweb/?p=config.git;a=blob_plain;f=config.guess;hb=HEAD}.
+
+@example
+$ build-aux/config.guess
+x86_64-unknown-linux-gnu
+@end example
+
+@item
+Если вы установили Guile из двоичного пакета, версию этого пакета. В
+системах которые используют, используйте @code{rpm -qa | grep guile}. 
+В системах использующих DPKG, @code{dpkg -l | grep guile}. 
+
+@item
+Если вы собирали Guile самостоятельно, то необходима конфигурация
+которую вы использовали:
+
+@example
+$ ./config.status --config
+'--enable-error-on-warning' '--disable-deprecated'...
+@end example
+
+@item
+Полное описание того как воспроизвести ошибку.
+
+Если у вас есть программа Scheme которая генериует ошибку, пожалуйста
+включите ее в отчет об ошибке. Если ваша программа слишком велика,
+чтобы ее включить, попробуйте уменьшить свой код до минимального тестового
+примера.
+
+Если вы можете воспроизвести свою проблему в REPL, это лучше всего.
+Дайта расшифровку введенных вами выражений в  REPL.
+
+@item
+Описание неправильного поведения.  Например, "Процесс Guile
+получает сметрельный сигнал," или, "Результат получается следующим
+образом, что я считаю не правильным."
+
+Если появление ошибки является сообщением об ошибке Guile, важно
+сообщить полный текст сообщения об ошибке и обратную трассировку,
+показывающую как програмаа Scheme пришла к ошибке. Это можно сделать
+используя команду @code{,backtrace} в отладчике Guile.
+@end itemize
+
+Если ваша ошибка приводит к собою Guil, дополнительная информация от
+низко-уровневого отлидчика, такого как GDB может быть полезна. Если вы
+сами собрали Guile, вы можете запустить Guile под GDB с помощью
+сценария @code{meta/gdb-uninstalled-guile} . Вместо вызова Guile как
+обычно, вызовите сценарий обертку, введите @code{run} для запуска
+процесса, затем @code{backtrace}, когда произойдет сбой.
+Включите эту трассировку в свой отчет.
+
+@c Local Variables:
+@c TeX-master: "guile.texi"
+@c End:

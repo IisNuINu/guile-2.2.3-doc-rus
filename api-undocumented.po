@@ -1,0 +1,1106 @@
+#. extracted from /home/bear/work/guile/doc/guile/en/api-undocumented.texi
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2018-05-07 12:37+0300\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Generator: Translate Toolkit 2.2.5\n"
+
+#: /home/bear/work/guile/doc/guile/en/api-undocumented.texi:6
+msgid ""
+"This file gathers entries that have been automatically generated from\n"
+"docstrings in libguile.  They are not included in the manual, however,\n"
+"for various reasons, mostly because they have been deprecated.  They\n"
+"are here in this file to give docstring.el a chance to update them\n"
+"automatically."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-undocumented.texi:8
+msgid "- GOOPS is documented in its own manual."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-undocumented.texi:14
+msgid ""
+"@deffn {Scheme Procedure} substring-move-right!\n"
+"implemented by the C function \"scm_substring_move_x\"\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-undocumented.texi:18
+msgid ""
+"@deffn {Scheme Procedure} substring-move-left!\n"
+"implemented by the C function \"scm_substring_move_x\"\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-undocumented.texi:29
+msgid ""
+"@deffn {Scheme Procedure} gentemp [prefix [obarray]]\n"
+"@deffnx {C Function} scm_gentemp (prefix, obarray)\n"
+"Create a new symbol with a name unique in an obarray.\n"
+"The name is constructed from an optional string @var{prefix}\n"
+"and a counter value.  The default prefix is @code{t}.  The\n"
+"@var{obarray} is specified as a second optional argument.\n"
+"Default is the system obarray where all normal symbols are\n"
+"interned.  The counter is increased by 1 at each\n"
+"call.  There is no provision for resetting the counter.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-undocumented.texi:36
+msgid ""
+"@deffn {Scheme Procedure} symbol-set! o s v\n"
+"@deffnx {C Function} scm_symbol_set_x (o, s, v)\n"
+"Find the symbol in @var{obarray} whose name is @var{string}, and rebind\n"
+"it to @var{value}.  An error is signalled if @var{string} is not present\n"
+"in @var{obarray}.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-undocumented.texi:46
+msgid ""
+"@deffn {Scheme Procedure} symbol-bound? o s\n"
+"@deffnx {C Function} scm_symbol_bound_p (o, s)\n"
+"Return @code{#t} if @var{obarray} contains a symbol with name\n"
+"@var{string} bound to a defined value.  This differs from\n"
+"@var{symbol-interned?} in that the mere mention of a symbol\n"
+"usually causes it to be interned; @code{symbol-bound?}\n"
+"determines whether a symbol has been given any meaningful\n"
+"value.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-undocumented.texi:54
+msgid ""
+"@deffn {Scheme Procedure} symbol-binding o s\n"
+"@deffnx {C Function} scm_symbol_binding (o, s)\n"
+"Look up in @var{obarray} the symbol whose name is @var{string}, and\n"
+"return the value to which it is bound.  If @var{obarray} is @code{#f},\n"
+"use the global symbol table.  If @var{string} is not interned in\n"
+"@var{obarray}, an error is signalled.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-undocumented.texi:61
+msgid ""
+"@deffn {Scheme Procedure} unintern-symbol o s\n"
+"@deffnx {C Function} scm_unintern_symbol (o, s)\n"
+"Remove the symbol with name @var{string} from @var{obarray}.  This\n"
+"function returns @code{#t} if the symbol was present and @code{#f}\n"
+"otherwise.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-undocumented.texi:68
+msgid ""
+"@deffn {Scheme Procedure} intern-symbol o s\n"
+"@deffnx {C Function} scm_intern_symbol (o, s)\n"
+"Add a new symbol to @var{obarray} with name @var{string}, bound to an\n"
+"unspecified initial value.  The symbol table is not modified if a symbol\n"
+"with this name is already present.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-undocumented.texi:73
+msgid ""
+"@deffn {Scheme Procedure} string->obarray-symbol o s [softp]\n"
+"@deffnx {C Function} scm_string_to_obarray_symbol (o, s, softp)\n"
+"Intern a new symbol in @var{obarray}, a symbol table, with name\n"
+"@var{string}."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-undocumented.texi:78
+msgid ""
+"If @var{obarray} is @code{#f}, use the default system symbol table.  If\n"
+"@var{obarray} is @code{#t}, the symbol should not be interned in any\n"
+"symbol table; merely return the pair (@var{symbol}\n"
+". @var{#<undefined>})."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-undocumented.texi:85
+msgid ""
+"The @var{soft?} argument determines whether new symbol table entries\n"
+"should be created when the specified symbol is not already present in\n"
+"@var{obarray}.  If @var{soft?} is specified and is a true value, then\n"
+"new entries should not be added for symbols not already present in the\n"
+"table; instead, simply return @code{#f}.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-undocumented.texi:93
+msgid ""
+"@deffn {Scheme Procedure} read-and-eval! [port]\n"
+"@deffnx {C Function} scm_read_and_eval_x (port)\n"
+"Read a form from @var{port} (standard input by default), and evaluate it\n"
+"(memoizing it in the process) in the top-level environment.  If no data\n"
+"is left to be read from @var{port}, an @code{end-of-file} error is\n"
+"signalled.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-undocumented.texi:100
+msgid ""
+"@deffn {Scheme Procedure} sloppy-member x lst\n"
+"@deffnx {C Function} scm_sloppy_member (x, lst)\n"
+"This procedure behaves like @code{member}, but does no type or error "
+"checking.\n"
+"Its use is recommended only in writing Guile internals,\n"
+"not for high-level Scheme programs.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-undocumented.texi:107
+msgid ""
+"@deffn {Scheme Procedure} sloppy-memv x lst\n"
+"@deffnx {C Function} scm_sloppy_memv (x, lst)\n"
+"This procedure behaves like @code{memv}, but does no type or error checking."
+"\n"
+"Its use is recommended only in writing Guile internals,\n"
+"not for high-level Scheme programs.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-undocumented.texi:114
+msgid ""
+"@deffn {Scheme Procedure} sloppy-memq x lst\n"
+"@deffnx {C Function} scm_sloppy_memq (x, lst)\n"
+"This procedure behaves like @code{memq}, but does no type or error checking."
+"\n"
+"Its use is recommended only in writing Guile internals,\n"
+"not for high-level Scheme programs.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-undocumented.texi:119
+msgid ""
+"@deffn {Scheme Procedure} builtin-variable name\n"
+"@deffnx {C Function} scm_builtin_variable (name)\n"
+"Do not use this function.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-undocumented.texi:124
+msgid ""
+"@deffn {Scheme Procedure} variable-set-name-hint! var hint\n"
+"@deffnx {C Function} scm_variable_set_name_hint (var, hint)\n"
+"Do not use this function.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-undocumented.texi:134
+msgid ""
+"@deffn {Scheme Procedure} close-all-ports-except . ports\n"
+"@deffnx {C Function} scm_close_all_ports_except (ports)\n"
+"[DEPRECATED] Close all open file ports used by the interpreter\n"
+"except for those supplied as arguments.  This procedure\n"
+"was intended to be used before an exec call to close file descriptors\n"
+"which are not needed in the new process.  However it has the\n"
+"undesirable side effect of flushing buffers, so it's deprecated.\n"
+"Use port-for-each instead.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-undocumented.texi:143
+msgid ""
+"@deffn {Scheme Procedure} c-clear-registered-modules\n"
+"@deffnx {C Function} scm_clear_registered_modules ()\n"
+"Destroy the list of modules registered with the current Guile process.\n"
+"The return value is unspecified.  @strong{Warning:} this function does\n"
+"not actually unlink or deallocate these modules, but only destroys the\n"
+"records of which modules have been loaded.  It should therefore be used\n"
+"only by module bookkeeping operations.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-undocumented.texi:152
+msgid ""
+"@deffn {Scheme Procedure} c-registered-modules\n"
+"@deffnx {C Function} scm_registered_modules ()\n"
+"Return a list of the object code modules that have been imported into\n"
+"the current Guile process.  Each element of the list is a pair whose\n"
+"car is the name of the module, and whose cdr is the function handle\n"
+"for that module's initializer function.  The name is the string that\n"
+"has been passed to scm_register_module_xxx.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-undocumented.texi:157
+msgid ""
+"@deffn {Scheme Procedure} module-import-interface module sym\n"
+"@deffnx {C Function} scm_module_import_interface (module, sym)\n"
+"Return the module or interface from which @var{sym} is imported in "
+"@var{module}.  If @var{sym} is not imported (i.e., it is not defined in "
+"@var{module} or it is a module-local binding instead of an imported one), "
+"then @code{#f} is returned.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-undocumented.texi:163
+msgid ""
+"@deffn {Scheme Procedure} self-evaluating? obj\n"
+"@deffnx {C Function} scm_self_evaluating_p (obj)\n"
+"Return #t for objects which Guile considers self-evaluating\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-undocumented.texi:168
+msgid ""
+"@deffn {Scheme Procedure} unmemoize-expr m\n"
+"@deffnx {C Function} scm_i_unmemoize_expr (m)\n"
+"Unmemoize the memoized expression @var{m},\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-undocumented.texi:177
+msgid ""
+"@deffn {Scheme Procedure} weak-key-alist-vector? obj\n"
+"@deffnx {Scheme Procedure} weak-value-alist-vector? obj\n"
+"@deffnx {Scheme Procedure} doubly-weak-alist-vector? obj\n"
+"@deffnx {C Function} scm_weak_key_alist_vector_p (obj)\n"
+"Return @code{#t} if @var{obj} is the specified weak hash\n"
+"table. Note that a doubly weak hash table is neither a weak key\n"
+"nor a weak value hash table.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-undocumented.texi:185
+msgid ""
+"@deffn {Scheme Procedure} make-weak-key-alist-vector [size]\n"
+"@deffnx {Scheme Procedure} make-weak-value-alist-vector size\n"
+"@deffnx {Scheme Procedure} make-doubly-weak-alist-vector size\n"
+"@deffnx {C Function} scm_make_weak_key_alist_vector (size)\n"
+"Return a weak hash table with @var{size} buckets. As with any\n"
+"hash table, choosing a good size for the table requires some\n"
+"caution."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-undocumented.texi:189
+msgid ""
+"You can modify weak hash tables in exactly the same way you\n"
+"would modify regular hash tables. (@pxref{Hash Tables})\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-undocumented.texi:194
+msgid ""
+"@deffn {Scheme Procedure} include-deprecated-features\n"
+"Return @code{#t} if deprecated features should be included in public\n"
+"interfaces, or @code{#f} otherwise.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-undocumented.texi:202
+msgid ""
+"@deffn {Scheme Procedure} issue-deprecation-warning . msgs\n"
+"Output @var{msgs} to @code{(current-error-port)} when this\n"
+"is the first call to @code{issue-deprecation-warning} with\n"
+"this specific @var{msg}.  Do nothing otherwise.\n"
+"The argument @var{msgs} should be a list of strings;\n"
+"they are printed in turn, each one followed by a newline.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-undocumented.texi:207
+msgid ""
+"@deffn {Scheme Procedure} valid-object-procedure? proc\n"
+"@deffnx {C Function} scm_valid_object_procedure_p (proc)\n"
+"Return @code{#t} ff @var{proc} is a procedure that can be used with @code"
+"{set-object-procedure}.  It is always valid to use a closure constructed by "
+"@code{lambda}.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-undocumented.texi:212
+msgid ""
+"@deffn {Scheme Procedure} %get-pre-modules-obarray\n"
+"@deffnx {C Function} scm_get_pre_modules_obarray ()\n"
+"Return the obarray that is used for all new bindings before the module "
+"system is booted.  The first call to @code{set-current-module} will boot the "
+"module system.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-undocumented.texi:217
+msgid ""
+"@deffn {Scheme Procedure} standard-interface-eval-closure module\n"
+"@deffnx {C Function} scm_standard_interface_eval_closure (module)\n"
+"Return a interface eval closure for the module @var{module}. Such a closure "
+"does not allow new bindings to be added.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-undocumented.texi:222
+msgid ""
+"@deffn {Scheme Procedure} env-module env\n"
+"@deffnx {C Function} scm_env_module (env)\n"
+"Return the module of @var{ENV}, a lexical environment.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-undocumented.texi:226
+msgid ""
+"@deffn {Scheme Procedure} single-active-thread?\n"
+"implemented by the C function \"scm_single_thread_p\"\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-undocumented.texi:230
+msgid ""
+"@deffn {Scheme Procedure} set-debug-cell-accesses! flag\n"
+"@deffnx {C Function} scm_set_debug_cell_accesses_x (flag)\n"
+"This function is used to turn on checking for a debug version of GUILE. This "
+"version does not support this functionality"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-undocumented.texi:232
+msgctxt "/home/bear/work/guile/doc/guile/en/api-undocumented.texi:232"
+msgid "@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-undocumented.texi:237
+msgid ""
+"@deffn {Scheme Procedure} standard-eval-closure module\n"
+"@deffnx {C Function} scm_standard_eval_closure (module)\n"
+"Return an eval closure for the module @var{module}.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-undocumented.texi:242
+msgid ""
+"@deffn {Scheme Procedure} mask-signals\n"
+"@deffnx {C Function} scm_mask_signals ()\n"
+"Mask signals. The returned value is not specified.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-undocumented.texi:247
+msgid ""
+"@deffn {Scheme Procedure} unmask-signals\n"
+"@deffnx {C Function} scm_unmask_signals ()\n"
+"Unmask signals. The returned value is not specified.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-undocumented.texi:253
+msgid ""
+"@deffn {Scheme Procedure} noop . args\n"
+"@deffnx {C Function} scm_noop (args)\n"
+"Do nothing.  When called without arguments, return @code{#f},\n"
+"otherwise return the first argument.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-undocumented.texi:258
+msgid ""
+"@deffn {Scheme Procedure} system-async thunk\n"
+"@deffnx {C Function} scm_system_async (thunk)\n"
+"This function is deprecated.  You can use @var{thunk} directly\n"
+"instead of explicitly creating an async object."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-undocumented.texi:260
+msgctxt "/home/bear/work/guile/doc/guile/en/api-undocumented.texi:260"
+msgid "@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-undocumented.texi:266
+msgid ""
+"@deffn {Scheme Procedure} object-address obj\n"
+"@deffnx {C Function} scm_object_address (obj)\n"
+"Return an integer that for the lifetime of @var{obj} is uniquely\n"
+"returned by this function for @var{obj}\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-undocumented.texi:273
+msgid ""
+"@deffn {Scheme Procedure} %compute-slots class\n"
+"@deffnx {C Function} scm_sys_compute_slots (class)\n"
+"Return a list consisting of the names of all slots belonging to\n"
+"class @var{class}, i.e.@: the slots of @var{class} and of all of\n"
+"its superclasses.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-undocumented.texi:283
+msgid ""
+"@deffn {Scheme Procedure} get-keyword key l default_value\n"
+"@deffnx {C Function} scm_get_keyword (key, l, default_value)\n"
+"Determine an associated value for the keyword @var{key} from\n"
+"the list @var{l}.  The list @var{l} has to consist of an even\n"
+"number of elements, where, starting with the first, every\n"
+"second element is a keyword, followed by its associated value.\n"
+"If @var{l} does not hold a value for @var{key}, the value\n"
+"@var{default_value} is returned.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-undocumented.texi:286
+msgid ""
+"@deffn {Scheme Procedure} slot-ref-using-class class obj slot_name\n"
+"@deffnx {C Function} scm_slot_ref_using_class (class, obj, slot_name)"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-undocumented.texi:288
+msgctxt "/home/bear/work/guile/doc/guile/en/api-undocumented.texi:288"
+msgid "@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-undocumented.texi:291
+msgid ""
+"@deffn {Scheme Procedure} slot-set-using-class! class obj slot_name value\n"
+"@deffnx {C Function} scm_slot_set_using_class_x (class, obj, slot_name, "
+"value)"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-undocumented.texi:293
+msgctxt "/home/bear/work/guile/doc/guile/en/api-undocumented.texi:293"
+msgid "@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-undocumented.texi:298
+msgid ""
+"@deffn {Scheme Procedure} class-of x\n"
+"@deffnx {C Function} scm_class_of (x)\n"
+"Return the class of @var{x}.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-undocumented.texi:304
+msgid ""
+"@deffn {Scheme Procedure} %goops-loaded\n"
+"@deffnx {C Function} scm_sys_goops_loaded ()\n"
+"Announce that GOOPS is loaded and perform initialization\n"
+"on the C level which depends on the loaded GOOPS modules.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-undocumented.texi:309
+msgid ""
+"@deffn {Scheme Procedure} %method-more-specific? m1 m2 targs\n"
+"@deffnx {C Function} scm_sys_method_more_specific_p (m1, m2, targs)\n"
+"Return true if method @var{m1} is more specific than @var{m2} given the "
+"argument types (classes) listed in @var{targs}.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-undocumented.texi:312
+msgid ""
+"@deffn {Scheme Procedure} find-method . l\n"
+"@deffnx {C Function} scm_find_method (l)"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-undocumented.texi:314
+msgctxt "/home/bear/work/guile/doc/guile/en/api-undocumented.texi:314"
+msgid "@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-undocumented.texi:317
+msgid ""
+"@deffn {Scheme Procedure} primitive-generic-generic subr\n"
+"@deffnx {C Function} scm_primitive_generic_generic (subr)"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-undocumented.texi:319
+msgctxt "/home/bear/work/guile/doc/guile/en/api-undocumented.texi:319"
+msgid "@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-undocumented.texi:322
+msgid ""
+"@deffn {Scheme Procedure} enable-primitive-generic! . subrs\n"
+"@deffnx {C Function} scm_enable_primitive_generic_x (subrs)"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-undocumented.texi:324
+msgctxt "/home/bear/work/guile/doc/guile/en/api-undocumented.texi:324"
+msgid "@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-undocumented.texi:327
+msgid ""
+"@deffn {Scheme Procedure} generic-capability? proc\n"
+"@deffnx {C Function} scm_generic_capability_p (proc)"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-undocumented.texi:329
+msgctxt "/home/bear/work/guile/doc/guile/en/api-undocumented.texi:329"
+msgid "@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-undocumented.texi:332
+msgid ""
+"@deffn {Scheme Procedure} %invalidate-method-cache! gf\n"
+"@deffnx {C Function} scm_sys_invalidate_method_cache_x (gf)"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-undocumented.texi:334
+msgctxt "/home/bear/work/guile/doc/guile/en/api-undocumented.texi:334"
+msgid "@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-undocumented.texi:337
+msgid ""
+"@deffn {Scheme Procedure} %invalidate-class class\n"
+"@deffnx {C Function} scm_sys_invalidate_class (class)"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-undocumented.texi:339
+msgctxt "/home/bear/work/guile/doc/guile/en/api-undocumented.texi:339"
+msgid "@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-undocumented.texi:342
+msgid ""
+"@deffn {Scheme Procedure} %modify-class old new\n"
+"@deffnx {C Function} scm_sys_modify_class (old, new)"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-undocumented.texi:344
+msgctxt "/home/bear/work/guile/doc/guile/en/api-undocumented.texi:344"
+msgid "@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-undocumented.texi:347
+msgid ""
+"@deffn {Scheme Procedure} %modify-instance old new\n"
+"@deffnx {C Function} scm_sys_modify_instance (old, new)"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-undocumented.texi:349
+msgctxt "/home/bear/work/guile/doc/guile/en/api-undocumented.texi:349"
+msgid "@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-undocumented.texi:352
+msgid ""
+"@deffn {Scheme Procedure} %set-object-setter! obj setter\n"
+"@deffnx {C Function} scm_sys_set_object_setter_x (obj, setter)"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-undocumented.texi:354
+msgctxt "/home/bear/work/guile/doc/guile/en/api-undocumented.texi:354"
+msgid "@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-undocumented.texi:360
+msgid ""
+"@deffn {Scheme Procedure} %allocate-instance class initargs\n"
+"@deffnx {C Function} scm_sys_allocate_instance (class, initargs)\n"
+"Create a new instance of class @var{class} and initialize it\n"
+"from the arguments @var{initargs}.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-undocumented.texi:365
+msgid ""
+"@deffn {Scheme Procedure} slot-exists? obj slot_name\n"
+"@deffnx {C Function} scm_slot_exists_p (obj, slot_name)\n"
+"Return @code{#t} if @var{obj} has a slot named @var{slot_name}.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-undocumented.texi:371
+msgid ""
+"@deffn {Scheme Procedure} slot-bound? obj slot_name\n"
+"@deffnx {C Function} scm_slot_bound_p (obj, slot_name)\n"
+"Return @code{#t} if the slot named @var{slot_name} of @var{obj}\n"
+"is bound.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-undocumented.texi:376
+msgid ""
+"@deffn {Scheme Procedure} slot-set! obj slot_name value\n"
+"@deffnx {C Function} scm_slot_set_x (obj, slot_name, value)\n"
+"Set the slot named @var{slot_name} of @var{obj} to @var{value}.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-undocumented.texi:379
+msgid ""
+"@deffn {Scheme Procedure} slot-exists-using-class? class obj slot_name\n"
+"@deffnx {C Function} scm_slot_exists_using_class_p (class, obj, slot_name)"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-undocumented.texi:381
+msgctxt "/home/bear/work/guile/doc/guile/en/api-undocumented.texi:381"
+msgid "@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-undocumented.texi:384
+msgid ""
+"@deffn {Scheme Procedure} slot-bound-using-class? class obj slot_name\n"
+"@deffnx {C Function} scm_slot_bound_using_class_p (class, obj, slot_name)"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-undocumented.texi:386
+msgctxt "/home/bear/work/guile/doc/guile/en/api-undocumented.texi:386"
+msgid "@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-undocumented.texi:392
+msgid ""
+"@deffn {Scheme Procedure} %fast-slot-set! obj index value\n"
+"@deffnx {C Function} scm_sys_fast_slot_set_x (obj, index, value)\n"
+"Set the slot with index @var{index} in @var{obj} to\n"
+"@var{value}.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-undocumented.texi:397
+msgid ""
+"@deffn {Scheme Procedure} %fast-slot-ref obj index\n"
+"@deffnx {C Function} scm_sys_fast_slot_ref (obj, index)\n"
+"Return the slot value with index @var{index} from @var{obj}.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-undocumented.texi:403
+msgid ""
+"@deffn {Scheme Procedure} @@assert-bound-ref obj index\n"
+"@deffnx {C Function} scm_at_assert_bound_ref (obj, index)\n"
+"Like @code{assert-bound}, but use @var{index} for accessing\n"
+"the value from @var{obj}.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-undocumented.texi:409
+msgid ""
+"@deffn {Scheme Procedure} assert-bound value obj\n"
+"@deffnx {C Function} scm_assert_bound (value, obj)\n"
+"Return @var{value} if it is bound, and invoke the\n"
+"@var{slot-unbound} method of @var{obj} if it is not.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-undocumented.texi:414
+msgid ""
+"@deffn {Scheme Procedure} unbound? obj\n"
+"@deffnx {C Function} scm_unbound_p (obj)\n"
+"Return @code{#t} if @var{obj} is unbound.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-undocumented.texi:419
+msgid ""
+"@deffn {Scheme Procedure} make-unbound\n"
+"@deffnx {C Function} scm_make_unbound ()\n"
+"Return the unbound value.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-undocumented.texi:424
+msgid ""
+"@deffn {Scheme Procedure} accessor-method-slot-definition obj\n"
+"@deffnx {C Function} scm_accessor_method_slot_definition (obj)\n"
+"Return the slot definition of the accessor @var{obj}.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-undocumented.texi:429
+msgid ""
+"@deffn {Scheme Procedure} method-procedure obj\n"
+"@deffnx {C Function} scm_method_procedure (obj)\n"
+"Return the procedure of the method @var{obj}.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-undocumented.texi:434
+msgid ""
+"@deffn {Scheme Procedure} method-specializers obj\n"
+"@deffnx {C Function} scm_method_specializers (obj)\n"
+"Return specializers of the method @var{obj}.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-undocumented.texi:439
+msgid ""
+"@deffn {Scheme Procedure} method-generic-function obj\n"
+"@deffnx {C Function} scm_method_generic_function (obj)\n"
+"Return the generic function for the method @var{obj}.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-undocumented.texi:444
+msgid ""
+"@deffn {Scheme Procedure} generic-function-methods obj\n"
+"@deffnx {C Function} scm_generic_function_methods (obj)\n"
+"Return the methods of the generic function @var{obj}.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-undocumented.texi:449
+msgid ""
+"@deffn {Scheme Procedure} generic-function-name obj\n"
+"@deffnx {C Function} scm_generic_function_name (obj)\n"
+"Return the name of the generic function @var{obj}.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-undocumented.texi:454
+msgid ""
+"@deffn {Scheme Procedure} class-environment obj\n"
+"@deffnx {C Function} scm_class_environment (obj)\n"
+"Return the environment of the class @var{obj}.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-undocumented.texi:459
+msgid ""
+"@deffn {Scheme Procedure} class-slots obj\n"
+"@deffnx {C Function} scm_class_slots (obj)\n"
+"Return the slot list of the class @var{obj}.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-undocumented.texi:464
+msgid ""
+"@deffn {Scheme Procedure} class-precedence-list obj\n"
+"@deffnx {C Function} scm_class_precedence_list (obj)\n"
+"Return the class precedence list of the class @var{obj}.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-undocumented.texi:469
+msgid ""
+"@deffn {Scheme Procedure} class-direct-methods obj\n"
+"@deffnx {C Function} scm_class_direct_methods (obj)\n"
+"Return the direct methods of the class @var{obj}\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-undocumented.texi:474
+msgid ""
+"@deffn {Scheme Procedure} class-direct-subclasses obj\n"
+"@deffnx {C Function} scm_class_direct_subclasses (obj)\n"
+"Return the direct subclasses of the class @var{obj}.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-undocumented.texi:479
+msgid ""
+"@deffn {Scheme Procedure} class-direct-slots obj\n"
+"@deffnx {C Function} scm_class_direct_slots (obj)\n"
+"Return the direct slots of the class @var{obj}.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-undocumented.texi:484
+msgid ""
+"@deffn {Scheme Procedure} class-direct-supers obj\n"
+"@deffnx {C Function} scm_class_direct_supers (obj)\n"
+"Return the direct superclasses of the class @var{obj}.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-undocumented.texi:489
+msgid ""
+"@deffn {Scheme Procedure} class-name obj\n"
+"@deffnx {C Function} scm_class_name (obj)\n"
+"Return the class name of @var{obj}.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-undocumented.texi:494
+msgid ""
+"@deffn {Scheme Procedure} instance? obj\n"
+"@deffnx {C Function} scm_instance_p (obj)\n"
+"Return @code{#t} if @var{obj} is an instance.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-undocumented.texi:497
+msgid ""
+"@deffn {Scheme Procedure} %inherit-magic! class dsupers\n"
+"@deffnx {C Function} scm_sys_inherit_magic_x (class, dsupers)"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-undocumented.texi:499
+msgctxt "/home/bear/work/guile/doc/guile/en/api-undocumented.texi:499"
+msgid "@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-undocumented.texi:502
+msgid ""
+"@deffn {Scheme Procedure} %prep-layout! class\n"
+"@deffnx {C Function} scm_sys_prep_layout_x (class)"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-undocumented.texi:504
+msgctxt "/home/bear/work/guile/doc/guile/en/api-undocumented.texi:504"
+msgid "@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-undocumented.texi:510
+msgid ""
+"@deffn {Scheme Procedure} %initialize-object obj initargs\n"
+"@deffnx {C Function} scm_sys_initialize_object (obj, initargs)\n"
+"Initialize the object @var{obj} with the given arguments\n"
+"@var{initargs}.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-undocumented.texi:516
+msgid ""
+"@deffn {Scheme Procedure} make . args\n"
+"@deffnx {C Function} scm_make (args)\n"
+"Make a new object.  @var{args} must contain the class and\n"
+"all necessary initialization information.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-undocumented.texi:522
+msgid ""
+"@deffn {Scheme Procedure} slot-ref obj slot_name\n"
+"@deffnx {C Function} scm_slot_ref (obj, slot_name)\n"
+"Return the value from @var{obj}'s slot with the name\n"
+"@var{slot_name}.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-undocumented.texi:527
+msgid ""
+"@deffn {Scheme Procedure} %tag-body body\n"
+"@deffnx {C Function} scm_sys_tag_body (body)\n"
+"Internal GOOPS magic---don't use this function!\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-undocumented.texi:532
+msgid ""
+"@deffn {Scheme Procedure} make-keyword-from-dash-symbol symbol\n"
+"@deffnx {C Function} scm_make_keyword_from_dash_symbol (symbol)\n"
+"Make a keyword object from a @var{symbol} that starts with a dash.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-undocumented.texi:538
+msgid ""
+"@deffn {Scheme Procedure} keyword-dash-symbol keyword\n"
+"@deffnx {C Function} scm_keyword_dash_symbol (keyword)\n"
+"Return the dash symbol for @var{keyword}.\n"
+"This is the inverse of @code{make-keyword-from-dash-symbol}.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-undocumented.texi:547
+msgid ""
+"@deffn {Scheme Procedure} dimensions->uniform-array dims prot [fill]\n"
+"@deffnx {Scheme Procedure} make-uniform-vector length prototype [fill]\n"
+"@deffnx {C Function} scm_dimensions_to_uniform_array (dims, prot, fill)\n"
+"Create and return a uniform array or vector of type\n"
+"corresponding to @var{prototype} with dimensions @var{dims} or\n"
+"length @var{length}.  If @var{fill} is supplied, it's used to\n"
+"fill the array, otherwise @var{prototype} is used.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-undocumented.texi:554
+msgid ""
+"@deffn {Scheme Procedure} list->uniform-array ndim prot lst\n"
+"@deffnx {C Function} scm_list_to_uniform_array (ndim, prot, lst)\n"
+"Return a uniform array of the type indicated by prototype\n"
+"@var{prot} with elements the same as those of @var{lst}.\n"
+"Elements must be of the appropriate type, no coercions are\n"
+"done."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-undocumented.texi:561
+msgid ""
+"The argument @var{ndim} determines the number of dimensions\n"
+"of the array.  It is either an exact integer, giving the\n"
+"number directly, or a list of exact integers, whose length\n"
+"specifies the number of dimensions and each element is the\n"
+"lower index bound of its dimension.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-undocumented.texi:568
+msgid ""
+"@deffn {Scheme Procedure} array-prototype ra\n"
+"@deffnx {C Function} scm_array_prototype (ra)\n"
+"Return an object that would produce an array of the same type\n"
+"as @var{array}, if used as the @var{prototype} for\n"
+"@code{make-uniform-array}.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-undocumented.texi:573
+msgid ""
+"@deffn {Scheme Procedure} call-with-dynamic-root thunk handler\n"
+"@deffnx {C Function} scm_call_with_dynamic_root (thunk, handler)\n"
+"Call @var{thunk} with a new dynamic state and within a continuation "
+"barrier.  The @var{handler} catches all otherwise uncaught throws and "
+"executes within the same dynamic context as @var{thunk}.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-undocumented.texi:577
+msgid ""
+"@deffn {Scheme Procedure} dynamic-root\n"
+"@deffnx {C Function} scm_dynamic_root ()\n"
+"Return an object representing the current dynamic root."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-undocumented.texi:579
+msgid "These objects are only useful for comparison using @code{eq?}."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-undocumented.texi:581
+msgctxt "/home/bear/work/guile/doc/guile/en/api-undocumented.texi:581"
+msgid "@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-undocumented.texi:586
+msgid ""
+"@deffn {Scheme Procedure} uniform-vector? obj\n"
+"@deffnx {C Function} scm_uniform_vector_p (obj)\n"
+"Return @code{#t} if @var{obj} is a uniform vector.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-undocumented.texi:592
+msgid ""
+"@deffn {Scheme Procedure} uniform-vector-ref v idx\n"
+"@deffnx {C Function} scm_uniform_vector_ref (v, idx)\n"
+"Return the element at index @var{idx} of the\n"
+"homogeneous numeric vector @var{v}.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-undocumented.texi:598
+msgid ""
+"@deffn {Scheme Procedure} uniform-vector-set! v idx val\n"
+"@deffnx {C Function} scm_uniform_vector_set_x (v, idx, val)\n"
+"Set the element at index @var{idx} of the\n"
+"homogeneous numeric vector @var{v} to @var{val}.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-undocumented.texi:603
+msgid ""
+"@deffn {Scheme Procedure} uniform-vector->list uvec\n"
+"@deffnx {C Function} scm_uniform_vector_to_list (uvec)\n"
+"Convert the uniform numeric vector @var{uvec} to a list.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-undocumented.texi:608
+msgid ""
+"@deffn {Scheme Procedure} uniform-vector-length v\n"
+"@deffnx {C Function} scm_uniform_vector_length (v)\n"
+"Return the number of elements in the uniform vector @var{v}.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-undocumented.texi:616
+msgid ""
+"@deffn {Scheme Procedure} make-u8vector len [fill]\n"
+"@deffnx {C Function} scm_make_u8vector (len, fill)\n"
+"Return a newly allocated uniform numeric vector which can\n"
+"hold @var{len} elements.  If @var{fill} is given, it is used to\n"
+"initialize the elements, otherwise the contents of the vector\n"
+"is unspecified.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-undocumented.texi:622
+msgid ""
+"@deffn {Scheme Procedure} u8vector . l\n"
+"@deffnx {C Function} scm_u8vector (l)\n"
+"Return a newly allocated uniform numeric vector containing\n"
+"all argument values.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-undocumented.texi:627
+msgid ""
+"@deffn {Scheme Procedure} list->u8vector l\n"
+"@deffnx {C Function} scm_list_to_u8vector (l)\n"
+"Convert the list @var{l} to a numeric uniform vector.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-undocumented.texi:634
+msgid ""
+"@deffn {Scheme Procedure} any->u8vector obj\n"
+"@deffnx {C Function} scm_any_to_u8vector (obj)\n"
+"Convert @var{obj}, which can be a list, vector, or\n"
+"uniform vector, to a numeric uniform vector of\n"
+"type u8.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-undocumented.texi:639
+msgid ""
+"@deffn {Scheme Procedure} string-any-c-code char_pred s [start [end]]\n"
+"@deffnx {C Function} scm_string_any (char_pred, s, start, end)\n"
+"Check if the predicate @var{pred} is true for any character in\n"
+"the string @var{s}."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-undocumented.texi:643
+msgid ""
+"Calls to @var{pred} are made from left to right across @var{s}.\n"
+"When it returns true (ie.@: non-@code{#f}), that return value\n"
+"is the return from @code{string-any}."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-undocumented.texi:649
+msgctxt "/home/bear/work/guile/doc/guile/en/api-undocumented.texi:649"
+msgid ""
+"The SRFI-13 specification requires that the call to @var{pred}\n"
+"on the last character of @var{s} (assuming that point is\n"
+"reached) be a tail call, but currently in Guile this is not the\n"
+"case.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-undocumented.texi:654
+msgid ""
+"@deffn {Scheme Procedure} string-every-c-code char_pred s [start [end]]\n"
+"@deffnx {C Function} scm_string_every (char_pred, s, start, end)\n"
+"Check if the predicate @var{pred} is true for every character\n"
+"in the string @var{s}."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-undocumented.texi:659
+msgid ""
+"Calls to @var{pred} are made from left to right across @var{s}.\n"
+"If the predicate is true for every character then the return\n"
+"value from the last @var{pred} call is the return from\n"
+"@code{string-every}."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-undocumented.texi:662
+msgid ""
+"If there are no characters in @var{s} (ie.@: @var{start} equals\n"
+"@var{end}) then the return is @code{#t}."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-undocumented.texi:668
+msgctxt "/home/bear/work/guile/doc/guile/en/api-undocumented.texi:668"
+msgid ""
+"The SRFI-13 specification requires that the call to @var{pred}\n"
+"on the last character of @var{s} (assuming that point is\n"
+"reached) be a tail call, but currently in Guile this is not the\n"
+"case.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-undocumented.texi:674
+msgid ""
+"@deffn {Scheme Procedure} inf? x\n"
+"@deffnx {C Function} scm_inf_p (x)\n"
+"Return @code{#t} if @var{x} is either @samp{+inf.0}\n"
+"or @samp{-inf.0}, @code{#f} otherwise.\n"
+"@end deffn"
+msgstr ""

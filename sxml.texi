@@ -1,0 +1,1141 @@
+@c -*-texinfo-*-
+@c This is part of the GNU Guile Reference Manual.
+@c Copyright (C) 2013, 2017 Free Software Foundation, Inc.
+@c See the file guile.texi for copying conditions.
+
+@c SXPath documentation based on SXPath.scm by Oleg Kiselyov,
+@c which is in the public domain according to <http://okmij.org/ftp/>
+@c and <http://ssax.sourceforge.net/>.
+
+@node SXML
+@section SXML
+
+SXML is a native representation of XML in terms of standard Scheme data
+types: lists, symbols, and strings.  For example, the simple XML
+fragment:
+
+@example
+<parrot type="African Grey"><name>Alfie</name></parrot>
+@end example
+
+may be represented with the following SXML:
+
+@example
+(parrot (@@ (type "African Grey")) (name "Alfie"))
+@end example
+
+SXML is very general, and is capable of representing all of XML.
+Formally, this means that SXML is a conforming implementation of the
+@uref{XML Information Set,http://www.w3.org/TR/xml-infoset/} standard.
+
+Guile includes several facilities for working with XML and SXML:
+parsers, serializers, and transformers.
+
+@menu
+* SXML Overview::               XML, as it was meant to be
+* Reading and Writing XML::     Convenient XML parsing and serializing
+* SSAX::                        Custom functional-style XML parsers
+* Transforming SXML::           Munging SXML with @code{pre-post-order}
+* SXML Tree Fold::              Fold-based SXML transformations
+* SXPath::                      XPath for SXML
+* sxml ssax input-parse::       The SSAX tokenizer, optimized for Guile
+* sxml apply-templates::        A more XSLT-like approach to SXML transformations
+@end menu
+
+@node SXML Overview
+@subsection SXML Overview
+
+(This section needs to be written; volunteers welcome.)
+
+@node Reading and Writing XML
+@subsection Reading and Writing XML
+
+The @code{(sxml simple)} module presents a basic interface for parsing
+XML from a port into the Scheme SXML format, and for serializing it back
+to text.
+
+@example
+(use-modules (sxml simple))
+@end example
+
+@deffn {Scheme Procedure} xml->sxml [string-or-port] [#:namespaces='()] @
+       [#:declare-namespaces?=#t] [#:trim-whitespace?=#f] @
+       [#:entities='()] [#:default-entity-handler=#f] @
+       [#:doctype-handler=#f]
+Use SSAX to parse an XML document into SXML. Takes one optional
+argument, @var{string-or-port}, which defaults to the current input
+port.  Returns the resulting SXML document.  If @var{string-or-port} is
+a port, it will be left pointing at the next available character in the
+port.
+@end deffn
+
+As is normal in SXML, XML elements parse as tagged lists.  Attributes,
+if any, are placed after the tag, within an @code{@@} element.  The root
+of the resulting XML will be contained in a special tag, @code{*TOP*}.
+This tag will contain the root element of the XML, but also any prior
+processing instructions.
+
+@example
+(xml->sxml "<foo/>")
+@result{} (*TOP* (foo))
+(xml->sxml "<foo>text</foo>")
+@result{} (*TOP* (foo "text"))
+(xml->sxml "<foo kind=\"bar\">text</foo>")
+@result{} (*TOP* (foo (@@ (kind "bar")) "text"))
+(xml->sxml "<?xml version=\"1.0\"?><foo/>")
+@result{} (*TOP* (*PI* xml "version=\"1.0\"") (foo))
+@end example
+
+All namespaces in the XML document must be declared, via @code{xmlns}
+attributes.  SXML elements built from non-default namespaces will have
+their tags prefixed with their URI.  Users can specify custom prefixes
+for certain namespaces with the @code{#:namespaces} keyword argument to
+@code{xml->sxml}.
+
+@example
+(xml->sxml "<foo xmlns=\"http://example.org/ns1\">text</foo>")
+@result{} (*TOP* (http://example.org/ns1:foo "text"))
+(xml->sxml "<foo xmlns=\"http://example.org/ns1\">text</foo>"
+           #:namespaces '((ns1 . "http://example.org/ns1")))
+@result{} (*TOP* (ns1:foo "text"))
+(xml->sxml "<foo xmlns:bar=\"http://example.org/ns2\"><bar:baz/></foo>"
+           #:namespaces '((ns2 . "http://example.org/ns2")))
+@result{} (*TOP* (foo (ns2:baz)))
+@end example
+
+By default, namespaces passed to @code{xml->sxml} are treated as if they
+were declared on the root element.  Passing a false
+@code{#:declare-namespaces?} argument will disable this behavior,
+requiring in-document declarations of namespaces before use..
+
+@example
+(xml->sxml "<foo><ns2:baz/></foo>"
+           #:namespaces '((ns2 . "http://example.org/ns2")))
+@result{} (*TOP* (foo (ns2:baz)))
+(xml->sxml "<foo><ns2:baz/></foo>"
+           #:namespaces '((ns2 . "http://example.org/ns2"))
+           #:declare-namespaces? #f)
+@result{} error: undeclared namespace: `bar'
+@end example
+
+By default, all whitespace in XML is significant.  Passing the
+@code{#:trim-whitespace?} keyword argument to @code{xml->sxml} will trim
+whitespace in front, behind and between elements, treating it as
+``unsignificant''.  Whitespace in text fragments is left alone.
+
+@example
+(xml->sxml "<foo>\n<bar> Alfie the parrot! </bar>\n</foo>")
+@result{} (*TOP* (foo "\n" (bar " Alfie the parrot! ") "\n"))
+(xml->sxml "<foo>\n<bar> Alfie the parrot! </bar>\n</foo>"
+           #:trim-whitespace? #t)
+@result{} (*TOP* (foo (bar " Alfie the parrot! ")))
+@end example
+
+Parsed entities may be declared with the @code{#:entities} keyword
+argument, or handled with the @code{#:default-entity-handler}.  By
+default, only the standard @code{&lt;}, @code{&gt;}, @code{&amp;},
+@code{&apos;} and @code{&quot;} entities are defined, as well as the
+@code{&#@var{N};} and @code{&#x@var{N};} (decimal and hexadecimal)
+numeric character entities.
+
+@example
+(xml->sxml "<foo>&amp;</foo>")
+@result{} (*TOP* (foo "&"))
+(xml->sxml "<foo>&nbsp;</foo>")
+@result{} error: undefined entity: nbsp
+(xml->sxml "<foo>&#xA0;</foo>")
+@result{} (*TOP* (foo "\xa0"))
+(xml->sxml "<foo>&nbsp;</foo>"
+           #:entities '((nbsp . "\xa0")))
+@result{} (*TOP* (foo "\xa0"))
+(xml->sxml "<foo>&nbsp; &foo;</foo>"
+           #:default-entity-handler
+           (lambda (port name)
+             (case name
+               ((nbsp) "\xa0")
+               (else
+                (format (current-warning-port)
+                        "~a:~a:~a: undefined entitity: ~a\n"
+                        (or (port-filename port) "<unknown file>")
+                        (port-line port) (port-column port)
+                        name)
+                (symbol->string name)))))
+@print{} <unknown file>:0:17: undefined entitity: foo
+@result{} (*TOP* (foo "\xa0 foo"))
+@end example
+
+By default, @code{xml->sxml} skips over the @code{<!DOCTYPE>}
+declaration, if any.  This behavior can be overridden with the
+@code{#:doctype-handler} argument, which should be a procedure of three
+arguments: the @dfn{docname} (a symbol), @dfn{systemid} (a string), and
+the internal doctype subset (as a string or @code{#f} if not present).
+
+The handler should return keyword arguments as multiple values, as if it
+were calling its continuation with keyword arguments.  The continuation
+accepts the @code{#:entities} and @code{#:namespaces} keyword arguments,
+in the same format that @code{xml->sxml} itself takes.  These entities
+and namespaces will be prepended to those given to the @code{xml->sxml}
+invocation.
+
+@example
+(define (handle-foo docname systemid internal-subset)
+  (case docname
+    ((foo)
+     (values #:entities '((greets . "<i>Hello, world!</i>"))))
+    (else
+     (values))))
+
+(xml->sxml "<!DOCTYPE foo><p>&greets;</p>"
+           #:doctype-handler handle-foo)
+@result{} (*TOP* (p (i "Hello, world!")))
+@end example
+
+If the document has no doctype declaration, the @var{doctype-handler} is
+invoked with @code{#f} for the three arguments.
+
+In the future, the continuation may accept other keyword arguments, for
+example to validate the parsed SXML against the doctype.
+
+@deffn {Scheme Procedure} sxml->xml tree [port]
+Serialize the SXML tree @var{tree} as XML. The output will be written to
+the current output port, unless the optional argument @var{port} is
+present.
+@end deffn
+
+@deffn {Scheme Procedure} sxml->string sxml
+Detag an sxml tree @var{sxml} into a string. Does not perform any
+formatting.
+@end deffn
+
+@node SSAX
+@subsection SSAX: A Functional XML Parsing Toolkit
+
+Guile's XML parser is based on Oleg Kiselyov's powerful XML parsing
+toolkit, SSAX.
+
+@subsubsection History
+
+Back in the 1990s, when the world was young again and XML was the
+solution to all of its problems, there were basically two kinds of XML
+parsers out there: DOM parsers and SAX parsers.
+
+A DOM parser reads through an entire XML document, building up a tree of
+``DOM objects'' representing the document structure.  They are very easy
+to use, but sometimes you don't actually want all of the information in
+a document; building an object tree is not necessary if all you want to
+do is to count word frequencies in a document, for example.
+
+SAX parsers were created to give the programmer more control on the
+parsing process.  A programmer gives the SAX parser a number of
+``callbacks'': functions that will be called on various features of the
+XML stream as they are encountered.  SAX parsers are more efficient, but
+much harder to user, as users typically have to manually maintain a
+stack of open elements.
+
+Kiselyov realized that the SAX programming model could be made much
+simpler if the callbacks were formulated not as a linear fold across the
+features of the XML stream, but as a @emph{tree fold} over the structure
+implicit in the XML.  In this way, the user has a very convenient,
+functional-style interface that can still generate optimal parsers.
+
+The @code{xml->sxml} interface from the @code{(sxml simple)} module is a
+DOM-style parser built using SSAX, though it returns SXML instead of DOM
+objects.
+
+@subsubsection Implementation
+
+@code{(sxml ssax)} is a package of low-to-high level lexing and parsing
+procedures that can be combined to yield a SAX, a DOM, a validating
+parser, or a parser intended for a particular document type.  The
+procedures in the package can be used separately to tokenize or parse
+various pieces of XML documents.  The package supports XML Namespaces,
+internal and external parsed entities, user-controlled handling of
+whitespace, and validation.  This module therefore is intended to be a
+framework, a set of ``Lego blocks'' you can use to build a parser
+following any discipline and performing validation to any degree.  As an
+example of the parser construction, the source file includes a
+semi-validating SXML parser.
+
+SSAX has a ``sequential'' feel of SAX yet a ``functional style'' of DOM.
+Like a SAX parser, the framework scans the document only once and
+permits incremental processing.  An application that handles document
+elements in order can run as efficiently as possible.  @emph{Unlike} a
+SAX parser, the framework does not require an application register
+stateful callbacks and surrender control to the parser.  Rather, it is
+the application that can drive the framework -- calling its functions to
+get the current lexical or syntax element.  These functions do not
+maintain or mutate any state save the input port.  Therefore, the
+framework permits parsing of XML in a pure functional style, with the
+input port being a monad (or a linear, read-once parameter).
+
+Besides the @var{port}, there is another monad -- @var{seed}.  Most of
+the middle- and high-level parsers are single-threaded through the
+@var{seed}.  The functions of this framework do not process or affect
+the @var{seed} in any way: they simply pass it around as an instance of
+an opaque datatype.  User functions, on the other hand, can use the seed
+to maintain user's state, to accumulate parsing results, etc.  A user
+can freely mix their own functions with those of the framework.  On the
+other hand, the user may wish to instantiate a high-level parser:
+@code{SSAX:make-elem-parser} or @code{SSAX:make-parser}.  In the latter
+case, the user must provide functions of specific signatures, which are
+called at predictable moments during the parsing: to handle character
+data, element data, or processing instructions (PI).  The functions are
+always given the @var{seed}, among other parameters, and must return the
+new @var{seed}.
+
+From a functional point of view, XML parsing is a combined
+pre-post-order traversal of a ``tree'' that is the XML document itself.
+This down-and-up traversal tells the user about an element when its
+start tag is encountered.  The user is notified about the element once
+more, after all element's children have been handled.  The process of
+XML parsing therefore is a fold over the raw XML document.  Unlike a
+fold over trees defined in [1], the parser is necessarily
+single-threaded -- obviously as elements in a text XML document are laid
+down sequentially.  The parser therefore is a tree fold that has been
+transformed to accept an accumulating parameter [1,2].
+
+Formally, the denotational semantics of the parser can be expressed as
+
+@smallexample 
+ parser:: (Start-tag -> Seed -> Seed) ->
+	   (Start-tag -> Seed -> Seed -> Seed) ->
+	   (Char-Data -> Seed -> Seed) ->
+	   XML-text-fragment -> Seed -> Seed
+ parser fdown fup fchar "<elem attrs> content </elem>" seed
+  = fup "<elem attrs>" seed
+	(parser fdown fup fchar "content" (fdown "<elem attrs>" seed))
+
+ parser fdown fup fchar "char-data content" seed
+  = parser fdown fup fchar "content" (fchar "char-data" seed)
+
+ parser fdown fup fchar "elem-content content" seed
+  = parser fdown fup fchar "content" (
+	parser fdown fup fchar "elem-content" seed)
+@end smallexample
+
+Compare the last two equations with the left fold
+
+@smallexample 
+ fold-left kons elem:list seed = fold-left kons list (kons elem seed)
+@end smallexample
+
+The real parser created by @code{SSAX:make-parser} is slightly more
+complicated, to account for processing instructions, entity references,
+namespaces, processing of document type declaration, etc.
+
+The XML standard document referred to in this module is
+@uref{http://www.w3.org/TR/1998/REC-xml-19980210.html}
+
+The present file also defines a procedure that parses the text of an XML
+document or of a separate element into SXML, an S-expression-based model
+of an XML Information Set.  SXML is also an Abstract Syntax Tree of an
+XML document.  SXML is similar but not identical to DOM; SXML is
+particularly suitable for Scheme-based XML/HTML authoring, SXPath
+queries, and tree transformations.  See SXML.html for more details.
+SXML is a term implementation of evaluation of the XML document [3].
+The other implementation is context-passing.
+
+The present frameworks fully supports the XML Namespaces Recommendation:
+@uref{http://www.w3.org/TR/REC-xml-names/}.
+
+Other links:
+
+@table @asis
+@item [1]
+Jeremy Gibbons, Geraint Jones, "The Under-appreciated Unfold," Proc.
+ICFP'98, 1998, pp. 273-279.
+
+@item [2]
+Richard S. Bird, The promotion and accumulation strategies in
+transformational programming, ACM Trans. Progr. Lang. Systems,
+6(4):487-504, October 1984.
+
+@item [3]
+Ralf Hinze, "Deriving Backtracking Monad Transformers," Functional
+Pearl. Proc ICFP'00, pp. 186-197.
+
+@end table
+
+@subsubsection Usage
+@deffn {Scheme Procedure} current-ssax-error-port 
+@end deffn
+
+@deffn {Scheme Procedure} with-ssax-error-to-port port thunk
+@end deffn
+
+@deffn {Scheme Procedure} xml-token? _
+@verbatim 
+ -- Scheme Procedure: pair? x
+     Return `#t' if X is a pair; otherwise return `#f'.
+
+@end verbatim
+@end deffn
+
+@deffn {Scheme Syntax} xml-token-kind token
+@end deffn
+
+@deffn {Scheme Syntax} xml-token-head token
+@end deffn
+
+@deffn {Scheme Procedure} make-empty-attlist 
+@end deffn
+
+@deffn {Scheme Procedure} attlist-add attlist name-value
+@end deffn
+
+@deffn {Scheme Procedure} attlist-null? x
+Return @code{#t} if @var{x} is the empty list, else @code{#f}.
+@end deffn
+
+@deffn {Scheme Procedure} attlist-remove-top attlist
+@end deffn
+
+@deffn {Scheme Procedure} attlist->alist attlist
+@end deffn
+
+@deffn {Scheme Procedure} attlist-fold kons knil lis1
+@end deffn
+
+@deffn {Scheme Procedure} define-parsed-entity! entity str
+Define a new parsed entity.  @var{entity} should be a symbol.
+
+Instances of &@var{entity}; in XML text will be replaced with the string
+@var{str}, which will then be parsed.
+@end deffn
+
+@deffn {Scheme Procedure} reset-parsed-entity-definitions! 
+Restore the set of parsed entity definitions to its initial state.
+@end deffn
+
+@deffn {Scheme Procedure} ssax:uri-string->symbol uri-str
+@end deffn
+
+@deffn {Scheme Procedure} ssax:skip-internal-dtd port
+@end deffn
+
+@deffn {Scheme Procedure} ssax:read-pi-body-as-string port
+@end deffn
+
+@deffn {Scheme Procedure} ssax:reverse-collect-str-drop-ws fragments
+@end deffn
+
+@deffn {Scheme Procedure} ssax:read-markup-token port
+@end deffn
+
+@deffn {Scheme Procedure} ssax:read-cdata-body port str-handler seed
+@end deffn
+
+@deffn {Scheme Procedure} ssax:read-char-ref port
+@end deffn
+
+@deffn {Scheme Procedure} ssax:read-attributes port entities
+@end deffn
+
+@deffn {Scheme Procedure} ssax:complete-start-tag tag-head port elems entities namespaces
+@end deffn
+
+@deffn {Scheme Procedure} ssax:read-external-id port
+@end deffn
+
+@deffn {Scheme Procedure} ssax:read-char-data port expect-eof? str-handler seed
+@end deffn
+
+@deffn {Scheme Procedure} ssax:xml->sxml port namespace-prefix-assig
+@end deffn
+
+@deffn {Scheme Syntax} ssax:make-parser . kw-val-pairs
+@end deffn
+
+@deffn {Scheme Syntax} ssax:make-pi-parser orig-handlers
+@end deffn
+
+@deffn {Scheme Syntax} ssax:make-elem-parser my-new-level-seed my-finish-element my-char-data-handler my-pi-handlers
+@end deffn
+
+@node Transforming SXML
+@subsection Transforming SXML
+@subsubsection Overview
+@heading SXML expression tree transformers
+@subheading Pre-Post-order traversal of a tree and creation of a new tree
+@smallexample 
+pre-post-order:: <tree> x <bindings> -> <new-tree>
+@end smallexample
+
+where
+
+@smallexample 
+ <bindings> ::= (<binding> ...)
+ <binding> ::= (<trigger-symbol> *preorder* . <handler>) |
+               (<trigger-symbol> *macro* . <handler>) |
+		(<trigger-symbol> <new-bindings> . <handler>) |
+		(<trigger-symbol> . <handler>)
+ <trigger-symbol> ::= XMLname | *text* | *default*
+ <handler> :: <trigger-symbol> x [<tree>] -> <new-tree>
+@end smallexample
+
+The pre-post-order function visits the nodes and nodelists
+pre-post-order (depth-first).  For each @code{<Node>} of the form
+@code{(@var{name} <Node> ...)}, it looks up an association with the
+given @var{name} among its @var{<bindings>}.  If failed,
+@code{pre-post-order} tries to locate a @code{*default*} binding.  It's
+an error if the latter attempt fails as well.  Having found a binding,
+the @code{pre-post-order} function first checks to see if the binding is
+of the form
+
+@smallexample 
+	(<trigger-symbol> *preorder* . <handler>)
+@end smallexample
+
+If it is, the handler is 'applied' to the current node.  Otherwise, the
+pre-post-order function first calls itself recursively for each child of
+the current node, with @var{<new-bindings>} prepended to the
+@var{<bindings>} in effect.  The result of these calls is passed to the
+@var{<handler>} (along with the head of the current @var{<Node>}).  To be
+more precise, the handler is _applied_ to the head of the current node
+and its processed children.  The result of the handler, which should also
+be a @code{<tree>}, replaces the current @var{<Node>}.  If the current
+@var{<Node>} is a text string or other atom, a special binding with a
+symbol @code{*text*} is looked up.
+
+A binding can also be of a form
+
+@smallexample 
+	(<trigger-symbol> *macro* . <handler>)
+@end smallexample
+
+This is equivalent to @code{*preorder*} described above.  However, the
+result is re-processed again, with the current stylesheet.
+
+@subsubsection Usage
+@deffn {Scheme Procedure} SRV:send-reply . fragments
+Output the @var{fragments} to the current output port.
+
+The fragments are a list of strings, characters, numbers, thunks,
+@code{#f}, @code{#t} -- and other fragments.  The function traverses the
+tree depth-first, writes out strings and characters, executes thunks,
+and ignores @code{#f} and @code{'()}.  The function returns @code{#t} if
+anything was written at all; otherwise the result is @code{#f} If
+@code{#t} occurs among the fragments, it is not written out but causes
+the result of @code{SRV:send-reply} to be @code{#t}.
+@end deffn
+
+@deffn {Scheme Procedure} foldts fdown fup fhere seed tree
+@end deffn
+
+@deffn {Scheme Procedure} post-order tree bindings
+@end deffn
+
+@deffn {Scheme Procedure} pre-post-order tree bindings
+@end deffn
+
+@deffn {Scheme Procedure} replace-range beg-pred end-pred forest
+@end deffn
+
+@node SXML Tree Fold
+@subsection SXML Tree Fold
+@subsubsection Overview
+@code{(sxml fold)} defines a number of variants of the @dfn{fold}
+algorithm for use in transforming SXML trees.  Additionally it defines
+the layout operator, @code{fold-layout}, which might be described as a
+context-passing variant of SSAX's @code{pre-post-order}.
+
+@subsubsection Usage
+@deffn {Scheme Procedure} foldt fup fhere tree
+The standard multithreaded tree fold.
+
+@var{fup} is of type [a] -> a. @var{fhere} is of type object -> a.
+@end deffn
+
+@deffn {Scheme Procedure} foldts fdown fup fhere seed tree
+The single-threaded tree fold originally defined in SSAX.  @xref{SSAX},
+for more information.
+@end deffn
+
+@deffn {Scheme Procedure} foldts* fdown fup fhere seed tree
+A variant of @code{foldts} that allows pre-order tree
+rewrites.  Originally defined in Andy Wingo's 2007 paper,
+@emph{Applications of fold to XML transformation}.
+@end deffn
+
+@deffn {Scheme Procedure} fold-values proc list . seeds
+A variant of @code{fold} that allows multi-valued seeds.  Note that the
+order of the arguments differs from that of @code{fold}.  @xref{SRFI-1
+Fold and Map}.
+@end deffn
+
+@deffn {Scheme Procedure} foldts*-values fdown fup fhere tree . seeds
+A variant of @code{foldts*} that allows multi-valued
+seeds.  Originally defined in Andy Wingo's 2007 paper, @emph{Applications
+of fold to XML transformation}.
+@end deffn
+
+@deffn {Scheme Procedure} fold-layout tree bindings params layout stylesheet
+A traversal combinator in the spirit of @code{pre-post-order}.
+@xref{Transforming SXML}.
+
+@code{fold-layout} was originally presented in Andy Wingo's 2007 paper,
+@emph{Applications of fold to XML transformation}.
+
+@example 
+bindings := (<binding>...)
+binding  := (<tag> <handler-pair>...)
+          | (*default* . <post-handler>)
+          | (*text* . <text-handler>)
+tag      := <symbol>
+handler-pair := (pre-layout . <pre-layout-handler>)
+          | (post . <post-handler>)
+          | (bindings . <bindings>)
+          | (pre . <pre-handler>)
+          | (macro . <macro-handler>)
+@end example
+
+@table @var
+@item pre-layout-handler
+A function of three arguments:
+
+@table @var
+@item kids
+the kids of the current node, before traversal
+
+@item params
+the params of the current node
+
+@item layout
+the layout coming into this node
+
+@end table
+
+@var{pre-layout-handler} is expected to use this information to return a
+layout to pass to the kids.  The default implementation returns the
+layout given in the arguments.
+
+@item post-handler
+A function of five arguments:
+
+@table @var
+@item tag
+the current tag being processed
+
+@item params
+the params of the current node
+
+@item layout
+the layout coming into the current node, before any kids were processed
+
+@item klayout
+the layout after processing all of the children
+
+@item kids
+the already-processed child nodes
+
+@end table
+
+@var{post-handler} should return two values, the layout to pass to the
+next node and the final tree.
+
+@item text-handler
+@var{text-handler} is a function of three arguments:
+
+@table @var
+@item text
+the string
+
+@item params
+the current params
+
+@item layout
+the current layout
+
+@end table
+
+@var{text-handler} should return two values, the layout to pass to the
+next node and the value to which the string should transform.
+
+@end table
+@end deffn
+
+@node SXPath
+@subsection SXPath
+@subsubsection Overview
+@heading SXPath: SXML Query Language
+SXPath is a query language for SXML, an instance of XML Information set
+(Infoset) in the form of s-expressions.  See @code{(sxml ssax)} for the
+definition of SXML and more details.  SXPath is also a translation into
+Scheme of an XML Path Language, @uref{http://www.w3.org/TR/xpath,XPath}.
+XPath and SXPath describe means of selecting a set of Infoset's items or
+their properties.
+
+To facilitate queries, XPath maps the XML Infoset into an explicit tree,
+and introduces important notions of a location path and a current,
+context node.  A location path denotes a selection of a set of nodes
+relative to a context node.  Any XPath tree has a distinguished, root
+node -- which serves as the context node for absolute location paths.
+Location path is recursively defined as a location step joined with a
+location path.  A location step is a simple query of the database
+relative to a context node.  A step may include expressions that further
+filter the selected set.  Each node in the resulting set is used as a
+context node for the adjoining location path.  The result of the step is
+a union of the sets returned by the latter location paths.
+
+The SXML representation of the XML Infoset (see SSAX.scm) is rather
+suitable for querying as it is.  Bowing to the XPath specification, we
+will refer to SXML information items as 'Nodes':
+
+@example 
+ 	<Node> ::= <Element> | <attributes-coll> | <attrib>
+ 		   | "text string" | <PI>
+@end example
+
+This production can also be described as
+
+@example 
+	<Node> ::= (name . <Nodeset>) | "text string"
+@end example
+
+An (ordered) set of nodes is just a list of the constituent nodes:
+
+@example 
+ 	<Nodeset> ::= (<Node> ...)
+@end example
+
+Nodesets, and Nodes other than text strings are both lists.  A <Nodeset>
+however is either an empty list, or a list whose head is not a symbol.  A
+symbol at the head of a node is either an XML name (in which case it's a
+tag of an XML element), or an administrative name such as '@@'.  This
+uniform list representation makes processing rather simple and elegant,
+while avoiding confusion.  The multi-branch tree structure formed by the
+mutually-recursive datatypes <Node> and <Nodeset> lends itself well to
+processing by functional languages.
+
+A location path is in fact a composite query over an XPath tree or its
+branch.  A singe step is a combination of a projection, selection or a
+transitive closure.  Multiple steps are combined via join and union
+operations.  This insight allows us to @emph{elegantly} implement XPath
+as a sequence of projection and filtering primitives -- converters --
+joined by @dfn{combinators}.  Each converter takes a node and returns a
+nodeset which is the result of the corresponding query relative to that
+node.  A converter can also be called on a set of nodes.  In that case it
+returns a union of the corresponding queries over each node in the set.
+The union is easily implemented as a list append operation as all nodes
+in a SXML tree are considered distinct, by XPath conventions.  We also
+preserve the order of the members in the union.  Query combinators are
+high-order functions: they take converter(s) (which is a Node|Nodeset ->
+Nodeset function) and compose or otherwise combine them.  We will be
+concerned with only relative location paths [XPath]: an absolute
+location path is a relative path applied to the root node.
+
+Similarly to XPath, SXPath defines full and abbreviated notations for
+location paths.  In both cases, the abbreviated notation can be
+mechanically expanded into the full form by simple rewriting rules.  In
+the case of SXPath the corresponding rules are given in the
+documentation of the @code{sxpath} procedure.
+@xref{sxpath-procedure-docs,,SXPath procedure documentation}.
+
+The regression test suite at the end of the file @file{SXPATH-old.scm}
+shows a representative sample of SXPaths in both notations, juxtaposed
+with the corresponding XPath expressions.  Most of the samples are
+borrowed literally from the XPath specification.
+
+Much of the following material is taken from the SXPath sources by Oleg
+Kiselyov et al.
+
+@subsubsection Basic Converters and Applicators
+
+A converter is a function mapping a nodeset (or a single node) to another
+nodeset.  Its type can be represented like this:
+
+@example
+type Converter = Node|Nodeset -> Nodeset
+@end example
+
+A converter can also play the role of a predicate: in that case, if a
+converter, applied to a node or a nodeset, yields a non-empty nodeset,
+the converter-predicate is deemed satisfied.  Likewise, an empty nodeset
+is equivalent to @code{#f} in denoting failure.
+
+@deffn {Scheme Procedure} nodeset? x
+Return @code{#t} if @var{x} is a nodeset.
+@end deffn
+
+@deffn {Scheme Procedure} node-typeof? crit
+This function implements a 'Node test' as defined in Sec. 2.3 of the
+XPath document.  A node test is one of the components of a location
+step.  It is also a converter-predicate in SXPath.
+
+The function @code{node-typeof?} takes a type criterion and returns a
+function, which, when applied to a node, will tell if the node satisfies
+the test.
+
+The criterion @var{crit} is a symbol, one of the following:
+
+@table @code
+@item id
+tests if the node has the right name (id)
+
+@item @@
+tests if the node is an <attributes-coll>
+
+@item *
+tests if the node is an <Element>
+
+@item *text*
+tests if the node is a text node
+
+@item *PI*
+tests if the node is a PI (processing instruction) node
+
+@item *any*
+@code{#t} for any type of node
+@end table
+@end deffn
+
+@deffn {Scheme Procedure} node-eq? other
+A curried equivalence converter predicate that takes a node @var{other}
+and returns a function that takes another node.  The two nodes are
+compared using @code{eq?}.
+@end deffn
+
+@deffn {Scheme Procedure} node-equal? other
+A curried equivalence converter predicate that takes a node @var{other}
+and returns a function that takes another node.  The two nodes are
+compared using @code{equal?}.
+@end deffn
+
+@deffn {Scheme Procedure} node-pos n
+Select the @var{n}'th element of a nodeset and return as a singular
+nodeset.  If the @var{n}'th element does not exist, return an empty
+nodeset.  If @var{n} is a negative number the node is picked from the
+tail of the list.
+
+@example
+((node-pos 1) nodeset)  ; return the the head of the nodeset (if exists)
+((node-pos 2) nodeset)  ; return the node after that (if exists)
+((node-pos -1) nodeset) ; selects the last node of a non-empty nodeset
+((node-pos -2) nodeset) ; selects the last but one node, if exists.
+@end example
+@end deffn
+
+@deffn {Scheme Procedure} filter pred?
+A filter applicator, which introduces a filtering context.  The argument
+converter @var{pred?} is considered a predicate, with either @code{#f}
+or @code{nil} meaning failure.
+@end deffn
+
+@deffn {Scheme Procedure} take-until pred?
+@example
+take-until:: Converter -> Converter, or
+take-until:: Pred -> Node|Nodeset -> Nodeset
+@end example
+
+Given a converter-predicate @var{pred?} and a nodeset, apply the
+predicate to each element of the nodeset, until the predicate yields
+anything but @code{#f} or @code{nil}.  Return the elements of the input
+nodeset that have been processed until that moment (that is, which fail
+the predicate).
+
+@code{take-until} is a variation of the @code{filter} above:
+@code{take-until} passes elements of an ordered input set up to (but not
+including) the first element that satisfies the predicate.  The nodeset
+returned by @code{((take-until (not pred)) nset)} is a subset -- to be
+more precise, a prefix -- of the nodeset returned by @code{((filter
+pred) nset)}.
+@end deffn
+
+@deffn {Scheme Procedure} take-after pred?
+@example
+take-after:: Converter -> Converter, or
+take-after:: Pred -> Node|Nodeset -> Nodeset
+@end example
+
+Given a converter-predicate @var{pred?} and a nodeset, apply the
+predicate to each element of the nodeset, until the predicate yields
+anything but @code{#f} or @code{nil}.  Return the elements of the input
+nodeset that have not been processed: that is, return the elements of
+the input nodeset that follow the first element that satisfied the
+predicate.
+
+@code{take-after} along with @code{take-until} partition an input
+nodeset into three parts: the first element that satisfies a predicate,
+all preceding elements and all following elements.
+@end deffn
+
+@deffn {Scheme Procedure} map-union proc lst
+Apply @var{proc} to each element of @var{lst} and return the list of results.
+If @var{proc} returns a nodeset, splice it into the result
+
+From another point of view, @code{map-union} is a function
+@code{Converter->Converter}, which places an argument-converter in a joining
+context.
+@end deffn
+
+@deffn {Scheme Procedure} node-reverse node-or-nodeset
+@example
+node-reverse :: Converter, or
+node-reverse:: Node|Nodeset -> Nodeset
+@end example
+
+Reverses the order of nodes in the nodeset.  This basic converter is
+needed to implement a reverse document order (see the XPath
+Recommendation).
+@end deffn
+
+@deffn {Scheme Procedure} node-trace title
+@example
+node-trace:: String -> Converter
+@end example
+
+@code{(node-trace title)} is an identity converter.  In addition it
+prints out the node or nodeset it is applied to, prefixed with the
+@var{title}.  This converter is very useful for debugging.
+@end deffn
+
+@subsubsection Converter Combinators
+
+Combinators are higher-order functions that transmogrify a converter or
+glue a sequence of converters into a single, non-trivial converter.  The
+goal is to arrive at converters that correspond to XPath location paths.
+
+From a different point of view, a combinator is a fixed, named
+@dfn{pattern} of applying converters.  Given below is a complete set of
+such patterns that together implement XPath location path specification.
+As it turns out, all these combinators can be built from a small number
+of basic blocks: regular functional composition, @code{map-union} and
+@code{filter} applicators, and the nodeset union.
+
+@deffn {Scheme Procedure} select-kids test-pred?
+@code{select-kids} takes a converter (or a predicate) as an argument and
+returns another converter.  The resulting converter applied to a nodeset
+returns an ordered subset of its children that satisfy the predicate
+@var{test-pred?}.
+@end deffn
+
+@deffn {Scheme Procedure} node-self pred?
+Similar to @code{select-kids} except that the predicate @var{pred?} is
+applied to the node itself rather than to its children.  The resulting
+nodeset will contain either one component, or will be empty if the node
+failed the predicate.
+@end deffn
+
+@deffn {Scheme Procedure} node-join . selectors
+@example
+node-join:: [LocPath] -> Node|Nodeset -> Nodeset, or
+node-join:: [Converter] -> Converter
+@end example
+
+Join the sequence of location steps or paths as described above.
+@end deffn
+
+@deffn {Scheme Procedure} node-reduce . converters
+@example
+node-reduce:: [LocPath] -> Node|Nodeset -> Nodeset, or
+node-reduce:: [Converter] -> Converter
+@end example
+
+A regular functional composition of converters.  From a different point
+of view, @code{((apply node-reduce converters) nodeset)} is equivalent
+to @code{(foldl apply nodeset converters)}, i.e., folding, or reducing,
+a list of converters with the nodeset as a seed.
+@end deffn
+
+@deffn {Scheme Procedure} node-or . converters
+@example
+node-or:: [Converter] -> Converter
+@end example
+
+This combinator applies all converters to a given node and produces the
+union of their results.  This combinator corresponds to a union
+(@code{|} operation) for XPath location paths.
+@end deffn
+
+@deffn {Scheme Procedure} node-closure test-pred?
+@example
+node-closure:: Converter -> Converter
+@end example
+
+Select all @emph{descendants} of a node that satisfy a
+converter-predicate @var{test-pred?}.  This combinator is similar to
+@code{select-kids} but applies to grand... children as well.  This
+combinator implements the @code{descendant::} XPath axis.  Conceptually,
+this combinator can be expressed as
+
+@example
+(define (node-closure f)
+  (node-or
+    (select-kids f)
+    (node-reduce (select-kids (node-typeof? '*)) (node-closure f))))
+@end example
+
+This definition, as written, looks somewhat like a fixpoint, and it will
+run forever.  It is obvious however that sooner or later
+@code{(select-kids (node-typeof? '*))} will return an empty nodeset.  At
+this point further iterations will no longer affect the result and can
+be stopped.
+@end deffn
+
+@deffn {Scheme Procedure} node-parent rootnode
+@example
+node-parent:: RootNode -> Converter
+@end example
+
+@code{(node-parent rootnode)} yields a converter that returns a parent
+of a node it is applied to.  If applied to a nodeset, it returns the
+list of parents of nodes in the nodeset.  The @var{rootnode} does not
+have to be the root node of the whole SXML tree -- it may be a root node
+of a branch of interest.
+
+Given the notation of Philip Wadler's paper on semantics of XSLT,
+
+@verbatim
+  parent(x) = { y | y=subnode*(root), x=subnode(y) }
+@end verbatim
+
+Therefore, @code{node-parent} is not the fundamental converter: it can
+be expressed through the existing ones.  Yet @code{node-parent} is a
+rather convenient converter.  It corresponds to a @code{parent::} axis
+of SXPath.  Note that the @code{parent::} axis can be used with an
+attribute node as well.
+@end deffn
+
+@anchor{sxpath-procedure-docs}
+@deffn {Scheme Procedure} sxpath path
+Evaluate an abbreviated SXPath.
+
+@example
+sxpath:: AbbrPath -> Converter, or
+sxpath:: AbbrPath -> Node|Nodeset -> Nodeset
+@end example
+
+@var{path} is a list.  It is translated to the full SXPath according to
+the following rewriting rules:
+
+@example
+(sxpath '())
+@result{} (node-join)
+
+(sxpath '(path-component ...))
+@result{} (node-join (sxpath1 path-component) (sxpath '(...)))
+
+(sxpath1 '//)
+@result{} (node-or
+   (node-self (node-typeof? '*any*))
+   (node-closure (node-typeof? '*any*)))
+
+(sxpath1 '(equal? x))
+@result{} (select-kids (node-equal? x))
+
+(sxpath1 '(eq? x))
+@result{} (select-kids (node-eq? x))
+
+(sxpath1 ?symbol)
+@result{} (select-kids (node-typeof? ?symbol)
+
+(sxpath1 procedure)
+@result{} procedure
+
+(sxpath1 '(?symbol ...))
+@result{} (sxpath1 '((?symbol) ...))
+
+(sxpath1 '(path reducer ...))
+@result{} (node-reduce (sxpath path) (sxpathr reducer) ...)
+
+(sxpathr number)
+@result{} (node-pos number)
+
+(sxpathr path-filter)
+@result{} (filter (sxpath path-filter))
+@end example
+@end deffn
+
+@node sxml ssax input-parse
+@subsection (sxml ssax input-parse)
+@subsubsection Overview
+A simple lexer.
+
+The procedures in this module surprisingly often suffice to parse an
+input stream.  They either skip, or build and return tokens, according to
+inclusion or delimiting semantics.  The list of characters to expect,
+include, or to break at may vary from one invocation of a function to
+another.  This allows the functions to easily parse even
+context-sensitive languages.
+
+EOF is generally frowned on, and thrown up upon if encountered.
+Exceptions are mentioned specifically.  The list of expected characters
+(characters to skip until, or break-characters) may include an EOF
+"character", which is to be coded as the symbol, @code{*eof*}.
+
+The input stream to parse is specified as a @dfn{port}, which is usually
+the last (and optional) argument.  It defaults to the current input port
+if omitted.
+
+If the parser encounters an error, it will throw an exception to the key
+@code{parser-error}.  The arguments will be of the form @code{(@var{port}
+@var{message} @var{specialising-msg}*)}.
+
+The first argument is a port, which typically points to the offending
+character or its neighborhood.  You can then use @code{port-column} and
+@code{port-line} to query the current position.  @var{message} is the
+description of the error.  Other arguments supply more details about the
+problem.
+
+@subsubsection Usage
+@deffn {Scheme Procedure} peek-next-char [port]
+@end deffn
+
+@deffn {Scheme Procedure} assert-curr-char expected-chars comment [port]
+@end deffn
+
+@deffn {Scheme Procedure} skip-until arg [port]
+@end deffn
+
+@deffn {Scheme Procedure} skip-while skip-chars [port]
+@end deffn
+
+@deffn {Scheme Procedure} next-token prefix-skipped-chars break-chars [comment] [port]
+@end deffn
+
+@deffn {Scheme Procedure} next-token-of incl-list/pred [port]
+@end deffn
+
+@deffn {Scheme Procedure} read-text-line [port]
+@end deffn
+
+@deffn {Scheme Procedure} read-string n [port]
+@end deffn
+
+@deffn {Scheme Procedure} find-string-from-port? _ _ . _
+Looks for @var{str} in @var{<input-port>}, optionally within the first
+@var{max-no-char} characters.
+@end deffn
+
+@node sxml apply-templates
+@subsection (sxml apply-templates)
+@subsubsection Overview
+Pre-order traversal of a tree and creation of a new tree:
+
+@smallexample 
+	apply-templates:: tree x <templates> -> <new-tree>
+@end smallexample
+
+where
+
+@smallexample 
+ <templates> ::= (<template> ...)
+ <template>  ::= (<node-test> <node-test> ... <node-test> . <handler>)
+ <node-test> ::= an argument to node-typeof? above
+ <handler>   ::= <tree> -> <new-tree>
+@end smallexample
+
+This procedure does a @emph{normal}, pre-order traversal of an SXML
+tree.  It walks the tree, checking at each node against the list of
+matching templates.
+
+If the match is found (which must be unique, i.e., unambiguous), the
+corresponding handler is invoked and given the current node as an
+argument.  The result from the handler, which must be a @code{<tree>},
+takes place of the current node in the resulting tree.  The name of the
+function is not accidental: it resembles rather closely an
+@code{apply-templates} function of XSLT.
+
+@subsubsection Usage
+@deffn {Scheme Procedure} apply-templates tree templates
+@end deffn

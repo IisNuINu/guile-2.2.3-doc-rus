@@ -1,0 +1,4329 @@
+#. extracted from /home/bear/work/guile/doc/guile/en/r6rs.texi
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2018-05-07 12:37+0300\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Generator: Translate Toolkit 2.2.5\n"
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:6
+msgid ""
+"@c -*-texinfo-*-\n"
+"@c This is part of the GNU Guile Reference Manual.\n"
+"@c Copyright (C)  2010, 2011, 2012, 2013,\n"
+"@c   2014 Free Software Foundation, Inc.\n"
+"@c See the file guile.texi for copying conditions."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:10
+msgid ""
+"@node R6RS Support\n"
+"@section R6RS Support\n"
+"@cindex R6RS"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:13
+msgid ""
+"@xref{R6RS Libraries}, for more information on how to define R6RS libraries, "
+"and\n"
+"their integration with Guile modules."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:18
+msgid ""
+"@menu\n"
+"* R6RS Incompatibilities::              Guile mostly implements R6RS.\n"
+"* R6RS Standard Libraries::             Modules defined by the R6RS.\n"
+"@end menu"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:21
+msgid ""
+"@node R6RS Incompatibilities\n"
+"@subsection Incompatibilities with the R6RS"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:26
+msgid ""
+"There are some incompatibilities between Guile and the R6RS.  Some of \n"
+"them are intentional, some of them are bugs, and some are simply \n"
+"unimplemented features.  Please let the Guile developers know if you \n"
+"find one that is not on this list."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:33
+msgid ""
+"@itemize\n"
+"@item\n"
+"The R6RS specifies many situations in which a conforming implementation\n"
+"must signal a specific error.  Guile doesn't really care about that too\n"
+"much---if a correct R6RS program would not hit that error, we don't \n"
+"bother checking for it."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:38
+msgid ""
+"@item\n"
+"Multiple @code{library} forms in one file are not yet supported.  This \n"
+"is because the expansion of @code{library} sets the current module, but\n"
+"does not restore it.  This is a bug."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:43
+msgid ""
+"@item\n"
+"R6RS unicode escapes within strings are disabled by default, because\n"
+"they conflict with Guile's already-existing escapes. The same is the\n"
+"case for R6RS treatment of escaped newlines in strings."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:46
+msgid ""
+"R6RS behavior can be turned on via a reader option. @xref{String\n"
+"Syntax}, for more information."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:51
+msgid ""
+"@item\n"
+"A @code{set!} to a variable transformer may only expand to an \n"
+"expression, not a definition---even if the original @code{set!} \n"
+"expression was in definition context."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:55
+msgid ""
+"@item\n"
+"Instead of using the algorithm detailed in chapter 10 of the R6RS,\n"
+"expansion of toplevel forms happens sequentially."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:58
+msgid ""
+"For example, while the expansion of the following set of toplevel\n"
+"definitions does the correct thing:"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:70
+msgid ""
+"@example\n"
+"(begin\n"
+" (define even?\n"
+"   (lambda (x)\n"
+"     (or (= x 0) (odd? (- x 1)))))\n"
+" (define-syntax odd?\n"
+"   (syntax-rules ()\n"
+"     ((odd? x) (not (even? x)))))\n"
+" (even? 10))\n"
+"@result{} #t\n"
+"@end example"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:73
+msgid ""
+"@noindent\n"
+"The same definitions outside of the @code{begin} wrapper do not:"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:85
+msgid ""
+"@example\n"
+"(define even?\n"
+"  (lambda (x)\n"
+"    (or (= x 0) (odd? (- x 1)))))\n"
+"(define-syntax odd?\n"
+"  (syntax-rules ()\n"
+"    ((odd? x) (not (even? x)))))\n"
+"(even? 10)\n"
+"<unnamed port>:4:18: In procedure even?:\n"
+"<unnamed port>:4:18: Wrong type to apply: #<syntax-transformer odd?>\n"
+"@end example"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:89
+msgid ""
+"This is because when expanding the right-hand-side of @code{even?}, the\n"
+"reference to @code{odd?} is not yet marked as a syntax transformer, so\n"
+"it is assumed to be a function."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:94
+msgid ""
+"This bug will only affect top-level programs, not code in @code{library}\n"
+"forms.  Fixing it for toplevel forms seems doable, but tricky to\n"
+"implement in a backward-compatible way. Suggestions and/or patches would\n"
+"be appreciated."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:98
+msgid ""
+"@item\n"
+"The @code{(rnrs io ports)} module is incomplete.  Work is\n"
+"ongoing to fix this."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:103
+msgid ""
+"@item\n"
+"Guile does not prevent use of textual I/O procedures on binary ports, or\n"
+"vice versa.  All ports in Guile support both binary and textual I/O.\n"
+"@xref{Encoding}, for full details."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:108
+msgid ""
+"@item\n"
+"Guile's implementation of @code{equal?} may fail to terminate when\n"
+"applied to arguments containing cycles.\n"
+"@end itemize"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:111
+msgid ""
+"@node R6RS Standard Libraries\n"
+"@subsection R6RS Standard Libraries"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:117
+msgid ""
+"In contrast with earlier versions of the Revised Report, the R6RS \n"
+"organizes the procedures and syntactic forms required of conforming\n"
+"implementations into a set of ``standard libraries'' which can be\n"
+"imported as necessary by user programs and libraries.  Here we briefly \n"
+"list the libraries that have been implemented for Guile."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:123
+msgid ""
+"We do not attempt to document these libraries fully here, as most of \n"
+"their functionality is already available in Guile itself.  The \n"
+"expectation is that most Guile users will use the well-known and \n"
+"well-documented Guile modules.  These R6RS libraries are mostly useful\n"
+"to users who want to port their code to other R6RS systems."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:132
+msgid ""
+"The documentation in the following sections reproduces some of the \n"
+"content of the library section of the Report, but is mostly intended to\n"
+"provide supplementary information about Guile's implementation of the\n"
+"R6RS standard libraries.  For complete documentation, design rationales\n"
+"and further examples, we advise you to consult the ``Standard \n"
+"Libraries'' section of the Report (@pxref{Standard Libraries,\n"
+"R6RS Standard Libraries,, r6rs, The Revised^6 Report on the Algorithmic\n"
+"Language Scheme})."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:141
+msgid ""
+"@menu\n"
+"* Library Usage::               What to know about Guile's library support.\n"
+"* rnrs base::                   The base library.\n"
+"* rnrs unicode::                Access to Unicode operations.\n"
+"* rnrs bytevectors::            Functions for working with binary data.\n"
+"* rnrs lists::                  List utilities.\n"
+"* rnrs sorting::                Sorting for lists and vectors.\n"
+"* rnrs control::                Additional control structures."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:146
+msgid ""
+"* R6RS Records::                A note about R6RS records.\n"
+"* rnrs records syntactic::      Syntactic API for R6RS records.\n"
+"* rnrs records procedural::     Procedural API for R6RS records.\n"
+"* rnrs records inspection::     Reflection on R6RS records."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:149
+msgid ""
+"* rnrs exceptions::             Handling exceptional situations.\n"
+"* rnrs conditions::             Data structures for exceptions."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:155
+msgid ""
+"* R6RS I/O Conditions::         Predefined I/O error types.\n"
+"* R6RS Transcoders::            Characters and bytes.\n"
+"* rnrs io ports::               Support for port-based I/O.\n"
+"* R6RS File Ports::             Working with files.\n"
+"* rnrs io simple::              High-level I/O API."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:169
+msgid ""
+"* rnrs files::                  Functions for working with files.\n"
+"* rnrs programs::               Functions for working with processes.\n"
+"* rnrs arithmetic fixnums::     Fixed-precision arithmetic operations.\n"
+"* rnrs arithmetic flonums::     Floating-point arithmetic operations.\n"
+"* rnrs arithmetic bitwise::     Exact bitwise arithmetic operations.\n"
+"* rnrs syntax-case::            Support for `syntax-case' macros.\n"
+"* rnrs hashtables::             Hashtables.\n"
+"* rnrs enums::                  Enumerations.\n"
+"* rnrs::                        The composite library.\n"
+"* rnrs eval::                   Support for on-the-fly evaluation.\n"
+"* rnrs mutable-pairs::          Support for mutable pairs.\n"
+"* rnrs mutable-strings::        Support for mutable strings.\n"
+"* rnrs r5rs::                   Compatibility layer for R5RS Scheme."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:171
+msgid "@end menu"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:174
+msgid ""
+"@node Library Usage\n"
+"@subsubsection Library Usage"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:181
+msgid ""
+"Guile implements the R6RS `library' form as a transformation to a native\n"
+"Guile module definition.  As a consequence of this, all of the libraries\n"
+"described in the following subsections, in addition to being available\n"
+"for use by R6RS libraries and top-level programs, can also be imported \n"
+"as if they were normal Guile modules---via a @code{use-modules} form, \n"
+"say.  For example, the R6RS ``composite'' library can be imported by:"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:185
+msgid ""
+"@lisp\n"
+"  (import (rnrs (6)))\n"
+"@end lisp"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:189
+msgid ""
+"@lisp\n"
+"  (use-modules ((rnrs) :version (6)))\n"
+"@end lisp"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:192
+msgid ""
+"For more information on Guile's library implementation, see \n"
+"(@pxref{R6RS Libraries})."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:195
+msgid ""
+"@node rnrs base\n"
+"@subsubsection rnrs base"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:201
+msgid ""
+"The @code{(rnrs base (6))} library exports the procedures and syntactic\n"
+"forms described in the main section of the Report \n"
+"(@pxref{Base library, R6RS Base library,, r6rs, \n"
+"The Revised^6 Report on the Algorithmic Language Scheme}).  They are\n"
+"grouped below by the existing manual sections to which they correspond."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:206
+msgid ""
+"@deffn {Scheme Procedure} boolean? obj\n"
+"@deffnx {Scheme Procedure} not x\n"
+"@xref{Booleans}, for documentation.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:212
+msgid ""
+"@deffn {Scheme Procedure} symbol? obj\n"
+"@deffnx {Scheme Procedure} symbol->string sym\n"
+"@deffnx {Scheme Procedure} string->symbol str\n"
+"@xref{Symbol Primitives}, for documentation.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:223
+msgid ""
+"@deffn {Scheme Procedure} char? obj\n"
+"@deffnx {Scheme Procedure} char=? \n"
+"@deffnx {Scheme Procedure} char<? \n"
+"@deffnx {Scheme Procedure} char>? \n"
+"@deffnx {Scheme Procedure} char<=? \n"
+"@deffnx {Scheme Procedure} char>=?\n"
+"@deffnx {Scheme Procedure} integer->char n\n"
+"@deffnx {Scheme Procedure} char->integer chr\n"
+"@xref{Characters}, for documentation.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:228
+msgid ""
+"@deffn {Scheme Procedure} list? x\n"
+"@deffnx {Scheme Procedure} null? x\n"
+"@xref{List Predicates}, for documentation.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:263
+msgid ""
+"@deffn {Scheme Procedure} pair? x\n"
+"@deffnx {Scheme Procedure} cons x y\n"
+"@deffnx {Scheme Procedure} car pair\n"
+"@deffnx {Scheme Procedure} cdr pair\n"
+"@deffnx {Scheme Procedure} caar pair\n"
+"@deffnx {Scheme Procedure} cadr pair\n"
+"@deffnx {Scheme Procedure} cdar pair\n"
+"@deffnx {Scheme Procedure} cddr pair\n"
+"@deffnx {Scheme Procedure} caaar pair\n"
+"@deffnx {Scheme Procedure} caadr pair\n"
+"@deffnx {Scheme Procedure} cadar pair\n"
+"@deffnx {Scheme Procedure} cdaar pair\n"
+"@deffnx {Scheme Procedure} caddr pair\n"
+"@deffnx {Scheme Procedure} cdadr pair\n"
+"@deffnx {Scheme Procedure} cddar pair\n"
+"@deffnx {Scheme Procedure} cdddr pair\n"
+"@deffnx {Scheme Procedure} caaaar pair\n"
+"@deffnx {Scheme Procedure} caaadr pair\n"
+"@deffnx {Scheme Procedure} caadar pair\n"
+"@deffnx {Scheme Procedure} cadaar pair\n"
+"@deffnx {Scheme Procedure} cdaaar pair\n"
+"@deffnx {Scheme Procedure} cddaar pair\n"
+"@deffnx {Scheme Procedure} cdadar pair\n"
+"@deffnx {Scheme Procedure} cdaadr pair\n"
+"@deffnx {Scheme Procedure} cadadr pair\n"
+"@deffnx {Scheme Procedure} caaddr pair\n"
+"@deffnx {Scheme Procedure} caddar pair\n"
+"@deffnx {Scheme Procedure} cadddr pair\n"
+"@deffnx {Scheme Procedure} cdaddr pair\n"
+"@deffnx {Scheme Procedure} cddadr pair\n"
+"@deffnx {Scheme Procedure} cdddar pair\n"
+"@deffnx {Scheme Procedure} cddddr pair\n"
+"@xref{Pairs}, for documentation.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:267
+msgid ""
+"@deffn {Scheme Procedure} number? obj\n"
+"@xref{Numerical Tower}, for documentation.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:271
+msgid ""
+"@deffn {Scheme Procedure} string? obj\n"
+"@xref{String Predicates}, for documentation.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:275
+msgid ""
+"@deffn {Scheme Procedure} procedure? obj\n"
+"@xref{Procedure Properties}, for documentation.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:280
+msgid ""
+"@deffn {Scheme Syntax} define name value\n"
+"@deffnx {Scheme Syntax} set! variable-name value\n"
+"@xref{Definition}, for documentation.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:286
+msgid ""
+"@deffn {Scheme Syntax} define-syntax keyword expression\n"
+"@deffnx {Scheme Syntax} let-syntax ((keyword transformer) @dots{}) exp1 exp2 "
+"@dots{}\n"
+"@deffnx {Scheme Syntax} letrec-syntax ((keyword transformer) @dots{}) exp1 "
+"exp2 @dots{}\n"
+"@xref{Defining Macros}, for documentation.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:290
+msgid ""
+"@deffn {Scheme Syntax} identifier-syntax exp\n"
+"@xref{Identifier Macros}, for documentation.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:294
+msgid ""
+"@deffn {Scheme Syntax} syntax-rules literals (pattern template) ...\n"
+"@xref{Syntax Rules}, for documentation.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:298
+msgid ""
+"@deffn {Scheme Syntax} lambda formals body\n"
+"@xref{Lambda}, for documentation.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:305
+msgid ""
+"@deffn {Scheme Syntax} let bindings body\n"
+"@deffnx {Scheme Syntax} let* bindings body\n"
+"@deffnx {Scheme Syntax} letrec bindings body\n"
+"@deffnx {Scheme Syntax} letrec* bindings body\n"
+"@xref{Local Bindings}, for documentation.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:310
+msgid ""
+"@deffn {Scheme Syntax} let-values bindings body\n"
+"@deffnx {Scheme Syntax} let*-values bindings body\n"
+"@xref{SRFI-11}, for documentation.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:314
+msgid ""
+"@deffn {Scheme Syntax} begin expr1 expr2 ...\n"
+"@xref{begin}, for documentation.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:321
+msgid ""
+"@deffn {Scheme Syntax} quote expr\n"
+"@deffnx {Scheme Syntax} quasiquote expr\n"
+"@deffnx {Scheme Syntax} unquote expr\n"
+"@deffnx {Scheme Syntax} unquote-splicing expr\n"
+"@xref{Expression Syntax}, for documentation.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:327
+msgid ""
+"@deffn {Scheme Syntax} if test consequence [alternate]\n"
+"@deffnx {Scheme Syntax} cond clause1 clause2 ...\n"
+"@deffnx {Scheme Syntax} case key clause1 clause2 ...\n"
+"@xref{Conditionals}, for documentation.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:332
+msgid ""
+"@deffn {Scheme Syntax} and expr ...\n"
+"@deffnx {Scheme Syntax} or expr ...\n"
+"@xref{and or}, for documentation.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:338
+msgid ""
+"@deffn {Scheme Procedure} eq? x y\n"
+"@deffnx {Scheme Procedure} eqv? x y\n"
+"@deffnx {Scheme Procedure} equal? x y\n"
+"@deffnx {Scheme Procedure} symbol=? symbol1 symbol2 ...\n"
+"@xref{Equality}, for documentation."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:341
+msgid ""
+"@code{symbol=?} is identical to @code{eq?}.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:345
+msgid ""
+"@deffn {Scheme Procedure} complex? z\n"
+"@xref{Complex Numbers}, for documentation.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:354
+msgid ""
+"@deffn {Scheme Procedure} real-part z\n"
+"@deffnx {Scheme Procedure} imag-part z\n"
+"@deffnx {Scheme Procedure} make-rectangular real_part imaginary_part\n"
+"@deffnx {Scheme Procedure} make-polar x y\n"
+"@deffnx {Scheme Procedure} magnitude z\n"
+"@deffnx {Scheme Procedure} angle z\n"
+"@xref{Complex}, for documentation.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:367
+msgid ""
+"@deffn {Scheme Procedure} sqrt z\n"
+"@deffnx {Scheme Procedure} exp z\n"
+"@deffnx {Scheme Procedure} expt z1 z2\n"
+"@deffnx {Scheme Procedure} log z\n"
+"@deffnx {Scheme Procedure} sin z\n"
+"@deffnx {Scheme Procedure} cos z\n"
+"@deffnx {Scheme Procedure} tan z\n"
+"@deffnx {Scheme Procedure} asin z\n"
+"@deffnx {Scheme Procedure} acos z\n"
+"@deffnx {Scheme Procedure} atan z\n"
+"@xref{Scientific}, for documentation.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:375
+msgid ""
+"@deffn {Scheme Procedure} real? x\n"
+"@deffnx {Scheme Procedure} rational? x\n"
+"@deffnx {Scheme Procedure} numerator x\n"
+"@deffnx {Scheme Procedure} denominator x\n"
+"@deffnx {Scheme Procedure} rationalize x eps\n"
+"@xref{Reals and Rationals}, for documentation.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:384
+msgid ""
+"@deffn {Scheme Procedure} exact? x\n"
+"@deffnx {Scheme Procedure} inexact? x\n"
+"@deffnx {Scheme Procedure} exact z\n"
+"@deffnx {Scheme Procedure} inexact z\n"
+"@xref{Exactness}, for documentation.  The @code{exact} and \n"
+"@code{inexact} procedures are identical to the @code{inexact->exact} and\n"
+"@code{exact->inexact} procedures provided by Guile's code library.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:388
+msgid ""
+"@deffn {Scheme Procedure} integer? x\n"
+"@xref{Integers}, for documentation.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:396
+msgid ""
+"@deffn {Scheme Procedure} odd? n\n"
+"@deffnx {Scheme Procedure} even? n\n"
+"@deffnx {Scheme Procedure} gcd x ...\n"
+"@deffnx {Scheme Procedure} lcm x ...\n"
+"@deffnx {Scheme Procedure} exact-integer-sqrt k\n"
+"@xref{Integer Operations}, for documentation.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:407
+msgid ""
+"@deffn {Scheme Procedure} =\n"
+"@deffnx {Scheme Procedure} < \n"
+"@deffnx {Scheme Procedure} >\n"
+"@deffnx {Scheme Procedure} <= \n"
+"@deffnx {Scheme Procedure} >=\n"
+"@deffnx {Scheme Procedure} zero? x\n"
+"@deffnx {Scheme Procedure} positive? x\n"
+"@deffnx {Scheme Procedure} negative? x\n"
+"@xref{Comparison}, for documentation.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:411
+msgid ""
+"@deffn {Scheme Procedure} for-each f lst1 lst2 ...\n"
+"@xref{SRFI-1 Fold and Map}, for documentation.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:415
+msgid ""
+"@deffn {Scheme Procedure} list elem @dots{}\n"
+"@xref{List Constructors}, for documentation.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:421
+msgid ""
+"@deffn {Scheme Procedure} length lst\n"
+"@deffnx {Scheme Procedure} list-ref lst k\n"
+"@deffnx {Scheme Procedure} list-tail lst k\n"
+"@xref{List Selection}, for documentation.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:427
+msgid ""
+"@deffn {Scheme Procedure} append lst @dots{} obj\n"
+"@deffnx {Scheme Procedure} append\n"
+"@deffnx {Scheme Procedure} reverse lst\n"
+"@xref{Append/Reverse}, for documentation.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:432
+msgid ""
+"@deffn {Scheme Procedure} number->string n [radix]\n"
+"@deffnx {Scheme Procedure} string->number str [radix]\n"
+"@xref{Conversion}, for documentation.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:438
+msgid ""
+"@deffn {Scheme Procedure} string char ...\n"
+"@deffnx {Scheme Procedure} make-string k [chr]\n"
+"@deffnx {Scheme Procedure} list->string lst\n"
+"@xref{String Constructors}, for documentation.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:442
+msgid ""
+"@deffn {Scheme Procedure} string->list str [start [end]]\n"
+"@xref{List/String Conversion}, for documentation.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:449
+msgid ""
+"@deffn {Scheme Procedure} string-length str\n"
+"@deffnx {Scheme Procedure} string-ref str k\n"
+"@deffnx {Scheme Procedure} string-copy str [start [end]]\n"
+"@deffnx {Scheme Procedure} substring str start [end]\n"
+"@xref{String Selection}, for documentation.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:457
+msgid ""
+"@deffn {Scheme Procedure} string=? s1 s2 s3 @dots{}\n"
+"@deffnx {Scheme Procedure} string<? s1 s2 s3 @dots{}\n"
+"@deffnx {Scheme Procedure} string>? s1 s2 s3 @dots{}\n"
+"@deffnx {Scheme Procedure} string<=? s1 s2 s3 @dots{}\n"
+"@deffnx {Scheme Procedure} string>=? s1 s2 s3 @dots{}\n"
+"@xref{String Comparison}, for documentation.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:461
+msgid ""
+"@deffn {Scheme Procedure} string-append arg @dots{}\n"
+"@xref{Reversing and Appending Strings}, for documentation.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:465
+msgid ""
+"@deffn {Scheme Procedure} string-for-each proc s [start [end]]\n"
+"@xref{Mapping Folding and Unfolding}, for documentation.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:479
+msgid ""
+"@deffn {Scheme Procedure} + z1 ...\n"
+"@deffnx {Scheme Procedure} - z1 z2 ...\n"
+"@deffnx {Scheme Procedure} * z1 ...\n"
+"@deffnx {Scheme Procedure} / z1 z2 ...\n"
+"@deffnx {Scheme Procedure} max x1 x2 ...\n"
+"@deffnx {Scheme Procedure} min x1 x2 ...\n"
+"@deffnx {Scheme Procedure} abs x\n"
+"@deffnx {Scheme Procedure} truncate x\n"
+"@deffnx {Scheme Procedure} floor x\n"
+"@deffnx {Scheme Procedure} ceiling x\n"
+"@deffnx {Scheme Procedure} round x\n"
+"@xref{Arithmetic}, for documentation.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:494
+msgid ""
+"@rnindex div\n"
+"@rnindex mod\n"
+"@rnindex div-and-mod\n"
+"@deffn {Scheme Procedure} div x y\n"
+"@deffnx {Scheme Procedure} mod x y\n"
+"@deffnx {Scheme Procedure} div-and-mod x y\n"
+"These procedures accept two real numbers @var{x} and @var{y}, where the\n"
+"divisor @var{y} must be non-zero.  @code{div} returns the integer @var{q}\n"
+"and @code{mod} returns the real number @var{r} such that\n"
+"@math{@var{x} = @var{q}*@var{y} + @var{r}} and @math{0 <= @var{r} < "
+"abs(@var{y})}.\n"
+"@code{div-and-mod} returns both @var{q} and @var{r}, and is more\n"
+"efficient than computing each separately.  Note that when @math{@var{y} > 0},"
+"\n"
+"@code{div} returns @math{floor(@var{x}/@var{y})}, otherwise\n"
+"it returns @math{ceiling(@var{x}/@var{y})}."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:506
+msgid ""
+"@lisp\n"
+"(div 123 10) @result{} 12\n"
+"(mod 123 10) @result{} 3\n"
+"(div-and-mod 123 10) @result{} 12 and 3\n"
+"(div-and-mod 123 -10) @result{} -12 and 3\n"
+"(div-and-mod -123 10) @result{} -13 and 7\n"
+"(div-and-mod -123 -10) @result{} 13 and 7\n"
+"(div-and-mod -123.2 -63.5) @result{} 2.0 and 3.8\n"
+"(div-and-mod 16/3 -10/7) @result{} -3 and 22/21\n"
+"@end lisp\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:520
+msgid ""
+"@rnindex div0\n"
+"@rnindex mod0\n"
+"@rnindex div0-and-mod0\n"
+"@deffn {Scheme Procedure} div0 x y\n"
+"@deffnx {Scheme Procedure} mod0 x y\n"
+"@deffnx {Scheme Procedure} div0-and-mod0 x y\n"
+"These procedures accept two real numbers @var{x} and @var{y}, where the\n"
+"divisor @var{y} must be non-zero.  @code{div0} returns the\n"
+"integer @var{q} and @code{mod0} returns the real number\n"
+"@var{r} such that @math{@var{x} = @var{q}*@var{y} + @var{r}} and\n"
+"@math{-abs(@var{y}/2) <= @var{r} < abs(@var{y}/2)}.  @code{div0-and-mod0}\n"
+"returns both @var{q} and @var{r}, and is more efficient than computing\n"
+"each separately."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:528
+msgid ""
+"Note that @code{div0} returns @math{@var{x}/@var{y}} rounded to the\n"
+"nearest integer.  When @math{@var{x}/@var{y}} lies exactly half-way\n"
+"between two integers, the tie is broken according to the sign of\n"
+"@var{y}.  If @math{@var{y} > 0}, ties are rounded toward positive\n"
+"infinity, otherwise they are rounded toward negative infinity.\n"
+"This is a consequence of the requirement that\n"
+"@math{-abs(@var{y}/2) <= @var{r} < abs(@var{y}/2)}."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:540
+msgid ""
+"@lisp\n"
+"(div0 123 10) @result{} 12\n"
+"(mod0 123 10) @result{} 3\n"
+"(div0-and-mod0 123 10) @result{} 12 and 3\n"
+"(div0-and-mod0 123 -10) @result{} -12 and 3\n"
+"(div0-and-mod0 -123 10) @result{} -12 and -3\n"
+"(div0-and-mod0 -123 -10) @result{} 12 and -3\n"
+"(div0-and-mod0 -123.2 -63.5) @result{} 2.0 and 3.8\n"
+"(div0-and-mod0 16/3 -10/7) @result{} -4 and -8/21\n"
+"@end lisp\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:547
+msgid ""
+"@deffn {Scheme Procedure} real-valued? obj\n"
+"@deffnx {Scheme Procedure} rational-valued? obj\n"
+"@deffnx {Scheme Procedure} integer-valued? obj\n"
+"These procedures return @code{#t} if and only if their arguments can,\n"
+"respectively, be coerced to a real, rational, or integer value without a\n"
+"loss of numerical precision. "
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:551
+msgid ""
+"@code{real-valued?} will return @code{#t} for complex numbers whose \n"
+"imaginary parts are zero.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:562
+msgid ""
+"@deffn {Scheme Procedure} nan? x\n"
+"@deffnx {Scheme Procedure} infinite? x\n"
+"@deffnx {Scheme Procedure} finite? x\n"
+"@code{nan?} returns @code{#t} if @var{x} is a NaN value, @code{#f}\n"
+"otherwise.  @code{infinite?} returns @code{#t} if @var{x} is an infinite\n"
+"value, @code{#f} otherwise.  @code{finite?} returns @code{#t} if @var{x}\n"
+"is neither infinite nor a NaN value, otherwise it returns @code{#f}.\n"
+"Every real number satisfies exactly one of these predicates.  An\n"
+"exception is raised if @var{x} is not real.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:567
+msgid ""
+"@deffn {Scheme Syntax} assert expr \n"
+"Raises an @code{&assertion} condition if @var{expr} evaluates to \n"
+"@code{#f}; otherwise evaluates to the value of @var{expr}.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:576
+msgid ""
+"@deffn {Scheme Procedure} error who message irritant1 ...\n"
+"@deffnx {Scheme Procedure} assertion-violation who message irritant1 ...\n"
+"These procedures raise compound conditions based on their arguments:\n"
+"If @var{who} is not @code{#f}, the condition will include a @code{&who}\n"
+"condition whose @code{who} field is set to @var{who}; a @code{&message}\n"
+"condition will be included with a @code{message} field equal to \n"
+"@var{message}; an @code{&irritants} condition will be included with its\n"
+"@code{irritants} list given by @code{irritant1 ...}."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:582
+msgid ""
+"@code{error} produces a compound condition with the simple conditions\n"
+"described above, as well as an @code{&error} condition;\n"
+"@code{assertion-violation} produces one that includes an \n"
+"@code{&assertion} condition.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:588
+msgid ""
+"@deffn {Scheme Procedure} vector-map proc v\n"
+"@deffnx {Scheme Procedure} vector-for-each proc v\n"
+"These procedures implement the @code{map} and @code{for-each} contracts\n"
+"over vectors.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:597
+msgid ""
+"@deffn {Scheme Procedure} vector arg @dots{}\n"
+"@deffnx {Scheme Procedure} vector? obj\n"
+"@deffnx {Scheme Procedure} make-vector len\n"
+"@deffnx {Scheme Procedure} make-vector len fill\n"
+"@deffnx {Scheme Procedure} list->vector l\n"
+"@deffnx {Scheme Procedure} vector->list v\n"
+"@xref{Vector Creation}, for documentation.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:604
+msgid ""
+"@deffn {Scheme Procedure} vector-length vector\n"
+"@deffnx {Scheme Procedure} vector-ref vector k\n"
+"@deffnx {Scheme Procedure} vector-set! vector k obj\n"
+"@deffnx {Scheme Procedure} vector-fill! v fill\n"
+"@xref{Vector Accessors}, for documentation.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:609
+msgid ""
+"@deffn {Scheme Procedure} call-with-current-continuation proc\n"
+"@deffnx {Scheme Procedure} call/cc proc\n"
+"@xref{Continuations}, for documentation.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:614
+msgid ""
+"@deffn {Scheme Procedure} values arg @dots{}\n"
+"@deffnx {Scheme Procedure} call-with-values producer consumer\n"
+"@xref{Multiple Values}, for documentation.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:618
+msgid ""
+"@deffn {Scheme Procedure} dynamic-wind in_guard thunk out_guard\n"
+"@xref{Dynamic Wind}, for documentation.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:622
+msgid ""
+"@deffn {Scheme Procedure} apply proc arg @dots{} arglst\n"
+"@xref{Fly Evaluation}, for documentation.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:625
+msgid ""
+"@node rnrs unicode\n"
+"@subsubsection rnrs unicode"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:628
+msgid ""
+"The @code{(rnrs unicode (6))} library provides procedures for \n"
+"manipulating Unicode characters and strings."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:637
+msgid ""
+"@deffn {Scheme Procedure} char-upcase char\n"
+"@deffnx {Scheme Procedure} char-downcase char\n"
+"@deffnx {Scheme Procedure} char-titlecase char\n"
+"@deffnx {Scheme Procedure} char-foldcase char\n"
+"These procedures translate their arguments from one Unicode character\n"
+"set to another.  @code{char-upcase}, @code{char-downcase}, and\n"
+"@code{char-titlecase} are identical to their counterparts in the\n"
+"Guile core library; @xref{Characters}, for documentation."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:643
+msgid ""
+"@code{char-foldcase} returns the result of applying @code{char-upcase}\n"
+"to its argument, followed by @code{char-downcase}---except in the case\n"
+"of the Turkic characters @code{U+0130} and @code{U+0131}, for which the\n"
+"procedure acts as the identity function.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:653
+msgid ""
+"@deffn {Scheme Procedure} char-ci=? char1 char2 char3 ...\n"
+"@deffnx {Scheme Procedure} char-ci<? char1 char2 char3 ...\n"
+"@deffnx {Scheme Procedure} char-ci>? char1 char2 char3 ...\n"
+"@deffnx {Scheme Procedure} char-ci<=? char1 char2 char3 ...\n"
+"@deffnx {Scheme Procedure} char-ci>=? char1 char2 char3 ...\n"
+"These procedures facilitate case-insensitive comparison of Unicode\n"
+"characters.  They are identical to the procedures provided by Guile's\n"
+"core library.  @xref{Characters}, for documentation.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:664
+msgid ""
+"@deffn {Scheme Procedure} char-alphabetic? char\n"
+"@deffnx {Scheme Procedure} char-numeric? char\n"
+"@deffnx {Scheme Procedure} char-whitespace? char\n"
+"@deffnx {Scheme Procedure} char-upper-case? char\n"
+"@deffnx {Scheme Procedure} char-lower-case? char\n"
+"@deffnx {Scheme Procedure} char-title-case? char\n"
+"These procedures implement various Unicode character set predicates.  \n"
+"They are identical to the procedures provided by Guile's core library.\n"
+"@xref{Characters}, for documentation.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:668
+msgid ""
+"@deffn {Scheme Procedure} char-general-category char\n"
+"@xref{Characters}, for documentation.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:676
+msgid ""
+"@deffn {Scheme Procedure} string-upcase string\n"
+"@deffnx {Scheme Procedure} string-downcase string\n"
+"@deffnx {Scheme Procedure} string-titlecase string\n"
+"@deffnx {Scheme Procedure} string-foldcase string\n"
+"These procedures perform Unicode case folding operations on their input.\n"
+"@xref{Alphabetic Case Mapping}, for documentation.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:685
+msgid ""
+"@deffn {Scheme Procedure} string-ci=? string1 string2 string3 ...\n"
+"@deffnx {Scheme Procedure} string-ci<? string1 string2 string3 ...\n"
+"@deffnx {Scheme Procedure} string-ci>? string1 string2 string3 ...\n"
+"@deffnx {Scheme Procedure} string-ci<=? string1 string2 string3 ...\n"
+"@deffnx {Scheme Procedure} string-ci>=? string1 string2 string3 ...\n"
+"These procedures perform case-insensitive comparison on their input.\n"
+"@xref{String Comparison}, for documentation.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:693
+msgid ""
+"@deffn {Scheme Procedure} string-normalize-nfd string\n"
+"@deffnx {Scheme Procedure} string-normalize-nfkd string\n"
+"@deffnx {Scheme Procedure} string-normalize-nfc string\n"
+"@deffnx {Scheme Procedure} string-normalize-nfkc string\n"
+"These procedures perform Unicode string normalization operations on \n"
+"their input.  @xref{String Comparison}, for documentation.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:696
+msgid ""
+"@node rnrs bytevectors\n"
+"@subsubsection rnrs bytevectors"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:700
+msgid ""
+"The @code{(rnrs bytevectors (6))} library provides procedures for \n"
+"working with blocks of binary data.  This functionality is documented\n"
+"in its own section of the manual; @xref{Bytevectors}."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:703
+msgid ""
+"@node rnrs lists\n"
+"@subsubsection rnrs lists"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:706
+msgid ""
+"The @code{(rnrs lists (6))} library provides procedures additional\n"
+"procedures for working with lists."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:711
+msgid ""
+"@deffn {Scheme Procedure} find proc list\n"
+"This procedure is identical to the one defined in Guile's SRFI-1\n"
+"implementation.  @xref{SRFI-1 Searching}, for documentation.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:714
+msgid ""
+"@deffn {Scheme Procedure} for-all proc list1 list2 ...\n"
+"@deffnx {Scheme Procedure} exists proc list1 list2 ..."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:719
+msgid ""
+"The @code{for-all} procedure is identical to the @code{every} procedure\n"
+"defined by SRFI-1; the @code{exists} procedure is identical to SRFI-1's \n"
+"@code{any}.  @xref{SRFI-1 Searching}, for documentation.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:726
+msgid ""
+"@deffn {Scheme Procedure} filter proc list\n"
+"@deffnx {Scheme Procedure} partition proc list\n"
+"These procedures are identical to the ones provided by SRFI-1.  \n"
+"@xref{List Modification}, for a description of @code{filter};\n"
+"@xref{SRFI-1 Filtering and Partitioning}, for @code{partition}.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:731
+msgid ""
+"@deffn {Scheme Procedure} fold-right combine nil list1 list2 @dots{}\n"
+"This procedure is identical the @code{fold-right} procedure provided by\n"
+"SRFI-1.  @xref{SRFI-1 Fold and Map}, for documentation.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:737
+msgid ""
+"@deffn {Scheme Procedure} fold-left combine nil list1 list2 @dots{}\n"
+"This procedure is like @code{fold} from SRFI-1, but @var{combine} is\n"
+"called with the seed as the first argument.  @xref{SRFI-1 Fold and Map},\n"
+"for documentation.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:748
+msgid ""
+"@deffn {Scheme Procedure} remp proc list\n"
+"@deffnx {Scheme Procedure} remove obj list\n"
+"@deffnx {Scheme Procedure} remv obj list\n"
+"@deffnx {Scheme Procedure} remq obj list\n"
+"@code{remove}, @code{remv}, and @code{remq} are identical to the\n"
+"@code{delete}, @code{delv}, and @code{delq} procedures provided by\n"
+"Guile's core library, (@pxref{List Modification}).  @code{remp} is\n"
+"identical to the alternate @code{remove} procedure provided by SRFI-1;\n"
+"@xref{SRFI-1 Deleting}.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:760
+msgid ""
+"@deffn {Scheme Procedure} memp proc list\n"
+"@deffnx {Scheme Procedure} member obj list\n"
+"@deffnx {Scheme Procedure} memv obj list\n"
+"@deffnx {Scheme Procedure} memq obj list\n"
+"@code{member}, @code{memv}, and @code{memq} are identical to the \n"
+"procedures provided by Guile's core library; @xref{List Searching}, \n"
+"for their documentation.  @code{memp} uses the specified predicate\n"
+"function @code{proc} to test elements of the list @var{list}---it \n"
+"behaves similarly to @code{find}, except that it returns the first \n"
+"sublist of @var{list} whose @code{car} satisfies @var{proc}.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:771
+msgid ""
+"@deffn {Scheme Procedure} assp proc alist\n"
+"@deffnx {Scheme Procedure} assoc obj alist\n"
+"@deffnx {Scheme Procedure} assv obj alist\n"
+"@deffnx {Scheme Procedure} assq obj alist\n"
+"@code{assoc}, @code{assv}, and @code{assq} are identical to the \n"
+"procedures provided by Guile's core library; \n"
+"@xref{Alist Key Equality}, for their documentation.  @code{assp} uses\n"
+"the specified predicate function @code{proc} to test keys in the\n"
+"association list @var{alist}.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:777
+msgid ""
+"@deffn {Scheme Procedure} cons* obj1 ... obj\n"
+"@deffnx {Scheme Procedure} cons* obj\n"
+"This procedure is identical to the one exported by Guile's core\n"
+"library.  @xref{List Constructors}, for documentation.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:780
+msgid ""
+"@node rnrs sorting\n"
+"@subsubsection rnrs sorting"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:783
+msgid ""
+"The @code{(rnrs sorting (6))} library provides procedures for sorting\n"
+"lists and vectors."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:792
+msgid ""
+"@deffn {Scheme Procedure} list-sort proc list\n"
+"@deffnx {Scheme Procedure} vector-sort proc vector\n"
+"These procedures return their input sorted in ascending order, without\n"
+"modifying the original data.  @var{proc} must be a procedure that takes\n"
+"two elements from the input list or vector as arguments, and returns a\n"
+"true value if the first is ``less'' than the second, @code{#f} \n"
+"otherwise.  @code{list-sort} returns a list; @code{vector-sort} returns \n"
+"a vector."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:797
+msgid ""
+"Both @code{list-sort} and @code{vector-sort} are implemented in terms of\n"
+"the @code{stable-sort} procedure from Guile's core library.  \n"
+"@xref{Sorting}, for a discussion of the behavior of that procedure.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:802
+msgid ""
+"@deffn {Scheme Procedure} vector-sort! proc vector\n"
+"Performs a destructive, ``in-place'' sort of @var{vector}, using \n"
+"@var{proc} as described above to determine an ascending ordering of\n"
+"elements.  @code{vector-sort!} returns an unspecified value."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:806
+msgid ""
+"This procedure is implemented in terms of the @code{sort!} procedure\n"
+"from Guile's core library.  @xref{Sorting}, for more information.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:809
+msgid ""
+"@node rnrs control\n"
+"@subsubsection rnrs control"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:813
+msgid ""
+"The @code{(rnrs control (6))} library provides syntactic forms useful \n"
+"for constructing conditional expressions and controlling the flow of\n"
+"execution."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:820
+msgid ""
+"@deffn {Scheme Syntax} when test expression1 expression2 ...\n"
+"@deffnx {Scheme Syntax} unless test expression1 expression2 ...\n"
+"The @code{when} form is evaluated by evaluating the specified @var{test}\n"
+"expression; if the result is a true value, the @var{expression}s that\n"
+"follow it are evaluated in order, and the value of the final \n"
+"@var{expression} becomes the value of the entire @code{when} expression."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:825
+msgid ""
+"The @code{unless} form behaves similarly, with the exception that the \n"
+"specified @var{expression}s are only evaluated if the value of \n"
+"@var{test} is false.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:830
+msgid ""
+"@deffn {Scheme Syntax} do ((variable init step) ...) (test expression ...) "
+"command ...\n"
+"This form is identical to the one provided by Guile's core library.\n"
+"@xref{while do}, for documentation.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:835
+msgid ""
+"@deffn {Scheme Syntax} case-lambda clause ...\n"
+"This form is identical to the one provided by Guile's core library.\n"
+"@xref{Case-lambda}, for documentation.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:838
+msgid ""
+"@node R6RS Records\n"
+"@subsubsection R6RS Records"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:845
+msgid ""
+"The manual sections below describe Guile's implementation of R6RS\n"
+"records, which provide support for user-defined data types.  The R6RS\n"
+"records API provides a superset of the features provided by Guile's\n"
+"``native'' records, as well as those of the SRFI-9 records API;\n"
+"@xref{Records}, and @ref{SRFI-9 Records}, for a description of those\n"
+"interfaces."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:849
+msgid ""
+"As with SRFI-9 and Guile's native records, R6RS records are constructed\n"
+"using a record-type descriptor that specifies attributes like the\n"
+"record's name, its fields, and the mutability of those fields."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:856
+msgid ""
+"R6RS records extend this framework to support single inheritance via the\n"
+"specification of a ``parent'' type for a record type at definition time.\n"
+"Accessors and mutator procedures for the fields of a parent type may be \n"
+"applied to records of a subtype of this parent.  A record type may be \n"
+"@dfn{sealed}, in which case it cannot be used as the parent of another \n"
+"record type."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:864
+msgid ""
+"The inheritance mechanism for record types also informs the process of\n"
+"initializing the fields of a record and its parents.  Constructor\n"
+"procedures that generate new instances of a record type are obtained\n"
+"from a record constructor descriptor, which encapsulates the record-type\n"
+"descriptor of the record to be constructed along with a @dfn{protocol}\n"
+"procedure that defines how constructors for record subtypes delegate to\n"
+"the constructors of their parent types."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:872
+msgid ""
+"A protocol is a procedure used by the record system at construction time\n"
+"to bind arguments to the fields of the record being constructed.  The \n"
+"protocol procedure is passed a procedure @var{n} that accepts the \n"
+"arguments required to construct the record's parent type; this \n"
+"procedure, when invoked, will return a procedure @var{p} that accepts \n"
+"the arguments required to construct a new instance of the record type \n"
+"itself and returns a new instance of the record type."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:876
+msgid ""
+"The protocol should in turn return a procedure that uses @var{n} and\n"
+"@var{p} to initialize the fields of the record type and its parent\n"
+"type(s).  This procedure will be the constructor returned by "
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:884
+msgid ""
+"As a trivial example, consider the hypothetical record type \n"
+"@code{pixel}, which encapsulates an x-y location on a screen, and\n"
+"@code{voxel}, which has @code{pixel} as its parent type and stores an\n"
+"additional coordinate.  The following protocol produces a constructor\n"
+"procedure that accepts all three coordinates, uses the first two to \n"
+"initialize the fields of @code{pixel}, and binds the third to the single\n"
+"field of @code{voxel}."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:891
+msgid ""
+"@lisp\n"
+"  (lambda (n)\n"
+"    (lambda (x y z)\n"
+"      (let ((p (n x y)))\n"
+"        (p z))))\n"
+"@end lisp"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:895
+msgid ""
+"It may be helpful to think of protocols as ``constructor factories''\n"
+"that produce chains of delegating constructors glued together by the\n"
+"helper procedure @var{n}."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:901
+msgid ""
+"An R6RS record type may be declared to be @dfn{nongenerative} via the\n"
+"use of a unique generated or user-supplied symbol---or \n"
+"@dfn{uid}---such that subsequent record type declarations with the same\n"
+"uid and attributes will return the previously-declared record-type \n"
+"descriptor."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:906
+msgid ""
+"R6RS record types may also be declared to be @dfn{opaque}, in which case\n"
+"the various predicates and introspection procedures defined in\n"
+"@code{(rnrs records introspection)} will behave as if records of this\n"
+"type are not records at all."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:910
+msgid ""
+"Note that while the R6RS records API shares much of its namespace with\n"
+"both the SRFI-9 and native Guile records APIs, it is not currently\n"
+"compatible with either."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:913
+msgid ""
+"@node rnrs records syntactic\n"
+"@subsubsection rnrs records syntactic"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:916
+msgid ""
+"The @code{(rnrs records syntactic (6))} library exports the syntactic\n"
+"API for working with R6RS records."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:922
+msgid ""
+"@deffn {Scheme Syntax} define-record-type name-spec record-clause @dots{}\n"
+"Defines a new record type, introducing bindings for a record-type\n"
+"descriptor, a record constructor descriptor, a constructor procedure,\n"
+"a record predicate, and accessor and mutator procedures for the new\n"
+"record type's fields."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:930
+msgid ""
+"@var{name-spec} must either be an identifier or must take the form\n"
+"@code{(record-name constructor-name predicate-name)}, where \n"
+"@var{record-name}, @var{constructor-name}, and @var{predicate-name} are\n"
+"all identifiers and specify the names to which, respectively, the \n"
+"record-type descriptor, constructor, and predicate procedures will be\n"
+"bound.  If @var{name-spec} is only an identifier, it specifies the name\n"
+"to which the generated record-type descriptor will be bound."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:932
+msgid "Each @var{record-clause} must be one of the following:"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:987
+msgid ""
+"@itemize @bullet\n"
+"@item\n"
+"@code{(fields field-spec*)}, where each @var{field-spec} specifies a\n"
+"field of the new record type and takes one of the following forms:\n"
+"@itemize @bullet\n"
+"@item\n"
+"@code{(immutable field-name accessor-name)}, which specifies an \n"
+"immutable field with the name @var{field-name} and binds an accessor \n"
+"procedure for it to the name given by @var{accessor-name}\n"
+"@item\n"
+"@code{(mutable field-name accessor-name mutator-name)}, which specifies\n"
+"a mutable field with the name @var{field-name} and binds accessor and \n"
+"mutator procedures to @var{accessor-name} and @var{mutator-name},\n"
+"respectively\n"
+"@item\n"
+"@code{(immutable field-name)}, which specifies an immutable field with\n"
+"the name @var{field-name}; an accessor procedure for it will be created\n"
+"and named by appending record name and @var{field-name} with a hyphen\n"
+"separator\n"
+"@item\n"
+"@code{(mutable field-name}), which specifies a mutable field with the\n"
+"name @var{field-name}; an accessor procedure for it will be created and\n"
+"named as described above; a mutator procedure will also be created and\n"
+"named by appending @code{-set!} to the accessor name\n"
+"@item\n"
+"@code{field-name}, which specifies an immutable field with the name\n"
+"@var{field-name}; an access procedure for it will be created and named\n"
+"as described above\n"
+"@end itemize\n"
+"@item\n"
+"@code{(parent parent-name)}, where @var{parent-name} is a symbol giving\n"
+"the name of the record type to be used as the parent of the new record\n"
+"type\n"
+"@item\n"
+"@code{(protocol expression)}, where @var{expression} evaluates to a\n"
+"protocol procedure which behaves as described above, and is used to\n"
+"create a record constructor descriptor for the new record type\n"
+"@item\n"
+"@code{(sealed sealed?)}, where @var{sealed?} is a boolean value that\n"
+"specifies whether or not the new record type is sealed\n"
+"@item\n"
+"@code{(opaque opaque?)}, where @var{opaque?} is a boolean value that\n"
+"specifies whether or not the new record type is opaque\n"
+"@item\n"
+"@code{(nongenerative [uid])}, which specifies that the record type is\n"
+"nongenerative via the optional uid @var{uid}.  If @var{uid} is not \n"
+"specified, a unique uid will be generated at expansion time\n"
+"@item\n"
+"@code{(parent-rtd parent-rtd parent-cd)}, a more explicit form of the\n"
+"@code{parent} form above; @var{parent-rtd} and @var{parent-cd} should\n"
+"evaluate to a record-type descriptor and a record constructor \n"
+"descriptor, respectively\n"
+"@end itemize\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:992
+msgid ""
+"@deffn {Scheme Syntax} record-type-descriptor record-name\n"
+"Evaluates to the record-type descriptor associated with the type\n"
+"specified by @var{record-name}.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:997
+msgid ""
+"@deffn {Scheme Syntax} record-constructor-descriptor record-name\n"
+"Evaluates to the record-constructor descriptor associated with the type\n"
+"specified by @var{record-name}.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:1000
+msgid ""
+"@node rnrs records procedural\n"
+"@subsubsection rnrs records procedural"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:1003
+msgid ""
+"The @code{(rnrs records procedural (6))} library exports the procedural\n"
+"API for working with R6RS records."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:1016
+msgid ""
+"@deffn {Scheme Procedure} make-record-type-descriptor name parent uid "
+"sealed? opaque? fields\n"
+"Returns a new record-type descriptor with the specified characteristics:\n"
+"@var{name} must be a symbol giving the name of the new record type; \n"
+"@var{parent} must be either @code{#f} or a non-sealed record-type \n"
+"descriptor for the returned record type to extend; @var{uid} must be\n"
+"either @code{#f}, indicating that the record type is generative, or \n"
+"a symbol giving the type's nongenerative uid; @var{sealed?} and  \n"
+"@var{opaque?} must be boolean values that specify the sealedness and\n"
+"opaqueness of the record type; @var{fields} must be a vector of zero or\n"
+"more field specifiers of the form @code{(mutable name)} or\n"
+"@code{(immutable name)}, where name is a symbol giving a name for the\n"
+"field."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:1019
+msgid ""
+"If @var{uid} is not @code{#f}, it must be a symbol\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:1024
+msgid ""
+"@deffn {Scheme Procedure} record-type-descriptor? obj\n"
+"Returns @code{#t} if @var{obj} is a record-type descriptor, @code{#f}\n"
+"otherwise.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:1030
+msgid ""
+"@deffn {Scheme Procedure} make-record-constructor-descriptor rtd parent-"
+"constructor-descriptor protocol\n"
+"Returns a new record constructor descriptor that can be used to produce\n"
+"constructors for the record type specified by the record-type descriptor\n"
+"@var{rtd} and whose delegation and binding behavior are specified by the\n"
+"protocol procedure @var{protocol}."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:1038
+msgid ""
+"@var{parent-constructor-descriptor} specifies a record constructor \n"
+"descriptor for the parent type of @var{rtd}, if one exists.  If \n"
+"@var{rtd} represents a base type, then \n"
+"@var{parent-constructor-descriptor} must be @code{#f}.  If @var{rtd}\n"
+"is an extension of another type, @var{parent-constructor-descriptor} may\n"
+"still be @code{#f}, but protocol must also be @code{#f} in this case.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:1043
+msgid ""
+"@deffn {Scheme Procedure} record-constructor rcd\n"
+"Returns a record constructor procedure by invoking the protocol\n"
+"defined by the record-constructor descriptor @var{rcd}.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:1048
+msgid ""
+"@deffn {Scheme Procedure} record-predicate rtd\n"
+"Returns the record predicate procedure for the record-type descriptor\n"
+"@var{rtd}.\n"
+"@end deffn "
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:1053
+msgid ""
+"@deffn {Scheme Procedure} record-accessor rtd k\n"
+"Returns the record field accessor procedure for the @var{k}th field of\n"
+"the record-type descriptor @var{rtd}.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:1059
+msgid ""
+"@deffn {Scheme Procedure} record-mutator rtd k\n"
+"Returns the record field mutator procedure for the @var{k}th field of\n"
+"the record-type descriptor @var{rtd}.  An @code{&assertion} condition\n"
+"will be raised if this field is not mutable.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:1062
+msgid ""
+"@node rnrs records inspection\n"
+"@subsubsection rnrs records inspection"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:1065
+msgid ""
+"The @code{(rnrs records inspection (6))} library provides procedures\n"
+"useful for accessing metadata about R6RS records."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:1070
+msgid ""
+"@deffn {Scheme Procedure} record? obj\n"
+"Return @code{#t} if the specified object is a non-opaque R6RS record,\n"
+"@code{#f} otherwise.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:1075
+msgid ""
+"@deffn {Scheme Procedure} record-rtd record\n"
+"Returns the record-type descriptor for @var{record}.  An\n"
+"@code{&assertion} is raised if @var{record} is opaque.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:1079
+msgid ""
+"@deffn {Scheme Procedure} record-type-name rtd\n"
+"Returns the name of the record-type descriptor @var{rtd}.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:1084
+msgid ""
+"@deffn {Scheme Procedure} record-type-parent rtd\n"
+"Returns the parent of the record-type descriptor @var{rtd}, or @code{#f}\n"
+"if it has none.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:1089
+msgid ""
+"@deffn {Scheme Procedure} record-type-uid rtd\n"
+"Returns the uid of the record-type descriptor @var{rtd}, or @code{#f} if\n"
+"it has none.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:1094
+msgid ""
+"@deffn {Scheme Procedure} record-type-generative? rtd\n"
+"Returns @code{#t} if the record-type descriptor @var{rtd} is generative,\n"
+"@code{#f} otherwise.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:1099
+msgid ""
+"@deffn {Scheme Procedure} record-type-sealed? rtd\n"
+"Returns @code{#t} if the record-type descriptor @var{rtd} is sealed,\n"
+"@code{#f} otherwise.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:1104
+msgid ""
+"@deffn {Scheme Procedure} record-type-opaque? rtd\n"
+"Returns @code{#t} if the record-type descriptor @var{rtd} is opaque,\n"
+"@code{#f} otherwise.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:1110
+msgid ""
+"@deffn {Scheme Procedure} record-type-field-names rtd\n"
+"Returns a vector of symbols giving the names of the fields defined by\n"
+"the record-type descriptor @var{rtd} (and not any of its sub- or\n"
+"supertypes).\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:1115
+msgid ""
+"@deffn {Scheme Procedure} record-field-mutable? rtd k\n"
+"Returns @code{#t} if the field at index @var{k} of the record-type\n"
+"descriptor @var{rtd} (and not any of its sub- or supertypes) is mutable.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:1118
+msgid ""
+"@node rnrs exceptions\n"
+"@subsubsection rnrs exceptions"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:1126
+msgid ""
+"The @code{(rnrs exceptions (6))} library provides functionality related\n"
+"to signaling and handling exceptional situations.  This functionality is\n"
+"similar to the exception handling systems provided by Guile's core \n"
+"library @xref{Exceptions}, and by the SRFI-18 and SRFI-34 \n"
+"modules---@xref{SRFI-18 Exceptions}, and @ref{SRFI-34}, \n"
+"respectively---but there are some key differences in concepts and \n"
+"behavior."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:1133
+msgid ""
+"A raised exception may be @dfn{continuable} or @dfn{non-continuable}.\n"
+"When an exception is raised non-continuably, another exception, with the\n"
+"condition type @code{&non-continuable}, will be raised when the\n"
+"exception handler returns locally.  Raising an exception continuably\n"
+"captures the current continuation and invokes it after a local return\n"
+"from the exception handler."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:1141
+msgid ""
+"Like SRFI-18 and SRFI-34, R6RS exceptions are implemented on top of\n"
+"Guile's native @code{throw} and @code{catch} forms, and use custom\n"
+"``throw keys'' to identify their exception types.  As a consequence,\n"
+"Guile's @code{catch} form can handle exceptions thrown by these APIs,\n"
+"but the reverse is not true: Handlers registered by the\n"
+"@code{with-exception-handler} procedure described below will only be\n"
+"called on exceptions thrown by the corresponding @code{raise} procedure."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:1149
+msgid ""
+"@deffn {Scheme Procedure} with-exception-handler handler thunk\n"
+"Installs @var{handler}, which must be a procedure taking one argument,\n"
+"as the current exception handler during the invocation of @var{thunk}, a\n"
+"procedure taking zero arguments.  The handler in place at the time\n"
+"@code{with-exception-handler} is called is made current again once \n"
+"either @var{thunk} returns or @var{handler} is invoked after an \n"
+"exception is thrown from within @var{thunk}."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:1153
+msgid ""
+"This procedure is similar to the @code{with-throw-handler} procedure\n"
+"provided by Guile's code library; (@pxref{Throw Handlers}).\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:1163
+msgid ""
+"@deffn {Scheme Syntax} guard (variable clause1 clause2 ...) body\n"
+"Evaluates the expression given by @var{body}, first creating an ad hoc \n"
+"exception handler that binds a raised exception to @var{variable} and\n"
+"then evaluates the specified @var{clause}s as if they were part of a \n"
+"@code{cond} expression, with the value of the first matching clause \n"
+"becoming the value of the @code{guard} expression \n"
+"(@pxref{Conditionals}).  If none of the clause's test expressions \n"
+"evaluates to @code{#t}, the exception is re-raised, with the exception\n"
+"handler that was current before the evaluation of the @code{guard} form."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:1165
+msgid "For example, the expression"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:1170
+msgid ""
+"@lisp\n"
+"(guard (ex ((eq? ex 'foo) 'bar) ((eq? ex 'bar) 'baz)) \n"
+"  (raise 'bar))\n"
+"@end lisp"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:1173
+msgid ""
+"evaluates to @code{baz}.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:1180
+msgid ""
+"@deffn {Scheme Procedure} raise obj\n"
+"Raises a non-continuable exception by invoking the currently-installed\n"
+"exception handler on @var{obj}.  If the handler returns, a\n"
+"@code{&non-continuable} exception will be raised in the dynamic context\n"
+"in which the handler was installed.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:1185
+msgid ""
+"@deffn {Scheme Procedure} raise-continuable obj\n"
+"Raises a continuable exception by invoking currently-installed exception\n"
+"handler on @var{obj}.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:1188
+msgid ""
+"@node rnrs conditions\n"
+"@subsubsection rnrs conditions"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:1195
+msgid ""
+"The @code{(rnrs condition (6))} library provides forms and procedures\n"
+"for constructing new condition types, as well as a library of \n"
+"pre-defined condition types that represent a variety of common \n"
+"exceptional situations.  Conditions are records of a subtype of the\n"
+"@code{&condition} record type, which is neither sealed nor opaque.\n"
+"@xref{R6RS Records}."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:1205
+msgid ""
+"Conditions may be manipulated singly, as @dfn{simple conditions}, or \n"
+"when composed with other conditions to form @dfn{compound conditions}.\n"
+"Compound conditions do not ``nest''---constructing a new compound\n"
+"condition out of existing compound conditions will ``flatten'' them\n"
+"into their component simple conditions.  For example, making a new\n"
+"condition out of a @code{&message} condition and a compound condition\n"
+"that contains an @code{&assertion} condition and another @code{&message} \n"
+"condition will produce a compound condition that contains two \n"
+"@code{&message} conditions and one @code{&assertion} condition."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:1212
+msgid ""
+"The record type predicates and field accessors described below can\n"
+"operate on either simple or compound conditions.  In the latter case,\n"
+"the predicate returns @code{#t} if the compound condition contains a\n"
+"component simple condition of the appropriate type; the field accessors\n"
+"return the requisite fields from the first component simple condition \n"
+"found to be of the appropriate type."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:1220
+msgid ""
+"This library is quite similar to the SRFI-35 conditions module\n"
+"(@pxref{SRFI-35}).  Among other minor differences, the \n"
+"@code{(rnrs conditions)} library features slightly different semantics\n"
+"around condition field accessors, and comes with a larger number of\n"
+"pre-defined condition types.  The two APIs are not currently compatible,\n"
+"however; the @code{condition?} predicate from one API will return \n"
+"@code{#f} when applied to a condition object created in the other."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:1225
+msgid ""
+"@deffn {Condition Type} &condition\n"
+"@deffnx {Scheme Procedure} condition? obj\n"
+"The base record type for conditions.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:1231
+msgid ""
+"@deffn {Scheme Procedure} condition condition1 ...\n"
+"@deffnx {Scheme Procedure} simple-conditions condition\n"
+"The @code{condition} procedure creates a new compound condition out of\n"
+"its condition arguments, flattening any specified compound conditions \n"
+"into their component simple conditions as described above."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:1236
+msgid ""
+"@code{simple-conditions} returns a list of the component simple \n"
+"conditions of the compound condition @code{condition}, in the order in\n"
+"which they were specified at construction time.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:1242
+msgid ""
+"@deffn {Scheme Procedure} condition-predicate rtd\n"
+"@deffnx {Scheme Procedure} condition-accessor rtd proc\n"
+"These procedures return condition predicate and accessor procedures for\n"
+"the specified condition record type @var{rtd}.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:1257
+msgid ""
+"@deffn {Scheme Syntax} define-condition-type condition-type supertype "
+"constructor predicate field-spec ...\n"
+"Evaluates to a new record type definition for a condition type with the\n"
+"name @var{condition-type} that has the condition type @var{supertype} as\n"
+"its parent.  A default constructor, which binds its arguments to the \n"
+"fields of this type and its parent types, will be bound to the \n"
+"identifier @var{constructor}; a condition predicate will be bound to\n"
+"@var{predicate}.  The fields of the new type, which are immutable, are \n"
+"specified by the @var{field-spec}s, each of which must be of the form:\n"
+"@lisp\n"
+"(field accessor)\n"
+"@end lisp\n"
+"where @var{field} gives the name of the field and @var{accessor} gives\n"
+"the name for a binding to an accessor procedure created for this field.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:1264
+msgid ""
+"@deffn {Condition Type} &message\n"
+"@deffnx {Scheme Procedure} make-message-condition message\n"
+"@deffnx {Scheme Procedure} message-condition? obj\n"
+"@deffnx {Scheme Procedure} condition-message condition\n"
+"A type that includes a message describing the condition that occurred.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:1270
+msgid ""
+"@deffn {Condition Type} &warning\n"
+"@deffnx {Scheme Procedure} make-warning\n"
+"@deffnx {Scheme Procedure} warning? obj\n"
+"A base type for representing non-fatal conditions during execution.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:1277
+msgid ""
+"@deffn {Condition Type} &serious\n"
+"@deffnx {Scheme Procedure} make-serious-condition\n"
+"@deffnx {Scheme Procedure} serious-condition? obj\n"
+"A base type for conditions representing errors serious enough that\n"
+"cannot be ignored.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:1283
+msgid ""
+"@deffn {Condition Type} &error\n"
+"@deffnx {Scheme Procedure} make-error\n"
+"@deffnx {Scheme Procedure} error? obj\n"
+"A base type for conditions representing errors.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:1290
+msgid ""
+"@deffn {Condition Type} &violation\n"
+"@deffnx {Scheme Procedure} make-violation\n"
+"@deffnx {Scheme Procedure} violation?\n"
+"A subtype of @code{&serious} that can be used to represent violations\n"
+"of a language or library standard.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:1297
+msgid ""
+"@deffn {Condition Type} &assertion\n"
+"@deffnx {Scheme Procedure} make-assertion-violation\n"
+"@deffnx {Scheme Procedure} assertion-violation? obj\n"
+"A subtype of @code{&violation} that indicates an invalid call to a\n"
+"procedure.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:1305
+msgid ""
+"@deffn {Condition Type} &irritants\n"
+"@deffnx {Scheme Procedure} make-irritants-condition irritants\n"
+"@deffnx {Scheme Procedure} irritants-condition? obj\n"
+"@deffnx {Scheme Procedure} condition-irritants condition\n"
+"A base type used for storing information about the causes of another\n"
+"condition in a compound condition.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:1313
+msgid ""
+"@deffn {Condition Type} &who\n"
+"@deffnx {Scheme Procedure} make-who-condition who\n"
+"@deffnx {Scheme Procedure} who-condition? obj\n"
+"@deffnx {Scheme Procedure} condition-who condition\n"
+"A base type used for storing the identity, a string or symbol, of the\n"
+"entity responsible for another condition in a compound condition.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:1320
+msgid ""
+"@deffn {Condition Type} &non-continuable\n"
+"@deffnx {Scheme Procedure} make-non-continuable-violation\n"
+"@deffnx {Scheme Procedure} non-continuable-violation? obj\n"
+"A subtype of @code{&violation} used to indicate that an exception \n"
+"handler invoked by @code{raise} has returned locally.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:1327
+msgid ""
+"@deffn {Condition Type} &implementation-restriction\n"
+"@deffnx {Scheme Procedure} make-implementation-restriction-violation\n"
+"@deffnx {Scheme Procedure} implementation-restriction-violation? obj\n"
+"A subtype of @code{&violation} used to indicate a violation of an\n"
+"implementation restriction.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:1334
+msgid ""
+"@deffn {Condition Type} &lexical\n"
+"@deffnx {Scheme Procedure} make-lexical-violation\n"
+"@deffnx {Scheme Procedure} lexical-violation? obj\n"
+"A subtype of @code{&violation} used to indicate a syntax violation at\n"
+"the level of the datum syntax.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:1344
+msgid ""
+"@deffn {Condition Type} &syntax\n"
+"@deffnx {Scheme Procedure} make-syntax-violation form subform\n"
+"@deffnx {Scheme Procedure} syntax-violation? obj\n"
+"@deffnx {Scheme Procedure} syntax-violation-form condition\n"
+"@deffnx {Scheme Procedure} syntax-violation-subform condition\n"
+"A subtype of @code{&violation} that indicates a syntax violation.  The\n"
+"@var{form} and @var{subform} fields, which must be datum values,\n"
+"indicate the syntactic form responsible for the condition.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:1351
+msgid ""
+"@deffn {Condition Type} &undefined\n"
+"@deffnx {Scheme Procedure} make-undefined-violation\n"
+"@deffnx {Scheme Procedure} undefined-violation? obj\n"
+"A subtype of @code{&violation} that indicates a reference to an unbound\n"
+"identifier.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:1354
+msgid ""
+"@node R6RS I/O Conditions\n"
+"@subsubsection I/O Conditions"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:1357
+msgid ""
+"These condition types are exported by both the \n"
+"@code{(rnrs io ports (6))} and @code{(rnrs io simple (6))} libraries."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:1363
+msgid ""
+"@deffn {Condition Type} &i/o\n"
+"@deffnx {Scheme Procedure} make-i/o-error\n"
+"@deffnx {Scheme Procedure} i/o-error? obj\n"
+"A condition supertype for more specific I/O errors.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:1369
+msgid ""
+"@deffn {Condition Type} &i/o-read\n"
+"@deffnx {Scheme Procedure} make-i/o-read-error\n"
+"@deffnx {Scheme Procedure} i/o-read-error? obj\n"
+"A subtype of @code{&i/o}; represents read-related I/O errors.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:1375
+msgid ""
+"@deffn {Condition Type} &i/o-write\n"
+"@deffnx {Scheme Procedure} make-i/o-write-error\n"
+"@deffnx {Scheme Procedure} i/o-write-error? obj\n"
+"A subtype of @code{&i/o}; represents write-related I/O errors.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:1383
+msgid ""
+"@deffn {Condition Type} &i/o-invalid-position\n"
+"@deffnx {Scheme Procedure} make-i/o-invalid-position-error position\n"
+"@deffnx {Scheme Procedure} i/o-invalid-position-error? obj\n"
+"@deffnx {Scheme Procedure} i/o-error-position condition\n"
+"A subtype of @code{&i/o}; represents an error related to an attempt to\n"
+"set the file position to an invalid position.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:1391
+msgid ""
+"@deffn {Condition Type} &i/o-filename\n"
+"@deffnx {Scheme Procedure} make-io-filename-error filename\n"
+"@deffnx {Scheme Procedure} i/o-filename-error? obj\n"
+"@deffnx {Scheme Procedure} i/o-error-filename condition\n"
+"A subtype of @code{&i/o}; represents an error related to an operation on\n"
+"a named file.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:1399
+msgid ""
+"@deffn {Condition Type} &i/o-file-protection\n"
+"@deffnx {Scheme Procedure} make-i/o-file-protection-error filename\n"
+"@deffnx {Scheme Procedure} i/o-file-protection-error? obj\n"
+"A subtype of @code{&i/o-filename}; represents an error resulting from an\n"
+"attempt to access a named file for which the caller had insufficient \n"
+"permissions.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:1406
+msgid ""
+"@deffn {Condition Type} &i/o-file-is-read-only\n"
+"@deffnx {Scheme Procedure} make-i/o-file-is-read-only-error filename\n"
+"@deffnx {Scheme Procedure} i/o-file-is-read-only-error? obj\n"
+"A subtype of @code{&i/o-file-protection}; represents an error related to\n"
+"an attempt to write to a read-only file.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:1413
+msgid ""
+"@deffn {Condition Type} &i/o-file-already-exists\n"
+"@deffnx {Scheme Procedure} make-i/o-file-already-exists-error filename\n"
+"@deffnx {Scheme Procedure} i/o-file-already-exists-error? obj\n"
+"A subtype of @code{&i/o-filename}; represents an error related to an\n"
+"operation on an existing file that was assumed not to exist.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:1420
+msgid ""
+"@deffn {Condition Type} &i/o-file-does-not-exist\n"
+"@deffnx {Scheme Procedure} make-i/o-file-does-not-exist-error\n"
+"@deffnx {Scheme Procedure} i/o-file-does-not-exist-error? obj\n"
+"A subtype of @code{&i/o-filename}; represents an error related to an\n"
+"operation on a non-existent file that was assumed to exist.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:1428
+msgid ""
+"@deffn {Condition Type} &i/o-port\n"
+"@deffnx {Scheme Procedure} make-i/o-port-error port\n"
+"@deffnx {Scheme Procedure} i/o-port-error? obj\n"
+"@deffnx {Scheme Procedure} i/o-error-port condition\n"
+"A subtype of @code{&i/o}; represents an error related to an operation on\n"
+"the port @var{port}.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:1436
+msgid ""
+"@node R6RS Transcoders\n"
+"@subsubsection Transcoders\n"
+"@cindex codec\n"
+"@cindex end-of-line style\n"
+"@cindex transcoder\n"
+"@cindex binary port\n"
+"@cindex textual port"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:1438
+msgid "The transcoder facilities are exported by @code{(rnrs io ports)}."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:1443
+msgid ""
+"Several different Unicode encoding schemes describe standard ways to\n"
+"encode characters and strings as byte sequences and to decode those\n"
+"sequences. Within this document, a @dfn{codec} is an immutable Scheme\n"
+"object that represents a Unicode or similar encoding scheme."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:1446
+msgid ""
+"An @dfn{end-of-line style} is a symbol that, if it is not @code{none},\n"
+"describes how a textual port transcodes representations of line endings."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:1455
+msgid ""
+"A @dfn{transcoder} is an immutable Scheme object that combines a codec\n"
+"with an end-of-line style and a method for handling decoding errors.\n"
+"Each transcoder represents some specific bidirectional (but not\n"
+"necessarily lossless), possibly stateful translation between byte\n"
+"sequences and Unicode characters and strings.  Every transcoder can\n"
+"operate in the input direction (bytes to characters) or in the output\n"
+"direction (characters to bytes).  A @var{transcoder} parameter name\n"
+"means that the corresponding argument must be a transcoder."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:1460
+msgid ""
+"A @dfn{binary port} is a port that supports binary I/O, does not have an\n"
+"associated transcoder and does not support textual I/O.  A @dfn{textual\n"
+"port} is a port that supports textual I/O, and does not support binary\n"
+"I/O.  A textual port may or may not have an associated transcoder."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:1464
+msgid ""
+"@deffn {Scheme Procedure} latin-1-codec\n"
+"@deffnx {Scheme Procedure} utf-8-codec\n"
+"@deffnx {Scheme Procedure} utf-16-codec"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:1467
+msgid ""
+"These are predefined codecs for the ISO 8859-1, UTF-8, and UTF-16\n"
+"encoding schemes."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:1472
+msgid ""
+"A call to any of these procedures returns a value that is equal in the\n"
+"sense of @code{eqv?} to the result of any other call to the same\n"
+"procedure.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:1474
+msgid "@deffn {Scheme Syntax} eol-style @var{eol-style-symbol}"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:1478
+msgid ""
+"@var{eol-style-symbol} should be a symbol whose name is one of\n"
+"@code{lf}, @code{cr}, @code{crlf}, @code{nel}, @code{crnel}, @code{ls},\n"
+"and @code{none}."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:1484
+msgid ""
+"The form evaluates to the corresponding symbol.  If the name of\n"
+"@var{eol-style-symbol} is not one of these symbols, the effect and\n"
+"result are implementation-dependent; in particular, the result may be an\n"
+"eol-style symbol acceptable as an @var{eol-style} argument to\n"
+"@code{make-transcoder}.  Otherwise, an exception is raised."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:1487
+msgid ""
+"All eol-style symbols except @code{none} describe a specific\n"
+"line-ending encoding:"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:1502
+msgid ""
+"@table @code\n"
+"@item lf\n"
+"linefeed\n"
+"@item cr\n"
+"carriage return\n"
+"@item crlf\n"
+"carriage return, linefeed\n"
+"@item nel\n"
+"next line\n"
+"@item crnel\n"
+"carriage return, next line\n"
+"@item ls\n"
+"line separator\n"
+"@end table"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:1511
+msgid ""
+"For a textual port with a transcoder, and whose transcoder has an\n"
+"eol-style symbol @code{none}, no conversion occurs.  For a textual input\n"
+"port, any eol-style symbol other than @code{none} means that all of the\n"
+"above line-ending encodings are recognized and are translated into a\n"
+"single linefeed.  For a textual output port, @code{none} and @code{lf}\n"
+"are equivalent.  Linefeed characters are encoded according to the\n"
+"specified eol-style symbol, and all other characters that participate in\n"
+"possible line endings are encoded as is."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:1516
+msgid ""
+"@quotation Note\n"
+"  Only the name of @var{eol-style-symbol} is significant.\n"
+"@end quotation\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:1521
+msgid ""
+"@deffn {Scheme Procedure} native-eol-style\n"
+"Returns the default end-of-line style of the underlying platform, e.g.,\n"
+"@code{lf} on Unix and @code{crlf} on Windows.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:1526
+msgid ""
+"@deffn {Condition Type} &i/o-decoding\n"
+"@deffnx {Scheme Procedure} make-i/o-decoding-error  port\n"
+"@deffnx {Scheme Procedure} i/o-decoding-error?  obj\n"
+"This condition type could be defined by"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:1531
+msgid ""
+"@lisp\n"
+"(define-condition-type &i/o-decoding &i/o-port\n"
+"  make-i/o-decoding-error i/o-decoding-error?)\n"
+"@end lisp"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:1536
+msgid ""
+"An exception with this type is raised when one of the operations for\n"
+"textual input from a port encounters a sequence of bytes that cannot be\n"
+"translated into a character or string by the input direction of the\n"
+"port's transcoder."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:1540
+msgid ""
+"When such an exception is raised, the port's position is past the\n"
+"invalid encoding.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:1546
+msgid ""
+"@deffn {Condition Type} &i/o-encoding\n"
+"@deffnx {Scheme Procedure} make-i/o-encoding-error  port char\n"
+"@deffnx {Scheme Procedure} i/o-encoding-error?  obj\n"
+"@deffnx {Scheme Procedure} i/o-encoding-error-char  condition\n"
+"This condition type could be defined by"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:1552
+msgid ""
+"@lisp\n"
+"(define-condition-type &i/o-encoding &i/o-port\n"
+"  make-i/o-encoding-error i/o-encoding-error?\n"
+"  (char i/o-encoding-error-char))\n"
+"@end lisp"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:1558
+msgid ""
+"An exception with this type is raised when one of the operations for\n"
+"textual output to a port encounters a character that cannot be\n"
+"translated into bytes by the output direction of the port's transcoder.\n"
+"@var{char} is the character that could not be encoded.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:1569
+msgid ""
+"@deffn {Scheme Syntax} error-handling-mode @var{error-handling-mode-symbol}\n"
+"@var{error-handling-mode-symbol} should be a symbol whose name is one of\n"
+"@code{ignore}, @code{raise}, and @code{replace}. The form evaluates to\n"
+"the corresponding symbol.  If @var{error-handling-mode-symbol} is not\n"
+"one of these identifiers, effect and result are\n"
+"implementation-dependent: The result may be an error-handling-mode\n"
+"symbol acceptable as a @var{handling-mode} argument to\n"
+"@code{make-transcoder}.  If it is not acceptable as a\n"
+"@var{handling-mode} argument to @code{make-transcoder}, an exception is\n"
+"raised."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:1573
+msgid ""
+"@quotation Note\n"
+"  Only the name of @var{error-handling-mode-symbol} is significant.\n"
+"@end quotation"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:1577
+msgid ""
+"The error-handling mode of a transcoder specifies the behavior\n"
+"of textual I/O operations in the presence of encoding or decoding\n"
+"errors."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:1582
+msgid ""
+"If a textual input operation encounters an invalid or incomplete\n"
+"character encoding, and the error-handling mode is @code{ignore}, an\n"
+"appropriate number of bytes of the invalid encoding are ignored and\n"
+"decoding continues with the following bytes."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:1587
+msgid ""
+"If the error-handling mode is @code{replace}, the replacement\n"
+"character U+FFFD is injected into the data stream, an appropriate\n"
+"number of bytes are ignored, and decoding\n"
+"continues with the following bytes."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:1590
+msgid ""
+"If the error-handling mode is @code{raise}, an exception with condition\n"
+"type @code{&i/o-decoding} is raised."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:1601
+msgid ""
+"If a textual output operation encounters a character it cannot encode,\n"
+"and the error-handling mode is @code{ignore}, the character is ignored\n"
+"and encoding continues with the next character.  If the error-handling\n"
+"mode is @code{replace}, a codec-specific replacement character is\n"
+"emitted by the transcoder, and encoding continues with the next\n"
+"character.  The replacement character is U+FFFD for transcoders whose\n"
+"codec is one of the Unicode encodings, but is the @code{?}  character\n"
+"for the Latin-1 encoding.  If the error-handling mode is @code{raise},\n"
+"an exception with condition type @code{&i/o-encoding} is raised.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:1608
+msgid ""
+"@deffn {Scheme Procedure} make-transcoder  codec\n"
+"@deffnx {Scheme Procedure} make-transcoder codec eol-style\n"
+"@deffnx {Scheme Procedure} make-transcoder codec eol-style handling-mode\n"
+"@var{codec} must be a codec; @var{eol-style}, if present, an eol-style\n"
+"symbol; and @var{handling-mode}, if present, an error-handling-mode\n"
+"symbol."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:1614
+msgid ""
+"@var{eol-style} may be omitted, in which case it defaults to the native\n"
+"end-of-line style of the underlying platform.  @var{handling-mode} may\n"
+"be omitted, in which case it defaults to @code{replace}.  The result is\n"
+"a transcoder with the behavior specified by its arguments.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:1619
+msgid ""
+"@deffn {Scheme procedure} native-transcoder\n"
+"Returns an implementation-dependent transcoder that represents a\n"
+"possibly locale-dependent ``native'' transcoding.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:1628
+msgid ""
+"@deffn {Scheme Procedure} transcoder-codec  transcoder\n"
+"@deffnx {Scheme Procedure} transcoder-eol-style  transcoder\n"
+"@deffnx {Scheme Procedure} transcoder-error-handling-mode  transcoder\n"
+"These are accessors for transcoder objects; when applied to a\n"
+"transcoder returned by @code{make-transcoder}, they return the\n"
+"@var{codec}, @var{eol-style}, and @var{handling-mode} arguments,\n"
+"respectively.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:1633
+msgid ""
+"@deffn {Scheme Procedure} bytevector->string  bytevector transcoder\n"
+"Returns the string that results from transcoding the\n"
+"@var{bytevector} according to the input direction of the transcoder.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:1638
+msgid ""
+"@deffn {Scheme Procedure} string->bytevector  string transcoder\n"
+"Returns the bytevector that results from transcoding the\n"
+"@var{string} according to the output direction of the transcoder.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:1641
+msgid ""
+"@node rnrs io ports\n"
+"@subsubsection rnrs io ports"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:1654
+msgid ""
+"@cindex R6RS\n"
+"@cindex R6RS ports\n"
+"Guile's binary and textual port interface was heavily inspired by R6RS,\n"
+"so many R6RS port interfaces are documented elsewhere.  Note that R6RS\n"
+"ports are not disjoint from Guile's native ports, so Guile-specific\n"
+"procedures will work on ports created using the R6RS API, and vice\n"
+"versa.  Also note that in Guile, all ports are both textual and binary.\n"
+"@xref{Input and Output}, for more on Guile's core port API.  The R6RS\n"
+"ports module wraps Guile's I/O routines in a helper that will translate\n"
+"native Guile exceptions to R6RS conditions; @xref{R6RS I/O Conditions},\n"
+"for more.  @xref{R6RS File Ports}, for documentation on the R6RS file\n"
+"port interface."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:1657
+msgid ""
+"@c FIXME: Update description when implemented.\n"
+"@emph{Note}: The implementation of this R6RS API is not complete yet."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:1661
+msgid ""
+"@deffn {Scheme Procedure} eof-object? obj\n"
+"@xref{Binary I/O}, for documentation.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:1664
+msgid ""
+"@deffn {Scheme Procedure} eof-object\n"
+"Return the end-of-file (EOF) object."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:1670
+msgid ""
+"@lisp\n"
+"(eof-object? (eof-object))\n"
+"@result{} #t\n"
+"@end lisp\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:1676
+msgid ""
+"@deffn {Scheme Procedure} port? obj\n"
+"@deffnx {Scheme Procedure} input-port? obj\n"
+"@deffnx {Scheme Procedure} output-port? obj\n"
+"@xref{Ports}, for documentation.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:1681
+msgid ""
+"@deffn {Scheme Procedure} port-transcoder port\n"
+"Return a transcoder associated with the encoding of @var{port}.\n"
+"@xref{Encoding}, and @xref{R6RS Transcoders}.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:1687
+msgid ""
+"@deffn {Scheme Procedure} binary-port? port\n"
+"@deffnx {Scheme Procedure} textual-port? port\n"
+"Return @code{#t}, as all ports in Guile are suitable for binary and\n"
+"textual I/O.  @xref{Encoding}, for more details.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:1701
+msgid ""
+"@deffn {Scheme Procedure} transcoded-port binary-port transcoder\n"
+"The @code{transcoded-port} procedure\n"
+"returns a new textual port with the specified @var{transcoder}.\n"
+"Otherwise the new textual port's state is largely the same as\n"
+"that of @var{binary-port}.\n"
+"If @var{binary-port} is an input port, the new textual\n"
+"port will be an input port and\n"
+"will transcode the bytes that have not yet been read from\n"
+"@var{binary-port}.\n"
+"If @var{binary-port} is an output port, the new textual\n"
+"port will be an output port and\n"
+"will transcode output characters into bytes that are\n"
+"written to the byte sink represented by @var{binary-port}."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:1710
+msgid ""
+"As a side effect, however, @code{transcoded-port}\n"
+"closes @var{binary-port} in\n"
+"a special way that allows the new textual port to continue to\n"
+"use the byte source or sink represented by @var{binary-port},\n"
+"even though @var{binary-port} itself is closed and cannot\n"
+"be used by the input and output operations described in this\n"
+"chapter.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:1715
+msgid ""
+"@deffn {Scheme Procedure} port-position port\n"
+"Equivalent to @code{(seek @var{port} SEEK_CUR 0)}.  @xref{Random\n"
+"Access}.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:1719
+msgid ""
+"@deffn {Scheme Procedure} port-has-port-position? port\n"
+"Return @code{#t} is @var{port} supports @code{port-position}.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:1724
+msgid ""
+"@deffn {Scheme Procedure} set-port-position! port offset\n"
+"Equivalent to @code{(seek @var{port} SEEK_SET @var{offset})}.\n"
+"@xref{Random Access}.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:1728
+msgid ""
+"@deffn {Scheme Procedure} port-has-set-port-position!? port\n"
+"Return @code{#t} is @var{port} supports @code{set-port-position!}.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:1733
+msgid ""
+"@deffn {Scheme Procedure} call-with-port port proc\n"
+"Call @var{proc}, passing it @var{port} and closing @var{port} upon exit\n"
+"of @var{proc}.  Return the return values of @var{proc}.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:1737
+msgid ""
+"@deffn {Scheme Procedure} port-eof? input-port\n"
+"Equivalent to @code{(eof-object? (lookahead-u8 @var{input-port}))}.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:1746
+msgid ""
+"@deffn {Scheme Procedure} standard-input-port\n"
+"@deffnx {Scheme Procedure} standard-output-port\n"
+"@deffnx {Scheme Procedure} standard-error-port\n"
+"Returns a fresh binary input port connected to standard input, or a\n"
+"binary output port connected to the standard output or standard error,\n"
+"respectively.  Whether the port supports the @code{port-position} and\n"
+"@code{set-port-position!}  operations is implementation-dependent.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:1752
+msgid ""
+"@deffn {Scheme Procedure} current-input-port\n"
+"@deffnx {Scheme Procedure} current-output-port\n"
+"@deffnx {Scheme Procedure} current-error-port\n"
+"@xref{Default Ports}.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:1757
+msgid ""
+"@deffn {Scheme Procedure} open-bytevector-input-port bv [transcoder]\n"
+"@deffnx {Scheme Procedure} open-bytevector-output-port [transcoder]\n"
+"@xref{Bytevector Ports}.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:1763
+msgid ""
+"@deffn {Scheme Procedure} make-custom-binary-input-port id read! get-"
+"position set-position! close\n"
+"@deffnx {Scheme Procedure} make-custom-binary-output-port id write! get-"
+"position set-position! close\n"
+"@deffnx {Scheme Procedure} make-custom-binary-input/output-port id read! "
+"write! get-position set-position! close\n"
+"@xref{Custom Ports}.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:1774
+msgid ""
+"@deffn {Scheme Procedure} get-u8 port\n"
+"@deffnx {Scheme Procedure} lookahead-u8 port\n"
+"@deffnx {Scheme Procedure} get-bytevector-n port count\n"
+"@deffnx {Scheme Procedure} get-bytevector-n! port bv start count\n"
+"@deffnx {Scheme Procedure} get-bytevector-some port\n"
+"@deffnx {Scheme Procedure} get-bytevector-all port\n"
+"@deffnx {Scheme Procedure} put-u8 port octet\n"
+"@deffnx {Scheme Procedure} put-bytevector port bv [start [count]]\n"
+"@xref{Binary I/O}.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:1785
+msgid ""
+"@deffn {Scheme Procedure} get-char textual-input-port\n"
+"@deffnx {Scheme Procedure} lookahead-char textual-input-port\n"
+"@deffnx {Scheme Procedure} get-string-n textual-input-port count\n"
+"@deffnx {Scheme Procedure} get-string-n! textual-input-port string start "
+"count\n"
+"@deffnx {Scheme Procedure} get-string-all textual-input-port\n"
+"@deffnx {Scheme Procedure} get-line textual-input-port\n"
+"@deffnx {Scheme Procedure} put-char port char\n"
+"@deffnx {Scheme Procedure} put-string port string [start [count]]\n"
+"@xref{Textual I/O}.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:1792
+msgid ""
+"@deffn {Scheme Procedure} get-datum textual-input-port count\n"
+"Reads an external representation from @var{textual-input-port} and returns "
+"the\n"
+"datum it represents.  The @code{get-datum} procedure returns the next\n"
+"datum that can be parsed from the given @var{textual-input-port}, updating\n"
+"@var{textual-input-port} to point exactly past the end of the external\n"
+"representation of the object."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:1796
+msgid ""
+"Any @emph{interlexeme space} (comment or whitespace, @pxref{Scheme\n"
+"Syntax}) in the input is first skipped.  If an end of file occurs after\n"
+"the interlexeme space, the end-of-file object is returned."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:1805
+msgid ""
+"If a character inconsistent with an external representation is\n"
+"encountered in the input, an exception with condition types\n"
+"@code{&lexical} and @code{&i/o-read} is raised.  Also, if the end of\n"
+"file is encountered after the beginning of an external representation,\n"
+"but the external representation is incomplete and therefore cannot be\n"
+"parsed, an exception with condition types @code{&lexical} and\n"
+"@code{&i/o-read} is raised.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:1814
+msgid ""
+"@deffn {Scheme Procedure} put-datum textual-output-port datum\n"
+"@var{datum} should be a datum value.  The @code{put-datum} procedure\n"
+"writes an external representation of @var{datum} to\n"
+"@var{textual-output-port}.  The specific external representation is\n"
+"implementation-dependent.  However, whenever possible, an implementation\n"
+"should produce a representation for which @code{get-datum}, when reading\n"
+"the representation, will return an object equal (in the sense of\n"
+"@code{equal?}) to @var{datum}."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:1821
+msgid ""
+"@quotation Note\n"
+"  Not all datums may allow producing an external representation for which\n"
+"  @code{get-datum} will produce an object that is equal to the\n"
+"  original.  Specifically, NaNs contained in @var{datum} may make\n"
+"  this impossible.\n"
+"@end quotation"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:1830
+msgid ""
+"@quotation Note\n"
+"  The @code{put-datum} procedure merely writes the external\n"
+"  representation, but no trailing delimiter.  If @code{put-datum} is\n"
+"  used to write several subsequent external representations to an\n"
+"  output port, care should be taken to delimit them properly so they can\n"
+"  be read back in by subsequent calls to @code{get-datum}.\n"
+"@end quotation\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:1834
+msgid ""
+"@deffn {Scheme Procedure} flush-output-port port\n"
+"@xref{Buffering}, for documentation on @code{force-output}.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:1837
+msgid ""
+"@node R6RS File Ports\n"
+"@subsubsection R6RS File Ports"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:1840
+msgid ""
+"The facilities described in this section are exported by the @code{(rnrs\n"
+"io ports)} module."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:1848
+msgid ""
+"@deffn {Scheme Syntax} buffer-mode @var{buffer-mode-symbol}\n"
+"@var{buffer-mode-symbol} must be a symbol whose name is one of\n"
+"@code{none}, @code{line}, and @code{block}. The result is the\n"
+"corresponding symbol, and specifies the associated buffer mode.\n"
+"@xref{Buffering}, for a discussion of these different buffer modes.  To\n"
+"control the amount of buffering, use @code{setvbuf} instead.  Note that\n"
+"only the name of @var{buffer-mode-symbol} is significant."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:1851
+msgid ""
+"@xref{Buffering}, for a discussion of port buffering.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:1856
+msgid ""
+"@deffn {Scheme Procedure} buffer-mode? obj\n"
+"Returns @code{#t} if the argument is a valid buffer-mode symbol, and\n"
+"returns @code{#f} otherwise.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:1861
+msgid ""
+"When opening a file, the various procedures accept a @code{file-options}\n"
+"object that encapsulates flags to specify how the file is to be\n"
+"opened. A @code{file-options} object is an enum-set (@pxref{rnrs enums})\n"
+"over the symbols constituting valid file options."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:1864
+msgid ""
+"A @var{file-options} parameter name means that the corresponding\n"
+"argument must be a file-options object."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:1866
+msgid "@deffn {Scheme Syntax} file-options @var{file-options-symbol} ..."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:1868
+msgid "Each @var{file-options-symbol} must be a symbol."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:1871
+msgid ""
+"The @code{file-options} syntax returns a file-options object that\n"
+"encapsulates the specified options."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:1878
+msgid ""
+"When supplied to an operation that opens a file for output, the\n"
+"file-options object returned by @code{(file-options)} specifies that the\n"
+"file is created if it does not exist and an exception with condition\n"
+"type @code{&i/o-file-already-exists} is raised if it does exist.  The\n"
+"following standard options can be included to modify the default\n"
+"behavior."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:1899
+msgid ""
+"@table @code\n"
+"@item no-create\n"
+"      If the file does not already exist, it is not created;\n"
+"      instead, an exception with condition type @code{&i/o-file-does-not-"
+"exist}\n"
+"      is raised.\n"
+"      If the file already exists, the exception with condition type\n"
+"      @code{&i/o-file-already-exists} is not raised\n"
+"      and the file is truncated to zero length.\n"
+"@item no-fail\n"
+"      If the file already exists, the exception with condition type\n"
+"      @code{&i/o-file-already-exists} is not raised,\n"
+"      even if @code{no-create} is not included,\n"
+"      and the file is truncated to zero length.\n"
+"@item no-truncate\n"
+"      If the file already exists and the exception with condition type\n"
+"      @code{&i/o-file-already-exists} has been inhibited by inclusion of\n"
+"      @code{no-create} or @code{no-fail}, the file is not truncated, but\n"
+"      the port's current position is still set to the beginning of the\n"
+"      file.\n"
+"@end table"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:1904
+msgid ""
+"These options have no effect when a file is opened only for input.\n"
+"Symbols other than those listed above may be used as\n"
+"@var{file-options-symbol}s; they have implementation-specific meaning,\n"
+"if any."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:1909
+msgid ""
+"@quotation Note\n"
+"  Only the name of @var{file-options-symbol} is significant.\n"
+"@end quotation\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:1915
+msgid ""
+"@deffn {Scheme Procedure} open-file-input-port filename\n"
+"@deffnx {Scheme Procedure} open-file-input-port filename file-options\n"
+"@deffnx {Scheme Procedure} open-file-input-port filename file-options buffer-"
+"mode\n"
+"@deffnx {Scheme Procedure} open-file-input-port filename file-options buffer-"
+"mode maybe-transcoder\n"
+"@var{maybe-transcoder} must be either a transcoder or @code{#f}."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:1919
+msgid ""
+"The @code{open-file-input-port} procedure returns an\n"
+"input port for the named file. The @var{file-options} and\n"
+"@var{maybe-transcoder} arguments are optional."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:1922
+msgctxt "/home/bear/work/guile/doc/guile/en/r6rs.texi:1922"
+msgid ""
+"The @var{file-options} argument, which may determine various aspects of\n"
+"the returned port, defaults to the value of @code{(file-options)}."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:1926
+msgctxt "/home/bear/work/guile/doc/guile/en/r6rs.texi:1926"
+msgid ""
+"The @var{buffer-mode} argument, if supplied,\n"
+"must be one of the symbols that name a buffer mode.\n"
+"The @var{buffer-mode} argument defaults to @code{block}."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:1929
+msgid ""
+"If @var{maybe-transcoder} is a transcoder, it becomes the transcoder "
+"associated\n"
+"with the returned port."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:1937
+msgctxt "/home/bear/work/guile/doc/guile/en/r6rs.texi:1937"
+msgid ""
+"If @var{maybe-transcoder} is @code{#f} or absent,\n"
+"the port will be a binary port and will support the\n"
+"@code{port-position} and @code{set-port-position!}  operations.\n"
+"Otherwise the port will be a textual port, and whether it supports\n"
+"the @code{port-position} and @code{set-port-position!} operations\n"
+"is implementation-dependent (and possibly transcoder-dependent).\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:1943
+msgid ""
+"@deffn {Scheme Procedure} open-file-output-port filename\n"
+"@deffnx {Scheme Procedure} open-file-output-port filename file-options\n"
+"@deffnx {Scheme Procedure} open-file-output-port filename file-options "
+"buffer-mode\n"
+"@deffnx {Scheme Procedure} open-file-output-port filename file-options "
+"buffer-mode maybe-transcoder\n"
+"@var{maybe-transcoder} must be either a transcoder or @code{#f}."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:1945
+msgid ""
+"The @code{open-file-output-port} procedure returns an output port for the "
+"named file."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:1948
+msgctxt "/home/bear/work/guile/doc/guile/en/r6rs.texi:1948"
+msgid ""
+"The @var{file-options} argument, which may determine various aspects of\n"
+"the returned port, defaults to the value of @code{(file-options)}."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:1952
+msgctxt "/home/bear/work/guile/doc/guile/en/r6rs.texi:1952"
+msgid ""
+"The @var{buffer-mode} argument, if supplied,\n"
+"must be one of the symbols that name a buffer mode.\n"
+"The @var{buffer-mode} argument defaults to @code{block}."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:1955
+msgid ""
+"If @var{maybe-transcoder} is a transcoder, it becomes the transcoder\n"
+"associated with the port."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:1963
+msgctxt "/home/bear/work/guile/doc/guile/en/r6rs.texi:1963"
+msgid ""
+"If @var{maybe-transcoder} is @code{#f} or absent,\n"
+"the port will be a binary port and will support the\n"
+"@code{port-position} and @code{set-port-position!}  operations.\n"
+"Otherwise the port will be a textual port, and whether it supports\n"
+"the @code{port-position} and @code{set-port-position!} operations\n"
+"is implementation-dependent (and possibly transcoder-dependent).\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:1966
+msgid ""
+"@node rnrs io simple\n"
+"@subsubsection rnrs io simple"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:1975
+msgid ""
+"The @code{(rnrs io simple (6))} library provides convenience functions\n"
+"for performing textual I/O on ports.  This library also exports all of\n"
+"the condition types and associated procedures described in (@pxref{R6RS\n"
+"I/O Conditions}).  In the context of this section, when stating that a\n"
+"procedure behaves ``identically'' to the corresponding procedure in\n"
+"Guile's core library, this is modulo the behavior wrt. conditions: such\n"
+"procedures raise the appropriate R6RS conditions in case of error, but\n"
+"otherwise behave identically."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:1978
+msgid ""
+"@c FIXME: remove the following note when proper condition behavior has\n"
+"@c been verified."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:1984
+msgid ""
+"@quotation Note\n"
+"There are still known issues regarding condition-correctness; some\n"
+"errors may still be thrown as native Guile exceptions instead of the\n"
+"appropriate R6RS conditions.\n"
+"@end quotation"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:1990
+msgid ""
+"@deffn {Scheme Procedure} eof-object\n"
+"@deffnx {Scheme Procedure} eof-object? obj\n"
+"These procedures are identical to the ones provided by the @code{(rnrs\n"
+"io ports (6))} library.  @xref{rnrs io ports}, for documentation.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:1996
+msgid ""
+"@deffn {Scheme Procedure} input-port? obj\n"
+"@deffnx {Scheme Procedure} output-port? obj\n"
+"These procedures are identical to the ones provided by Guile's core\n"
+"library.  @xref{Ports}, for documentation.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:2006
+msgid ""
+"@deffn {Scheme Procedure} call-with-input-file filename proc\n"
+"@deffnx {Scheme Procedure} call-with-output-file filename proc\n"
+"@deffnx {Scheme Procedure} open-input-file filename\n"
+"@deffnx {Scheme Procedure} open-output-file filename\n"
+"@deffnx {Scheme Procedure} with-input-from-file filename thunk\n"
+"@deffnx {Scheme Procedure} with-output-to-file filename thunk\n"
+"These procedures are identical to the ones provided by Guile's core\n"
+"library.  @xref{File Ports}, for documentation.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:2012
+msgid ""
+"@deffn {Scheme Procedure} close-input-port input-port\n"
+"@deffnx {Scheme Procedure} close-output-port output-port\n"
+"Closes the given @var{input-port} or @var{output-port}.  These are\n"
+"legacy interfaces; just use @code{close-port}.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:2020
+msgid ""
+"@deffn {Scheme Procedure} peek-char\n"
+"@deffnx {Scheme Procedure} peek-char textual-input-port\n"
+"@deffnx {Scheme Procedure} read-char\n"
+"@deffnx {Scheme Procedure} read-char textual-input-port\n"
+"These procedures are identical to the ones provided by Guile's core\n"
+"library.  @xref{Venerable Port Interfaces}, for documentation.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:2026
+msgid ""
+"@deffn {Scheme Procedure} read\n"
+"@deffnx {Scheme Procedure} read textual-input-port\n"
+"This procedure is identical to the one provided by Guile's core library.\n"
+"@xref{Scheme Read}, for documentation.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:2039
+msgid ""
+"@deffn {Scheme Procedure} display obj\n"
+"@deffnx {Scheme Procedure} display obj textual-output-port\n"
+"@deffnx {Scheme Procedure} newline\n"
+"@deffnx {Scheme Procedure} newline textual-output-port\n"
+"@deffnx {Scheme Procedure} write obj\n"
+"@deffnx {Scheme Procedure} write obj textual-output-port\n"
+"@deffnx {Scheme Procedure} write-char char\n"
+"@deffnx {Scheme Procedure} write-char char textual-output-port\n"
+"These procedures are identical to the ones provided by Guile's core\n"
+"library.  @xref{Venerable Port Interfaces}, and @xref{Scheme Write}, for\n"
+"documentation.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:2042
+msgid ""
+"@node rnrs files\n"
+"@subsubsection rnrs files"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:2046
+msgid ""
+"The @code{(rnrs files (6))} library provides the @code{file-exists?} and\n"
+"@code{delete-file} procedures, which test for the existence of a file\n"
+"and allow the deletion of files from the file system, respectively."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:2049
+msgid ""
+"These procedures are identical to the ones provided by Guile's core \n"
+"library.  @xref{File System}, for documentation."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:2052
+msgid ""
+"@node rnrs programs\n"
+"@subsubsection rnrs programs"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:2055
+msgid ""
+"The @code{(rnrs programs (6))} library provides procedures for \n"
+"process management and introspection."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:2060
+msgid ""
+"@deffn {Scheme Procedure} command-line\n"
+"This procedure is identical to the one provided by Guile's core library.\n"
+"@xref{Runtime Environment}, for documentation.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:2065
+msgid ""
+"@deffn {Scheme Procedure} exit [status]\n"
+"This procedure is identical to the one provided by Guile's core\n"
+"library. @xref{Processes}, for documentation.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:2068
+msgid ""
+"@node rnrs arithmetic fixnums\n"
+"@subsubsection rnrs arithmetic fixnums"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:2078
+msgid ""
+"The @code{(rnrs arithmetic fixnums (6))} library provides procedures for\n"
+"performing arithmetic operations on an implementation-dependent range of\n"
+"exact integer values, which R6RS refers to as @dfn{fixnums}.  In Guile,\n"
+"the size of a fixnum is determined by the size of the @code{SCM} type; a\n"
+"single SCM struct is guaranteed to be able to hold an entire fixnum, \n"
+"making fixnum computations particularly \n"
+"efficient---(@pxref{The SCM Type}).  On 32-bit systems, the most \n"
+"negative and most positive fixnum values are, respectively, -536870912 \n"
+"and 536870911."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:2083
+msgid ""
+"Unless otherwise specified, all of the procedures below take fixnums as\n"
+"arguments, and will raise an @code{&assertion} condition if passed a \n"
+"non-fixnum argument or an @code{&implementation-restriction} condition \n"
+"if their result is not itself a fixnum."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:2087
+msgid ""
+"@deffn {Scheme Procedure} fixnum? obj\n"
+"Returns @code{#t} if @var{obj} is a fixnum, @code{#f} otherwise.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:2095
+msgid ""
+"@deffn {Scheme Procedure} fixnum-width\n"
+"@deffnx {Scheme Procedure} least-fixnum\n"
+"@deffnx {Scheme Procedure} greatest-fixnum\n"
+"These procedures return, respectively, the maximum number of bits \n"
+"necessary to represent a fixnum value in Guile, the minimum fixnum\n"
+"value, and the maximum fixnum value.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:2106
+msgid ""
+"@deffn {Scheme Procedure} fx=? fx1 fx2 fx3 ...\n"
+"@deffnx {Scheme Procedure} fx>? fx1 fx2 fx3 ...\n"
+"@deffnx {Scheme Procedure} fx<? fx1 fx2 fx3 ...\n"
+"@deffnx {Scheme Procedure} fx>=? fx1 fx2 fx3 ...\n"
+"@deffnx {Scheme Procedure} fx<=? fx1 fx2 fx3 ...\n"
+"These procedures return @code{#t} if their fixnum arguments are\n"
+"(respectively): equal, monotonically increasing, monotonically\n"
+"decreasing, monotonically nondecreasing, or monotonically nonincreasing;\n"
+"@code{#f} otherwise.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:2116
+msgid ""
+"@deffn {Scheme Procedure} fxzero? fx\n"
+"@deffnx {Scheme Procedure} fxpositive? fx\n"
+"@deffnx {Scheme Procedure} fxnegative? fx\n"
+"@deffnx {Scheme Procedure} fxodd? fx\n"
+"@deffnx {Scheme Procedure} fxeven? fx\n"
+"These numerical predicates return @code{#t} if @var{fx} is,\n"
+"respectively, zero, greater than zero, less than zero, odd, or even;\n"
+"@code{#f} otherwise. \n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:2121
+msgid ""
+"@deffn {Scheme Procedure} fxmax fx1 fx2 ...\n"
+"@deffnx {Scheme Procedure} fxmin fx1 fx2 ...\n"
+"These procedures return the maximum or minimum of their arguments.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:2126
+msgid ""
+"@deffn {Scheme Procedure} fx+ fx1 fx2\n"
+"@deffnx {Scheme Procedure} fx* fx1 fx2\n"
+"These procedures return the sum or product of their arguments.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:2131
+msgid ""
+"@deffn {Scheme Procedure} fx- fx1 fx2\n"
+"@deffnx {Scheme Procedure} fx- fx\n"
+"Returns the difference of @var{fx1} and @var{fx2}, or the negation of\n"
+"@var{fx}, if called with a single argument."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:2135
+msgid ""
+"An @code{&assertion} condition is raised if the result is not itself a\n"
+"fixnum.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:2145
+msgid ""
+"@deffn {Scheme Procedure} fxdiv-and-mod fx1 fx2\n"
+"@deffnx {Scheme Procedure} fxdiv fx1 fx2\n"
+"@deffnx {Scheme Procedure} fxmod fx1 fx2\n"
+"@deffnx {Scheme Procedure} fxdiv0-and-mod0 fx1 fx2\n"
+"@deffnx {Scheme Procedure} fxdiv0 fx1 fx2\n"
+"@deffnx {Scheme Procedure} fxmod0 fx1 fx2\n"
+"These procedures implement number-theoretic division on fixnums;\n"
+"@xref{(rnrs base)}, for a description of their semantics.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:2155
+msgid ""
+"@deffn {Scheme Procedure} fx+/carry fx1 fx2 fx3\n"
+"Returns the two fixnum results of the following computation:\n"
+"@lisp\n"
+"(let* ((s (+ fx1 fx2 fx3))\n"
+"       (s0 (mod0 s (expt 2 (fixnum-width))))\n"
+"       (s1 (div0 s (expt 2 (fixnum-width)))))\n"
+"  (values s0 s1))\n"
+"@end lisp\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:2165
+msgid ""
+"@deffn {Scheme Procedure} fx-/carry fx1 fx2 fx3\n"
+"Returns the two fixnum results of the following computation:\n"
+"@lisp\n"
+"(let* ((d (- fx1 fx2 fx3))\n"
+"       (d0 (mod0 d (expt 2 (fixnum-width))))\n"
+"       (d1 (div0 d (expt 2 (fixnum-width)))))\n"
+"  (values d0 d1))\n"
+"@end lisp\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:2175
+msgid ""
+"@deffn {Scheme Procedure} fx*/carry fx1 fx2 fx3\n"
+"@lisp\n"
+"Returns the two fixnum results of the following computation:\n"
+"(let* ((s (+ (* fx1 fx2) fx3))\n"
+"       (s0 (mod0 s (expt 2 (fixnum-width))))\n"
+"       (s1 (div0 s (expt 2 (fixnum-width)))))\n"
+"  (values s0 s1))\n"
+"@end lisp\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:2184
+msgid ""
+"@deffn {Scheme Procedure} fxnot fx\n"
+"@deffnx {Scheme Procedure} fxand fx1 ...\n"
+"@deffnx {Scheme Procedure} fxior fx1 ...\n"
+"@deffnx {Scheme Procedure} fxxor fx1 ...\n"
+"These procedures are identical to the @code{lognot}, @code{logand},\n"
+"@code{logior}, and @code{logxor} procedures provided by Guile's core\n"
+"library.  @xref{Bitwise Operations}, for documentation.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:2191
+msgid ""
+"@deffn {Scheme Procedure} fxif fx1 fx2 fx3\n"
+"Returns the bitwise ``if'' of its fixnum arguments.  The bit at position\n"
+"@code{i} in the return value will be the @code{i}th bit from @var{fx2}\n"
+"if the @code{i}th bit of @var{fx1} is 1, the @code{i}th bit from \n"
+"@var{fx3}.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:2196
+msgid ""
+"@deffn {Scheme Procedure} fxbit-count fx\n"
+"Returns the number of 1 bits in the two's complement representation of\n"
+"@var{fx}.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:2200
+msgid ""
+"@deffn {Scheme Procedure} fxlength fx\n"
+"Returns the number of bits necessary to represent @var{fx}.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:2205
+msgid ""
+"@deffn {Scheme Procedure} fxfirst-bit-set fx\n"
+"Returns the index of the least significant 1 bit in the two's complement\n"
+"representation of @var{fx}.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:2210
+msgid ""
+"@deffn {Scheme Procedure} fxbit-set? fx1 fx2\n"
+"Returns @code{#t} if the @var{fx2}th bit in the two's complement\n"
+"representation of @var{fx1} is 1, @code{#f} otherwise.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:2215
+msgid ""
+"@deffn {Scheme Procedure} fxcopy-bit fx1 fx2 fx3\n"
+"Returns the result of setting the @var{fx2}th bit of @var{fx1} to the\n"
+"@var{fx2}th bit of @var{fx3}.\n"
+"@end deffn "
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:2221
+msgid ""
+"@deffn {Scheme Procedure} fxbit-field fx1 fx2 fx3\n"
+"Returns the integer representation of the contiguous sequence of bits in\n"
+"@var{fx1} that starts at position @var{fx2} (inclusive) and ends at\n"
+"position @var{fx3} (exclusive).\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:2227
+msgid ""
+"@deffn {Scheme Procedure} fxcopy-bit-field fx1 fx2 fx3 fx4\n"
+"Returns the result of replacing the bit field in @var{fx1} with start\n"
+"and end positions @var{fx2} and @var{fx3} with the corresponding bit\n"
+"field from @var{fx4}.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:2235
+msgid ""
+"@deffn {Scheme Procedure} fxarithmetic-shift fx1 fx2\n"
+"@deffnx {Scheme Procedure} fxarithmetic-shift-left fx1 fx2\n"
+"@deffnx {Scheme Procedure} fxarithmetic-shift-right fx1 fx2\n"
+"Returns the result of shifting the bits of @var{fx1} right or left by\n"
+"the @var{fx2} positions.  @code{fxarithmetic-shift} is identical\n"
+"to @code{fxarithmetic-shift-left}.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:2241
+msgid ""
+"@deffn {Scheme Procedure} fxrotate-bit-field fx1 fx2 fx3 fx4\n"
+"Returns the result of cyclically permuting the bit field in @var{fx1}\n"
+"with start and end positions @var{fx2} and @var{fx3} by @var{fx4} bits\n"
+"in the direction of more significant bits.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:2247
+msgid ""
+"@deffn {Scheme Procedure} fxreverse-bit-field fx1 fx2 fx3\n"
+"Returns the result of reversing the order of the bits of @var{fx1} \n"
+"between position @var{fx2} (inclusive) and position @var{fx3} \n"
+"(exclusive).\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:2250
+msgid ""
+"@node rnrs arithmetic flonums\n"
+"@subsubsection rnrs arithmetic flonums"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:2254
+msgid ""
+"The @code{(rnrs arithmetic flonums (6))} library provides procedures for\n"
+"performing arithmetic operations on inexact representations of real\n"
+"numbers, which R6RS refers to as @dfn{flonums}."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:2258
+msgid ""
+"Unless otherwise specified, all of the procedures below take flonums as\n"
+"arguments, and will raise an @code{&assertion} condition if passed a \n"
+"non-flonum argument."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:2262
+msgid ""
+"@deffn {Scheme Procedure} flonum? obj\n"
+"Returns @code{#t} if @var{obj} is a flonum, @code{#f} otherwise.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:2267
+msgid ""
+"@deffn {Scheme Procedure} real->flonum x\n"
+"Returns the flonum that is numerically closest to the real number \n"
+"@var{x}.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:2278
+msgid ""
+"@deffn {Scheme Procedure} fl=? fl1 fl2 fl3 ...\n"
+"@deffnx {Scheme Procedure} fl<? fl1 fl2 fl3 ...\n"
+"@deffnx {Scheme Procedure} fl<=? fl1 fl2 fl3 ...\n"
+"@deffnx {Scheme Procedure} fl>? fl1 fl2 fl3 ...\n"
+"@deffnx {Scheme Procedure} fl>=? fl1 fl2 fl3 ...\n"
+"These procedures return @code{#t} if their flonum arguments are\n"
+"(respectively): equal, monotonically increasing, monotonically\n"
+"decreasing, monotonically nondecreasing, or monotonically nonincreasing;\n"
+"@code{#f} otherwise.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:2290
+msgid ""
+"@deffn {Scheme Procedure} flinteger? fl\n"
+"@deffnx {Scheme Procedure} flzero? fl\n"
+"@deffnx {Scheme Procedure} flpositive? fl\n"
+"@deffnx {Scheme Procedure} flnegative? fl\n"
+"@deffnx {Scheme Procedure} flodd? fl\n"
+"@deffnx {Scheme Procedure} fleven? fl\n"
+"These numerical predicates return @code{#t} if @var{fl} is,\n"
+"respectively, an integer, zero, greater than zero, less than zero, odd,\n"
+"even, @code{#f} otherwise.  In the case of @code{flodd?} and \n"
+"@code{fleven?}, @var{fl} must be an integer-valued flonum.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:2297
+msgid ""
+"@deffn {Scheme Procedure} flfinite? fl\n"
+"@deffnx {Scheme Procedure} flinfinite? fl\n"
+"@deffnx {Scheme Procedure} flnan? fl\n"
+"These numerical predicates return @code{#t} if @var{fl} is, \n"
+"respectively, not infinite, infinite, or a @code{NaN} value.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:2302
+msgid ""
+"@deffn {Scheme Procedure} flmax fl1 fl2 ...\n"
+"@deffnx {Scheme Procedure} flmin fl1 fl2 ...\n"
+"These procedures return the maximum or minimum of their arguments.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:2307
+msgid ""
+"@deffn {Scheme Procedure} fl+ fl1 ...\n"
+"@deffnx {Scheme Procedure} fl* fl ...\n"
+"These procedures return the sum or product of their arguments.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:2317
+msgid ""
+"@deffn {Scheme Procedure} fl- fl1 fl2 ...\n"
+"@deffnx {Scheme Procedure} fl- fl\n"
+"@deffnx {Scheme Procedure} fl/ fl1 fl2 ...\n"
+"@deffnx {Scheme Procedure} fl/ fl\n"
+"These procedures return, respectively, the difference or quotient of\n"
+"their arguments when called with two arguments; when called with a\n"
+"single argument, they return the additive or multiplicative inverse of\n"
+"@var{fl}.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:2321
+msgid ""
+"@deffn {Scheme Procedure} flabs fl\n"
+"Returns the absolute value of @var{fl}.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:2331
+msgid ""
+"@deffn {Scheme Procedure} fldiv-and-mod fl1 fl2\n"
+"@deffnx {Scheme Procedure} fldiv fl1 fl2\n"
+"@deffnx {Scheme Procedure} fldmod fl1 fl2\n"
+"@deffnx {Scheme Procedure} fldiv0-and-mod0 fl1 fl2\n"
+"@deffnx {Scheme Procedure} fldiv0 fl1 fl2\n"
+"@deffnx {Scheme Procedure} flmod0 fl1 fl2\n"
+"These procedures implement number-theoretic division on flonums;\n"
+"@xref{(rnrs base)}, for a description for their semantics.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:2337
+msgid ""
+"@deffn {Scheme Procedure} flnumerator fl\n"
+"@deffnx {Scheme Procedure} fldenominator fl\n"
+"These procedures return the numerator or denominator of @var{fl} as a\n"
+"flonum.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:2346
+msgid ""
+"@deffn {Scheme Procedure} flfloor fl1\n"
+"@deffnx {Scheme Procedure} flceiling fl\n"
+"@deffnx {Scheme Procedure} fltruncate fl\n"
+"@deffnx {Scheme Procedure} flround fl\n"
+"These procedures are identical to the @code{floor}, @code{ceiling},\n"
+"@code{truncate}, and @code{round} procedures provided by Guile's core\n"
+"library.  @xref{Arithmetic}, for documentation.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:2361
+msgid ""
+"@deffn {Scheme Procedure} flexp fl\n"
+"@deffnx {Scheme Procedure} fllog fl\n"
+"@deffnx {Scheme Procedure} fllog fl1 fl2 \n"
+"@deffnx {Scheme Procedure} flsin fl\n"
+"@deffnx {Scheme Procedure} flcos fl\n"
+"@deffnx {Scheme Procedure} fltan fl\n"
+"@deffnx {Scheme Procedure} flasin fl\n"
+"@deffnx {Scheme Procedure} flacos fl\n"
+"@deffnx {Scheme Procedure} flatan fl\n"
+"@deffnx {Scheme Procedure} flatan fl1 fl2\n"
+"These procedures, which compute the usual transcendental functions, are\n"
+"the flonum variants of the procedures provided by the R6RS base library\n"
+"(@pxref{(rnrs base)}).\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:2367
+msgid ""
+"@deffn {Scheme Procedure} flsqrt fl\n"
+"Returns the square root of @var{fl}.  If @var{fl} is @code{-0.0}, \n"
+"@var{-0.0} is returned; for other negative values, a @code{NaN} value\n"
+"is returned.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:2371
+msgid ""
+"@deffn {Scheme Procedure} flexpt fl1 fl2\n"
+"Returns the value of @var{fl1} raised to the power of @var{fl2}.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:2377
+msgid ""
+"The following condition types are provided to allow Scheme \n"
+"implementations that do not support infinities or @code{NaN} values\n"
+"to indicate that a computation resulted in such a value.  Guile supports\n"
+"both of these, so these conditions will never be raised by Guile's \n"
+"standard libraries implementation."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:2384
+msgid ""
+"@deffn {Condition Type} &no-infinities\n"
+"@deffnx {Scheme Procedure} make-no-infinities-violation obj\n"
+"@deffnx {Scheme Procedure} no-infinities-violation?\n"
+"A condition type indicating that a computation resulted in an infinite\n"
+"value on a Scheme implementation incapable of representing infinities.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:2391
+msgid ""
+"@deffn {Condition Type} &no-nans\n"
+"@deffnx {Scheme Procedure} make-no-nans-violation obj\n"
+"@deffnx {Scheme Procedure} no-nans-violation? obj\n"
+"A condition type indicating that a computation resulted in a @code{NaN}\n"
+"value on a Scheme implementation incapable of representing @code{NaN}s.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:2395
+msgid ""
+"@deffn {Scheme Procedure} fixnum->flonum fx\n"
+"Returns the flonum that is numerically closest to the fixnum @var{fx}.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:2398
+msgid ""
+"@node rnrs arithmetic bitwise\n"
+"@subsubsection rnrs arithmetic bitwise"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:2402
+msgid ""
+"The @code{(rnrs arithmetic bitwise (6))} library provides procedures for\n"
+"performing bitwise arithmetic operations on the two's complement\n"
+"representations of fixnums.  "
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:2406
+msgid ""
+"This library and the procedures it exports share functionality with \n"
+"SRFI-60, which provides support for bitwise manipulation of integers \n"
+"(@pxref{SRFI-60})."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:2415
+msgid ""
+"@deffn {Scheme Procedure} bitwise-not ei\n"
+"@deffnx {Scheme Procedure} bitwise-and ei1 ...\n"
+"@deffnx {Scheme Procedure} bitwise-ior ei1 ...\n"
+"@deffnx {Scheme Procedure} bitwise-xor ei1 ...\n"
+"These procedures are identical to the @code{lognot}, @code{logand},\n"
+"@code{logior}, and @code{logxor} procedures provided by Guile's core\n"
+"library.  @xref{Bitwise Operations}, for documentation.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:2422
+msgid ""
+"@deffn {Scheme Procedure} bitwise-if ei1 ei2 ei3\n"
+"Returns the bitwise ``if'' of its arguments.  The bit at position\n"
+"@code{i} in the return value will be the @code{i}th bit from @var{ei2}\n"
+"if the @code{i}th bit of @var{ei1} is 1, the @code{i}th bit from \n"
+"@var{ei3}.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:2427
+msgid ""
+"@deffn {Scheme Procedure} bitwise-bit-count ei\n"
+"Returns the number of 1 bits in the two's complement representation of\n"
+"@var{ei}.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:2431
+msgid ""
+"@deffn {Scheme Procedure} bitwise-length ei\n"
+"Returns the number of bits necessary to represent @var{ei}.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:2436
+msgid ""
+"@deffn {Scheme Procedure} bitwise-first-bit-set ei\n"
+"Returns the index of the least significant 1 bit in the two's complement\n"
+"representation of @var{ei}.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:2441
+msgid ""
+"@deffn {Scheme Procedure} bitwise-bit-set? ei1 ei2\n"
+"Returns @code{#t} if the @var{ei2}th bit in the two's complement\n"
+"representation of @var{ei1} is 1, @code{#f} otherwise.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:2446
+msgid ""
+"@deffn {Scheme Procedure} bitwise-copy-bit ei1 ei2 ei3\n"
+"Returns the result of setting the @var{ei2}th bit of @var{ei1} to the\n"
+"@var{ei2}th bit of @var{ei3}.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:2452
+msgid ""
+"@deffn {Scheme Procedure} bitwise-bit-field ei1 ei2 ei3\n"
+"Returns the integer representation of the contiguous sequence of bits in\n"
+"@var{ei1} that starts at position @var{ei2} (inclusive) and ends at\n"
+"position @var{ei3} (exclusive).\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:2458
+msgid ""
+"@deffn {Scheme Procedure} bitwise-copy-bit-field ei1 ei2 ei3 ei4\n"
+"Returns the result of replacing the bit field in @var{ei1} with start\n"
+"and end positions @var{ei2} and @var{ei3} with the corresponding bit\n"
+"field from @var{ei4}.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:2466
+msgid ""
+"@deffn {Scheme Procedure} bitwise-arithmetic-shift ei1 ei2\n"
+"@deffnx {Scheme Procedure} bitwise-arithmetic-shift-left ei1 ei2\n"
+"@deffnx {Scheme Procedure} bitwise-arithmetic-shift-right ei1 ei2\n"
+"Returns the result of shifting the bits of @var{ei1} right or left by\n"
+"the @var{ei2} positions.  @code{bitwise-arithmetic-shift} is identical\n"
+"to @code{bitwise-arithmetic-shift-left}.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:2472
+msgid ""
+"@deffn {Scheme Procedure} bitwise-rotate-bit-field ei1 ei2 ei3 ei4\n"
+"Returns the result of cyclically permuting the bit field in @var{ei1}\n"
+"with start and end positions @var{ei2} and @var{ei3} by @var{ei4} bits\n"
+"in the direction of more significant bits.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:2478
+msgid ""
+"@deffn {Scheme Procedure} bitwise-reverse-bit-field ei1 ei2 ei3\n"
+"Returns the result of reversing the order of the bits of @var{ei1}\n"
+"between position @var{ei2} (inclusive) and position @var{ei3}\n"
+"(exclusive).\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:2481
+msgid ""
+"@node rnrs syntax-case\n"
+"@subsubsection rnrs syntax-case"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:2487
+msgid ""
+"The @code{(rnrs syntax-case (6))} library provides access to the \n"
+"@code{syntax-case} system for writing hygienic macros.  With one\n"
+"exception, all of the forms and procedures exported by this library\n"
+"are ``re-exports'' of Guile's native support for @code{syntax-case};\n"
+"@xref{Syntax Case}, for documentation, examples, and rationale. "
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:2496
+msgid ""
+"@deffn {Scheme Procedure} make-variable-transformer proc\n"
+"Creates a new variable transformer out of @var{proc}, a procedure that\n"
+"takes a syntax object as input and returns a syntax object.  If an\n"
+"identifier to which the result of this procedure is bound appears on the\n"
+"left-hand side of a @code{set!} expression, @var{proc} will be called\n"
+"with a syntax object representing the entire @code{set!} expression,\n"
+"and its return value will replace that @code{set!} expression. \n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:2500
+msgid ""
+"@deffn {Scheme Syntax} syntax-case expression (literal ...) clause ...\n"
+"The @code{syntax-case} pattern matching form.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:2510
+msgid ""
+"@deffn {Scheme Syntax} syntax template\n"
+"@deffnx {Scheme Syntax} quasisyntax template\n"
+"@deffnx {Scheme Syntax} unsyntax template\n"
+"@deffnx {Scheme Syntax} unsyntax-splicing template\n"
+"These forms allow references to be made in the body of a syntax-case \n"
+"output expression subform to datum and non-datum values.  They are \n"
+"identical to the forms provided by Guile's core library;\n"
+"@xref{Syntax Case}, for documentation.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:2524
+msgid ""
+"@deffn {Scheme Procedure} identifier? obj\n"
+"@deffnx {Scheme Procedure} bound-identifier=? id1 id2\n"
+"@deffnx {Scheme Procedure} free-identifier=? id1 id2\n"
+"These predicate procedures operate on syntax objects representing\n"
+"Scheme identifiers.  @code{identifier?} returns @code{#t} if @var{obj}\n"
+"represents an identifier, @code{#f} otherwise.  \n"
+"@code{bound-identifier=?} returns @code{#t} if and only if a binding for\n"
+"@var{id1} would capture a reference to @var{id2} in the transformer's \n"
+"output, or vice-versa.  @code{free-identifier=?} returns @code{#t} if\n"
+"and only @var{id1} and @var{id2} would refer to the same binding in the\n"
+"output of the transformer, independent of any bindings introduced by the\n"
+"transformer.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:2529
+msgid ""
+"@deffn {Scheme Procedure} generate-temporaries l\n"
+"Returns a list, of the same length as @var{l}, which must be a list or\n"
+"a syntax object representing a list, of globally unique symbols.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:2536
+msgid ""
+"@deffn {Scheme Procedure} syntax->datum syntax-object\n"
+"@deffnx {Scheme Procedure} datum->syntax template-id datum\n"
+"These procedures convert wrapped syntax objects to and from Scheme datum\n"
+"values.  The syntax object returned by @code{datum->syntax} shares\n"
+"contextual information with the syntax object @var{template-id}.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:2552
+msgid ""
+"@deffn {Scheme Procedure} syntax-violation whom message form\n"
+"@deffnx {Scheme Procedure} syntax-violation whom message form subform\n"
+"Constructs a new compound condition that includes the following\n"
+"simple conditions:\n"
+"@itemize @bullet\n"
+"@item\n"
+"If @var{whom} is not @code{#f}, a @code{&who} condition with the\n"
+"@var{whom} as its field\n"
+"@item\n"
+"A @code{&message} condition with the specified @var{message}\n"
+"@item\n"
+"A @code{&syntax} condition with the specified @var{form} and optional\n"
+"@var{subform} fields\n"
+"@end itemize\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:2555
+msgid ""
+"@node rnrs hashtables\n"
+"@subsubsection rnrs hashtables"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:2564
+msgid ""
+"The @code{(rnrs hashtables (6))} library provides structures and\n"
+"procedures for creating and accessing hash tables.  The hash tables API\n"
+"defined by R6RS is substantially similar to both Guile's native hash \n"
+"tables implementation as well as the one provided by SRFI-69; \n"
+"@xref{Hash Tables}, and @ref{SRFI-69}, respectively.  Note that you can\n"
+"write portable R6RS library code that manipulates SRFI-69 hash tables \n"
+"(by importing the @code{(srfi :69)} library); however, hash tables \n"
+"created by one API cannot be used by another."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:2569
+msgid ""
+"Like SRFI-69 hash tables---and unlike Guile's native ones---R6RS hash \n"
+"tables associate hash and equality functions with a hash table at the \n"
+"time of its creation.  Additionally, R6RS allows for the creation\n"
+"(via @code{hashtable-copy}; see below) of immutable hash tables."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:2576
+msgid ""
+"@deffn {Scheme Procedure} make-eq-hashtable\n"
+"@deffnx {Scheme Procedure} make-eq-hashtable k\n"
+"Returns a new hash table that uses @code{eq?} to compare keys and \n"
+"Guile's @code{hashq} procedure as a hash function.  If @var{k} is given,\n"
+"it specifies the initial capacity of the hash table.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:2583
+msgid ""
+"@deffn {Scheme Procedure} make-eqv-hashtable\n"
+"@deffnx {Scheme Procedure} make-eqv-hashtable k\n"
+"Returns a new hash table that uses @code{eqv?} to compare keys and\n"
+"Guile's @code{hashv} procedure as a hash function.  If @var{k} is given,\n"
+"it specifies the initial capacity of the hash table.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:2591
+msgid ""
+"@deffn {Scheme Procedure} make-hashtable hash-function equiv\n"
+"@deffnx {Scheme Procedure} make-hashtable hash-function equiv k\n"
+"Returns a new hash table that uses @var{equiv} to compare keys and\n"
+"@var{hash-function} as a hash function.  @var{equiv} must be a procedure\n"
+"that accepts two arguments and returns a true value if they are \n"
+"equivalent, @code{#f} otherwise; @var{hash-function} must be a procedure\n"
+"that accepts one argument and returns a non-negative integer."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:2595
+msgid ""
+"If @var{k} is given, it specifies the initial capacity of the hash \n"
+"table.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:2600
+msgid ""
+"@deffn {Scheme Procedure} hashtable? obj\n"
+"Returns @code{#t} if @var{obj} is an R6RS hash table, @code{#f} \n"
+"otherwise.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:2604
+msgid ""
+"@deffn {Scheme Procedure} hashtable-size hashtable\n"
+"Returns the number of keys currently in the hash table @var{hashtable}.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:2609
+msgid ""
+"@deffn {Scheme Procedure} hashtable-ref hashtable key default\n"
+"Returns the value associated with @var{key} in the hash table\n"
+"@var{hashtable}, or @var{default} if none is found.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:2615
+msgid ""
+"@deffn {Scheme Procedure} hashtable-set! hashtable key obj\n"
+"Associates the key @var{key} with the value @var{obj} in the hash table\n"
+"@var{hashtable}, and returns an unspecified value.  An @code{&assertion}\n"
+"condition is raised if @var{hashtable} is immutable.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:2621
+msgid ""
+"@deffn {Scheme Procedure} hashtable-delete! hashtable key\n"
+"Removes any association found for the key @var{key} in the hash table\n"
+"@var{hashtable}, and returns an unspecified value.  An @code{&assertion}\n"
+"condition is raised if @var{hashtable} is immutable.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:2626
+msgid ""
+"@deffn {Scheme Procedure} hashtable-contains? hashtable key\n"
+"Returns @code{#t} if the hash table @var{hashtable} contains an\n"
+"association for the key @var{key}, @code{#f} otherwise.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:2635
+msgid ""
+"@deffn {Scheme Procedure} hashtable-update! hashtable key proc default\n"
+"Associates with @var{key} in the hash table @var{hashtable} the result \n"
+"of calling @var{proc}, which must be a procedure that takes one \n"
+"argument, on the value currently associated @var{key} in \n"
+"@var{hashtable}---or on @var{default} if no such association exists.\n"
+"An @code{&assertion} condition is raised if @var{hashtable} is\n"
+"immutable.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:2642
+msgid ""
+"@deffn {Scheme Procedure} hashtable-copy hashtable\n"
+"@deffnx {Scheme Procedure} hashtable-copy hashtable mutable\n"
+"Returns a copy of the hash table @var{hashtable}.  If the optional\n"
+"argument @var{mutable} is provided and is a true value, the new hash\n"
+"table will be mutable.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:2650
+msgid ""
+"@deffn {Scheme Procedure} hashtable-clear! hashtable\n"
+"@deffnx {Scheme Procedure} hashtable-clear! hashtable k\n"
+"Removes all of the associations from the hash table @var{hashtable}.\n"
+"The optional argument @var{k}, which specifies a new capacity for the\n"
+"hash table, is accepted by Guile's @code{(rnrs hashtables)} \n"
+"implementation, but is ignored.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:2655
+msgid ""
+"@deffn {Scheme Procedure} hashtable-keys hashtable\n"
+"Returns a vector of the keys with associations in the hash table \n"
+"@var{hashtable}, in an unspecified order.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:2661
+msgid ""
+"@deffn {Scheme Procedure} hashtable-entries hashtable\n"
+"Return two values---a vector of the keys with associations in the hash\n"
+"table @var{hashtable}, and a vector of the values to which these keys\n"
+"are mapped, in corresponding but unspecified order.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:2668
+msgid ""
+"@deffn {Scheme Procedure} hashtable-equivalence-function hashtable\n"
+"Returns the equivalence predicated use by @var{hashtable}.  This\n"
+"procedure returns @code{eq?} and @code{eqv?}, respectively, for hash\n"
+"tables created by @code{make-eq-hashtable} and \n"
+"@code{make-eqv-hashtable}.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:2674
+msgid ""
+"@deffn {Scheme Procedure} hashtable-hash-function hashtable\n"
+"Returns the hash function used by @var{hashtable}.  For hash tables\n"
+"created by @code{make-eq-hashtable} or @code{make-eqv-hashtable}, \n"
+"@code{#f} is returned.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:2678
+msgid ""
+"@deffn {Scheme Procedure} hashtable-mutable? hashtable\n"
+"Returns @code{#t} if @var{hashtable} is mutable, @code{#f} otherwise.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:2680
+msgid "A number of hash functions are provided for convenience:"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:2686
+msgid ""
+"@deffn {Scheme Procedure} equal-hash obj\n"
+"Returns an integer hash value for @var{obj}, based on its structure and \n"
+"current contents. This hash function is suitable for use with \n"
+"@code{equal?} as an equivalence function.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:2692
+msgid ""
+"@deffn {Scheme Procedure} string-hash string\n"
+"@deffnx {Scheme Procedure} symbol-hash symbol\n"
+"These procedures are identical to the ones provided by Guile's core \n"
+"library.  @xref{Hash Table Reference}, for documentation.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:2698
+msgid ""
+"@deffn {Scheme Procedure} string-ci-hash string\n"
+"Returns an integer hash value for @var{string} based on its contents,\n"
+"ignoring case.  This hash function is suitable for use with \n"
+"@code{string-ci=?} as an equivalence function.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:2701
+msgid ""
+"@node rnrs enums\n"
+"@subsubsection rnrs enums"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:2707
+msgid ""
+"The @code{(rnrs enums (6))} library provides structures and procedures\n"
+"for working with enumerable sets of symbols.  Guile's implementation \n"
+"defines an @dfn{enum-set} record type that encapsulates a finite set of\n"
+"distinct symbols, the @dfn{universe}, and a subset of these symbols, \n"
+"which define the enumeration set."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:2712
+msgid ""
+"The SRFI-1 list library provides a number of procedures for performing\n"
+"set operations on lists; Guile's @code{(rnrs enums)} implementation \n"
+"makes use of several of them.  @xref{SRFI-1 Set Operations}, for\n"
+"more information."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:2717
+msgid ""
+"@deffn {Scheme Procedure} make-enumeration symbol-list\n"
+"Returns a new enum-set whose universe and enumeration set are both equal\n"
+"to @var{symbol-list}, a list of symbols.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:2722
+msgid ""
+"@deffn {Scheme Procedure} enum-set-universe enum-set\n"
+"Returns an enum-set representing the universe of @var{enum-set},\n"
+"an enum-set.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:2729
+msgid ""
+"@deffn {Scheme Procedure} enum-set-indexer enum-set\n"
+"Returns a procedure that takes a single argument and returns the\n"
+"zero-indexed position of that argument in the universe of \n"
+"@var{enum-set}, or @code{#f} if its argument is not a member of that\n"
+"universe.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:2736
+msgid ""
+"@deffn {Scheme Procedure} enum-set-constructor enum-set\n"
+"Returns a procedure that takes a single argument, a list of symbols\n"
+"from the universe of @var{enum-set}, an enum-set, and returns a new\n"
+"enum-set with the same universe that represents a subset containing the\n"
+"specified symbols.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:2742
+msgid ""
+"@deffn {Scheme Procedure} enum-set->list enum-set\n"
+"Returns a list containing the symbols of the set represented by\n"
+"@var{enum-set}, an enum-set, in the order that they appear in the \n"
+"universe of @var{enum-set}.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:2756
+msgid ""
+"@deffn {Scheme Procedure} enum-set-member? symbol enum-set\n"
+"@deffnx {Scheme Procedure} enum-set-subset? enum-set1 enum-set2\n"
+"@deffnx {Scheme Procedure} enum-set=? enum-set1 enum-set2\n"
+"These procedures test for membership of symbols and enum-sets in other\n"
+"enum-sets.  @code{enum-set-member?} returns @code{#t} if and only if\n"
+"@var{symbol} is a member of the subset specified by @var{enum-set}.\n"
+"@code{enum-set-subset?} returns @code{#t} if and only if the universe of\n"
+"@var{enum-set1} is a subset of the universe of @var{enum-set2} and\n"
+"every symbol in @var{enum-set1} is present in @var{enum-set2}.\n"
+"@code{enum-set=?} returns @code{#t} if and only if @var{enum-set1} is a\n"
+"subset, as per @code{enum-set-subset?} of @var{enum-set2} and vice\n"
+"versa.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:2763
+msgid ""
+"@deffn {Scheme Procedure} enum-set-union enum-set1 enum-set2\n"
+"@deffnx {Scheme Procedure} enum-set-intersection enum-set1 enum-set2\n"
+"@deffnx {Scheme Procedure} enum-set-difference enum-set1 enum-set2\n"
+"These procedures return, respectively, the union, intersection, and\n"
+"difference of their enum-set arguments.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:2768
+msgid ""
+"@deffn {Scheme Procedure} enum-set-complement enum-set\n"
+"Returns @var{enum-set}'s complement (an enum-set), with regard to its\n"
+"universe.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:2773
+msgid ""
+"@deffn {Scheme Procedure} enum-set-projection enum-set1 enum-set2\n"
+"Returns the projection of the enum-set @var{enum-set1} onto the universe\n"
+"of the enum-set @var{enum-set2}.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:2780
+msgid ""
+"@deffn {Scheme Syntax} define-enumeration type-name (symbol ...) constructor-"
+"syntax\n"
+"Evaluates to two new definitions: A constructor bound to \n"
+"@var{constructor-syntax} that behaves similarly to constructors created\n"
+"by @code{enum-set-constructor}, above, and creates new @var{enum-set}s\n"
+"in the universe specified by @code{(symbol ...)}; and a ``predicate \n"
+"macro'' bound to @var{type-name}, which has the following form:"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:2784
+msgid ""
+"@lisp\n"
+"(@var{type-name} sym)\n"
+"@end lisp"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:2789
+msgid ""
+"If @var{sym} is a member of the universe specified by the @var{symbol}s\n"
+"above, this form evaluates to @var{sym}.  Otherwise, a @code{&syntax} \n"
+"condition is raised.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:2792
+msgid ""
+"@node rnrs\n"
+"@subsubsection rnrs"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:2797
+msgid ""
+"The @code{(rnrs (6))} library is a composite of all of the other R6RS\n"
+"standard libraries---it imports and re-exports all of their exported\n"
+"procedures and syntactic forms---with the exception of the following\n"
+"libraries:"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:2804
+msgid ""
+"@itemize @bullet\n"
+"@item @code{(rnrs eval (6))}\n"
+"@item @code{(rnrs mutable-pairs (6))}\n"
+"@item @code{(rnrs mutable-strings (6))}\n"
+"@item @code{(rnrs r5rs (6))}\n"
+"@end itemize"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:2807
+msgid ""
+"@node rnrs eval\n"
+"@subsubsection rnrs eval"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:2810
+msgid ""
+"The @code{(rnrs eval (6)} library provides procedures for performing \n"
+"``on-the-fly'' evaluation of expressions."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:2817
+msgid ""
+"@deffn {Scheme Procedure} eval expression environment\n"
+"Evaluates @var{expression}, which must be a datum representation of a\n"
+"valid Scheme expression, in the environment specified by \n"
+"@var{environment}.  This procedure is identical to the one provided by\n"
+"Guile's code library; @xref{Fly Evaluation}, for documentation.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:2824
+msgid ""
+"@deffn {Scheme Procedure} environment import-spec ...\n"
+"Constructs and returns a new environment based on the specified\n"
+"@var{import-spec}s, which must be datum representations of the import\n"
+"specifications used with the @code{import} form.  @xref{R6RS Libraries},\n"
+"for documentation.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:2827
+msgid ""
+"@node rnrs mutable-pairs\n"
+"@subsubsection rnrs mutable-pairs"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:2831
+msgid ""
+"The @code{(rnrs mutable-pairs (6))} library provides the @code{set-car!}\n"
+"and @code{set-cdr!} procedures, which allow the @code{car} and \n"
+"@code{cdr} fields of a pair to be modified."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:2837
+msgid ""
+"These procedures are identical to the ones provide by Guile's core\n"
+"library.  @xref{Pairs}, for documentation.  All pairs in Guile are\n"
+"mutable; consequently, these procedures will never throw the\n"
+"@code{&assertion} condition described in the R6RS libraries \n"
+"specification."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:2840
+msgid ""
+"@node rnrs mutable-strings\n"
+"@subsubsection rnrs mutable-strings"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:2844
+msgid ""
+"The @code{(rnrs mutable-strings (6))} library provides the \n"
+"@code{string-set!} and @code{string-fill!} procedures, which allow the\n"
+"content of strings to be modified ``in-place.''"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:2850
+msgid ""
+"These procedures are identical to the ones provided by Guile's core\n"
+"library.  @xref{String Modification}, for documentation.  All strings in\n"
+"Guile are mutable; consequently, these procedures will never throw the \n"
+"@code{&assertion} condition described in the R6RS libraries \n"
+"specification."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:2853
+msgid ""
+"@node rnrs r5rs\n"
+"@subsubsection rnrs r5rs"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:2856
+msgid ""
+"The @code{(rnrs r5rs (6))} library exports bindings for some procedures\n"
+"present in R5RS but omitted from the R6RS base library specification."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:2862
+msgid ""
+"@deffn {Scheme Procedure} exact->inexact z\n"
+"@deffnx {Scheme Procedure} inexact->exact z\n"
+"These procedures are identical to the ones provided by Guile's core\n"
+"library.  @xref{Exactness}, for documentation.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:2869
+msgid ""
+"@deffn {Scheme Procedure} quotient n1 n2\n"
+"@deffnx {Scheme Procedure} remainder n1 n2\n"
+"@deffnx {Scheme Procedure} modulo n1 n2\n"
+"These procedures are identical to the ones provided by Guile's core\n"
+"library.  @xref{Integer Operations}, for documentation.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:2876
+msgid ""
+"@deffn {Scheme Syntax} delay expr\n"
+"@deffnx {Scheme Procedure} force promise\n"
+"The @code{delay} form and the @code{force} procedure are identical to \n"
+"their counterparts in Guile's core library.  @xref{Delayed Evaluation},\n"
+"for documentation.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:2883
+msgid ""
+"@deffn {Scheme Procedure} null-environment n\n"
+"@deffnx {Scheme Procedure} scheme-report-environment n\n"
+"These procedures are identical to the ones provided by the \n"
+"@code{(ice-9 r5rs)} Guile module.  @xref{Environments}, for \n"
+"documentation.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:2885
+msgid "@c r6rs.texi ends here"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/r6rs.texi:2888
+msgid ""
+"@c Local Variables:\n"
+"@c TeX-master: \"guile.texi\"\n"
+"@c End:"
+msgstr ""

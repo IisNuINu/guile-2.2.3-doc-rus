@@ -1,0 +1,123 @@
+@c -*-texinfo-*-
+@c This is part of the GNU Guile Reference Manual.
+@c Copyright (C)  1996, 1997, 2000, 2001, 2002, 2003, 2004, 2009, 2013, 2014
+@c   Free Software Foundation, Inc.
+@c See the file guile.texi for copying conditions.
+
+@node Foreign Objects
+@section Внешние Объекты
+
+@cindex foreign object
+
+В этой главе содержижться справочная информация, касающаяся определения
+и работы с внешниии объектами(foreign object). См. @xref{Defining New Foreign Object Types},
+для обучения создания и работы с внешними объектами.
+
+@deftp {C Type} scm_t_struct_finalize
+Этот тип функции возвращает @code{void} и принимает один @code{SCM}
+аргумент.
+@end deftp
+
+@deftypefn {C Function} SCM scm_make_foreign_object_type (SCM name, SCM slots, scm_t_struct_finalize finalizer)
+Создает новый тип внешнего объекта.  @var{name} это символ, именующий этот
+тип.  @var{slots} это список символов, каждый из которых именует поле в типе
+внешнего объекта.  @var{finalizer} указывает финализатор, и может быть
+be @code{NULL}.
+@end deftypefn
+
+@cindex finalizer
+@cindex finalization
+
+Мы рекомендуем, по возможности избегать финализаторов.  @xref{Foreign
+Object Memory Management}.  Финализаторы должны быть асинхронно-безопасными
+и потоко-безопасными.  Еще раз, @pxref{Foreign Object Memory Management}. Если
+вы внедряете Guile в приложение, которое не является потоко-безопасным, и вы
+определяете типы внешних объектов котрым требуется финализация, вы можете
+отключить автоматическую финализацию и организвать вызов
+@code{scm_manually_run_finalizers ()}.
+
+@deftypefn {C Function} int scm_set_automatic_finalization_enabled (int enabled_p)
+Включение или отключение автоматической финализации.  По умолчанию, Guile организует
+вызов финализатора объекта автоматически, в отдельном потоке если это возможно.
+Передача нулевого значения для @var{enabled_p} отключает автоматическую
+финализацию для Guile в целом. Если вы отключите автоматическую фиализацию, вам
+придется вызывать переодически @code{scm_run_finalizers ()}.
+
+В отличии от большинства других функций Guile, вы можете вызывать
+@code{scm_set_automatic_finalization_enabled} до того как Guile
+был инициализирован.
+
+Возвращает предыдущий стату автоматической финализации.
+@end deftypefn
+
+@deftypefn {C Function} int scm_run_finalizers (void)
+Вызывает любые ожидающие завершения финализаторы.  Возвращает количество
+фигнализаторов, которые были вызваны. Эта функция должна вызываться, когда
+автоматическая финализация отключена, хотя она может вызываться и 
+когда она включена.
+@end deftypefn
+
+@deftypefn {C Function} void scm_assert_foreign_object_type (SCM type, SCM val)
+Когда @var{val} является внешним объектом заданного типа @var{type}, ничего не делает.
+Иначе, сообщает об ошибке.
+@end deftypefn
+
+@deftypefn {C Function} SCM scm_make_foreign_object_0 (SCM type)
+@deftypefnx {C Function} SCM scm_make_foreign_object_1 (SCM type, void *val0)
+@deftypefnx {C Function} SCM scm_make_foreign_object_2 (SCM type, void *val0, void *val1)
+@deftypefnx {C Function} SCM scm_make_foreign_object_3 (SCM type, void *val0, void *val1, void *val2)
+@deftypefnx {C Function} SCM scm_make_foreign_object_n (SCM type, size_t n, void *vals[])
+Создает новый внешний объект с типом @var{type} и инициализирует первые @var{n}
+полей указанными значениями, в зависимости от ситуации.
+
+
+Число полей для объектов данного типа фиксируется при создании типа.
+Это ошибка если инициализаторов больше, чем полей в значении.
+Это отлично - дать меньше инициализаторов, чем необходимо;
+это удобно, когда некоторые поля являются не являются указателями,
+и их легче инициализировать с помощью установщиков(setters) описанных
+ниже.
+@end deftypefn
+
+@deftypefn {C Function} void* scm_foreign_object_ref (SCM obj, size_t n);
+@deftypefnx {C Function} scm_t_bits scm_foreign_object_unsigned_ref (SCM obj, size_t n);
+@deftypefnx {C Function} scm_t_signed_bits scm_foreign_object_signed_ref (SCM obj, size_t n);
+Возвращает значение @var{n}го поля во внешнем объекте @var{obj}.
+Хранилище для хранения поля имеют ту же ширину что и значение @code{scm_t_bits}
+которое по меньшей мере равно ширине указателя. Различные варианты выбора указателя переносимым
+способом.
+@end deftypefn
+
+@deftypefn {C Function} void scm_foreign_object_set_x (SCM obj, size_t n, void *val);
+@deftypefnx {C Function} void scm_foreign_object_unsigned_set_x (SCM obj, size_t n, scm_t_bits val);
+@deftypefnx {C Function} void scm_foreign_object_signed_set_x (SCM obj, size_t n, scm_t_signed_bits val);
+Устанавливает значение the @var{n}-го поля во внешнем объекте  @var{obj} значением
+@var{val}, после возможного преобразование в значение @code{scm_t_bits}, если необходимо.
+@end deftypefn
+
+Можно также получить доступ к внешним объектам из Scheme.  @xref{Foreign Objects
+and Scheme}, для некоторых примеров.
+
+@example
+(use-modules (system foreign-object))
+@end example
+
+@deffn {Scheme Procedure} make-foreign-object-type name slots [#:finalizer=#f]
+Создает новый тип внешнего объекта.  Смотри документацию выше для
+@code{scm_make_foreign_object_type}; эти функции в точности эквивавлентны, за
+исключением того что финализатор подсоединяется к экземплярам (внутренняя деталь).
+
+Получаемое значение это GOOPS класс.  @xref{GOOPS}, для получения дополнительной
+информации о классах в Guile.
+@end deffn
+
+@deffn {Scheme Syntax} define-foreign-object-type name constructor (slot ...) [#:finalizer=#f]
+Удобный макрос для определения типа, используя
+@code{make-foreign-object-type}, и связывае его с @var{name}.  Констурктор
+будет связан с  @var{constructor}, и функции получения значений(getters) 
+будут связаны для каждого слота @var{slot...}.
+@end deffn
+
+@c Local Variables:
+@c TeX-master: "guile.texi"
+@c End:

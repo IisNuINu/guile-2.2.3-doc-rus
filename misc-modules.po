@@ -1,0 +1,2956 @@
+#. extracted from /home/bear/work/guile/doc/guile/en/misc-modules.texi
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2018-05-07 12:37+0300\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Generator: Translate Toolkit 2.2.5\n"
+
+#: /home/bear/work/guile/doc/guile/en/misc-modules.texi:6
+msgid ""
+"@c -*-texinfo-*-\n"
+"@c This is part of the GNU Guile Reference Manual.\n"
+"@c Copyright (C)  1996, 1997, 2000, 2001, 2002, 2003, 2004, 2006, 2009,\n"
+"@c   2010, 2011, 2012  Free Software Foundation, Inc.\n"
+"@c See the file guile.texi for copying conditions."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/misc-modules.texi:9
+msgid ""
+"@node Pretty Printing\n"
+"@section Pretty Printing"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/misc-modules.texi:11
+msgid "@c FIXME::martin: Review me!"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/misc-modules.texi:17
+msgid ""
+"@cindex pretty printing\n"
+"The module @code{(ice-9 pretty-print)} provides the procedure\n"
+"@code{pretty-print}, which provides nicely formatted output of Scheme\n"
+"objects.  This is especially useful for deeply nested or complex data\n"
+"structures, such as lists and vectors."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/misc-modules.texi:19
+msgid "The module is loaded by entering the following:"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/misc-modules.texi:23
+msgid ""
+"@lisp\n"
+"(use-modules (ice-9 pretty-print))\n"
+"@end lisp"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/misc-modules.texi:26
+msgid ""
+"This makes the procedure @code{pretty-print} available.  As an example\n"
+"how @code{pretty-print} will format the output, see the following:"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/misc-modules.texi:38
+msgid ""
+"@lisp\n"
+"(pretty-print '(define (foo) (lambda (x)\n"
+"(cond ((zero? x) #t) ((negative? x) -x) (else\n"
+"(if (= x 1) 2 (* x x x)))))))\n"
+"@print{}\n"
+"(define (foo)\n"
+"  (lambda (x)\n"
+"    (cond ((zero? x) #t)\n"
+"          ((negative? x) -x)\n"
+"          (else (if (= x 1) 2 (* x x x))))))\n"
+"@end lisp"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/misc-modules.texi:43
+msgid ""
+"@deffn {Scheme Procedure} pretty-print obj [port] [keyword-options]\n"
+"Print the textual representation of the Scheme object @var{obj} to\n"
+"@var{port}.  @var{port} defaults to the current output port, if not\n"
+"given."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/misc-modules.texi:46
+msgctxt "/home/bear/work/guile/doc/guile/en/misc-modules.texi:46"
+msgid ""
+"The further @var{keyword-options} are keywords and parameters as\n"
+"follows,"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/misc-modules.texi:51
+msgid ""
+"@table @asis\n"
+"@item @nicode{#:display?} @var{flag}\n"
+"If @var{flag} is true then print using @code{display}.  The default is\n"
+"@code{#f} which means use @code{write} style.  @xref{Scheme Write}."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/misc-modules.texi:55
+msgid ""
+"@item @nicode{#:per-line-prefix} @var{string}\n"
+"Print the given @var{string} as a prefix on each line.  The default is\n"
+"no prefix."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/misc-modules.texi:58
+msgctxt "/home/bear/work/guile/doc/guile/en/misc-modules.texi:58"
+msgid ""
+"@item @nicode{#:width} @var{columns}\n"
+"Print within the given @var{columns}.  The default is 79."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/misc-modules.texi:63
+msgid ""
+"@item @nicode{#:max-expr-width} @var{columns}\n"
+"The maximum width of an expression.  The default is 50.\n"
+"@end table\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/misc-modules.texi:71
+msgid ""
+"@cindex truncated printing\n"
+"Also exported by the @code{(ice-9 pretty-print)} module is\n"
+"@code{truncated-print}, a procedure to print Scheme datums, truncating\n"
+"the output to a certain number of characters. This is useful when you\n"
+"need to present an arbitrary datum to the user, but you only have one\n"
+"line in which to do so."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/misc-modules.texi:87
+msgid ""
+"@lisp\n"
+"(define exp '(a b #(c d e) f . g))\n"
+"(truncated-print exp #:width 10) (newline)\n"
+"@print{} (a b . #)\n"
+"(truncated-print exp #:width 15) (newline)\n"
+"@print{} (a b # f . g)\n"
+"(truncated-print exp #:width 18) (newline)\n"
+"@print{} (a b #(c ...) . #)\n"
+"(truncated-print exp #:width 20) (newline)\n"
+"@print{} (a b #(c d e) f . g)\n"
+"(truncated-print \"The quick brown fox\" #:width 20) (newline)\n"
+"@print{} \"The quick brown...\"\n"
+"(truncated-print (current-module) #:width 20) (newline)\n"
+"@print{} #<directory (gui...>\n"
+"@end lisp"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/misc-modules.texi:93
+msgid ""
+"@code{truncated-print} will not output a trailing newline. If an expression "
+"does\n"
+"not fit in the given width, it will be truncated -- possibly\n"
+"ellipsized@footnote{On Unicode-capable ports, the ellipsis is represented "
+"by\n"
+"character `HORIZONTAL ELLIPSIS' (U+2026), otherwise it is represented by "
+"three\n"
+"dots.}, or in the worst case, displayed as @nicode{#}."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/misc-modules.texi:99
+msgid ""
+"@deffn {Scheme Procedure} truncated-print obj [port] [keyword-options]\n"
+"Print @var{obj}, truncating the output, if necessary, to make it fit\n"
+"into @var{width} characters. By default, @var{obj} will be printed using\n"
+"@code{write}, though that behavior can be overridden via the\n"
+"@var{display?} keyword argument."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/misc-modules.texi:105
+msgid ""
+"The default behaviour is to print depth-first, meaning that the entire\n"
+"remaining width will be available to each sub-expression of @var{obj} --\n"
+"e.g., if @var{obj} is a vector, each member of @var{obj}. One can attempt "
+"to\n"
+"``ration'' the available width, trying to allocate it equally to each\n"
+"sub-expression, via the @var{breadth-first?} keyword argument."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/misc-modules.texi:108
+msgctxt "/home/bear/work/guile/doc/guile/en/misc-modules.texi:108"
+msgid ""
+"The further @var{keyword-options} are keywords and parameters as\n"
+"follows,"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/misc-modules.texi:113
+msgid ""
+"@table @asis\n"
+"@item @nicode{#:display?} @var{flag}\n"
+"If @var{flag} is true then print using @code{display}.  The default is\n"
+"@code{#f} which means use @code{write} style.  @pxref{Scheme Write}."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/misc-modules.texi:116
+msgctxt "/home/bear/work/guile/doc/guile/en/misc-modules.texi:116"
+msgid ""
+"@item @nicode{#:width} @var{columns}\n"
+"Print within the given @var{columns}.  The default is 79."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/misc-modules.texi:124
+msgid ""
+"@item @nicode{#:breadth-first?} @var{flag}\n"
+"If @var{flag} is true, then allocate the available width breadth-first\n"
+"among elements of a compound data structure (list, vector, pair,\n"
+"etc.). The default is @code{#f} which means that any element is\n"
+"allowed to consume all of the available width.\n"
+"@end table\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/misc-modules.texi:129
+msgid ""
+"@node Formatted Output\n"
+"@section Formatted Output\n"
+"@cindex formatted output"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/misc-modules.texi:138
+msgid ""
+"@c  For reference, in this section escapes like ~a are given in\n"
+"@c  @nicode, to give code font in TeX etc, but leave them unadorned in\n"
+"@c  Info.\n"
+"@c\n"
+"@c  The idea is to reduce clutter around what's shown, and avoid any\n"
+"@c  possible confusion over whether the ` ' quotes are part of what\n"
+"@c  should be entered.  (In particular for instance of course ' is\n"
+"@c  meaningful in a format string, introducing a char parameter)."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/misc-modules.texi:142
+msgid ""
+"The @code{format} function is a powerful way to print numbers, strings\n"
+"and other objects together with literal text under the control of a\n"
+"format string.  This function is available from"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/misc-modules.texi:146
+msgid ""
+"@example\n"
+"(use-modules (ice-9 format))\n"
+"@end example"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/misc-modules.texi:152
+msgid ""
+"A format string is generally more compact and easier than using just\n"
+"the standard procedures like @code{display}, @code{write} and\n"
+"@code{newline}.  Parameters in the output string allow various output\n"
+"styles, and parameters can be taken from the arguments for runtime\n"
+"flexibility."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/misc-modules.texi:156
+msgid ""
+"@code{format} is similar to the Common Lisp procedure of the same\n"
+"name, but it's not identical and doesn't have quite all the features\n"
+"found in Common Lisp."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/misc-modules.texi:160
+msgid ""
+"C programmers will note the similarity between @code{format} and\n"
+"@code{printf}, though escape sequences are marked with @nicode{~}\n"
+"instead of @nicode{%}, and are more powerful."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/misc-modules.texi:167
+msgid ""
+"@sp 1\n"
+"@deffn {Scheme Procedure} format dest fmt arg @dots{}\n"
+"Write output specified by the @var{fmt} string to @var{dest}.\n"
+"@var{dest} can be an output port, @code{#t} for\n"
+"@code{current-output-port} (@pxref{Default Ports}), or @code{#f} to\n"
+"return the output as a string."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/misc-modules.texi:170
+msgid ""
+"@var{fmt} can contain literal text to be output, and @nicode{~}\n"
+"escapes.  Each escape has the form"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/misc-modules.texi:174
+msgid ""
+"@example\n"
+"~ [param [, param@dots{}] [:] [@@] code\n"
+"@end example"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/misc-modules.texi:180
+msgid ""
+"@nicode{code} is a character determining the escape sequence.  The\n"
+"@nicode{:} and @nicode{@@} characters are optional modifiers, one or\n"
+"both of which change the way various codes operate.  Optional\n"
+"parameters are accepted by some codes too.  Parameters have the\n"
+"following forms,"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/misc-modules.texi:195
+msgid ""
+"@table @asis\n"
+"@item @nicode{[+/-]number}\n"
+"An integer, with optional @nicode{+} or @nicode{-}.\n"
+"@item @nicode{'}  (apostrophe)\n"
+"The following character in the format string, for instance @nicode{'z}\n"
+"for @nicode{z}.\n"
+"@item @nicode{v}\n"
+"The next function argument as the parameter.  @nicode{v} stands for\n"
+"``variable'', a parameter can be calculated at runtime and included in\n"
+"the arguments.  Upper case @nicode{V} can be used too.\n"
+"@item @nicode{#}\n"
+"The number of arguments remaining.  (See @nicode{~*} below for some\n"
+"usages.)\n"
+"@end table"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/misc-modules.texi:198
+msgid ""
+"Parameters are separated by commas (@nicode{,}).  A parameter can be\n"
+"left empty to keep its default value when supplying later parameters."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/misc-modules.texi:202
+msgid ""
+"@sp 1\n"
+"The following escapes are available.  The code letters are not\n"
+"case-sensitive, upper and lower case are the same."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/misc-modules.texi:208
+msgid ""
+"@table @asis\n"
+"@item @nicode{~a}\n"
+"@itemx @nicode{~s}\n"
+"Object output.  Parameters: @var{minwidth}, @var{padinc},\n"
+"@var{minpad}, @var{padchar}."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/misc-modules.texi:211
+msgid ""
+"@nicode{~a} outputs an argument like @code{display}, @nicode{~s}\n"
+"outputs an argument like @code{write} (@pxref{Scheme Write})."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/misc-modules.texi:216
+msgid ""
+"@example\n"
+"(format #t \"~a\" \"foo\") @print{} foo\n"
+"(format #t \"~s\" \"foo\") @print{} \"foo\"\n"
+"@end example"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/misc-modules.texi:219
+msgid ""
+"@nicode{~:a} and @nicode{~:s} put objects that don't have an external\n"
+"representation in quotes like a string."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/misc-modules.texi:223
+msgid ""
+"@example\n"
+"(format #t \"~:a\" car) @print{} \"#<primitive-procedure car>\"\n"
+"@end example"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/misc-modules.texi:227
+msgid ""
+"If the output is less than @var{minwidth} characters (default 0), it's\n"
+"padded on the right with @var{padchar} (default space).  @nicode{~@@a}\n"
+"and @nicode{~@@s} put the padding on the left instead."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/misc-modules.texi:232
+msgid ""
+"@example\n"
+"(format #f \"~5a\" 'abc)       @result{} \"abc  \"\n"
+"(format #f \"~5,,,'-@@a\" 'abc) @result{} \"--abc\"\n"
+"@end example"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/misc-modules.texi:239
+msgid ""
+"@var{minpad} is a minimum for the padding then plus a multiple of\n"
+"@var{padinc}.  Ie.@: the padding is @math{@var{minpad} + @var{N} *\n"
+"@var{padinc}}, where @var{n} is the smallest integer making the total\n"
+"object plus padding greater than or equal to @var{minwidth}.  The\n"
+"default @var{minpad} is 0 and the default @var{padinc} is 1 (imposing\n"
+"no minimum or multiple)."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/misc-modules.texi:243
+msgid ""
+"@example\n"
+"(format #f \"~5,1,4a\" 'abc) @result{} \"abc    \"\n"
+"@end example"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/misc-modules.texi:246
+msgid ""
+"@item @nicode{~c}\n"
+"Character.  Parameter: @var{charnum}."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/misc-modules.texi:251
+msgid ""
+"Output a character.  The default is to simply output, as per\n"
+"@code{write-char} (@pxref{Venerable Port Interfaces}).  @nicode{~@@c}\n"
+"prints in @code{write} style.  @nicode{~:c} prints control characters\n"
+"(ASCII 0 to 31) in @nicode{^X} form."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/misc-modules.texi:257
+msgid ""
+"@example\n"
+"(format #t \"~c\" #\\z)        @print{} z\n"
+"(format #t \"~@@c\" #\\z)       @print{} #\\z\n"
+"(format #t \"~:c\" #\\n"
+"ewline) @print{} ^J\n"
+"@end example"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/misc-modules.texi:262
+msgid ""
+"If the @var{charnum} parameter is given then an argument is not taken\n"
+"but instead the character is @code{(integer->char @var{charnum})}\n"
+"(@pxref{Characters}).  This can be used for instance to output\n"
+"characters given by their ASCII code."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/misc-modules.texi:266
+msgid ""
+"@example\n"
+"(format #t \"~65c\")  @print{} A\n"
+"@end example"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/misc-modules.texi:273
+msgid ""
+"@item @nicode{~d}\n"
+"@itemx @nicode{~x}\n"
+"@itemx @nicode{~o}\n"
+"@itemx @nicode{~b}\n"
+"Integer.  Parameters: @var{minwidth}, @var{padchar}, @var{commachar},\n"
+"@var{commawidth}."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/misc-modules.texi:276
+msgid ""
+"Output an integer argument as a decimal, hexadecimal, octal or binary\n"
+"integer (respectively), in a locale-independent way."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/misc-modules.texi:280
+msgid ""
+"@example\n"
+"(format #t \"~d\" 123) @print{} 123\n"
+"@end example"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/misc-modules.texi:283
+msgid ""
+"@nicode{~@@d} etc shows a @nicode{+} sign is shown on positive\n"
+"numbers."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/misc-modules.texi:287
+msgid ""
+"@c  FIXME: \"+\" is not shown on zero, unlike in Common Lisp.  Should\n"
+"@c  that be changed in the code, or is it too late and should just be\n"
+"@c  documented that way?"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/misc-modules.texi:291
+msgid ""
+"@example\n"
+"(format #t \"~@@b\" 12) @print{} +1100\n"
+"@end example"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/misc-modules.texi:295
+msgid ""
+"If the output is less than the @var{minwidth} parameter (default no\n"
+"minimum), it's padded on the left with the @var{padchar} parameter\n"
+"(default space)."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/misc-modules.texi:301
+msgid ""
+"@example\n"
+"(format #t \"~5,'*d\" 12)   @print{} ***12\n"
+"(format #t \"~5,'0d\" 12)   @print{} 00012\n"
+"(format #t \"~3d\"    1234) @print{} 1234\n"
+"@end example"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/misc-modules.texi:306
+msgid ""
+"@nicode{~:d} adds commas (or the @var{commachar} parameter) every\n"
+"three digits (or the @var{commawidth} parameter many).  However, when\n"
+"your intent is to write numbers in a way that follows typographical\n"
+"conventions, using @nicode{~h} is recommended."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/misc-modules.texi:311
+msgid ""
+"@example\n"
+"(format #t \"~:d\" 1234567)         @print{} 1,234,567\n"
+"(format #t \"~10,'*,'/,2:d\" 12345) @print{} ***1/23/45\n"
+"@end example"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/misc-modules.texi:315
+msgid ""
+"Hexadecimal @nicode{~x} output is in lower case, but the @nicode{~(}\n"
+"and @nicode{~)} case conversion directives described below can be used\n"
+"to get upper case."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/misc-modules.texi:320
+msgid ""
+"@example\n"
+"(format #t \"~x\"       65261) @print{} feed\n"
+"(format #t \"~:@@(~x~)\" 65261) @print{} FEED\n"
+"@end example"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/misc-modules.texi:325
+msgid ""
+"@item @nicode{~r}\n"
+"Integer in words, roman numerals, or a specified radix.  Parameters:\n"
+"@var{radix}, @var{minwidth}, @var{padchar}, @var{commachar},\n"
+"@var{commawidth}."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/misc-modules.texi:328
+msgid ""
+"With no parameters output is in words as a cardinal like ``ten'', or\n"
+"@nicode{~:r} prints an ordinal like ``tenth''."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/misc-modules.texi:334
+msgid ""
+"@example\n"
+"(format #t \"~r\" 9)  @print{} nine        ;; cardinal\n"
+"(format #t \"~r\" -9) @print{} minus nine  ;; cardinal\n"
+"(format #t \"~:r\" 9) @print{} ninth       ;; ordinal\n"
+"@end example"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/misc-modules.texi:339
+msgid ""
+"And also with no parameters, @nicode{~@@r} gives roman numerals and\n"
+"@nicode{~:@@r} gives old roman numerals.  In old roman numerals\n"
+"there's no ``subtraction'', so 9 is @nicode{VIIII} instead of\n"
+"@nicode{IX}.  In both cases only positive numbers can be output."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/misc-modules.texi:344
+msgid ""
+"@example\n"
+"(format #t \"~@@r\" 89)  @print{} LXXXIX     ;; roman\n"
+"(format #t \"~:@@r\" 89) @print{} LXXXVIIII  ;; old roman\n"
+"@end example"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/misc-modules.texi:348
+msgid ""
+"When a parameter is given it means numeric output in the specified\n"
+"@var{radix}.  The modifiers and parameters following the radix are the\n"
+"same as described for @nicode{~d} etc above."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/misc-modules.texi:353
+msgid ""
+"@example\n"
+"(format #f \"~3r\" 27)   @result{} \"1000\"    ;; base 3\n"
+"(format #f \"~3,5r\" 26) @result{} \"  222\"   ;; base 3 width 5\n"
+"@end example"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/misc-modules.texi:357
+msgid ""
+"@item @nicode{~f}\n"
+"Fixed-point float.  Parameters: @var{width}, @var{decimals},\n"
+"@var{scale}, @var{overflowchar}, @var{padchar}."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/misc-modules.texi:360
+msgid ""
+"Output a number or number string in fixed-point format, ie.@: with a\n"
+"decimal point."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/misc-modules.texi:366
+msgid ""
+"@example\n"
+"(format #t \"~f\" 5)      @print{} 5.0\n"
+"(format #t \"~f\" \"123\")  @print{} 123.0\n"
+"(format #t \"~f\" \"1e-1\") @print{} 0.1\n"
+"@end example"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/misc-modules.texi:369
+msgid ""
+"@nicode{~@@f} prints a @nicode{+} sign on positive numbers (including\n"
+"zero)."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/misc-modules.texi:373
+msgid ""
+"@example\n"
+"(format #t \"~@@f\" 0) @print{} +0.0\n"
+"@end example"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/misc-modules.texi:378
+msgid ""
+"If the output is less than @var{width} characters it's padded on the\n"
+"left with @var{padchar} (space by default).  If the output equals or\n"
+"exceeds @var{width} then there's no padding.  The default for\n"
+"@var{width} is no padding."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/misc-modules.texi:384
+msgid ""
+"@example\n"
+"(format #f \"~6f\" -1.5)      @result{} \"  -1.5\"\n"
+"(format #f \"~6,,,,'*f\" 23)  @result{} \"**23.0\"\n"
+"(format #f \"~6f\" 1234567.0) @result{} \"1234567.0\"\n"
+"@end example"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/misc-modules.texi:388
+msgid ""
+"@var{decimals} is how many digits to print after the decimal point,\n"
+"with the value rounded or padded with zeros as necessary.  (The\n"
+"default is to output as many decimals as required.)"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/misc-modules.texi:393
+msgid ""
+"@example\n"
+"(format #t \"~1,2f\" 3.125) @print{} 3.13\n"
+"(format #t \"~1,2f\" 1.5)   @print{} 1.50\n"
+"@end example"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/misc-modules.texi:397
+msgid ""
+"@var{scale} is a power of 10 applied to the value, moving the decimal\n"
+"point that many places.  A positive @var{scale} increases the value\n"
+"shown, a negative decreases it."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/misc-modules.texi:402
+msgid ""
+"@example\n"
+"(format #t \"~,,2f\" 1234)  @print{} 123400.0\n"
+"(format #t \"~,,-2f\" 1234) @print{} 12.34\n"
+"@end example"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/misc-modules.texi:406
+msgid ""
+"If @var{overflowchar} and @var{width} are both given and if the output\n"
+"would exceed @var{width}, then that many @var{overflowchar}s are\n"
+"printed instead of the value."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/misc-modules.texi:411
+msgid ""
+"@example\n"
+"(format #t \"~6,,,'xf\" 12345) @print{} 12345.\n"
+"(format #t \"~5,,,'xf\" 12345) @print{} xxxxx\n"
+"@end example"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/misc-modules.texi:416
+msgid ""
+"@item @nicode{~h}\n"
+"Localized number@footnote{The @nicode{~h} format specifier first\n"
+"appeared in Guile version 2.0.6.}.  Parameters: @var{width},\n"
+"@var{decimals}, @var{padchar}."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/misc-modules.texi:421
+msgid ""
+"Like @nicode{~f}, output an exact or floating point number, but do so\n"
+"according to the current locale, or according to the given locale object\n"
+"when the @code{:} modifier is used (@pxref{Number Input and Output,\n"
+"@code{number->locale-string}})."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/misc-modules.texi:425
+msgid ""
+"@example\n"
+"(format #t \"~h\" 12345.5678)  ; with \"C\" as the current locale\n"
+"@print{} 12345.5678"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/misc-modules.texi:429
+msgid ""
+"(format #t \"~14,,'*:h\" 12345.5678\n"
+"        (make-locale LC_ALL \"en_US\"))\n"
+"@print{} ***12,345.5678"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/misc-modules.texi:434
+msgid ""
+"(format #t \"~,2:h\" 12345.5678\n"
+"        (make-locale LC_NUMERIC \"fr_FR\"))\n"
+"@print{} 12 345,56\n"
+"@end example"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/misc-modules.texi:439
+msgid ""
+"@item @nicode{~e}\n"
+"Exponential float.  Parameters: @var{width}, @var{mantdigits},\n"
+"@var{expdigits}, @var{intdigits}, @var{overflowchar}, @var{padchar},\n"
+"@var{expchar}."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/misc-modules.texi:441
+msgid "Output a number or number string in exponential notation."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/misc-modules.texi:447
+msgid ""
+"@example\n"
+"(format #t \"~e\" 5000.25) @print{} 5.00025E+3\n"
+"(format #t \"~e\" \"123.4\") @print{} 1.234E+2\n"
+"(format #t \"~e\" \"1e4\")   @print{} 1.0E+4\n"
+"@end example"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/misc-modules.texi:451
+msgid ""
+"@nicode{~@@e} prints a @nicode{+} sign on positive numbers (including\n"
+"zero).  (This is for the mantissa, a @nicode{+} or @nicode{-} sign is\n"
+"always shown on the exponent.)"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/misc-modules.texi:455
+msgid ""
+"@example\n"
+"(format #t \"~@@e\" 5000.0) @print{} +5.0E+3\n"
+"@end example"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/misc-modules.texi:459
+msgid ""
+"If the output is less than @var{width} characters it's padded on the\n"
+"left with @var{padchar} (space by default).  The default for\n"
+"@var{width} is to output with no padding."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/misc-modules.texi:464
+msgid ""
+"@example\n"
+"(format #f \"~10e\" 1234.0)     @result{} \"  1.234E+3\"\n"
+"(format #f \"~10,,,,,'*e\" 0.5) @result{} \"****5.0E-1\"\n"
+"@end example"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/misc-modules.texi:468
+msgid ""
+"@c  FIXME: Describe what happens when the number is bigger than WIDTH.\n"
+"@c  There seems to be a bit of dodginess about this, or some deviation\n"
+"@c  from Common Lisp."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/misc-modules.texi:473
+msgid ""
+"@var{mantdigits} is the number of digits shown in the mantissa after\n"
+"the decimal point.  The value is rounded or trailing zeros are added\n"
+"as necessary.  The default @var{mantdigits} is to show as much as\n"
+"needed by the value."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/misc-modules.texi:478
+msgid ""
+"@example\n"
+"(format #f \"~,3e\" 11111.0) @result{} \"1.111E+4\"\n"
+"(format #f \"~,8e\" 123.0)   @result{} \"1.23000000E+2\"\n"
+"@end example"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/misc-modules.texi:483
+msgid ""
+"@var{expdigits} is the minimum number of digits shown for the\n"
+"exponent, with leading zeros added if necessary.  The default for\n"
+"@var{expdigits} is to show only as many digits as required.  At least\n"
+"1 digit is always shown."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/misc-modules.texi:488
+msgid ""
+"@example\n"
+"(format #f \"~,,1e\" 1.0e99) @result{} \"1.0E+99\"\n"
+"(format #f \"~,,6e\" 1.0e99) @result{} \"1.0E+000099\"\n"
+"@end example"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/misc-modules.texi:493
+msgid ""
+"@var{intdigits} (default 1) is the number of digits to show before the\n"
+"decimal point in the mantissa.  @var{intdigits} can be zero, in which\n"
+"case the integer part is a single @nicode{0}, or it can be negative,\n"
+"in which case leading zeros are shown after the decimal point."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/misc-modules.texi:497
+msgid ""
+"@c  FIXME: When INTDIGITS is 0, Common Lisp format apparently only\n"
+"@c  shows the single 0 digit if it fits in WIDTH.  format.scm seems to\n"
+"@c  show it always.  Is it meant to?"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/misc-modules.texi:503
+msgid ""
+"@example\n"
+"(format #t \"~,,,3e\" 12345.0)  @print{} 123.45E+2\n"
+"(format #t \"~,,,0e\" 12345.0)  @print{} 0.12345E+5\n"
+"(format #t \"~,,,-3e\" 12345.0) @print{} 0.00012345E+8\n"
+"@end example"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/misc-modules.texi:509
+msgid ""
+"@c  FIXME: MANTDIGITS with negative INTDIGITS doesn't match CL spec,\n"
+"@c  believe the spec says it ought to still show mantdigits+1 sig\n"
+"@c  figures, i.e. leading zeros don't count towards MANTDIGITS, but it\n"
+"@c  seems to just treat MANTDIGITS as how many digits after the\n"
+"@c  decimal point."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/misc-modules.texi:513
+msgid ""
+"If @var{overflowchar} is given then @var{width} is a hard limit.  If\n"
+"the output would exceed @var{width} then instead that many\n"
+"@var{overflowchar}s are printed."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/misc-modules.texi:518
+msgid ""
+"@example\n"
+"(format #f \"~6,,,,'xe\" 100.0) @result{} \"1.0E+2\"\n"
+"(format #f \"~3,,,,'xe\" 100.0) @result{} \"xxx\"\n"
+"@end example"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/misc-modules.texi:520
+msgid "@var{expchar} is the exponent marker character (default @nicode{E})."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/misc-modules.texi:524
+msgid ""
+"@example\n"
+"(format #t \"~,,,,,,'ee\" 100.0) @print{} 1.0e+2\n"
+"@end example"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/misc-modules.texi:529
+msgid ""
+"@item @nicode{~g}\n"
+"General float.  Parameters: @var{width}, @var{mantdigits},\n"
+"@var{expdigits}, @var{intdigits}, @var{overflowchar}, @var{padchar},\n"
+"@var{expchar}."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/misc-modules.texi:534
+msgid ""
+"Output a number or number string in either exponential format the same\n"
+"as @nicode{~e}, or fixed-point format like @nicode{~f} but aligned\n"
+"where the mantissa would have been and followed by padding where the\n"
+"exponent would have been."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/misc-modules.texi:540
+msgid ""
+"@c  FIXME: The default MANTDIGITS is apparently max(needed,min(n,7))\n"
+"@c  where 10^(n-1)<=abs(x)<=10^n.  But the Common Lisp spec seems to\n"
+"@c  ask for \"needed\" to be without leading or trailing zeros, whereas\n"
+"@c  format.scm seems to include trailing zeros, ending up with it\n"
+"@c  using fixed format for bigger values than it should."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/misc-modules.texi:544
+msgid ""
+"Fixed-point is used when the absolute value is 0.1 or more and it\n"
+"takes no more space than the mantissa in exponential format, ie.@:\n"
+"basically up to @var{mantdigits} digits."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/misc-modules.texi:549
+msgid ""
+"@example\n"
+"(format #f \"~12,4,2g\" 999.0)    @result{} \"   999.0    \"\n"
+"(format #f \"~12,4,2g\" \"100000\") @result{} \"  1.0000E+05\"\n"
+"@end example"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/misc-modules.texi:554
+msgid ""
+"The parameters are interpreted as per @nicode{~e} above.  When\n"
+"fixed-point is used, the @var{decimals} parameter to @nicode{~f} is\n"
+"established from @var{mantdigits}, so as to give a total\n"
+"@math{@var{mantdigits}+1} figures."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/misc-modules.texi:558
+msgid ""
+"@item @nicode{~$}\n"
+"Monetary style fixed-point float.  Parameters: @var{decimals},\n"
+"@var{intdigits}, @var{width}, @var{padchar}."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/misc-modules.texi:563
+msgid ""
+"@c  For reference, fmtdoc.txi from past versions of slib showed the\n"
+"@c  INTDIGITS parameter as SCALE.  That looks like a typo, in the code\n"
+"@c  and in the Common Lisp spec it's a minimum digits for the integer\n"
+"@c  part, it isn't a power of 10 like in ~f."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/misc-modules.texi:567
+msgid ""
+"Output a number or number string in fixed-point format, ie.@: with a\n"
+"decimal point.  @var{decimals} is the number of decimal places to\n"
+"show, default 2."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/misc-modules.texi:573
+msgid ""
+"@example\n"
+"(format #t \"~$\" 5)       @print{} 5.00\n"
+"(format #t \"~4$\" \"2.25\") @print{} 2.2500\n"
+"(format #t \"~4$\" \"1e-2\") @print{} 0.0100\n"
+"@end example"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/misc-modules.texi:576
+msgid ""
+"@nicode{~@@$} prints a @nicode{+} sign on positive numbers (including\n"
+"zero)."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/misc-modules.texi:580
+msgid ""
+"@example\n"
+"(format #t \"~@@$\" 0) @print{} +0.00\n"
+"@end example"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/misc-modules.texi:583
+msgid ""
+"@var{intdigits} is a minimum number of digits to show in the integer\n"
+"part of the value (default 1)."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/misc-modules.texi:588
+msgid ""
+"@example\n"
+"(format #t \"~,3$\" 9.5)   @print{} 009.50\n"
+"(format #t \"~,0$\" 0.125) @print{} .13\n"
+"@end example"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/misc-modules.texi:592
+msgid ""
+"If the output is less than @var{width} characters (default 0), it's\n"
+"padded on the left with @var{padchar} (default space).  @nicode{~:$}\n"
+"puts the padding after the sign."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/misc-modules.texi:598
+msgid ""
+"@example\n"
+"(format #f \"~,,8$\" -1.5)   @result{} \"   -1.50\"\n"
+"(format #f \"~,,8:$\" -1.5)  @result{} \"-   1.50\"\n"
+"(format #f \"~,,8,'.:@@$\" 3) @result{} \"+...3.00\"\n"
+"@end example"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/misc-modules.texi:605
+msgid ""
+"Note that floating point for dollar amounts is generally not a good\n"
+"idea, because a cent @math{0.01} cannot be represented exactly in the\n"
+"binary floating point Guile uses, which leads to slowly accumulating\n"
+"rounding errors.  Keeping values as cents (or fractions of a cent) in\n"
+"integers then printing with the scale option in @nicode{~f} may be a\n"
+"better approach."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/misc-modules.texi:612
+msgid ""
+"@c  For reference, fractions don't work with ~$ (or any of the float\n"
+"@c  conversions) currently.  If they did work then we could perhaps\n"
+"@c  suggest keeping dollar amounts as rationals, which would of course\n"
+"@c  give exact cents.  An integer as cents is probably still a better\n"
+"@c  recommendation though, since it forces one to think about where\n"
+"@c  and when rounding can or should occur."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/misc-modules.texi:616
+msgid ""
+"@item @nicode{~i}\n"
+"Complex fixed-point float.  Parameters: @var{width}, @var{decimals},\n"
+"@var{scale}, @var{overflowchar}, @var{padchar}."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/misc-modules.texi:619
+msgid ""
+"@c  For reference, in Common Lisp ~i is an indent, but slib fmtdoc.txi\n"
+"@c  described it as complex number output, so we keep that."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/misc-modules.texi:622
+msgid ""
+"Output the argument as a complex number, with both real and imaginary\n"
+"part shown (even if one or both are zero)."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/misc-modules.texi:628
+msgid ""
+"The parameters and modifiers are the same as for fixed-point\n"
+"@nicode{~f} described above.  The real and imaginary parts are both\n"
+"output with the same given parameters and modifiers, except that for\n"
+"the imaginary part the @nicode{@@} modifier is always enabled, so as\n"
+"to print a @nicode{+} sign between the real and imaginary parts."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/misc-modules.texi:632
+msgid ""
+"@example\n"
+"(format #t \"~i\" 1)  @print{} 1.0+0.0i\n"
+"@end example"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/misc-modules.texi:635
+msgid ""
+"@item @nicode{~p}\n"
+"Plural.  No parameters."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/misc-modules.texi:638
+msgid ""
+"Output nothing if the argument is 1, or @samp{s} for any other\n"
+"value."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/misc-modules.texi:643
+msgid ""
+"@example\n"
+"(format #t \"enter name~p\" 1) @print{} enter name\n"
+"(format #t \"enter name~p\" 2) @print{} enter names\n"
+"@end example"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/misc-modules.texi:645
+msgid "@nicode{~@@p} prints @samp{y} for 1 or @samp{ies} otherwise."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/misc-modules.texi:650
+msgid ""
+"@example\n"
+"(format #t \"pupp~@@p\" 1) @print{} puppy\n"
+"(format #t \"pupp~@@p\" 2) @print{} puppies\n"
+"@end example"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/misc-modules.texi:653
+msgid ""
+"@nicode{~:p} re-uses the preceding argument instead of taking a new\n"
+"one, which can be convenient when printing some sort of count."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/misc-modules.texi:658
+msgid ""
+"@example\n"
+"(format #t \"~d cat~:p\" 9)   @print{} 9 cats\n"
+"(format #t \"~d pupp~:@@p\" 5) @print{} 5 puppies\n"
+"@end example"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/misc-modules.texi:664
+msgid ""
+"@nicode{~p} is designed for English plurals and there's no attempt to\n"
+"support other languages.  @nicode{~[} conditionals (below) may be able\n"
+"to help.  When using @code{gettext} to translate messages\n"
+"@code{ngettext} is probably best though\n"
+"(@pxref{Internationalization})."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/misc-modules.texi:667
+msgid ""
+"@item @nicode{~y}\n"
+"Structured printing.  Parameters: @var{width}."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/misc-modules.texi:672
+msgid ""
+"@nicode{~y} outputs an argument using @code{pretty-print}\n"
+"(@pxref{Pretty Printing}). The result will be formatted to fit within\n"
+"@var{width} columns (79 by default), consuming multiple lines if\n"
+"necessary."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/misc-modules.texi:677
+msgid ""
+"@nicode{~@@y} outputs an argument using @code{truncated-print}\n"
+"(@pxref{Pretty Printing}). The resulting code will be formatted to fit\n"
+"within @var{width} columns (79 by default), on a single line. The\n"
+"output will be truncated if necessary."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/misc-modules.texi:682
+msgid ""
+"@nicode{~:@@y} is like @nicode{~@@y}, except the @var{width} parameter\n"
+"is interpreted to be the maximum column to which to output. That is to\n"
+"say, if you are at column 10, and @nicode{~60:@@y} is seen, the datum\n"
+"will be truncated to 50 columns."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/misc-modules.texi:686
+msgid ""
+"@item @nicode{~?}\n"
+"@itemx @nicode{~k}\n"
+"Sub-format.  No parameters."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/misc-modules.texi:689
+msgid ""
+"Take a format string argument and a second argument which is a list of\n"
+"arguments for that string, and output the result."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/misc-modules.texi:693
+msgid ""
+"@example\n"
+"(format #t \"~?\" \"~d ~d\" '(1 2))    @print{} 1 2\n"
+"@end example"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/misc-modules.texi:696
+msgid ""
+"@nicode{~@@?} takes arguments for the sub-format directly rather than\n"
+"in a list."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/misc-modules.texi:700
+msgid ""
+"@example\n"
+"(format #t \"~@@? ~s\" \"~d ~d\" 1 2 \"foo\") @print{} 1 2 \"foo\"\n"
+"@end example"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/misc-modules.texi:703
+msgid ""
+"@nicode{~?} and @nicode{~k} are the same, @nicode{~k} is provided for\n"
+"T-Scheme compatibility."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/misc-modules.texi:706
+msgid ""
+"@item @nicode{~*}\n"
+"Argument jumping.  Parameter: @var{N}."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/misc-modules.texi:709
+msgid ""
+"Move forward @var{N} arguments (default 1) in the argument list.\n"
+"@nicode{~:*} moves backwards.  (@var{N} cannot be negative.)"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/misc-modules.texi:714
+msgid ""
+"@example\n"
+"(format #f \"~d ~2*~d\" 1 2 3 4) @result{} \"1 4\"\n"
+"(format #f \"~d ~:*~d\" 6)       @result{} \"6 6\"\n"
+"@end example"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/misc-modules.texi:717
+msgid ""
+"@nicode{~@@*} moves to argument number @var{N}.  The first argument is\n"
+"number 0 (and that's the default for @var{N})."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/misc-modules.texi:722
+msgid ""
+"@example\n"
+"(format #f \"~d~d again ~@@*~d~d\" 1 2) @result{} \"12 again 12\"\n"
+"(format #f \"~d~d~d ~1@@*~d~d\" 1 2 3)  @result{} \"123 23\"\n"
+"@end example"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/misc-modules.texi:726
+msgid ""
+"A @nicode{#} move to the end followed by a @nicode{:} modifier move\n"
+"back can be used for an absolute position relative to the end of the\n"
+"argument list, a reverse of what the @nicode{@@} modifier does."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/misc-modules.texi:730
+msgid ""
+"@example\n"
+"(format #t \"~#*~2:*~a\" 'a 'b 'c 'd)   @print{} c\n"
+"@end example"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/misc-modules.texi:733
+msgid ""
+"At the end of the format string the current argument position doesn't\n"
+"matter, any further arguments are ignored."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/misc-modules.texi:737
+msgid ""
+"@item @nicode{~t}\n"
+"Advance to a column position.  Parameters: @var{colnum}, @var{colinc},\n"
+"@var{padchar}."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/misc-modules.texi:741
+msgid ""
+"Output @var{padchar} (space by default) to move to the given\n"
+"@var{colnum} column.  The start of the line is column 0, the default\n"
+"for @var{colnum} is 1."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/misc-modules.texi:746
+msgid ""
+"@example\n"
+"(format #f \"~tX\")  @result{} \" X\"\n"
+"(format #f \"~3tX\") @result{} \"   X\"\n"
+"@end example"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/misc-modules.texi:752
+msgid ""
+"If the current column is already past @var{colnum}, then the move is\n"
+"to there plus a multiple of @var{colinc}, ie.@: column\n"
+"@math{@var{colnum} + @var{N} * @var{colinc}} for the smallest @var{N}\n"
+"which makes that value greater than or equal to the current column.\n"
+"The default @var{colinc} is 1 (which means no further move)."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/misc-modules.texi:756
+msgid ""
+"@example\n"
+"(format #f \"abcd~2,5,'.tx\") @result{} \"abcd...x\"\n"
+"@end example"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/misc-modules.texi:761
+msgid ""
+"@nicode{~@@t} takes @var{colnum} as an offset from the current column.\n"
+"@var{colnum} many pad characters are output, then further padding to\n"
+"make the current column a multiple of @var{colinc}, if it isn't\n"
+"already so."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/misc-modules.texi:765
+msgid ""
+"@example\n"
+"(format #f \"a~3,5'*@@tx\") @result{} \"a****x\"\n"
+"@end example"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/misc-modules.texi:769
+msgid ""
+"@nicode{~t} is implemented using @code{port-column} (@pxref{Textual\n"
+"I/O}), so it works even there has been other output before\n"
+"@code{format}."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/misc-modules.texi:772
+msgid ""
+"@item @nicode{~~}\n"
+"Tilde character.  Parameter: @var{n}."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/misc-modules.texi:776
+msgid ""
+"Output a tilde character @nicode{~}, or @var{n} many if a parameter is\n"
+"given.  Normally @nicode{~} introduces an escape sequence, @nicode{~~}\n"
+"is the way to output a literal tilde."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/misc-modules.texi:779
+msgid ""
+"@item @nicode{~%}\n"
+"Newline.  Parameter: @var{n}."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/misc-modules.texi:783
+msgid ""
+"Output a newline character, or @var{n} many if a parameter is given.\n"
+"A newline (or a few newlines) can of course be output just by\n"
+"including them in the format string."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/misc-modules.texi:786
+msgid ""
+"@item @nicode{~&}\n"
+"Start a new line.  Parameter: @var{n}."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/misc-modules.texi:791
+msgid ""
+"Output a newline if not already at the start of a line.  With a\n"
+"parameter, output that many newlines, but with the first only if not\n"
+"already at the start of a line.  So for instance 3 would be a newline\n"
+"if not already at the start of a line, and 2 further newlines."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/misc-modules.texi:794
+msgid ""
+"@item @nicode{~_}\n"
+"Space character.  Parameter: @var{n}."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/misc-modules.texi:797
+msgid ""
+"@c  For reference, in Common Lisp ~_ is a conditional newline, but\n"
+"@c  slib fmtdoc.txi described it as a space, so we keep that."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/misc-modules.texi:799
+msgid "Output a space character, or @var{n} many if a parameter is given."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/misc-modules.texi:803
+msgid ""
+"With a variable parameter this is one way to insert runtime calculated\n"
+"padding (@nicode{~t} or the various field widths can do similar\n"
+"things)."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/misc-modules.texi:807
+msgid ""
+"@example\n"
+"(format #f \"~v_foo\" 4) @result{} \"    foo\"\n"
+"@end example"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/misc-modules.texi:810
+msgid ""
+"@item @nicode{~/}\n"
+"Tab character.  Parameter: @var{n}."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/misc-modules.texi:812
+msgid "Output a tab character, or @var{n} many if a parameter is given."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/misc-modules.texi:815
+msgid ""
+"@item @nicode{~|}\n"
+"Formfeed character.  Parameter: @var{n}."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/misc-modules.texi:817
+msgid "Output a formfeed character, or @var{n} many if a parameter is given."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/misc-modules.texi:820
+msgid ""
+"@item @nicode{~!}\n"
+"Force output.  No parameters."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/misc-modules.texi:824
+msgid ""
+"At the end of output, call @code{force-output} to flush any buffers on\n"
+"the destination (@pxref{Buffering}).  @nicode{~!} can occur anywhere in\n"
+"the format string, but the force is done at the end of output."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/misc-modules.texi:827
+msgid ""
+"When output is to a string (destination @code{#f}), @nicode{~!} does\n"
+"nothing."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/misc-modules.texi:830
+msgid ""
+"@item @nicode{~newline}  (ie.@: newline character)\n"
+"Continuation line.  No parameters."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/misc-modules.texi:835
+msgid ""
+"Skip this newline and any following whitespace in the format string,\n"
+"ie.@: don't send it to the output.  This can be used to break up a\n"
+"long format string for readability, but not print the extra\n"
+"whitespace."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/misc-modules.texi:841
+msgid ""
+"@example\n"
+"(format #f \"abc~\n"
+"            ~d def~\n"
+"            ~d\" 1 2) @result{} \"abc1 def2\"\n"
+"@end example"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/misc-modules.texi:844
+msgid ""
+"@nicode{~:newline} skips the newline but leaves any further whitespace\n"
+"to be printed normally."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/misc-modules.texi:847
+msgid ""
+"@nicode{~@@newline} prints the newline then skips following\n"
+"whitespace."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/misc-modules.texi:850
+msgid ""
+"@item @nicode{~(} @nicode{~)}\n"
+"Case conversion.  No parameters."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/misc-modules.texi:853
+msgid ""
+"Between @nicode{~(} and @nicode{~)} the case of all output is changed.\n"
+"The modifiers on @nicode{~(} control the conversion."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/misc-modules.texi:882
+msgid ""
+"@itemize @w{}\n"
+"@item\n"
+"@nicode{~(} --- lower case.\n"
+"@c\n"
+"@c  FIXME: The : and @ modifiers are not yet documented because the\n"
+"@c  code applies string-capitalize and string-capitalize-first to each\n"
+"@c  separate format:out-str call, which has various subtly doubtful\n"
+"@c  effects.  And worse they're applied to individual characters,\n"
+"@c  including literal characters in the format string, which has the\n"
+"@c  silly effect of being always an upcase.\n"
+"@c\n"
+"@c  The Common Lisp spec is apparently for the capitalization to be\n"
+"@c  applied in one hit to the whole of the output between ~( and ~).\n"
+"@c  (This can no doubt be implemented without accumulating all that\n"
+"@c  text, just by keeping a state or the previous char to tell whether\n"
+"@c  within a word.)\n"
+"@c\n"
+"@c  @item\n"
+"@c  @nicode{:} --- first letter of each word upper case, the rest lower\n"
+"@c  case, as per the @code{string-capitalize} function (@pxref{Alphabetic\n"
+"@c  Case Mapping}).\n"
+"@c  @item\n"
+"@c  @nicode{@@} --- first letter of just the first word upper case, the\n"
+"@c  rest lower case.\n"
+"@c\n"
+"@item\n"
+"@nicode{~:@@(} --- upper case.\n"
+"@end itemize"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/misc-modules.texi:884
+msgid "For example,"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/misc-modules.texi:889
+msgid ""
+"@example\n"
+"(format #t \"~(Hello~)\")   @print{} hello\n"
+"(format #t \"~:@@(Hello~)\") @print{} HELLO\n"
+"@end example"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/misc-modules.texi:894
+msgid ""
+"In the future it's intended the modifiers @nicode{:} and @nicode{@@}\n"
+"alone will capitalize the first letters of words, as per Common Lisp\n"
+"@code{format}, but the current implementation of this is flawed and\n"
+"not recommended for use."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/misc-modules.texi:899
+msgid ""
+"Case conversions do not nest, currently.  This might change in the\n"
+"future, but if it does then it will be to Common Lisp style where the\n"
+"outermost conversion has priority, overriding inner ones (making those\n"
+"fairly pointless)."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/misc-modules.texi:902
+msgid ""
+"@item @nicode{~@{} @nicode{~@}}\n"
+"Iteration.  Parameter: @var{maxreps} (for @nicode{~@{})."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/misc-modules.texi:907
+msgid ""
+"The format between @nicode{~@{} and @nicode{~@}} is iterated.  The\n"
+"modifiers to @nicode{~@{} determine how arguments are taken.  The\n"
+"default is a list argument with each iteration successively consuming\n"
+"elements from it.  This is a convenient way to output a whole list."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/misc-modules.texi:912
+msgid ""
+"@example\n"
+"(format #t \"~@{~d~@}\"     '(1 2 3))       @print{} 123\n"
+"(format #t \"~@{~s=~d ~@}\" '(\"x\" 1 \"y\" 2)) @print{} \"x\"=1 \"y\"=2\n"
+"@end example"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/misc-modules.texi:915
+msgid ""
+"@nicode{~:@{} takes a single argument which is a list of lists, each\n"
+"of those contained lists gives the arguments for the iterated format."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/misc-modules.texi:921
+msgid ""
+"@c  @print{} on a new line here to avoid overflowing page width in DVI\n"
+"@example\n"
+"(format #t \"~:@{~dx~d ~@}\" '((1 2) (3 4) (5 6)))\n"
+"@print{} 1x2 3x4 5x6\n"
+"@end example"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/misc-modules.texi:924
+msgid ""
+"@nicode{~@@@{} takes arguments directly, with each iteration\n"
+"successively consuming arguments."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/misc-modules.texi:929
+msgid ""
+"@example\n"
+"(format #t \"~@@@{~d~@}\"     1 2 3)       @print{} 123\n"
+"(format #t \"~@@@{~s=~d ~@}\" \"x\" 1 \"y\" 2) @print{} \"x\"=1 \"y\"=2\n"
+"@end example"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/misc-modules.texi:932
+msgid ""
+"@nicode{~:@@@{} takes list arguments, one argument for each iteration,\n"
+"using that list for the format."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/misc-modules.texi:938
+msgid ""
+"@c  @print{} on a new line here to avoid overflowing page width in DVI\n"
+"@example\n"
+"(format #t \"~:@@@{~dx~d ~@}\" '(1 2) '(3 4) '(5 6))\n"
+"@print{} 1x2 3x4 5x6\n"
+"@end example"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/misc-modules.texi:942
+msgid ""
+"Iterating stops when there are no more arguments or when the\n"
+"@var{maxreps} parameter to @nicode{~@{} is reached (default no\n"
+"maximum)."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/misc-modules.texi:946
+msgid ""
+"@example\n"
+"(format #t \"~2@{~d~@}\" '(1 2 3 4)) @print{} 12\n"
+"@end example"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/misc-modules.texi:951
+msgid ""
+"If the format between @nicode{~@{} and @nicode{~@}} is empty, then a\n"
+"format string argument is taken (before iteration argument(s)) and\n"
+"used instead.  This allows a sub-format (like @nicode{~?} above) to be\n"
+"iterated."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/misc-modules.texi:955
+msgid ""
+"@example\n"
+"(format #t \"~@{~@}\" \"~d\" '(1 2 3)) @print{} 123\n"
+"@end example"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/misc-modules.texi:959
+msgid ""
+"@c  FIXME: What is the @nicode{:} modifier to ~} meant to do?  The\n"
+"@c  Common Lisp spec says it's a minimum of 1 iteration, but the\n"
+"@c  format.scm code seems to merely make it have MAXREPS default to 1."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/misc-modules.texi:965
+msgid ""
+"Iterations can be nested, an inner iteration operates in the same way\n"
+"as described, but of course on the arguments the outer iteration\n"
+"provides it.  This can be used to work into nested list structures.\n"
+"For example in the following the inner @nicode{~@{~d~@}x} is applied\n"
+"to @code{(1 2)} then @code{(3 4 5)} etc."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/misc-modules.texi:969
+msgid ""
+"@example\n"
+"(format #t \"~@{~@{~d~@}x~@}\" '((1 2) (3 4 5))) @print{} 12x345x\n"
+"@end example"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/misc-modules.texi:971
+msgid "See also @nicode{~^} below for escaping from iteration."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/misc-modules.texi:974
+msgid ""
+"@item @nicode{~[} @nicode{~;} @nicode{~]}\n"
+"Conditional.  Parameter: @var{selector}."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/misc-modules.texi:979
+msgid ""
+"A conditional block is delimited by @nicode{~[} and @nicode{~]}, and\n"
+"@nicode{~;} separates clauses within the block.  @nicode{~[} takes an\n"
+"integer argument and that number clause is used.  The first clause is\n"
+"number 0."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/misc-modules.texi:983
+msgid ""
+"@example\n"
+"(format #f \"~[peach~;banana~;mango~]\" 1)  @result{} \"banana\"\n"
+"@end example"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/misc-modules.texi:986
+msgid ""
+"The @var{selector} parameter can be used for the clause number,\n"
+"instead of taking an argument."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/misc-modules.texi:990
+msgid ""
+"@example\n"
+"(format #f \"~2[peach~;banana~;mango~]\") @result{} \"mango\"\n"
+"@end example"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/misc-modules.texi:993
+msgid ""
+"If the clause number is out of range then nothing is output.  Or the\n"
+"last clause can be @nicode{~:;} to use that for a number out of range."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/misc-modules.texi:998
+msgid ""
+"@example\n"
+"(format #f \"~[banana~;mango~]\"         99) @result{} \"\"\n"
+"(format #f \"~[banana~;mango~:;fruit~]\" 99) @result{} \"fruit\"\n"
+"@end example"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/misc-modules.texi:1002
+msgid ""
+"@nicode{~:[} treats the argument as a flag, and expects two clauses.\n"
+"The first is used if the argument is @code{#f} or the second\n"
+"otherwise."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/misc-modules.texi:1006
+msgid ""
+"@example\n"
+"(format #f \"~:[false~;not false~]\" #f)   @result{} \"false\"\n"
+"(format #f \"~:[false~;not false~]\" 'abc) @result{} \"not false\""
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/misc-modules.texi:1011
+msgid ""
+"(let ((n 3))\n"
+"  (format #t \"~d gnu~:[s are~; is~] here\" n (= 1 n)))\n"
+"@print{} 3 gnus are here\n"
+"@end example"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/misc-modules.texi:1018
+msgid ""
+"@nicode{~@@[} also treats the argument as a flag, and expects one\n"
+"clause.  If the argument is @code{#f} then no output is produced and\n"
+"the argument is consumed, otherwise the clause is used and the\n"
+"argument is not consumed, it's left for the clause.  This can be used\n"
+"for instance to suppress output if @code{#f} means something not\n"
+"available."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/misc-modules.texi:1023
+msgid ""
+"@example\n"
+"(format #f \"~@@[temperature=~d~]\" 27) @result{} \"temperature=27\"\n"
+"(format #f \"~@@[temperature=~d~]\" #f) @result{} \"\"\n"
+"@end example"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/misc-modules.texi:1026
+msgid ""
+"@item @nicode{~^}\n"
+"Escape.  Parameters: @var{val1}, @var{val2}, @var{val3}."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/misc-modules.texi:1030
+msgid ""
+"Stop formatting if there are no more arguments.  This can be used for\n"
+"instance to have a format string adapt to a variable number of\n"
+"arguments."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/misc-modules.texi:1035
+msgid ""
+"@example\n"
+"(format #t \"~d~^ ~d\" 1)   @print{} 1\n"
+"(format #t \"~d~^ ~d\" 1 2) @print{} 1 2\n"
+"@end example"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/misc-modules.texi:1041
+msgid ""
+"Within a @nicode{~@{} @nicode{~@}} iteration, @nicode{~^} stops the\n"
+"current iteration step if there are no more arguments to that step,\n"
+"but continuing with possible further steps and the rest of the format.\n"
+"This can be used for instance to avoid a separator on the last\n"
+"iteration, or to adapt to variable length argument lists."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/misc-modules.texi:1046
+msgid ""
+"@example\n"
+"(format #f \"~@{~d~^/~@} go\"    '(1 2 3))     @result{} \"1/2/3 go\"\n"
+"(format #f \"~:@{ ~d~^~d~@} go\" '((1) (2 3))) @result{} \" 1 23 go\"\n"
+"@end example"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/misc-modules.texi:1049
+msgid ""
+"@c  For reference, format.scm doesn't implement that Common Lisp ~:^\n"
+"@c  modifier which stops the entire iterating of ~:{ or ~@:{."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/misc-modules.texi:1057
+msgid ""
+"@c  FIXME: Believe the Common Lisp spec is for ~^ within ~[ ~]\n"
+"@c  conditional to terminate the whole format (or iteration step if in\n"
+"@c  an iteration).  But format.scm seems to terminate just the\n"
+"@c  conditional form.\n"
+"@c\n"
+"@c      (format #f \"~[abc~^def~;ghi~] blah\" 0)\n"
+"@c      @result{} \"abc blah\"                    ;; looks wrong"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/misc-modules.texi:1065
+msgid ""
+"@c  FIXME: Believe the Common Lisp spec is for ~^ within ~( ~) to end\n"
+"@c  that case conversion and then also terminate the whole format (or\n"
+"@c  iteration step if in an iteration).  But format.scm doesn't seem\n"
+"@c  to do that quite right.\n"
+"@c\n"
+"@c      (format #f \"~d ~^ ~d\" 1)      @result{} \"1 \"\n"
+"@c      (format #f \"~(~d ~^ ~d~)\" 1)  @result{} ERROR"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/misc-modules.texi:1069
+msgid ""
+"Within a @nicode{~?} sub-format, @nicode{~^} operates just on that\n"
+"sub-format.  If it terminates the sub-format then the originating\n"
+"format will still continue."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/misc-modules.texi:1074
+msgid ""
+"@example\n"
+"(format #t \"~? items\" \"~d~^ ~d\" '(1))   @print{} 1 items\n"
+"(format #t \"~? items\" \"~d~^ ~d\" '(1 2)) @print{} 1 2 items\n"
+"@end example"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/misc-modules.texi:1081
+msgid ""
+"The parameters to @nicode{~^} (which are numbers) change the condition\n"
+"used to terminate.  For a single parameter, termination is when that\n"
+"value is zero (notice this makes plain @nicode{~^} equivalent to\n"
+"@nicode{~#^}).  For two parameters, termination is when those two are\n"
+"equal.  For three parameters, termination is when @math{@var{val1}\n"
+"@le{} @var{val2}} and @math{@var{val2} @le{} @var{val3}}."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/misc-modules.texi:1083
+msgid "@c  FIXME: Good examples of these?"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/misc-modules.texi:1086
+msgid ""
+"@item @nicode{~q}\n"
+"Inquiry message.  Insert a copyright message into the output."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/misc-modules.texi:1089
+msgid ""
+"@nicode{~:q} inserts the format implementation version.\n"
+"@end table"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/misc-modules.texi:1093
+msgid ""
+"@sp 1\n"
+"It's an error if there are not enough arguments for the escapes in the\n"
+"format string, but any excess arguments are ignored."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/misc-modules.texi:1099
+msgid ""
+"Iterations @nicode{~@{} @nicode{~@}} and conditionals @nicode{~[}\n"
+"@nicode{~;} @nicode{~]} can be nested, but must be properly nested,\n"
+"meaning the inner form must be entirely within the outer form.  So\n"
+"it's not possible, for instance, to try to conditionalize the endpoint\n"
+"of an iteration."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/misc-modules.texi:1104
+msgid ""
+"@example\n"
+"(format #t \"~@{ ~[ ... ~] ~@}\" ...)       ;; good\n"
+"(format #t \"~@{ ~[ ... ~@} ... ~]\" ...)   ;; bad\n"
+"@end example"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/misc-modules.texi:1109
+msgid ""
+"The same applies to case conversions @nicode{~(} @nicode{~)}, they\n"
+"must properly nest with respect to iterations and conditionals (though\n"
+"currently a case conversion cannot nest within another case\n"
+"conversion)."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/misc-modules.texi:1115
+msgid ""
+"When a sub-format (@nicode{~?}) is used, that sub-format string must\n"
+"be self-contained.  It cannot for instance give a @nicode{~@{} to\n"
+"begin an iteration form and have the @nicode{~@}} up in the\n"
+"originating format, or similar.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/misc-modules.texi:1124
+msgid ""
+"@sp 1\n"
+"Guile contains a @code{format} procedure even when the module\n"
+"@code{(ice-9 format)} is not loaded.  The default @code{format} is\n"
+"@code{simple-format} (@pxref{Simple Output}), it doesn't support all\n"
+"escape sequences documented in this section, and will signal an error if\n"
+"you try to use one of them.  The reason for two versions is that the\n"
+"full @code{format} is fairly large and requires some time to load.\n"
+"@code{simple-format} is often adequate too."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/misc-modules.texi:1129
+msgid ""
+"@node File Tree Walk\n"
+"@section File Tree Walk\n"
+"@cindex file tree walk"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/misc-modules.texi:1132
+msgid ""
+"@cindex file system traversal\n"
+"@cindex directory traversal"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/misc-modules.texi:1138
+msgid ""
+"The functions in this section traverse a tree of files and\n"
+"directories.  They come in two flavors: the first one is a high-level\n"
+"functional interface, and the second one is similar to the C @code{ftw}\n"
+"and @code{nftw} routines (@pxref{Working with Directory Trees,,, libc,\n"
+"GNU C Library Reference Manual})."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/misc-modules.texi:1143
+msgid ""
+"@example\n"
+"(use-modules (ice-9 ftw))\n"
+"@end example\n"
+"@sp 1"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/misc-modules.texi:1149
+msgid ""
+"@deffn {Scheme Procedure} file-system-tree file-name [enter? [stat]]\n"
+"Return a tree of the form @code{(@var{file-name} @var{stat}\n"
+"@var{children} ...)} where @var{stat} is the result of @code{(@var{stat}\n"
+"@var{file-name})} and @var{children} are similar structures for each\n"
+"file contained in @var{file-name} when it designates a directory."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/misc-modules.texi:1155
+msgid ""
+"The optional @var{enter?} predicate is invoked as @code{(@var{enter?}\n"
+"@var{name} @var{stat})} and should return true to allow recursion into\n"
+"directory @var{name}; the default value is a procedure that always\n"
+"returns @code{#t}.  When a directory does not match @var{enter?}, it\n"
+"nonetheless appears in the resulting tree, only with zero children."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/misc-modules.texi:1158
+msgid ""
+"The @var{stat} argument is optional and defaults to @code{lstat}, as for\n"
+"@code{file-system-fold} (see below.)"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/misc-modules.texi:1162
+msgid ""
+"The example below shows how to obtain a hierarchical listing of the\n"
+"files under the @file{module/language} directory in the Guile source\n"
+"tree, discarding their @code{stat} info:"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/misc-modules.texi:1165
+msgid ""
+"@example\n"
+"(use-modules (ice-9 match))"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/misc-modules.texi:1174
+msgid ""
+"(define remove-stat\n"
+"  ;; Remove the `stat' object the `file-system-tree' provides\n"
+"  ;; for each file in the tree.\n"
+"  (match-lambda\n"
+"    ((name stat)              ; flat file\n"
+"     name)\n"
+"    ((name stat children ...) ; directory\n"
+"     (list name (map remove-stat children)))))"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/misc-modules.texi:1178
+msgid ""
+"(let ((dir (string-append (assq-ref %guile-build-info 'top_srcdir)\n"
+"                          \"/module/language\")))\n"
+"  (remove-stat (file-system-tree dir)))"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/misc-modules.texi:1202
+msgid ""
+"@result{}\n"
+"(\"language\"\n"
+" ((\"value\" (\"spec.go\" \"spec.scm\"))\n"
+"  (\"scheme\"\n"
+"   (\"spec.go\"\n"
+"    \"spec.scm\"\n"
+"    \"compile-tree-il.scm\"\n"
+"    \"decompile-tree-il.scm\"\n"
+"    \"decompile-tree-il.go\"\n"
+"    \"compile-tree-il.go\"))\n"
+"  (\"tree-il\"\n"
+"   (\"spec.go\"\n"
+"    \"fix-letrec.go\"\n"
+"    \"inline.go\"\n"
+"    \"fix-letrec.scm\"\n"
+"    \"compile-glil.go\"\n"
+"    \"spec.scm\"\n"
+"    \"optimize.scm\"\n"
+"    \"primitives.scm\"\n"
+"    @dots{}))\n"
+"  @dots{}))\n"
+"@end example\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/misc-modules.texi:1204
+msgid "@cindex file system combinator"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/misc-modules.texi:1211
+msgid ""
+"It is often desirable to process directories entries directly, rather\n"
+"than building up a tree of entries in memory, like\n"
+"@code{file-system-tree} does.  The following procedure, a\n"
+"@dfn{combinator}, is designed to allow directory entries to be processed\n"
+"directly as a directory tree is traversed; in fact,\n"
+"@code{file-system-tree} is implemented in terms of it."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/misc-modules.texi:1216
+msgid ""
+"@deffn {Scheme Procedure} file-system-fold enter? leaf down up skip error "
+"init file-name [stat]\n"
+"Traverse the directory at @var{file-name}, recursively, and return the\n"
+"result of the successive applications of the @var{leaf}, @var{down},\n"
+"@var{up}, and @var{skip} procedures as described below."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/misc-modules.texi:1223
+msgid ""
+"Enter sub-directories only when @code{(@var{enter?} @var{path}\n"
+"@var{stat} @var{result})} returns true.  When a sub-directory is\n"
+"entered, call @code{(@var{down} @var{path} @var{stat} @var{result})},\n"
+"where @var{path} is the path of the sub-directory and @var{stat} the\n"
+"result of @code{(false-if-exception (@var{stat} @var{path}))}; when it is\n"
+"left, call @code{(@var{up} @var{path} @var{stat} @var{result})}."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/misc-modules.texi:1226
+msgid ""
+"For each file in a directory, call @code{(@var{leaf} @var{path}\n"
+"@var{stat} @var{result})}."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/misc-modules.texi:1230
+msgid ""
+"When @var{enter?} returns @code{#f}, or when an unreadable directory is\n"
+"encountered, call @code{(@var{skip} @var{path} @var{stat}\n"
+"@var{result})}."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/misc-modules.texi:1233
+msgid ""
+"When @var{file-name} names a flat file, @code{(@var{leaf} @var{path}\n"
+"@var{stat} @var{init})} is returned."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/misc-modules.texi:1239
+msgid ""
+"When an @code{opendir} or @var{stat} call fails, call @code{(@var{error}\n"
+"@var{path} @var{stat} @var{errno} @var{result})}, with @var{errno} being\n"
+"the operating system error number that was raised---e.g.,\n"
+"@code{EACCES}---and @var{stat} either @code{#f} or the result of the\n"
+"@var{stat} call for that entry, when available."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/misc-modules.texi:1246
+msgid ""
+"The special @file{.} and @file{..} entries are not passed to these\n"
+"procedures.  The @var{path} argument to the procedures is a full file\n"
+"name---e.g., @code{\"../foo/bar/gnu\"}; if @var{file-name} is an absolute\n"
+"file name, then @var{path} is also an absolute file name.  Files and\n"
+"directories, as identified by their device/inode number pair, are\n"
+"traversed only once."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/misc-modules.texi:1251
+msgid ""
+"The optional @var{stat} argument defaults to @code{lstat}, which means\n"
+"that symbolic links are not followed; the @code{stat} procedure can be\n"
+"used instead when symbolic links are to be followed (@pxref{File System,\n"
+"stat})."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/misc-modules.texi:1253
+msgid "The example below illustrates the use of @code{file-system-fold}:"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/misc-modules.texi:1258
+msgid ""
+"@example\n"
+"(define (total-file-size file-name)\n"
+"  \"Return the size in bytes of the files under FILE-NAME (similar\n"
+"to `du --apparent-size' with GNU Coreutils.)\""
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/misc-modules.texi:1265
+msgid ""
+"  (define (enter? name stat result)\n"
+"    ;; Skip version control directories.\n"
+"    (not (member (basename name) '(\".git\" \".svn\" \"CVS\"))))\n"
+"  (define (leaf name stat result)\n"
+"    ;; Return RESULT plus the size of the file at NAME.\n"
+"    (+ result (stat:size stat)))"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/misc-modules.texi:1269
+msgid ""
+"  ;; Count zero bytes for directories.\n"
+"  (define (down name stat result) result)\n"
+"  (define (up name stat result) result)"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/misc-modules.texi:1272
+msgid ""
+"  ;; Likewise for skipped directories.\n"
+"  (define (skip name stat result) result)"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/misc-modules.texi:1278
+msgid ""
+"  ;; Ignore unreadable files/directories but warn the user.\n"
+"  (define (error name stat errno result)\n"
+"    (format (current-error-port) \"warning: ~a: ~a~%\"\n"
+"            name (strerror errno))\n"
+"    result)"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/misc-modules.texi:1282
+msgid ""
+"  (file-system-fold enter? leaf down up skip error\n"
+"                           0  ; initial counter is zero bytes\n"
+"                           file-name))"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/misc-modules.texi:1285
+msgid ""
+"(total-file-size \".\")\n"
+"@result{} 8217554"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/misc-modules.texi:1290
+msgid ""
+"(total-file-size \"/dev/null\")\n"
+"@result{} 0\n"
+"@end example\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/misc-modules.texi:1292
+msgid "The alternative C-like functions are described below."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/misc-modules.texi:1300
+msgid ""
+"@deffn {Scheme Procedure} scandir name [select? [entry<?]]\n"
+"Return the list of the names of files contained in directory @var{name}\n"
+"that match predicate @var{select?} (by default, all files).  The\n"
+"returned list of file names is sorted according to @var{entry<?}, which\n"
+"defaults to @code{string-locale<?} such that file names are sorted in\n"
+"the locale's alphabetical order (@pxref{Text Collation}).  Return\n"
+"@code{#f} when @var{name} is unreadable or is not a directory."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/misc-modules.texi:1305
+msgid ""
+"This procedure is modeled after the C library function of the same name\n"
+"(@pxref{Scanning Directory Content,,, libc, GNU C Library Reference\n"
+"Manual}).\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/misc-modules.texi:1309
+msgid ""
+"@deffn {Scheme Procedure} ftw startname proc ['hash-size n]\n"
+"Walk the file system tree descending from @var{startname}, calling\n"
+"@var{proc} for each file and directory."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/misc-modules.texi:1314
+msgid ""
+"Hard links and symbolic links are followed.  A file or directory is\n"
+"reported to @var{proc} only once, and skipped if seen again in another\n"
+"place.  One consequence of this is that @code{ftw} is safe against\n"
+"circularly linked directory structures."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/misc-modules.texi:1317
+msgid ""
+"Each @var{proc} call is @code{(@var{proc} filename statinfo flag)} and\n"
+"it should return @code{#t} to continue, or any other value to stop."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/misc-modules.texi:1322
+msgid ""
+"@var{filename} is the item visited, being @var{startname} plus a\n"
+"further path and the name of the item.  @var{statinfo} is the return\n"
+"from @code{stat} (@pxref{File System}) on @var{filename}.  @var{flag}\n"
+"is one of the following symbols,"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/misc-modules.texi:1327
+msgid ""
+"@table @code\n"
+"@item regular\n"
+"@var{filename} is a file, this includes special files like devices,\n"
+"named pipes, etc."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/misc-modules.texi:1330
+msgctxt "/home/bear/work/guile/doc/guile/en/misc-modules.texi:1330"
+msgid ""
+"@item directory\n"
+"@var{filename} is a directory."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/misc-modules.texi:1334
+msgid ""
+"@item invalid-stat\n"
+"An error occurred when calling @code{stat}, so nothing is known.\n"
+"@var{statinfo} is @code{#f} in this case."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/misc-modules.texi:1338
+msgctxt "/home/bear/work/guile/doc/guile/en/misc-modules.texi:1338"
+msgid ""
+"@item directory-not-readable\n"
+"@var{filename} is a directory, but one which cannot be read and hence\n"
+"won't be recursed into."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/misc-modules.texi:1344
+msgid ""
+"@item symlink\n"
+"@var{filename} is a dangling symbolic link.  Symbolic links are\n"
+"normally followed and their target reported, the link itself is\n"
+"reported if the target does not exist.\n"
+"@end table"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/misc-modules.texi:1348
+msgid ""
+"The return value from @code{ftw} is @code{#t} if it ran to completion,\n"
+"or otherwise the non-@code{#t} value from @var{proc} which caused the\n"
+"stop."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/misc-modules.texi:1352
+msgid ""
+"Optional argument symbol @code{hash-size} and an integer can be given\n"
+"to set the size of the hash table used to track items already visited.\n"
+"(@pxref{Hash Table Reference})"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/misc-modules.texi:1360
+msgid ""
+"@c  Actually, it's probably safe to escape from ftw, just need to\n"
+"@c  check it.\n"
+"@c\n"
+"In the current implementation, returning non-@code{#t} from @var{proc}\n"
+"is the only valid way to terminate @code{ftw}.  @var{proc} must not\n"
+"use @code{throw} or similar to escape.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/misc-modules.texi:1366
+msgid ""
+"@deffn {Scheme Procedure} nftw startname proc ['chdir] ['depth] ['hash-size "
+"n] ['mount] ['physical]\n"
+"Walk the file system tree starting at @var{startname}, calling\n"
+"@var{proc} for each file and directory.  @code{nftw} has extra\n"
+"features over the basic @code{ftw} described above."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/misc-modules.texi:1371
+msgid ""
+"Like @code{ftw}, hard links and symbolic links are followed.  A file\n"
+"or directory is reported to @var{proc} only once, and skipped if seen\n"
+"again in another place.  One consequence of this is that @code{nftw}\n"
+"is safe against circular linked directory structures."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/misc-modules.texi:1375
+msgid ""
+"Each @var{proc} call is @code{(@var{proc} filename statinfo flag\n"
+"base level)} and it should return @code{#t} to continue, or any\n"
+"other value to stop."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/misc-modules.texi:1384
+msgid ""
+"@var{filename} is the item visited, being @var{startname} plus a\n"
+"further path and the name of the item.  @var{statinfo} is the return\n"
+"from @code{stat} on @var{filename} (@pxref{File System}).  @var{base}\n"
+"is an integer offset into @var{filename} which is where the basename\n"
+"for this item begins.  @var{level} is an integer giving the directory\n"
+"nesting level, starting from 0 for the contents of @var{startname} (or\n"
+"that item itself if it's a file).  @var{flag} is one of the following\n"
+"symbols,"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/misc-modules.texi:1389
+msgid ""
+"@table @code\n"
+"@item regular\n"
+"@var{filename} is a file, including special files like devices, named\n"
+"pipes, etc."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/misc-modules.texi:1392
+msgctxt "/home/bear/work/guile/doc/guile/en/misc-modules.texi:1392"
+msgid ""
+"@item directory\n"
+"@var{filename} is a directory."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/misc-modules.texi:1397
+msgid ""
+"@item directory-processed\n"
+"@var{filename} is a directory, and its contents have all been visited.\n"
+"This flag is given instead of @code{directory} when the @code{depth}\n"
+"option below is used."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/misc-modules.texi:1401
+msgid ""
+"@item invalid-stat\n"
+"An error occurred when applying @code{stat} to @var{filename}, so\n"
+"nothing is known about it.  @var{statinfo} is @code{#f} in this case."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/misc-modules.texi:1405
+msgctxt "/home/bear/work/guile/doc/guile/en/misc-modules.texi:1405"
+msgid ""
+"@item directory-not-readable\n"
+"@var{filename} is a directory, but one which cannot be read and hence\n"
+"won't be recursed into."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/misc-modules.texi:1410
+msgid ""
+"@item stale-symlink\n"
+"@var{filename} is a dangling symbolic link.  Links are normally\n"
+"followed and their target reported, the link itself is reported if its\n"
+"target does not exist."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/misc-modules.texi:1416
+msgid ""
+"@item symlink\n"
+"When the @code{physical} option described below is used, this\n"
+"indicates @var{filename} is a symbolic link whose target exists (and\n"
+"is not being followed).\n"
+"@end table"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/misc-modules.texi:1420
+msgid ""
+"The following optional arguments can be given to modify the way\n"
+"@code{nftw} works.  Each is passed as a symbol (and @code{hash-size}\n"
+"takes a following integer value)."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/misc-modules.texi:1425
+msgid ""
+"@table @asis\n"
+"@item @code{chdir}\n"
+"Change to the directory containing the item before calling @var{proc}.\n"
+"When @code{nftw} returns the original current directory is restored."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/misc-modules.texi:1431
+msgid ""
+"Under this option, generally the @var{base} parameter to each\n"
+"@var{proc} call should be used to pick out the base part of the\n"
+"@var{filename}.  The @var{filename} is still a path but with a changed\n"
+"directory it won't be valid (unless the @var{startname} directory was\n"
+"absolute)."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/misc-modules.texi:1436
+msgid ""
+"@item @code{depth}\n"
+"Visit files ``depth first'', meaning @var{proc} is called for the\n"
+"contents of each directory before it's called for the directory\n"
+"itself.  Normally a directory is reported first, then its contents."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/misc-modules.texi:1439
+msgid ""
+"Under this option, the @var{flag} to @var{proc} for a directory is\n"
+"@code{directory-processed} instead of @code{directory}."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/misc-modules.texi:1443
+msgid ""
+"@item @code{hash-size @var{n}}\n"
+"Set the size of the hash table used to track items already visited.\n"
+"(@pxref{Hash Table Reference})"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/misc-modules.texi:1447
+msgid ""
+"@item @code{mount}\n"
+"Don't cross a mount point, meaning only visit items on the same\n"
+"file system as @var{startname} (ie.@: the same @code{stat:dev})."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/misc-modules.texi:1453
+msgid ""
+"@item @code{physical}\n"
+"Don't follow symbolic links, instead report them to @var{proc} as\n"
+"@code{symlink}.  Dangling links (those whose target doesn't exist) are\n"
+"still reported as @code{stale-symlink}.\n"
+"@end table"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/misc-modules.texi:1457
+msgid ""
+"The return value from @code{nftw} is @code{#t} if it ran to\n"
+"completion, or otherwise the non-@code{#t} value from @var{proc} which\n"
+"caused the stop."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/misc-modules.texi:1466
+msgid ""
+"@c  For reference, one reason not to escape is that the current\n"
+"@c  directory is not saved and restored with dynamic-wind.  Maybe\n"
+"@c  changing that would be enough to allow escaping.\n"
+"@c\n"
+"In the current implementation, returning non-@code{#t} from @var{proc}\n"
+"is the only valid way to terminate @code{ftw}.  @var{proc} must not\n"
+"use @code{throw} or similar to escape.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/misc-modules.texi:1472
+msgid ""
+"@node Queues\n"
+"@section Queues\n"
+"@cindex queues\n"
+"@tindex Queues"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/misc-modules.texi:1475
+msgid ""
+"@noindent\n"
+"The functions in this section are provided by"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/misc-modules.texi:1479
+msgid ""
+"@example\n"
+"(use-modules (ice-9 q))\n"
+"@end example"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/misc-modules.texi:1482
+msgid ""
+"This module implements queues holding arbitrary scheme objects and\n"
+"designed for efficient first-in / first-out operations."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/misc-modules.texi:1486
+msgid ""
+"@code{make-q} creates a queue, and objects are entered and removed\n"
+"with @code{enq!} and @code{deq!}.  @code{q-push!} and @code{q-pop!}\n"
+"can be used too, treating the front of the queue like a stack."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/misc-modules.texi:1488
+msgid "@sp 1"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/misc-modules.texi:1492
+msgid ""
+"@deffn {Scheme Procedure} make-q\n"
+"Return a new queue.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/misc-modules.texi:1495
+msgid ""
+"@deffn {Scheme Procedure} q? obj\n"
+"Return @code{#t} if @var{obj} is a queue, or @code{#f} if not."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/misc-modules.texi:1500
+msgid ""
+"Note that queues are not a distinct class of objects but are\n"
+"implemented with cons cells.  For that reason certain list structures\n"
+"can get @code{#t} from @code{q?}.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/misc-modules.texi:1504
+msgid ""
+"@deffn {Scheme Procedure} enq! q obj\n"
+"Add @var{obj} to the rear of @var{q}, and return @var{q}.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/misc-modules.texi:1509
+msgid ""
+"@deffn {Scheme Procedure} deq! q\n"
+"@deffnx {Scheme Procedure} q-pop! q\n"
+"Remove and return the front element from @var{q}.  If @var{q} is\n"
+"empty, a @code{q-empty} exception is thrown."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/misc-modules.texi:1514
+msgid ""
+"@code{deq!} and @code{q-pop!} are the same operation, the two names\n"
+"just let an application match @code{enq!} with @code{deq!}, or\n"
+"@code{q-push!} with @code{q-pop!}.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/misc-modules.texi:1518
+msgid ""
+"@deffn {Scheme Procedure} q-push! q obj\n"
+"Add @var{obj} to the front of @var{q}, and return @var{q}.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/misc-modules.texi:1522
+msgid ""
+"@deffn {Scheme Procedure} q-length q\n"
+"Return the number of elements in @var{q}.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/misc-modules.texi:1526
+msgid ""
+"@deffn {Scheme Procedure} q-empty? q\n"
+"Return true if @var{q} is empty.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/misc-modules.texi:1530
+msgid ""
+"@deffn {Scheme Procedure} q-empty-check q\n"
+"Throw a @code{q-empty} exception if @var{q} is empty.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/misc-modules.texi:1535
+msgid ""
+"@deffn {Scheme Procedure} q-front q\n"
+"Return the first element of @var{q} (without removing it).  If @var{q}\n"
+"is empty, a @code{q-empty} exception is thrown.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/misc-modules.texi:1540
+msgid ""
+"@deffn {Scheme Procedure} q-rear q\n"
+"Return the last element of @var{q} (without removing it).  If @var{q}\n"
+"is empty, a @code{q-empty} exception is thrown.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/misc-modules.texi:1545
+msgid ""
+"@deffn {Scheme Procedure} q-remove! q obj\n"
+"Remove all occurrences of @var{obj} from @var{q}, and return @var{q}.\n"
+"@var{obj} is compared to queue elements using @code{eq?}.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/misc-modules.texi:1550
+msgid ""
+"@sp 1\n"
+"@cindex @code{q-empty}\n"
+"The @code{q-empty} exceptions described above are thrown just as\n"
+"@code{(throw 'q-empty)}, there's no message etc like an error throw."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/misc-modules.texi:1554
+msgid ""
+"A queue is implemented as a cons cell, the @code{car} containing a\n"
+"list of queued elements, and the @code{cdr} being the last cell in\n"
+"that list (for ease of enqueuing)."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/misc-modules.texi:1558
+msgid ""
+"@example\n"
+"(@var{list} . @var{last-cell})\n"
+"@end example"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/misc-modules.texi:1562
+msgid ""
+"@noindent\n"
+"If the queue is empty, @var{list} is the empty list and\n"
+"@var{last-cell} is @code{#f}."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/misc-modules.texi:1565
+msgid ""
+"An application can directly access the queue list if desired, for\n"
+"instance to search the elements or to insert at a specific point."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/misc-modules.texi:1568
+msgid ""
+"@deffn {Scheme Procedure} sync-q! q\n"
+"Recompute the @var{last-cell} field in @var{q}."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/misc-modules.texi:1574
+msgid ""
+"All the operations above maintain @var{last-cell} as described, so\n"
+"normally there's no need for @code{sync-q!}.  But if an application\n"
+"modifies the queue @var{list} then it must either maintain\n"
+"@var{last-cell} similarly, or call @code{sync-q!} to recompute it.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/misc-modules.texi:1579
+msgid ""
+"@node Streams\n"
+"@section Streams\n"
+"@cindex streams"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/misc-modules.texi:1582
+msgid ""
+"This section documents Guile's legacy stream module.  For a more\n"
+"complete and portable stream library, @pxref{SRFI-41}."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/misc-modules.texi:1589
+msgid ""
+"A stream represents a sequence of values, each of which is calculated\n"
+"only when required.  This allows large or even infinite sequences to\n"
+"be represented and manipulated with familiar operations like ``car'',\n"
+"``cdr'', ``map'' or ``fold''.  In such manipulations only as much as\n"
+"needed is actually held in memory at any one time.  The functions in\n"
+"this section are available from"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/misc-modules.texi:1593
+msgid ""
+"@example\n"
+"(use-modules (ice-9 streams))\n"
+"@end example"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/misc-modules.texi:1598
+msgid ""
+"Streams are implemented using promises (@pxref{Delayed Evaluation}),\n"
+"which is how the underlying calculation of values is made only when\n"
+"needed, and the values then retained so the calculation is not\n"
+"repeated."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/misc-modules.texi:1601
+msgid ""
+"@noindent\n"
+"Here is a simple example producing a stream of all odd numbers,"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/misc-modules.texi:1609
+msgid ""
+"@example\n"
+"(define odds (make-stream (lambda (state)\n"
+"                            (cons state (+ state 2)))\n"
+"                          1))\n"
+"(stream-car odds)              @result{} 1\n"
+"(stream-car (stream-cdr odds)) @result{} 3\n"
+"@end example"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/misc-modules.texi:1612
+msgid ""
+"@noindent\n"
+"@code{stream-map} could be used to derive a stream of odd squares,"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/misc-modules.texi:1617
+msgid ""
+"@example\n"
+"(define (square n) (* n n))\n"
+"(define oddsquares (stream-map square odds))\n"
+"@end example"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/misc-modules.texi:1620
+msgid ""
+"These are infinite sequences, so it's not possible to convert them to\n"
+"a list, but they could be printed (infinitely) with for example"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/misc-modules.texi:1632
+msgid ""
+"@example\n"
+"(stream-for-each (lambda (n sq)\n"
+"                   (format #t \"~a squared is ~a\\n"
+"\" n sq))\n"
+"                 odds oddsquares)\n"
+"@print{}\n"
+"1 squared is 1\n"
+"3 squared is 9\n"
+"5 squared is 25\n"
+"7 squared is 49\n"
+"@dots{}\n"
+"@end example"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/misc-modules.texi:1636
+msgid ""
+"@sp 1\n"
+"@deffn {Scheme Procedure} make-stream proc initial-state\n"
+"Return a new stream, formed by calling @var{proc} successively."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/misc-modules.texi:1643
+msgid ""
+"Each call is @code{(@var{proc} @var{state})}, it should return a pair,\n"
+"the @code{car} being the value for the stream, and the @code{cdr}\n"
+"being the new @var{state} for the next call.  For the first call\n"
+"@var{state} is the given @var{initial-state}.  At the end of the\n"
+"stream, @var{proc} should return some non-pair object.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/misc-modules.texi:1648
+msgid ""
+"@deffn {Scheme Procedure} stream-car stream\n"
+"Return the first element from @var{stream}.  @var{stream} must not be\n"
+"empty.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/misc-modules.texi:1653
+msgid ""
+"@deffn {Scheme Procedure} stream-cdr stream\n"
+"Return a stream which is the second and subsequent elements of\n"
+"@var{stream}.  @var{stream} must not be empty.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/misc-modules.texi:1657
+msgid ""
+"@deffn {Scheme Procedure} stream-null? stream\n"
+"Return true if @var{stream} is empty.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/misc-modules.texi:1661
+msgid ""
+"@deffn {Scheme Procedure} list->stream list\n"
+"@deffnx {Scheme Procedure} vector->stream vector\n"
+"Return a stream with the contents of @var{list} or @var{vector}."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/misc-modules.texi:1666
+msgid ""
+"@var{list} or @var{vector} should not be modified subsequently, since\n"
+"it's unspecified whether changes there will be reflected in the stream\n"
+"returned.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/misc-modules.texi:1672
+msgid ""
+"@deffn {Scheme Procedure} port->stream port readproc\n"
+"Return a stream which is the values obtained by reading from @var{port}\n"
+"using @var{readproc}.  Each read call is @code{(@var{readproc}\n"
+"@var{port})}, and it should return an EOF object (@pxref{Binary I/O}) at\n"
+"the end of input."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/misc-modules.texi:1674
+msgid "For example a stream of characters from a file,"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/misc-modules.texi:1679
+msgid ""
+"@example\n"
+"(port->stream (open-input-file \"/foo/bar.txt\") read-char)\n"
+"@end example\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/misc-modules.texi:1683
+msgid ""
+"@deffn {Scheme Procedure} stream->list stream\n"
+"Return a list which is the entire contents of @var{stream}.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/misc-modules.texi:1688
+msgid ""
+"@deffn {Scheme Procedure} stream->reversed-list stream\n"
+"Return a list which is the entire contents of @var{stream}, but in\n"
+"reverse order.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/misc-modules.texi:1694
+msgid ""
+"@deffn {Scheme Procedure} stream->list&length stream\n"
+"Return two values (@pxref{Multiple Values}), being firstly a list\n"
+"which is the entire contents of @var{stream}, and secondly the number\n"
+"of elements in that list.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/misc-modules.texi:1700
+msgid ""
+"@deffn {Scheme Procedure} stream->reversed-list&length stream\n"
+"Return two values (@pxref{Multiple Values}) being firstly a list which\n"
+"is the entire contents of @var{stream}, but in reverse order, and\n"
+"secondly the number of elements in that list.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/misc-modules.texi:1704
+msgid ""
+"@deffn {Scheme Procedure} stream->vector stream\n"
+"Return a vector which is the entire contents of @var{stream}.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/misc-modules.texi:1709
+msgid ""
+"@defun stream-fold proc init stream1 stream2 @dots{}\n"
+"Apply @var{proc} successively over the elements of the given streams,\n"
+"from first to last until the end of the shortest stream is reached.\n"
+"Return the result from the last @var{proc} call."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/misc-modules.texi:1715
+msgid ""
+"Each call is @code{(@var{proc} elem1 elem2 @dots{} prev)}, where each\n"
+"@var{elem} is from the corresponding @var{stream}.  @var{prev} is the\n"
+"return from the previous @var{proc} call, or the given @var{init} for\n"
+"the first call.\n"
+"@end defun"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/misc-modules.texi:1719
+msgid ""
+"@defun stream-for-each proc stream1 stream2 @dots{}\n"
+"Call @var{proc} on the elements from the given @var{stream}s.  The\n"
+"return value is unspecified."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/misc-modules.texi:1725
+msgid ""
+"Each call is @code{(@var{proc} elem1 elem2 @dots{})}, where each\n"
+"@var{elem} is from the corresponding @var{stream}.\n"
+"@code{stream-for-each} stops when it reaches the end of the shortest\n"
+"@var{stream}.\n"
+"@end defun"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/misc-modules.texi:1729
+msgid ""
+"@defun stream-map proc stream1 stream2 @dots{}\n"
+"Return a new stream which is the results of applying @var{proc} to the\n"
+"elements of the given @var{stream}s."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/misc-modules.texi:1734
+msgid ""
+"Each call is @code{(@var{proc} elem1 elem2 @dots{})}, where each\n"
+"@var{elem} is from the corresponding @var{stream}.  The new stream\n"
+"ends when the end of the shortest given @var{stream} is reached.\n"
+"@end defun"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/misc-modules.texi:1740
+msgid ""
+"@node Buffered Input\n"
+"@section Buffered Input\n"
+"@cindex Buffered input\n"
+"@cindex Line continuation"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/misc-modules.texi:1742
+msgid "The following functions are provided by"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/misc-modules.texi:1746
+msgid ""
+"@example\n"
+"(use-modules (ice-9 buffered-input))\n"
+"@end example"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/misc-modules.texi:1751
+msgid ""
+"A buffered input port allows a reader function to return chunks of\n"
+"characters which are to be handed out on reading the port.  A notion\n"
+"of further input for an application level logical expression is\n"
+"maintained too, and passed through to the reader."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/misc-modules.texi:1756
+msgid ""
+"@deffn {Scheme Procedure} make-buffered-input-port reader\n"
+"Create an input port which returns characters obtained from the given\n"
+"@var{reader} function.  @var{reader} is called (@var{reader} cont),\n"
+"and should return a string or an EOF object."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/misc-modules.texi:1760
+msgid ""
+"The new port gives precisely the characters returned by @var{reader},\n"
+"nothing is added, so if any newline characters or other separators are\n"
+"desired they must come from the reader function."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/misc-modules.texi:1768
+msgid ""
+"The @var{cont} parameter to @var{reader} is @code{#f} for initial\n"
+"input, or @code{#t} when continuing an expression.  This is an\n"
+"application level notion, set with\n"
+"@code{set-buffered-input-continuation?!} below.  If the user has\n"
+"entered a partial expression then it allows @var{reader} for instance\n"
+"to give a different prompt to show more is required.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/misc-modules.texi:1775
+msgid ""
+"@deffn {Scheme Procedure} make-line-buffered-input-port reader\n"
+"@cindex Line buffered input\n"
+"Create an input port which returns characters obtained from the\n"
+"specified @var{reader} function, similar to\n"
+"@code{make-buffered-input-port} above, but where @var{reader} is\n"
+"expected to be a line-oriented."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/misc-modules.texi:1780
+msgid ""
+"@var{reader} is called (@var{reader} cont), and should return a string\n"
+"or an EOF object as above.  Each string is a line of input without a\n"
+"newline character, the port code inserts a newline after each string.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/misc-modules.texi:1784
+msgid ""
+"@deffn {Scheme Procedure} set-buffered-input-continuation?! port cont\n"
+"Set the input continuation flag for a given buffered input\n"
+"@var{port}."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/misc-modules.texi:1788
+msgid ""
+"An application uses this by calling with a @var{cont} flag of\n"
+"@code{#f} when beginning to read a new logical expression.  For\n"
+"example with the Scheme @code{read} function (@pxref{Scheme Read}),"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/misc-modules.texi:1791
+msgid ""
+"@example\n"
+"(define my-port (make-buffered-input-port my-reader))"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/misc-modules.texi:1797
+msgid ""
+"(set-buffered-input-continuation?! my-port #f)\n"
+"(let ((obj (read my-port)))\n"
+"  ...\n"
+"@end example\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/misc-modules.texi:1801
+msgid ""
+"@c Local Variables:\n"
+"@c TeX-master: \"guile.texi\"\n"
+"@c End:"
+msgstr ""

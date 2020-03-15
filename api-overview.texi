@@ -1,0 +1,108 @@
+@c -*-texinfo-*-
+@c This is part of the GNU Guile Reference Manual.
+@c Copyright (C)  1996, 1997, 2000, 2001, 2002, 2003, 2004
+@c   Free Software Foundation, Inc.
+@c See the file guile.texi for copying conditions.
+
+@node API Overview
+@section Обзор Guile API
+
+Интерфейс прикладного программирования(@dfn{API}) Guile обеспечивает
+доступную функциональность которую разработчик приложения может использовать
+в программировании на Си или Scheme.  Интерфейс состоит из элементов @dfn{elements}
+которые могут быть маросами, функциями или переменными в Си, а также процедур,
+переменных, синтаксиса или других типов объектов в Scheme.
+
+Многие элементы доступны как в Scheme так и для Си, в соответствующей форме.
+Например, процедура Scheme @code{assq}  также доступна как @code{scm_assq} 
+для языка Си.  Эти элементы документируются только один раз, описывая их 
+аспекты как в Scheme так и в Си.
+
+Имя элемента Scheme регулярно связано с именем в Си.  Кроме того,
+Си функция принимает свои параметры систематическим образом.
+
+Как правило, имя Си функции может быть получено по ее имени в Scheme,
+использованием некоторых простых текстовых преобразований:
+
+@itemize @bullet
+
+@item
+Replace @code{-} (hyphen) with @code{_} (underscore).
+
+@item
+Replace @code{?} (question mark) with @code{_p}.
+
+@item
+Replace @code{!} (exclamation point) with @code{_x}.
+
+@item
+Replace internal @code{->} with @code{_to_}.
+
+@item
+Replace @code{<=} (less than or equal) with @code{_leq}.
+
+@item
+Replace @code{>=} (greater than or equal) with @code{_geq}.
+
+@item
+Replace @code{<} (less than) with @code{_less}.
+
+@item
+Replace @code{>} (greater than) with @code{_gr}.
+
+@item
+Prefix with @code{scm_}.
+
+@end itemize
+
+@c Here is an Emacs Lisp command that prompts for a Scheme function name and
+@c inserts the corresponding C function name into the buffer.
+
+@c @example
+@c (defun insert-scheme-to-C (name &optional use-gh)
+@c   "Transforms Scheme NAME, a string, to its C counterpart, and inserts it.
+@c Prefix arg non-nil means use \"gh_\" prefix, otherwise use \"scm_\" prefix."
+@c   (interactive "sScheme name: \nP")
+@c   (let ((transforms '(("-"  . "_")
+@c                       ("?"  . "_p")
+@c                       ("!"  . "_x")
+@c                       ("->" . "_to_")
+@c                       ("<=" . "_leq")
+@c                       (">=" . "_geq")
+@c                       ("<"  . "_less")
+@c                       (">"  . "_gr")
+@c                       ("@@"  . "at"))))
+@c     (while transforms
+@c       (let ((trigger (concat "\\(.*\\)"
+@c                              (regexp-quote (caar transforms))
+@c                              "\\(.*\\)"))
+@c             (sub (cdar transforms))
+@c             (m nil))
+@c         (while (setq m (string-match trigger name))
+@c           (setq name (concat (match-string 1 name)
+@c                              sub
+@c                              (match-string 2 name)))))
+@c       (setq transforms (cdr transforms))))
+@c   (insert (if use-gh "gh_" "scm_") name))
+@c @end example
+
+Функция Си всегда принимает фиксированное количество аргументов типа
+@code{SCM}, даже если соответствующая функция Scheme принимает переменное
+количество.
+
+Для некоторых функций Scheme некоторые последние аргументы являются необязательными;
+соответствующая Си функция должна вызываться с указанием всех необязательных аргументов.
+Для получения эффекта вызова, при котором аргумент не был бы укзана, передавайте
+@code{SCM_UNDEFINED} как его значение.  Вы не можете использовать этот аргумент в середине;
+когда один аргумент является @code{SCM_UNDEFINED} все последующие аргументы должны быть
+@code{SCM_UNDEFINED}.
+
+Некоторые функции Scheme принимают произвольное количество @emph{rest}(остальных)
+аргументов; соответстувющая Си функция должна вызываться со списком всех этих аргуметов.
+Этот список всегда последний аргумент Си функции.
+
+Эти два вариантаа также могут быть объединены.
+
+Тип возвращаемого значения функции Си, которая соответствует функции
+Scheme всегда @code{SCM}.  Поэтому в описанниях ниже типы значений часто
+опускаются, как для возвращаемого значения так и для аргументов.

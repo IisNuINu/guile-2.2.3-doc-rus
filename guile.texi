@@ -1,0 +1,443 @@
+\input texinfo
+@include russian.itexi
+@c -*-texinfo-*-
+@c %**start of header
+@setfilename guile.info
+@documentencoding UTF-8
+@settitle Guile Reference Manual
+@set guile
+@set MANUAL-REVISION 1
+@c %**end of header
+@include version.texi
+@include effective-version.texi
+
+@copying
+This manual documents Guile version @value{VERSION}.
+
+Copyright (C) 1996, 1997, 2000, 2001, 2002, 2003, 2004, 2005, 2009,
+2010, 2011, 2012, 2013, 2014, 2015, 2016 Free Software Foundation.
+
+Permission is granted to copy, distribute and/or modify this document
+under the terms of the GNU Free Documentation License, Version 1.3 or
+any later version published by the Free Software Foundation; with no
+Invariant Sections, no Front-Cover Texts, and no Back-Cover Texts.  A
+copy of the license is included in the section entitled ``GNU Free
+Documentation License.''
+@end copying
+
+@c Notes
+@c
+@c We no longer use the category "primitive" to distinguish C-defined
+@c Scheme procedures from those defined in Scheme.  Instead, the
+@c reference manual now includes a C declaration as well as a Scheme
+@c declaration for each procedure that is available in both Scheme and
+@c C.
+@c
+@c When adding a new reference entry to the Guile manual, please
+@c document it with @deffn using one of the following categories:
+@c
+@c   {Scheme Procedure}
+@c   {Scheme Syntax}
+@c   {C Function}
+@c   {C Macro}
+@c
+@c If the entry is for a new primitive, it should have both a @deffn
+@c {Scheme Procedure} line and a @deffnx {C Function} line; see the
+@c manual source for plenty of existing examples of this.
+@c
+@c For {C Function} entries where the return type and all parameter
+@c types are SCM, we omit the SCMs.  This is easier to read and also
+@c gets round the problem that Texinfo doesn't allow a @deftypefnx
+@c inside a @deffn.
+@c
+@c For a list of Guile primitives that are not yet incorporated into the
+@c reference manual, see the file `new-docstrings.texi', which holds all
+@c the docstrings snarfed from the libguile C sources for primitives
+@c that are not in the reference manual.  If you have worked with some
+@c of these concepts, implemented them, or just happen to know what they
+@c do, please write up a little explanation -- it would be a big help.
+@c Alternatively, if you know of any reason why some of these should
+@c *not* go in the manual, please let the mailing list
+@c <guile-devel@gnu.org> know.
+
+@c Define indices that are used in the Guile Scheme part of the
+@c reference manual to group stuff according to whether it is R5RS or a
+@c Guile extension.
+@defcodeindex rn
+
+@c vnew - For (some) new items, indicates the Guile version in which
+@c item first appeared.  In future, this could be made to expand to
+@c something like a "New in Guile 45!" banner.
+@macro vnew{VERSION}
+@end macro
+
+@c  The following, @le{} and @ge{}, are standard tex directives, given
+@c  definitions for use in non-tex.
+@c
+@ifnottex
+@macro ge
+>=
+@end macro
+@macro le
+<=
+@end macro
+@end ifnottex
+
+@c  @cross{} is a \times symbol in tex, or an "x" in info.  In tex it works
+@c  inside or outside $ $.
+@tex
+\gdef\cross{\ifmmode\times\else$\times$\fi}
+@end tex
+@ifnottex
+@macro cross
+x
+@end macro
+@end ifnottex
+
+@c  @m{T,N} is $T$ in tex or @math{N} otherwise.  This is an easy way to give
+@c  different forms for math in tex and info.
+@iftex
+@macro m {T,N}
+@tex$\T\$@end tex
+@end macro
+@end iftex
+@ifnottex
+@macro m {T,N}
+@math{\N\}
+@end macro
+@end ifnottex
+
+@c  @nicode{S} is plain S in info, or @code{S} elsewhere.  This can be used
+@c  when the quotes that @code{} gives in info aren't wanted, but the
+@c  fontification in tex or html is wanted.  @alias is used rather
+@c  than @macro because backslashes don't work properly in an @macro.
+@ifinfo
+@alias nicode=asis
+@end ifinfo
+@ifnotinfo
+@alias nicode=code
+@end ifnotinfo
+
+@c @iftex
+@c @cropmarks
+@c @end iftex
+
+@dircategory The Algorithmic Language Scheme
+@direntry
+* Guile Reference: (guile).     The Guile reference manual.
+@end direntry
+
+@setchapternewpage odd
+
+@titlepage
+@sp 10
+@comment The title is printed in a large font.
+@title Справочное руководство Guile
+@subtitle Edition @value{EDITION}, revision @value{MANUAL-REVISION}, for use with Guile @value{VERSION}
+@c @subtitle $Id: guile.texi,v 1.49 2008-03-19 22:51:23 ossau Exp $
+
+@c See preface.texi for the list of authors
+@author The Guile Developers
+
+@c The following two commands start the copyright page.
+@page
+@vskip 0pt plus 1filll
+@vskip 0pt plus 1filll
+@insertcopying
+@end titlepage
+
+@c @smallbook
+@finalout
+@headings double
+
+@c Where to find Guile examples.
+@set example-dir doc/examples
+
+@ifnottex
+@node Top, Preface, (dir), (dir)
+@top The Guile Reference Manual
+
+@insertcopying
+@sp 1
+@end ifnottex
+
+@menu
+
+* Preface::
+* Introduction::
+
+* Hello Guile!::
+* Hello Scheme!::
+
+* Programming in Scheme::
+* Programming in C::
+
+* API Reference::
+
+* Guile Modules::
+
+* GOOPS::
+
+* Guile Implementation::
+
+Appendices
+
+* GNU Free Documentation License::  The license of this manual.
+
+Indices
+
+* Concept Index::
+* Procedure Index::
+* Variable Index::
+* Type Index::
+* R5RS Index::
+
+@end menu
+
+@contents
+
+@include preface.texi
+
+@include intro.texi
+
+@include tour.texi
+
+@include scheme-ideas.texi
+@include scheme-reading.texi
+
+@node Programming in Scheme
+@chapter Programming in Scheme
+
+Основной язык Guile это Scheme, и многого можно добиться простым использованием
+Guile для написания и запуска программ Scheme --- в отличие от необходимости
+погружаться в код Си. В этой части руководства мы объясняем, как использовать
+Guile в этом режиме и описываем инструменты которые предоставляет Guile, чтобы
+помочь вам писать сценарии, отлаживать и упаковывать ваши программы для 
+распространения.
+
+Подробную информацию о переменных, функциях и т.д., которые предоставляет
+программный интерфейс(API) Guile, см. @ref{API Reference}.
+
+@menu
+* Guile Scheme::                Guile's implementation of Scheme.
+* Invoking Guile::              Selecting optional features when starting Guile.
+* Guile Scripting::             How to write Guile scripts.
+* Using Guile Interactively::   Guile's REPL features.
+* Using Guile in Emacs::        Guile and Emacs.
+* Using Guile Tools::           A guild of scheming wizards.
+* Installing Site Packages::    Installing Scheme code.
+@end menu
+
+@include scheme-intro.texi
+@include guile-invoke.texi
+@include scheme-scripts.texi
+@include scheme-using.texi
+
+@node Programming in C
+@chapter Программирование на Си
+
+В этой части руководства объясняются общие концепции, которые необходимо
+понять, для написания программ взаимодействия с Guile из Си. Вы узнаете,
+как встроена скрытая типизация Scheme в статическую типизацию Си, как
+сборщик мусора Guile становиться доступным для Си кода и как продолжения
+(continuations) влияют на поток управления в программе на Си.
+
+Эти знания должны сделать простыми добавление новых функций в 
+Guile, которые могут быть вызваны из Scheme.  Добавление новых
+типов данных также возможно и выполняется путем определения 
+@dfn{внешних объектов(foreign objects)}.
+
+Раздел @ref{Programming Overview} этой части содержит общие размышления
+и рекомендации по программированию на Guile.  В нем рассматриваются
+различные способы проектирования программ, связанных с Guile, или
+то как встраивать Guile в существующие программы.
+
+Для педагогического, но подробного объяснения того, какое представление данных
+реализует Guile, смж @xref{Data Representation}. Вам не нужно знать подробности,
+данные там, чтобы использовать Guile из Си, но они полезны, когда вы хотите 
+изменить Guile или когда вам будет интересно узнать, как все это делается.
+
+Подробную справочную информацию о переменных, функциях и т.д. Которые
+составляют интефрейс прикладного программирования (API) Guile, см.
+@xref{API Reference}.
+
+@menu
+* Parallel Installations::      Finding the right Guile.
+* Linking Programs With Guile:: More precisely, with the libguile library.
+* Linking Guile with Libraries::  To extend Guile itself. 
+* General Libguile Concepts::   General concepts for using libguile.
+* Defining New Foreign Object Types::  Adding new types to Guile.
+* Function Snarfing::           A way to define new functions.
+* Programming Overview::        An overview of Guile programming.
+* Autoconf Support::            Putting m4 to good use.
+@end menu
+
+@include libguile-parallel.texi
+@include libguile-linking.texi
+@include libguile-extensions.texi
+@include libguile-concepts.texi
+@include libguile-foreign-objects.texi
+@include libguile-snarf.texi
+@include libguile-program.texi
+@include libguile-autoconf.texi
+
+@node API Reference
+@chapter API Reference
+
+Guile предоставляет интерфейс прикладного программирования (@dfn{API}) для
+разработчиков на двух языках: Scheme и Си.  В данной части руководства
+содержиться справочная документация для всех функций, доступных через
+интерфейсы обоих языков Scheme и Си.
+
+@menu
+* API Overview::                Overview of the Guile API.
+* Deprecation::                 Obsolete back-compatible APIs.
+* The SCM Type::                The fundamental data type for C code.
+* Initialization::              Initializing Guile.
+* Snarfing Macros::             Macros for snarfing initialization actions.
+* Data Types::                  Representing values in Guile.
+* Foreign Objects::             Defining new data types in C.
+* Smobs::                       Use foreign objects instead.
+* Procedures::                  Procedures.
+* Macros::                      Extending the syntax of Scheme.
+* Utility Functions::           General utility functions.
+* Binding Constructs::          Definitions and variable bindings.
+* Control Mechanisms::          Controlling the flow of program execution.
+* Input and Output::            Ports, reading and writing.
+* Regular Expressions::         Pattern matching and substitution.
+* LALR(1) Parsing::             Generating LALR(1) parsers.
+* PEG Parsing::                 Parsing Expression Grammars.
+* Read/Load/Eval/Compile::      Reading and evaluating Scheme code.
+* Memory Management::           Memory management and garbage collection.
+* Modules::                     Designing reusable code libraries.
+* Foreign Function Interface::  Interacting with C procedures and data.
+* Scheduling::                  Threads, mutexes, asyncs and dynamic roots.
+* Options and Config::          Configuration, features and runtime options.
+* Other Languages::             Emacs Lisp, ECMAScript, and more.
+* Internationalization::        Support for gettext, etc.
+* Debugging::                   Debugging infrastructure and Scheme interface.
+* Code Coverage::               Gathering code coverage data.
+@end menu
+
+@include api-overview.texi
+@include api-deprecated.texi
+@include api-scm.texi
+@include api-init.texi
+@include api-snarf.texi
+@include api-data.texi
+@include api-foreign-objects.texi
+@include api-smobs.texi
+@include api-procedures.texi
+@include api-macros.texi
+@include api-utility.texi
+@include api-binding.texi
+@include api-control.texi
+@include api-io.texi
+@include api-regex.texi
+@include api-lalr.texi
+@include api-peg.texi
+@include api-evaluation.texi
+@include api-memory.texi
+@include api-modules.texi
+@include api-foreign.texi
+@include api-scheduling.texi
+@c object orientation support here
+@include api-options.texi
+@include api-languages.texi
+@include api-i18n.texi
+@include api-debug.texi
+@include api-coverage.texi
+
+@node Guile Modules
+@chapter Guile Modules
+
+@menu
+* SLIB::                        Using the SLIB Scheme library.
+* POSIX::                       POSIX system calls and networking.
+* Web::                         HTTP, the web, and all that.
+* getopt-long::                 Command line handling.
+* SRFI Support::                Support for various SRFIs.
+* R6RS Support::                Modules defined by the R6RS.
+* Pattern Matching::            Generic pattern matching constructs.
+* Readline Support::            Module for using the readline library.
+* Pretty Printing::             Nicely formatting Scheme objects for output.
+* Formatted Output::            The @code{format} procedure.
+* File Tree Walk::              Traversing the file system.
+* Queues::                      First-in first-out queuing.
+* Streams::                     Sequences of values.
+* Buffered Input::              Ports made from a reader function.
+* Expect::			Controlling interactive programs with Guile.
+* sxml-match::                  Pattern matching of SXML.
+* The Scheme shell (scsh)::     Using scsh interfaces in Guile.
+* Curried Definitions::         Extended @code{define} syntax.
+* Statprof::                    An easy-to-use statistical profiler.
+* SXML::                        Parsing, transforming, and serializing XML.
+* Texinfo Processing::          Munging documents written in Texinfo.
+@end menu
+
+@include slib.texi
+@include posix.texi
+@include web.texi
+@include mod-getopt-long.texi
+@include srfi-modules.texi
+@include r6rs.texi
+@include match.texi
+@include repl-modules.texi
+@include misc-modules.texi
+@include expect.texi
+
+@c XXX: Would be nicer if it were close to the (sxml simple) documentation.
+@include sxml-match.texi
+
+@include scsh.texi
+@include curried.texi
+
+@include statprof.texi
+@include sxml.texi
+@include texinfo.texi
+
+@include goops.texi
+
+@node Guile Implementation
+@chapter Guile Implementation
+
+В какой-то момент, после того, как вы начали программировать на Scheme,
+на другом уровне Scheme знание реализации: того как Scheme реализована,
+оказывается необходимым что бы стать экспертом-хакером. Как отмечает
+Peter Norvig в своей ретроспективе PAIP@footnote{PAIP это абревиатура
+для @cite{Paradigms of Artificial Intelligence Programming}, старый,
+но полезный текст на Lisp. Ретроспектива Norvig суммирует уроки
+PAIP, и может быть найдена на @uref{http://norvig.com/Lisp-retro.html}.}, 
+``Эксперт-программист Lisp в конечном итоге развивает хорошую 
+`модель эффективности'.''
+
+Благодаря этому Норвиг отмечает, что со временем, хакер Lisp в конечном
+итоге развивает понимание чего стоит его код с точки зрения пространства
+и времени.
+
+Эта глава описывает Guile как реализацию Scheme: ее историю,
+ее представление и оценивает ее данные и ее компилятор.
+Эти знания помогут вам сделать шаг от того чтобы просто быть
+знакомым со Scheme к уровню настоящего хакера.
+
+@menu
+* History::                          A brief history of Guile.
+* Data Representation::              How Guile represents Scheme data.
+* A Virtual Machine for Guile::      How compiled procedures work.
+* Compiling to the Virtual Machine:: Not as hard as you might think.
+@end menu
+
+@include history.texi
+@include data-rep.texi
+@include vm.texi
+@include compiler.texi
+
+@node GNU Free Documentation License
+@appendix GNU Free Documentation License
+
+@include fdl.texi
+
+@include indices.texi
+@include scheme-indices.texi
+
+@bye

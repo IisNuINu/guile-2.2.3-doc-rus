@@ -1,0 +1,148 @@
+@c -*-texinfo-*-
+@c This is part of the GNU Guile Reference Manual.
+@c Copyright (C)  1996, 1997, 2000, 2001, 2002, 2003, 2004, 2009, 2011
+@c   Free Software Foundation, Inc.
+@c See the file guile.texi for copying conditions.
+
+@page
+@node Autoconf Support
+@section Поддержка Autoconf
+
+Autoconf, часть системы сборки GNU, облегчает пользователям сборку вашего пакета.
+В данном разделе описана поддержка Guile Autoconf.
+
+@menu
+* Autoconf Background::         Why use autoconf?
+* Autoconf Macros::             The GUILE_* macros.
+* Using Autoconf Macros::       How to use them, plus examples.
+@end menu
+
+@node Autoconf Background
+@subsection Autoconf Background
+
+Как объясняется в руководстве @cite{GNU Autoconf Manual}, любой пакет требует
+настроки во время сборки (@pxref{Top, ,Introduction,autoconf,The GNU
+Autoconf Manual}).  Если ваш пакет использует Guile (или использует пакет,
+который в свою очередь использует Guile), вам вероятно, нужно знать, какие 
+конкретно Guile функции доступны и подробности о них.
+
+Способ сделать это - написать функциональные тесты и организовать их выполнение
+в конфигурационном скрипте @file{configure}, как правило надо добавить тесты в
+@file{configure.ac}, и запустить @code{autoconf} для создания @file{configure}.
+Затем пользователи вашего пакета запускают @file{configure} обычным способом.
+
+Макросы это способ сделать тестирование общих функций простым выражением.
+Autoconf предоставляет широкий спектр макросов 
+(@pxref{Existing Tests,,,autoconf,The GNU Autoconf Manual}), 
+и установка Guile обеспечивает специфичные для Guile тесты в следующих
+областях: обнаружение программ, сообщение о флагах компиляции, и
+проверку модулей Scheme.
+
+@node Autoconf Macros
+@subsection Макросы Autoconf
+
+Как упоминалось ранее в этой главе, Guile поддерживает параллельную установку
+и использует @code{pkg-config} позволяющий пользователю выбирать, какая версия
+Guile ему интересна.  @code{pkg-config} имеет свой собственный набор макросов
+Autoconf, которые, вероятно, установлены на большинстве систем разработчиков.
+Наиболее полезным из этих макросов является
+@code{PKG_CHECK_MODULES}.
+
+@findex PKG_CHECK_MODULES
+
+@example
+PKG_CHECK_MODULES([GUILE], [guile-@value{EFFECTIVE-VERSION}])
+@end example
+
+Этот пример ищет Guile и устанавливает переменные @code{GUILE_CFLAGS} и
+@code{GUILE_LIBS} соответственно, или печатает ошибку и выходит, если
+Guile не был найден.
+
+Guile поставляется с дополнительными макросами Autoconf, предоставляющими
+дополнительную информацию, установленными в 
+@file{@var{prefix}/share/aclocal/guile.m4}.  Их имена начинаются с
+@code{GUILE_}.
+
+@c see Makefile.am
+@include autoconf-macros.texi
+
+@node Using Autoconf Macros
+@subsection Использоание Макросов Autoconf
+
+Использовать макросы autoconf очень просто: Добавьте "вызовы" макросов (на
+самом деле экземпляров) в  @file{configure.ac}, запустите @code{aclocal}, и наконец,
+запустите @code{autoconf}.  Если в вашей системе не установлен guile.m4, поместите
+нужные определения макросов (формы @code{AC_DEFUN}) в @file{acinclude.m4},
+и @code{aclocal} будет делать правильные вещи.
+
+Некоторые макросы могут использоваться внутри обычной командной оболочки: @code{if foo ;
+then GUILE_BAZ ; fi}, но это не гарантировано.  Вероятно хорошей идеей будет создание
+экземпляра макросов на верхнем уровне.
+
+Теперь мы включим два примера, один простой и один сложный.
+
+Первый пример для пакета, который использует libguile, и следовательно
+должен знать, как компилировать и связывать с ней.  Поэтому мы используем
+@code{PKG_CHECK_MODULES} чтобы установить переменные @code{GUILE_CFLAGS} и
+@code{GUILE_LIBS}, которые автоматически подставляются в Makefile.
+
+@example
+In configure.ac:
+
+  PKG_CHECK_MODULES([GUILE], [guile-@value{EFFECTIVE-VERSION}])
+
+In Makefile.in:
+
+  GUILE_CFLAGS  = @@GUILE_CFLAGS@@
+  GUILE_LIBS = @@GUILE_LIBS@@
+
+  myprog.o: myprog.c
+          $(CC) -o $@ $(GUILE_CFLAGS) $<
+  myprog: myprog.o
+          $(CC) -o $@ $< $(GUILE_LIBS)
+@end example
+
+Второй пример для пакета модулей Guile Scheme, который использует внешюю 
+программу и другие модули Guile Scheme (некоторые могут назвать это пактом
+"чистой scheme"). Поэтому мы используем макрос the @code{GUILE_SITE_DIR},
+обычный макрос @code{AC_PATH_PROG}, и макрос @code{GUILE_MODULE_AVAILABLE}.
+
+@example
+In configure.ac:
+
+  GUILE_SITE_DIR
+
+  probably_wont_work=""
+
+  # pgtype pgtable
+  GUILE_MODULE_AVAILABLE(have_guile_pg, (database postgres))
+  test $have_guile_pg = no &&
+      probably_wont_work="(my pgtype) (my pgtable) $probably_wont_work"
+
+  # gpgutils
+  AC_PATH_PROG(GNUPG,gpg)
+  test x"$GNUPG" = x &&
+      probably_wont_work="(my gpgutils) $probably_wont_work"
+
+  if test ! "$probably_wont_work" = "" ; then
+      p="         ***"
+      echo
+      echo "$p"
+      echo "$p NOTE:"
+      echo "$p The following modules probably won't work:"
+      echo "$p   $probably_wont_work"
+      echo "$p They can be installed anyway, and will work if their"
+      echo "$p dependencies are installed later.  Please see README."
+      echo "$p"
+      echo
+  fi
+
+In Makefile.in:
+
+  instdir = @@GUILE_SITE@@/my
+
+  install:
+        $(INSTALL) my/*.scm $(instdir)
+@end example
+
+@c autoconf.texi ends here

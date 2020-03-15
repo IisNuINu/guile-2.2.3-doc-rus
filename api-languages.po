@@ -1,0 +1,454 @@
+#. extracted from /home/bear/work/guile/doc/guile/en/api-languages.texi
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2018-05-07 12:36+0300\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Generator: Translate Toolkit 2.2.5\n"
+
+#: /home/bear/work/guile/doc/guile/en/api-languages.texi:6
+msgid ""
+"@c -*-texinfo-*-\n"
+"@c This is part of the GNU Guile Reference Manual.\n"
+"@c Copyright (C)  1996, 1997, 2000, 2001, 2002, 2003, 2004, 2010\n"
+"@c   Free Software Foundation, Inc.\n"
+"@c See the file guile.texi for copying conditions."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-languages.texi:9
+msgid ""
+"@node Other Languages\n"
+"@section Support for Other Languages"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-languages.texi:13
+msgid ""
+"In addition to Scheme, a user may write a Guile program in an increasing\n"
+"number of other languages. Currently supported languages include Emacs\n"
+"Lisp and ECMAScript."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-languages.texi:19
+msgid ""
+"Guile is still fundamentally a Scheme, but it tries to support a wide\n"
+"variety of language building-blocks, so that other languages can be\n"
+"implemented on top of Guile. This allows users to write or extend\n"
+"applications in languages other than Scheme, too. This section describes\n"
+"the languages that have been implemented."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-languages.texi:22
+msgid ""
+"(For details on how to implement a language, @xref{Compiling to the\n"
+"Virtual Machine}.)"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-languages.texi:28
+msgid ""
+"@menu\n"
+"* Using Other Languages::       How to use other languages.\n"
+"* Emacs Lisp::                  The dialect of Lisp used in Emacs.\n"
+"* ECMAScript::                  As seen on television.\n"
+"@end menu"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-languages.texi:32
+msgid ""
+"@node Using Other Languages\n"
+"@subsection Using Other Languages"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-languages.texi:36
+msgid ""
+"There are currently only two ways to access other languages from within\n"
+"Guile: at the REPL, and programmatically, via @code{compile},\n"
+"@code{read-and-compile}, and @code{compile-file}."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-languages.texi:41
+msgid ""
+"The REPL is Guile's command prompt (@pxref{Using Guile Interactively}).\n"
+"The REPL has a concept of the ``current language'', which defaults to\n"
+"Scheme. The user may change that language, via the meta-command\n"
+"@code{,language}."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-languages.texi:43
+msgid "For example, the following meta-command enables Emacs Lisp input:"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-languages.texi:50
+msgid ""
+"@example\n"
+"scheme@@(guile-user)> ,language elisp\n"
+"Happy hacking with Emacs Lisp!  To switch back, type `,L scheme'.\n"
+"elisp@@(guile-user)> (eq 1 2)\n"
+"$1 = #nil\n"
+"@end example"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-languages.texi:54
+msgid ""
+"Each language has its short name: for example, @code{elisp}, for Elisp.\n"
+"The same short name may be used to compile source code programmatically,\n"
+"via @code{compile}:"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-languages.texi:61
+msgid ""
+"@example\n"
+"elisp@@(guile-user)> ,L scheme\n"
+"Happy hacking with Guile Scheme!  To switch back, type `,L elisp'.\n"
+"scheme@@(guile-user)> (compile '(eq 1 2) #:from 'elisp)\n"
+"$2 = #nil\n"
+"@end example"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-languages.texi:65
+msgid ""
+"Granted, as the input to @code{compile} is a datum, this works best for\n"
+"Lispy languages, which have a straightforward datum representation.\n"
+"Other languages that need more parsing are better dealt with as strings."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-languages.texi:71
+msgid ""
+"The easiest way to deal with syntax-heavy language is with files, via\n"
+"@code{compile-file} and friends. However it is possible to invoke a\n"
+"language's reader on a port, and then compile the resulting expression\n"
+"(which is a datum at that point). For more information,\n"
+"@xref{Compilation}."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-languages.texi:74
+msgid ""
+"For more details on introspecting aspects of different languages,\n"
+"@xref{Compiler Tower}."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-languages.texi:77
+msgid ""
+"@node Emacs Lisp\n"
+"@subsection Emacs Lisp"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-languages.texi:81
+msgid ""
+"Emacs Lisp (Elisp) is a dynamically-scoped Lisp dialect used in the\n"
+"Emacs editor. @xref{top,,Overview,elisp,Emacs Lisp}, for more\n"
+"information on Emacs Lisp."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-languages.texi:86
+msgid ""
+"We hope that eventually Guile's implementation of Elisp will be good\n"
+"enough to replace Emacs' own implementation of Elisp. For that reason,\n"
+"we have thought long and hard about how to support the various features\n"
+"of Elisp in a performant and compatible manner."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-languages.texi:90
+msgid ""
+"Readers familiar with Emacs Lisp might be curious about how exactly\n"
+"these various Elisp features are supported in Guile. The rest of this\n"
+"section focuses on addressing these concerns of the Elisp elect."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-languages.texi:96
+msgid ""
+"@menu\n"
+"* Nil::                         A third boolean.\n"
+"* Dynamic Binding::             Threadsafe bindings with fluids.\n"
+"* Other Elisp Features::        Miscellany.\n"
+"@end menu"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-languages.texi:100
+msgid ""
+"@node Nil\n"
+"@subsubsection Nil"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-languages.texi:104
+msgid ""
+"@code{nil} in ELisp is an amalgam of Scheme's @code{#f} and @code{'()}.\n"
+"It is false, and it is the end-of-list; thus it is a boolean, and a list\n"
+"as well."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-languages.texi:110
+msgid ""
+"Guile has chosen to support @code{nil} as a separate value, distinct\n"
+"from @code{#f} and @code{'()}. This allows existing Scheme and Elisp\n"
+"code to maintain their current semantics. @code{nil}, which in Elisp\n"
+"would just be written and read as @code{nil}, in Scheme has the external\n"
+"representation @code{#nil}."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-languages.texi:114
+msgid ""
+"This decision to have @code{nil} as a low-level distinct value\n"
+"facilitates interoperability between the two languages. Guile has chosen\n"
+"to have Scheme deal with @code{nil} as follows:"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-languages.texi:120
+msgid ""
+"@example\n"
+"(boolean? #nil) @result{} #t\n"
+"(not #nil) @result{} #t\n"
+"(null? #nil) @result{} #t\n"
+"@end example"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-languages.texi:122
+msgid "And in C, one has:"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-languages.texi:128
+msgid ""
+"@example\n"
+"scm_is_bool (SCM_ELISP_NIL) @result{} 1\n"
+"scm_is_false (SCM_ELISP_NIL) @result{} 1\n"
+"scm_is_null (SCM_ELISP_NIL) @result{} 1\n"
+"@end example"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-languages.texi:134
+msgid ""
+"In this way, a version of @code{fold} written in Scheme can correctly\n"
+"fold a function written in Elisp (or in fact any other language) over a\n"
+"nil-terminated list, as Elisp makes. The converse holds as well; a\n"
+"version of @code{fold} written in Elisp can fold over a\n"
+"@code{'()}-terminated list, as made by Scheme."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-languages.texi:140
+msgid ""
+"On a low level, the bit representations for @code{#f}, @code{#t},\n"
+"@code{nil}, and @code{'()} are made in such a way that they differ by\n"
+"only one bit, and so a test for, for example, @code{#f}-or-@code{nil}\n"
+"may be made very efficiently. See @code{libguile/boolean.h}, for more\n"
+"information."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-languages.texi:142
+msgid "@subsubheading Equality"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-languages.texi:146
+msgid ""
+"Since Scheme's @code{equal?} must be transitive, and @code{'()}\n"
+"is not @code{equal?} to @code{#f}, to Scheme @code{nil} is not\n"
+"@code{equal?} to @code{#f} or @code{'()}."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-languages.texi:158
+msgid ""
+"@example\n"
+"(eq? #f '()) @result{} #f\n"
+"(eq? #nil '()) @result{} #f\n"
+"(eq? #nil #f) @result{} #f\n"
+"(eqv? #f '()) @result{} #f\n"
+"(eqv? #nil '()) @result{} #f\n"
+"(eqv? #nil #f) @result{} #f\n"
+"(equal? #f '()) @result{} #f\n"
+"(equal? #nil '()) @result{} #f\n"
+"(equal? #nil #f) @result{} #f\n"
+"@end example"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-languages.texi:161
+msgid ""
+"However, in Elisp, @code{'()}, @code{#f}, and @code{nil} are all\n"
+"@code{equal} (though not @code{eq})."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-languages.texi:172
+msgid ""
+"@example\n"
+"(defvar f (make-scheme-false))\n"
+"(defvar eol (make-scheme-null))\n"
+"(eq f eol) @result{} nil\n"
+"(eq nil eol) @result{} nil\n"
+"(eq nil f) @result{} nil\n"
+"(equal f eol) @result{} t\n"
+"(equal nil eol) @result{} t\n"
+"(equal nil f) @result{} t\n"
+"@end example"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-languages.texi:177
+msgid ""
+"These choices facilitate interoperability between Elisp and Scheme code,\n"
+"but they are not perfect. Some code that is correct standard Scheme is\n"
+"not correct in the presence of a second false and null value. For\n"
+"example:"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-languages.texi:184
+msgid ""
+"@example\n"
+"(define (truthiness x)\n"
+"  (if (eq? x #f)\n"
+"      #f\n"
+"      #t))\n"
+"@end example"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-languages.texi:188
+msgid ""
+"This code seems to be meant to test a value for truth, but now that\n"
+"there are two false values, @code{#f} and @code{nil}, it is no longer\n"
+"correct."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-languages.texi:190
+msgid "Similarly, there is the loop:"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-languages.texi:198
+msgid ""
+"@example\n"
+"(define (my-length l)\n"
+"  (let lp ((l l) (len 0))\n"
+"    (if (eq? l '())\n"
+"        len\n"
+"        (lp (cdr l) (1+ len)))))\n"
+"@end example"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-languages.texi:201
+msgid ""
+"Here, @code{my-length} will raise an error if @var{l} is a\n"
+"@code{nil}-terminated list."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-languages.texi:208
+msgid ""
+"Both of these examples are correct standard Scheme, but, depending on\n"
+"what they really want to do, they are not correct Guile Scheme.\n"
+"Correctly written, they would test the @emph{properties} of falsehood or\n"
+"nullity, not the individual members of that set. That is to say, they\n"
+"should use @code{not} or @code{null?} to test for falsehood or nullity,\n"
+"not @code{eq?} or @code{memv} or the like."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-languages.texi:211
+msgid ""
+"Fortunately, using @code{not} and @code{null?} is in good style, so all\n"
+"well-written standard Scheme programs are correct, in Guile Scheme."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-languages.texi:213
+msgid "Here are correct versions of the above examples:"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-languages.texi:221
+msgid ""
+"@example\n"
+"(define (truthiness* x)\n"
+"  (if (not x)\n"
+"      #f\n"
+"      #t))\n"
+";; or: (define (t* x) (not (not x)))\n"
+";; or: (define (t** x) x)"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-languages.texi:228
+msgid ""
+"(define (my-length* l)\n"
+"  (let lp ((l l) (len 0))\n"
+"    (if (null? l)\n"
+"        len\n"
+"        (lp (cdr l) (1+ len)))))\n"
+"@end example"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-languages.texi:230
+msgid "This problem has a mirror-image case in Elisp:"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-languages.texi:237
+msgid ""
+"@example\n"
+"(defun my-falsep (x)\n"
+"  (if (eq x nil)\n"
+"      t\n"
+"      nil))\n"
+"@end example"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-languages.texi:240
+msgid ""
+"Guile can warn when compiling code that has equality comparisons with\n"
+"@code{#f}, @code{'()}, or @code{nil}. @xref{Compilation}, for details."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-languages.texi:243
+msgid ""
+"@node Dynamic Binding\n"
+"@subsubsection Dynamic Binding"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-languages.texi:248
+msgid ""
+"In contrast to Scheme, which uses ``lexical scoping'', Emacs Lisp scopes\n"
+"its variables dynamically. Guile supports dynamic scoping with its\n"
+"``fluids'' facility. @xref{Fluids and Dynamic States}, for more\n"
+"information."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-languages.texi:251
+msgid ""
+"@node Other Elisp Features\n"
+"@subsubsection Other Elisp Features"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-languages.texi:256
+msgid ""
+"Buffer-local and mode-local variables should be mentioned here, along\n"
+"with buckybits on characters, Emacs primitive data types, the\n"
+"Lisp-2-ness of Elisp, and other things. Contributions to the\n"
+"documentation are most welcome!"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-languages.texi:259
+msgid ""
+"@node ECMAScript\n"
+"@subsection ECMAScript"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-languages.texi:269
+msgid ""
+"@url{http://www.ecma-international.org/publications/files/ECMA-"
+"ST/Ecma-262.pdf,ECMAScript}\n"
+"was not the first non-Schemey language implemented by Guile, but it was\n"
+"the first implemented for Guile's bytecode compiler. The goal was to\n"
+"support ECMAScript version 3.1, a relatively small language, but the\n"
+"implementor was completely irresponsible and got distracted by other\n"
+"things before finishing the standard library, and even some bits of the\n"
+"syntax. So, ECMAScript does deserve a mention in the manual, but it\n"
+"doesn't deserve an endorsement until its implementation is completed,\n"
+"perhaps by some more responsible hacker."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-languages.texi:272
+msgid ""
+"In the meantime, the charitable user might investigate such invocations\n"
+"as @code{,L ecmascript} and @code{cat test-suite/tests/ecmascript.test}."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-languages.texi:276
+msgid ""
+"@c Local Variables:\n"
+"@c TeX-master: \"guile.texi\"\n"
+"@c End:"
+msgstr ""

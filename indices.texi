@@ -1,0 +1,52 @@
+@c -*-texinfo-*-
+@c This is part of the GNU Guile Reference Manual.
+@c Copyright (C)  1996, 1997, 2000, 2001, 2002, 2003, 2004
+@c   Free Software Foundation, Inc.
+@c See the file guile.texi for copying conditions.
+
+@page
+@node Concept Index
+@unnumbered Concept Index
+
+Этот индекс содержит понятия, ключевые слова и не-Scheme имена для
+некоторых функций, чтобы упростить поиск нужных разделов
+
+@printindex cp
+
+@page
+@node Procedure Index
+@unnumbered Procedure Index
+
+@c FIXME::martin: Review me!
+
+Этот алфавитный список всех процедур и макросов в Guile. Он также 
+включает макросы Autoconf Guile.
+
+При поиске конкретной процедуры, пожалуйста смотрие ее Scheme имя, 
+а также ее Си имя. Имя Си может быть построено из имени Scheme простым
+преобразованием описанным в разделе @xref{API Overview}.
+
+@printindex fn
+
+@page
+@node Variable Index
+@unnumbered Variable Index
+
+@c FIXME::martin: Review me!
+
+Этот алфавитный список всех важных переменных и констатн в Guile.
+
+При поиске определенной перменной или константы, пожалуйста посмотрите
+ее имя Scheme, а также ее имя в Си. Имя Си может быть получено по
+имени Scheme простым преобразованием, описанным в разделе @xref{API Overview}.
+
+@printindex vr
+
+@page
+@node Type Index
+@unnumbered Type Index
+
+Это алфавитный укзатель всех важных типов данных, определенных в 
+Справочном Руководстве Guile.
+
+@printindex tp

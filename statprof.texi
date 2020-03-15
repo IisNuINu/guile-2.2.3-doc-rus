@@ -1,0 +1,254 @@
+@c -*-texinfo-*-
+@c This is part of the GNU Guile Reference Manual.
+@c Copyright (C) 2013, 2015, 2017 Free Software Foundation, Inc.
+@c See the file guile.texi for copying conditions.
+
+@node Statprof
+@section Statprof
+
+Statprof is a statistical profiler for Guile.
+
+A simple use of statprof would look like this:
+
+@example
+(use-modules (statprof))
+(statprof (lambda ()
+            (map 1+ (iota 1000000))
+            #f))
+@end example
+
+This would run the thunk with statistical profiling, finally displaying
+a flat table of statistics which could look something like this:
+
+@example
+%     cumulative   self
+time   seconds     seconds  procedure
+ 57.14  39769.73      0.07  ice-9/boot-9.scm:249:5:map1
+ 28.57      0.04      0.04  ice-9/boot-9.scm:1165:0:iota
+ 14.29      0.02      0.02  1+
+  0.00      0.12      0.00  <current input>:2:10
+---
+Sample count: 7
+Total time: 0.123490713 seconds (0.201983993 seconds in GC)
+@end example
+
+All of the numerical data with the exception of the calls column is
+statistically approximate. In the following column descriptions, and in
+all of statprof, ``time'' refers to execution time (both user and
+system), not wall clock time.
+
+The @code{% time} column indicates the percentage of the run-time time
+spent inside the procedure itself (not counting children).  It is
+calculated as @code{self seconds}, measuring the amount of time spent in
+the procedure, divided by the total run-time.
+
+@code{cumulative seconds} also counts time spent in children of a
+function.  For recursive functions, this can exceed the total time, as
+in our example above, because each activation on the stack adds to the
+cumulative time.
+
+Finally, the GC time measures the time spent in the garbage collector.
+On systems with multiple cores, this time can be larger than the run
+time, because it counts time spent in all threads, and will run the
+``marking'' phase of GC in parallel.  If GC time is a significant
+fraction of the run time, that means that most time in your program is
+spent allocating objects and cleaning up after those allocations.  To
+speed up your program, one good place to start would be to look at how
+to reduce the allocation rate.
+
+Statprof's main mode of operation is as a statistical profiler.  However
+statprof can also run in a ``precise'' mode as well.  Pass the
+@code{#:count-calls? #t} keyword argument to @code{statprof} to record
+all calls:
+
+@example
+(use-modules (statprof))
+(statprof (lambda ()
+            (map 1+ (iota 1000000))
+            #f)
+          #:count-calls? #t)
+@end example
+
+The result has an additional @code{calls} column:
+
+@example
+%     cumulative   self             
+time   seconds    seconds   calls   procedure
+ 82.26      0.73      0.73 1000000  1+
+ 11.29 420925.80      0.10 1000001  ice-9/boot-9.scm:249:5:map1
+  4.84      0.06      0.04       1  ice-9/boot-9.scm:1165:0:iota
+[...]
+---
+Sample count: 62
+Total time: 0.893098065 seconds (1.222796536 seconds in GC)
+@end example
+
+As you can see, the profile is perturbed: @code{1+} ends up on top,
+whereas it was not marked as hot in the earlier profile.  This is
+because the overhead of call-counting unfairly penalizes calls.  Still,
+this precise mode can be useful at times to do algorithmic optimizations
+based on the precise call counts.
+
+@heading Implementation notes
+
+The profiler works by setting the unix profiling signal
+@code{ITIMER_PROF} to go off after the interval you define in the call
+to @code{statprof-reset}.  When the signal fires, a sampling routine
+runs which crawls up the stack, recording all instruction pointers into
+a buffer.  After the sample is complete, the profiler resets profiling
+timer to fire again after the appropriate interval.
+
+Later, when profiling stops, that log buffer is analyzed to produce the
+``self seconds'' and ``cumulative seconds'' statistics.  A procedure at
+the top of the stack counts toward ``self'' samples, and everything on
+the stack counts towards ``cumulative'' samples.
+
+While the profiler is running it measures how much CPU time (system and
+user -- which is also what @code{ITIMER_PROF} tracks) has elapsed while
+code has been executing within the profiler.  Only run time counts
+towards the profile, not wall-clock time.  For example, sleeping and
+waiting for input or output do not cause the timer clock to advance.
+
+@heading Usage
+
+@deffn {Scheme Procedure} statprof thunk @
+       [#:loop loop=1] [#:hz hz=100] @
+       [#:port port=(current-output-port)] @
+       [#:count-calls? count-calls?=#f] @
+       [#:display-style display-style='flat]
+Profile the execution of @var{thunk}, and return its return values.
+
+The stack will be sampled @var{hz} times per second, and the thunk
+itself will be called @var{loop} times.
+
+If @var{count-calls?} is true, all procedure calls will be recorded.
+This operation is somewhat expensive.
+
+After the @var{thunk} has been profiled, print out a profile to
+@var{port}.  If @var{display-style} is @code{flat}, the results will be
+printed as a flat profile.  Otherwise if @var{display-style} is
+@code{tree}, print the results as a tree profile.
+
+Note that @code{statprof} requires a working profiling timer. Some
+platforms do not support profiling timers.  @code{(provided?
+'ITIMER_PROF)} can be used to check for support of profiling timers.
+@end deffn
+
+Profiling can also be enabled and disabled manually.
+
+@deffn {Scheme Procedure} statprof-active?
+Returns @code{#t} if @code{statprof-start} has been called more times
+than @code{statprof-stop}, @code{#f} otherwise.
+@end deffn
+
+@deffn {Scheme Procedure} statprof-start
+@deffnx {Scheme Procedure} statprof-stop
+Start or stop the profiler.
+@end deffn
+
+@deffn {Scheme Procedure} statprof-reset sample-seconds sample-microseconds count-calls?
+Reset the profiling sample interval to @var{sample-seconds} and
+@var{sample-microseconds}.  If @var{count-calls?} is true, arrange to
+instrument procedure calls as well as collecting statistical profiling
+data.
+@end deffn
+
+If you use the manual @code{statprof-start}/@code{statprof-stop}
+interface, an implicit statprof state will persist starting from the
+last call to @code{statprof-reset}, or the first call to
+@code{statprof-start}.  There are a number of accessors to fetch
+statistics from this implicit state.
+
+@deffn {Scheme Procedure} statprof-accumulated-time 
+Returns the time accumulated during the last statprof run.
+@end deffn
+
+@deffn {Scheme Procedure} statprof-sample-count 
+Returns the number of samples taken during the last statprof run.
+@end deffn
+
+@deffn {Scheme Procedure} statprof-fold-call-data proc init
+Fold @var{proc} over the call-data accumulated by statprof.  This
+procedure cannot be called while statprof is active.
+
+@var{proc} will be called with arguments, @var{call-data} and
+@var{prior-result}.
+@end deffn
+
+@deffn {Scheme Procedure} statprof-proc-call-data proc
+Returns the call-data associated with @var{proc}, or @code{#f} if none
+is available.
+@end deffn
+
+@deffn {Scheme Procedure} statprof-call-data-name cd
+@deffnx {Scheme Procedure} statprof-call-data-calls cd
+@deffnx {Scheme Procedure} statprof-call-data-cum-samples cd
+@deffnx {Scheme Procedure} statprof-call-data-self-samples cd
+Accessors for the fields in a statprof call-data object.
+@end deffn
+
+@deffn {Scheme Procedure} statprof-call-data->stats call-data
+Returns an object of type @code{statprof-stats}.
+@end deffn
+
+@deffn {Scheme Procedure} statprof-stats-proc-name stats
+@deffnx {Scheme Procedure} statprof-stats-%-time-in-proc stats
+@deffnx {Scheme Procedure} statprof-stats-cum-secs-in-proc stats
+@deffnx {Scheme Procedure} statprof-stats-self-secs-in-proc stats
+@deffnx {Scheme Procedure} statprof-stats-calls stats
+@deffnx {Scheme Procedure} statprof-stats-self-secs-per-call stats
+@deffnx {Scheme Procedure} statprof-stats-cum-secs-per-call stats
+Accessors for the fields in a @code{statprof-stats} object.
+@end deffn
+
+@deffn {Scheme Procedure} statprof-display @
+       [port=(current-output-port)] [#:style style=flat]
+Displays a summary of the statistics collected.  Possible values for
+@var{style} include:
+
+@table @code
+@item flat
+Display a traditional gprof-style flat profile.
+@item anomalies
+Find statistical anomalies in the data.
+@item tree
+Display a tree profile.
+@end table
+@end deffn
+
+@deffn {Scheme Procedure} statprof-fetch-stacks 
+Returns a list of stacks, as they were captured since the last call to
+@code{statprof-reset}.
+@end deffn
+
+@deffn {Scheme Procedure} statprof-fetch-call-tree [#:precise precise?=#f]
+@verbatim 
+Return a call tree for the previous statprof run.
+
+The return value is a list of nodes.  A node is a list of the form:
+@code
+ node ::= (@var{proc} @var{count} . @var{nodes})
+@end code
+
+The @var{proc} is a printable representation of a procedure, as a
+string.  If @var{precise?} is false, which is the default, then a node
+corresponds to a procedure invocation.  If it is true, then a node
+corresponds to a return point in a procedure.  Passing @code{#:precise?
+#t} allows a user to distinguish different source lines in a procedure,
+but usually it is too much detail, so it is off by default.
+@end verbatim
+
+@end deffn
+
+@deffn {Scheme Procedure} gcprof thunk [#:loop]
+Like the @code{statprof} procedure, but instead of profiling CPU time,
+we profile garbage collection.
+
+The stack will be sampled soon after every garbage collection during the
+evaluation of @var{thunk}, yielding an approximate idea of what is
+causing allocation in your program.
+
+Since GC does not occur very frequently, you may need to use the
+@var{loop} parameter, to cause @var{thunk} to be called @var{loop}
+times.
+@end deffn

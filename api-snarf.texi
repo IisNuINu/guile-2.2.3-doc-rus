@@ -1,0 +1,141 @@
+@c -*-texinfo-*-
+@c This is part of the GNU Guile Reference Manual.
+@c Copyright (C)  1996, 1997, 2000, 2001, 2002, 2003, 2004
+@c   Free Software Foundation, Inc.
+@c See the file guile.texi for copying conditions.
+
+@node Snarfing Macros
+@section Snarfing Macros
+@cindex guile-snarf recognized macros
+@cindex guile-snarf deprecated macros
+
+Следующие макросы выполняют две разные функции: при обычной компиляции,
+они расширяются одним способом; при обработке во время snarfing'а, они приводят
+к тому что программа @code{guile-snarf} подхватывает(присоединяет) немного 
+инициализационного кода, @xref{Function Snarfing}.
+
+В описаниях ниже используется термин `обычно' для обозначения случая, когда
+код компилируется нормально, и `во время snarfing'а', когда код обрабатывается
+программой @code{guile-snarf}.
+
+@deffn {C Macro} SCM_SNARF_INIT (code)
+
+Обычно, @code{SCM_SNARF_INIT} расширяется в ноль(т.е ничего не дает на выходе); во время snarfing, он
+заставляет включить @var{code} в файл действий по инициализации,
+после которого ставиться точка с запятой.
+
+Это фундаментальный макрос для упрощения(snarfing) действий инициализации.
+Более специализированный макросы ниже используют его внутри себя.
+@end deffn
+
+@deffn {C Macro} SCM_DEFINE (c_name, scheme_name, req, opt, var, arglist, docstring)
+
+Обычно, макрос расширяется в
+
+@smallexample
+static const char s_@var{c_name}[] = @var{scheme_name};
+SCM
+@var{c_name} @var{arglist}
+@end smallexample
+
+во время snarfing'а, он вызывает
+
+@smallexample
+scm_c_define_gsubr (s_@var{c_name}, @var{req}, @var{opt}, @var{var},
+                    @var{c_name});
+@end smallexample
+
+добавление к действиям инициализации.  Таким образом, вы можете использовать его
+для объявления Си функции с именем @var{c_name}, которое будет доступно
+Scheme с именем @var{scheme_name}.
+
+Обратите внимание, что аргумент @var{arglist} должен иметь круглые скобки вокруг себя.
+@end deffn
+
+@deffn {C Macro} SCM_SYMBOL (c_name, scheme_name)
+@deffnx {C Macro} SCM_GLOBAL_SYMBOL (c_name, scheme_name)
+Обычно, эти макросы расширяются в
+
+@smallexample
+static SCM @var{c_name}
+@end smallexample
+
+или
+
+@smallexample
+SCM @var{c_name}
+@end smallexample
+
+соответственно. Во время snarfing'а, они оба расширяются в 
+код инициализации
+
+@smallexample
+@var{c_name} = scm_permanent_object (scm_from_locale_symbol (@var{scheme_name}));
+@end smallexample
+
+Таким образом, вы можете использовать их для объявления статической или глобальной
+переменной типа @code{SCM}, которая будет инициализироваться символом с именем
+@var{scheme_name}.
+@end deffn
+
+@deffn {C Macro} SCM_KEYWORD (c_name, scheme_name)
+@deffnx {C Macro} SCM_GLOBAL_KEYWORD (c_name, scheme_name)
+Обычно, эти макросы расширяются в
+
+@smallexample
+static SCM @var{c_name}
+@end smallexample
+
+или
+
+@smallexample
+SCM @var{c_name}
+@end smallexample
+
+соответственно.  Во время snarfing'а, они оба расширяются в код
+инициализации
+
+@smallexample
+@var{c_name} = scm_permanent_object (scm_c_make_keyword (@var{scheme_name}));
+@end smallexample
+
+Таким образом, вы можете использовать их для объявления статической или
+глобальной переменной @code{SCM} типа, которая будет инициализироваться
+ключевым словом с именем @var{scheme_name}.
+@end deffn
+
+@deffn {C Macro} SCM_VARIABLE (c_name, scheme_name)
+@deffnx {C Macro} SCM_GLOBAL_VARIABLE (c_name, scheme_name)
+Эти макросы эквивалентны макросам @code{SCM_VARIABLE_INIT} и
+@code{SCM_GLOBAL_VARIABLE_INIT}, соответственно, со значачением @var{value} равной
+@code{SCM_BOOL_F}.
+@end deffn
+
+@deffn {C Macro} SCM_VARIABLE_INIT (c_name, scheme_name, value)
+@deffnx {C Macro} SCM_GLOBAL_VARIABLE_INIT (c_name, scheme_name, value)
+
+Обычно эти макросы расширяются в
+
+@smallexample
+static SCM @var{c_name}
+@end smallexample
+
+или
+
+@smallexample
+SCM @var{c_name}
+@end smallexample
+
+соответственно.  А во время snarfing, они оба расширяются в код
+инициализации
+
+@smallexample
+@var{c_name} = scm_permanent_object (scm_c_define (@var{scheme_name}, @var{value}));
+@end smallexample
+
+Таким образом, вы можете использовать их для объявления статической или
+глобальной Си переменной типа @code{SCM}, которая будет инициализирована
+для объекта представляющего переменную Scheme с именем @var{scheme_name}
+в текущем модуле.  Переменная будет определена когда она еще не существует.
+Она всегда установлена в значение @var{value}.
+@end deffn

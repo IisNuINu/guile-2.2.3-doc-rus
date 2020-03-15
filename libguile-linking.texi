@@ -1,0 +1,199 @@
+@c -*-texinfo-*-
+@c This is part of the GNU Guile Reference Manual.
+@c Copyright (C)  1996, 1997, 2000, 2001, 2002, 2003, 2004, 2005, 2010, 2011
+@c   Free Software Foundation, Inc.
+@c See the file guile.texi for copying conditions.
+
+@node Linking Programs With Guile
+@section Связывание программ с Guile
+
+В этом разделе описывается механизм связывания вашей программы с Guile
+на типичной POSIX системе.
+
+Заголовочный файл @code{<libguile.h>} содедржит объявления для всех функций
+и констант Guile.  Вы должне его подключить @code{#include} в начале любого
+исходного файла Си, который использует описанные в этом руководстве идентификаторы.
+После того как вы скомпилировали свои исходные файлы, вам нужно связать их с
+библиотекой объектного кода Guile, @code{libguile}.
+
+Как отмечалось в предыдущем разделе, @code{<libguile.h>} не находиться
+в пути поиска по умолчанию для заголовков. Следующие командные строки
+дают соответствующие флаги компиляции Си и флаги для связывания необходимые
+для создания программ с использованием Guile @value{EFFECTIVE-VERSION}:
+
+@example
+pkg-config guile-@value{EFFECTIVE-VERSION} --cflags
+pkg-config guile-@value{EFFECTIVE-VERSION} --libs
+@end example
+
+@menu
+* Guile Initialization Functions::  What to call first.
+* A Sample Guile Main Program::  Sources and makefiles.
+@end menu
+
+@node Guile Initialization Functions
+@subsection Функции Инициализации Guile
+
+Чтобы инициализировать Guile, вы можете использовать одну из нескольких
+функций.  Первая, @code{scm_with_guile}, это самый переносимый способ
+инициализации Guile, а затем функция, которую вы можете указать.
+Много поточное приложение может вызвать @code{scm_with_guile}
+одновременно и она может быть вызывана более одного раза в данном
+потоке.
+Глобальное состояние Guile будет выживать от одного вызова
+@code{scm_with_guile} до следующего.  Ваша функция вызывается 
+изнутри @code{scm_with_guile} поскольку сборщик мусора в Guile
+должен знать где здесь находиться стек каждой нити.
+
+Вторая функция, @code{scm_init_guile}, инициализирует Guile для текущего
+потока.  Когда она возвращается, вы можете  использовать Guile API в текущем
+потоке.  Эта функция использует некую непереносимую магию, чтобы узнать о
+границе стека и следовательно, может быть не доступна на всех платформах.
+
+Одним из распространных способов использования Guile является написание
+набора функций Си, которые выполняют несколько полезных задач, сделать их
+вызываемыми из Scheme, а затем связать программу с Guile.  Это делает
+интерпретатор Scheme как и @code{guile}, но дополненным дополнительными
+функциями для некоторых конкретных приложений --- специализированного
+языка сценариев.
+
+В этой ситуации приложение вероятно должно обрабатывать аргументы
+командной строки, таким же образом какк стандартный интерпретатор Guile.
+Чтобы сделать это просто,  Guile предоставляет функции
+@code{scm_boot_guile} и @code{scm_shell}.
+
+Подробнее об этих функциях, см @ref{Initialization}.
+
+@node A Sample Guile Main Program
+@subsection Пример Guile программы Main
+
+Вот @file{simple-guile.c}, исходный код для @code{main} и функции
+@code{inner_main} которая будет создавать полный интерпретатор
+Guile.
+
+@example
+/* simple-guile.c --- Start Guile from C.  */
+
+#include <libguile.h>
+
+static void
+inner_main (void *closure, int argc, char **argv)
+@{
+  /* preparation */
+  scm_shell (argc, argv);
+  /* after exit */
+@}
+
+int
+main (int argc, char **argv)
+@{
+  scm_boot_guile (argc, argv, inner_main, 0);
+  return 0; /* never reached, see inner_main */
+@}
+@end example
+
+Функция @code{main} вызывает @code{scm_boot_guile} для инициализации
+Guile, передавая ей  @code{inner_main}.  Когда @code{scm_boot_guile}
+будет готов, он вызывает @code{inner_main}, который вызывает @code{scm_shell} для
+обработки аргументов команднойо строки обычным способом.
+
+@subsection Сборка примера с помощью Make
+
+Вот файл Makefile который вы можете использовать для компиляции примера
+программы. Он использует @code{pkg-config} чтобы узнать о необходимых
+флагах компиляции и связывания.
+@example
+# Use GCC, if you have it installed.
+CC=gcc
+
+# Tell the C compiler where to find <libguile.h>
+CFLAGS=`pkg-config --cflags guile-@value{EFFECTIVE-VERSION}`
+
+# Tell the linker what libraries to use and where to find them.
+LIBS=`pkg-config --libs guile-@value{EFFECTIVE-VERSION}`
+
+simple-guile: simple-guile.o
+        $@{CC@} simple-guile.o $@{LIBS@} -o simple-guile
+
+simple-guile.o: simple-guile.c
+        $@{CC@} -c $@{CFLAGS@} simple-guile.c
+@end example
+
+@subsection Сборка примера с использованием Autoconf
+
+Если вы используете пакет GNU Autoconf, чтобы сделать ваше приложение
+более переносимым, Autoconf автоматически установит многие детали в
+в Makefile, делая его намного проще и переносимее; Мы рекомендуем
+использовать Autoconf с Guile.  Вот файл @file{configure.ac} для
+@code{simple-guile} который использует стандартный макрос @code{PKG_CHECK_MODULES}
+для проверки Guile.  Autoconf обработает этот файл в скрипте
+@code{configure}.  Мы рекомендуем использовать вызов Autoconf через
+утилиту @code{autoreconf}.
+
+@example
+AC_INIT(simple-guile.c)
+
+# Find a C compiler.
+AC_PROG_CC
+
+# Check for Guile
+PKG_CHECK_MODULES([GUILE], [guile-@value{EFFECTIVE-VERSION}])
+
+# Generate a Makefile, based on the results.
+AC_OUTPUT(Makefile)
+@end example
+
+Запускаем @code{autoreconf -vif} для создания @code{configure}.
+
+Вот шаблон @code{Makefile.in}, из которого скрипт @code{configure}
+создаст Makefile настроеный на текущую машину:
+@example
+# The configure script fills in these values.
+CC=@@CC@@
+CFLAGS=@@GUILE_CFLAGS@@
+LIBS=@@GUILE_LIBS@@
+
+simple-guile: simple-guile.o
+        $@{CC@} simple-guile.o $@{LIBS@} -o simple-guile
+simple-guile.o: simple-guile.c
+        $@{CC@} -c $@{CFLAGS@} simple-guile.c
+@end example
+
+Разработчик должен использовать Autoconf для генерации скрипта @file{configure}
+из шаблона @file{configure.ac}, и распространять
+@file{configure} вместе с приложением.  Вот как пользователь может пойти при
+создании приложения:
+
+@example
+$ ls
+Makefile.in     configure*      configure.ac    simple-guile.c
+$ ./configure
+checking for gcc... ccache gcc
+checking whether the C compiler works... yes
+checking for C compiler default output file name... a.out
+checking for suffix of executables... 
+checking whether we are cross compiling... no
+checking for suffix of object files... o
+checking whether we are using the GNU C compiler... yes
+checking whether ccache gcc accepts -g... yes
+checking for ccache gcc option to accept ISO C89... none needed
+checking for pkg-config... /usr/bin/pkg-config
+checking pkg-config is at least version 0.9.0... yes
+checking for GUILE... yes
+configure: creating ./config.status
+config.status: creating Makefile
+$ make
+[...]
+$ ./simple-guile
+guile> (+ 1 2 3)
+6
+guile> (getpwnam "jimb")
+#("jimb" "83Z7d75W2tyJQ" 4008 10 "Jim Blandy" "/u/jimb"
+  "/usr/local/bin/bash")
+guile> (exit)
+$
+@end example
+
+@c Local Variables:
+@c TeX-master: "guile.texi"
+@c End:

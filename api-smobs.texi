@@ -1,0 +1,221 @@
+@c -*-texinfo-*-
+@c This is part of the GNU Guile Reference Manual.
+@c Copyright (C)  1996, 1997, 2000, 2001, 2002, 2003, 2004, 2009, 2013, 2014
+@c   Free Software Foundation, Inc.
+@c See the file guile.texi for copying conditions.
+
+@node Smobs
+@section Smobs
+
+@cindex smob
+
+@dfn{smob} это ``маленький объект(small object)''.  Прежде чем были введены
+внешние объекты в Guile 2.0.12 (@pxref{Foreign Objects}), smobs были предпочтительным
+способом для Си кода для определения новых объектов Scheme.  За исключением
+так называемых  ``применимых(applicable) SMOBs'' обсуждаемых ниже,
+smobs теперь являются устаревшим интерфейсом и могут быть исключены из использования.
+@xref{Deprecation}.  Новый код должен использовать интерфейс внешних объектов.
+
+Этот раздел содержит справочную информацию касающуюся определения и работы
+со smobs.  Похожее на учебник введение в smobs, можно уведеть в
+``Defining New Types (Smobs)'' в предыдущей версии данного руководства.
+
+@deftypefun scm_t_bits scm_make_smob_type (const char *name, size_t size)
+Эта функция добавляет новый тип smob, с именем @var{name}, с размером экземпляра
+@var{size}, в систему.  Возвращаемое значение - это тег(метка) который используется
+для создания экземпляра данного типа.
+
+Если @var{size} равно 0, функция по умолчнанию @emph{free} ничего не делает.
+
+Если @var{size} не равно 0, функция по умолчанию @emph{free} освобождает
+блок памяти на который указывает @code{SCM_SMOB_DATA} с помощью
+@code{scm_gc_free}.  Параметром @var{what} в вызове
+@code{scm_gc_free} будет @var{name}.
+
+Значения по умолчанию предоставляются для функций @emph{mark}, @emph{free},
+@emph{print}, и @emph{equalp}.  Если вы хотите настроить любую из этих
+функций, вызов @code{scm_make_smob_type} должен немедленно
+сопровождаться вызовом одной или нескольких функций
+@code{scm_set_smob_mark}, @code{scm_set_smob_free},
+@code{scm_set_smob_print}, и/или @code{scm_set_smob_equalp}.
+@end deftypefun
+
+@cindex finalizer
+@cindex finalization
+
+@deftypefn {C Function} void scm_set_smob_free (scm_t_bits tc, size_t (*free) (SCM obj))
+Эта функция устанавливает процедуру освобождения smob (иногда называемую финализатором
+a @dfn{finalizer}) для типаe smob указываемого тегом
+@var{tc}. @var{tc} это тег, возвращаемый процедурой @code{scm_make_smob_type}.
+
+Процедура @var{free} должна освобождать все ресурсы, которые напрямую
+связаны с экземпляром smob объекта @var{obj}.  Она должна предполагать,
+что все значения @code{SCM} на которые он ссылается, уже были осовбождены и
+таким образом, являются недействительными.
+
+Она также не должна вызывать никакую функцию или макрос libguile, кроме
+@code{scm_gc_free}, @code{SCM_SMOB_FLAGS}, @code{SCM_SMOB_DATA},
+@code{SCM_SMOB_DATA_2}, и @code{SCM_SMOB_DATA_3}.
+
+процедура @var{free} должна возвращать 0.
+
+Обратите внимание, что определение процедуры осовбождения не требуется,
+если ресурсы связанные с @var{obj} состоят только из памяти выделенной с
+помощью @code{scm_gc_malloc} или @code{scm_gc_malloc_pointerless}, потому что
+эта память автоматически возвращается сборщиком мусора, когда она больше не нужна
+(@pxref{Memory Blocks, @code{scm_gc_malloc}}).
+@end deftypefn
+
+Функции освобождения Smob должны быть потоко-безопасными.  @xref{Foreign Object Memory
+Management}, для обсуждения финализаторов и параллелелизма.  Если вы
+встраиваете Guile в приложение которое не является потокобезопасным, и вы
+определяете smob типы которые нуждаются в финализации, вы можете отключить автоматическую
+финализацию, и организовать вызов @code{scm_manually_run_finalizers ()} самостоятельно.
+@xref{Foreign Objects}.
+
+@deftypefn {C Function} void scm_set_smob_mark (scm_t_bits tc, SCM (*mark) (SCM obj))
+Эта процедура устанавливает процедуру маркировки(отметки) smob для типа smob, указываемого
+тегом @var{tc}. @var{tc} это тег возвращаемый @code{scm_make_smob_type}.
+
+Определение процедуры маркировки почти всегда НЕПРАВИЛЬНО! Это излишне,
+гораздо предпочтительнее выделять данные для smob с помощью функций
+@code{scm_gc_malloc} и @code{scm_gc_malloc_pointerless}, и позволять
+Сборщику мусора(GC) отслеживать указатели автоматически.
+
+Любые процедуры маркировки, которые вы видите в настоящее время, почти
+навенряка датируются временем Guile 1.8, перед переходом на сборщик
+мусора Boehm-Demers-Weiser.
+Такие реализации smob следует изменить, чтобы просто использовать
+@code{scm_gc_malloc} и друзей, и забыть про свою функцию маркировки.
+
+Если вы решили сохранить функцию маркировки, обратите внимание, что она
+вызвается для объектов, которые находятся в списке освобождения(free list).
+Пожалуйста почитайте комментарии от BDW GC's заголовка @code{gc/gc_mark.h}.
+
+Процедура @var{mark} должна вызывать @code{scm_gc_mark} для каждого
+значения @code{SCM} которое напрямую ссылается на ыьщи экземпляр @var{obj}.
+Одно из этих значений @code{SCM} может быть возвращено из процедуры и
+Guile вызовет @code{scm_gc_mark} для него.
+Это можно использовать для того чтобы избежать глубокой рекурсиии для
+экземпляров smob которые формируют список.
+
+Она не должна вызывать никаких функций или макросов libguile, кроме
+@code{scm_gc_mark}, @code{SCM_SMOB_FLAGS}, @code{SCM_SMOB_DATA},
+@code{SCM_SMOB_DATA_2}, и @code{SCM_SMOB_DATA_3}.
+@end deftypefn
+
+@deftypefn {C Function} void scm_set_smob_print (scm_t_bits tc, int (*print) (SCM obj, SCM port, scm_print_state* pstate))
+Эта функция устанавливает процедуру печати smob для данного типа smob 
+определяемого тегом @var{tc}. @var{tc} это тег возвращаемый процедурой
+регистрации типа @code{scm_make_smob_type}.
+
+Процедура печати @var{print} должна вывести текстовое представление экземпляра
+smob @var{obj} в порт @var{port}, используя инофрмацию в
+@var{pstate}.
+
+Текстовое представление должно иметь форму @code{#<name ...>}.
+Это гарантирует, что команда чтения @code{read} не будет интерпретировать его
+как какое либо другое значение Scheme.
+
+Часто лучше игнорировать @var{pstate} и просто печатать в порь @var{port}
+с помощью @code{scm_display}, @code{scm_write}, @code{scm_simple_format},
+и @code{scm_puts}.
+@end deftypefn
+
+@deftypefn {C Function} void scm_set_smob_equalp (scm_t_bits tc, SCM (*equalp) (SCM obj1, SCM obj2))
+Эта функция устанавливает предикат проверки равенства объектов для типа smob,
+указанного тегом @var{tc}. @var{tc} это тег возвращаемый
+@code{scm_make_smob_type}.
+
+Процедура @var{equalp} должна возвращать @code{SCM_BOOL_T} когда объект
+@var{obj1} равен @code{equal?} объекту @var{obj2}.  Иначе она должна вернуть
+@code{SCM_BOOL_F}.  Оба объекта @var{obj1} и @var{obj2} являются экземплярами
+типа smob с тегом @var{tc}.
+@end deftypefn
+
+@deftypefn {C Function} void scm_assert_smob_type (scm_t_bits tag, SCM val)
+Когда @var{val} является типом smob с указанным тегом @var{tag}, ничего не делает.
+Иначе, сигнализирует об ошибке.
+@end deftypefn
+
+@deftypefn {C Macro} int SCM_SMOB_PREDICATE (scm_t_bits tag, SCM exp)
+Возращает истину если @var{exp} является экземпляром smob типа, указываемого
+тегом @var{tag}, или ложь в противном случае.  Выражение @var{exp} может быть
+вычислено больше одного раза, поэтому оно не должно содержать никаких сторонних
+эффектов(типа вывода на дисплей).
+@end deftypefn
+
+@deftypefn {C Function} SCM scm_new_smob (scm_t_bits tag, void *data)
+@deftypefnx {C Function} SCM scm_new_double_smob (scm_t_bits tag, void *data, void *data2, void *data3)
+Создает новый объект smob типа указываемого тэгом @var{tag} и данными smob - @var{data},
+@var{data2}, и @var{data3}, соответственно.
+
+Тэг @var{tag} это то что было возвращено @code{scm_make_smob_type}.
+Начальные значения @var{data}, @var{data2}, и @var{data3} имеют
+тип @code{scm_t_bits}; когда вы хотите использовать их как значения @code{SCM},
+эти значения должны быть сначала преобразованы в @code{scm_t_bits} с помощью
+@code{SCM_UNPACK}.
+
+Флаги экземпляра smob начинаются с нуля.
+@end deftypefn
+
+@deftypefn {C Macro} scm_t_bits SCM_SMOB_FLAGS (SCM obj)
+Возвращает дополнительные 16 бит объекта smob @var{obj}.  Для этих битов
+не определено никакого значения, вы можете их свободно использовать.
+@end deftypefn
+
+@deftypefn {C Macro} scm_t_bits SCM_SET_SMOB_FLAGS (SCM obj, scm_t_bits flags)
+Устанавливает дополнительные 16 бит smob объекта @var{obj} в @var{flags}.  Нет
+предопределенного назначения для этих бит, вы можете свободно их использовать.
+@end deftypefn
+
+@deftypefn {C Macro} scm_t_bits SCM_SMOB_DATA (SCM obj)
+@deftypefnx {C Macro} scm_t_bits SCM_SMOB_DATA_2 (SCM obj)
+@deftypefnx {C Macro} scm_t_bits SCM_SMOB_DATA_3 (SCM obj)
+Возвращает первое (второе, третье) непосредственное слово в smob объекте @var{obj}
+как значение @code{scm_t_bits}.  Если слово содержит значение @code{SCM},
+используйте вместо них @code{SCM_SMOB_OBJECT} (и т.д.).
+@end deftypefn
+
+@deftypefn {C Macro} void SCM_SET_SMOB_DATA (SCM obj, scm_t_bits val)
+@deftypefnx {C Macro} void SCM_SET_SMOB_DATA_2 (SCM obj, scm_t_bits val)
+@deftypefnx {C Macro} void SCM_SET_SMOB_DATA_3 (SCM obj, scm_t_bits val)
+Устанавливает первое(второе, третье) непосредственное слово в smob объекте @var{obj}
+в значение @var{val}.  Когда слово должно быть установлено значение @code{SCM}, используйте
+вместо них @code{SCM_SMOB_SET_OBJECT} (и т.д.).
+@end deftypefn
+
+@deftypefn {C Macro} SCM SCM_SMOB_OBJECT (SCM obj)
+@deftypefnx {C Macro} SCM SCM_SMOB_OBJECT_2 (SCM obj)
+@deftypefnx {C Macro} SCM SCM_SMOB_OBJECT_3 (SCM obj)
+Возвращает первое (второе, третье) непосредственное слово smob объекта @var{obj}
+как значение @code{SCM}.  Когда слово содержит значение @code{scm_t_bits}
+используйте вместо них @code{SCM_SMOB_DATA} (и т.д.).
+@end deftypefn
+
+@deftypefn {C Macro} void SCM_SET_SMOB_OBJECT (SCM obj, SCM val)
+@deftypefnx {C Macro} void SCM_SET_SMOB_OBJECT_2 (SCM obj, SCM val)
+@deftypefnx {C Macro} void SCM_SET_SMOB_OBJECT_3 (SCM obj, SCM val)
+Устанавливает первое (второе, третье) непосредственное слово smob объекта @var{obj}
+в значение @var{val}.  Когда слово должно быть установлено значением @code{scm_t_bits}, 
+используйте вместо них @code{SCM_SMOB_SET_DATA} (и т.д.)
+@end deftypefn
+
+@deftypefn {C Macro} {SCM *} SCM_SMOB_OBJECT_LOC (SCM obj)
+@deftypefnx {C Macro} {SCM *} SCM_SMOB_OBJECT_2_LOC (SCM obj)
+@deftypefnx {C Macro} {SCM *} SCM_SMOB_OBJECT_3_LOC (SCM obj)
+Возвращает указатель на первое (второе, третье) непосредственное слово в
+smob объекте @var{obj}.  Заметьте что это указатель на @code{SCM}.  Если
+вам нужно работать со значением @code{scm_t_bits}, используйте @code{SCM_PACK} и
+@code{SCM_UNPACK}, в зависимости от ситуации.
+@end deftypefn
+
+@deftypefun SCM scm_markcdr (SCM @var{x})
+Отмечает ссылку в smob @var{x}, предполагая что первое слово данных в @var{x} содержит
+обычный объект Scheme, а @var{x} не сссылается ни на какие другие объекты.
+Эта функция просто возвращает первое слово данных @var{x}.
+@end deftypefun
+
+@c Local Variables:
+@c TeX-master: "guile.texi"
+@c End:

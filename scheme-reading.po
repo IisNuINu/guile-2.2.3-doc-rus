@@ -1,0 +1,92 @@
+#
+# Gagin <mikhail-gagin@yandex.ru>, 2018.
+#
+#. extracted from /home/bear/work/guile/doc/guile/en/scheme-reading.texi
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2018-05-07 12:37+0300\n"
+"PO-Revision-Date: 2018-05-10 10:43+0300\n"
+"Last-Translator: Gagin <mikhail-gagin@yandex.ru>\n"
+"Language-Team: Russian <mikhail-gagin@yandex.ru>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Generator: Gtranslator 2.91.7\n"
+"Plural-Forms: nplurals=5; plural=n==1 ? 0 : n==2 ? 1 : n<7 ? 2 : n<11 ? 3 : "
+"4;\n"
+
+#: /home/bear/work/guile/doc/guile/en/scheme-reading.texi:6
+msgid ""
+"@c -*-texinfo-*-\n"
+"@c This is part of the GNU Guile Reference Manual.\n"
+"@c Copyright (C)  1996, 1997, 2000, 2001, 2002, 2003, 2004, 2011\n"
+"@c   Free Software Foundation, Inc.\n"
+"@c See the file guile.texi for copying conditions."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/scheme-reading.texi:9
+msgid ""
+"@node Further Reading\n"
+"@section Further Reading"
+msgstr ""
+"@node Further Reading\n"
+"@section Что еще почитать"
+
+#: /home/bear/work/guile/doc/guile/en/scheme-reading.texi:11
+msgid "@itemize @bullet"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/scheme-reading.texi:15
+msgid ""
+"@item\n"
+"The website @url{http://www.schemers.org/} is a good starting point for\n"
+"all things Scheme."
+msgstr ""
+"@item\n"
+"Веб сайт @url{http://www.schemers.org/} является хорошей отправной точкой "
+"для \n"
+"всех вещей касающихся Scheme."
+
+#: /home/bear/work/guile/doc/guile/en/scheme-reading.texi:21
+msgid ""
+"@item\n"
+"Dorai Sitaram's online Scheme tutorial, @dfn{Teach Yourself Scheme in\n"
+"Fixnum Days}, at\n"
+"@url{http://www.ccs.neu.edu/home/dorai/t-y-scheme/t-y-scheme.html}.\n"
+"Includes a nice explanation of continuations."
+msgstr ""
+"@item\n"
+"Онлайн учебник Dorai Sitaram's по Scheme, @dfn{Обучай себе сам Scheme за\n"
+"ограниченной число дней} @dfn{Teach Yourself Scheme in\n"
+"Fixnum Days}, см.\n"
+"@url{http://www.ccs.neu.edu/home/dorai/t-y-scheme/t-y-scheme.html}.\n"
+"Включает хорошее объяснение продолжений(continuations)."
+
+#: /home/bear/work/guile/doc/guile/en/scheme-reading.texi:30
+msgid ""
+"@item\n"
+"The complete text of @dfn{Structure and Interpretation of Computer\n"
+"Programs}, the classic introduction to computer science and Scheme by\n"
+"Hal Abelson, Jerry Sussman and Julie Sussman, is now available online at\n"
+"@url{http://mitpress.mit.edu/sicp/sicp.html}.  This site also provides\n"
+"teaching materials related to the book, and all the source code used in\n"
+"the book, in a form suitable for loading and running.\n"
+"@end itemize"
+msgstr ""
+"@item\n"
+"Полный текст @dfn{Структура и интерпертация компьютерных программ}, \n"
+"классическое введение в компьютерные науки и язык Scheme от\n"
+"Hal Abelson, Jerry Sussman и Julie Sussman, теперь она доступна онлайн\n"
+"@url{http://mitpress.mit.edu/sicp/sicp.html}.  Этот сайт также содержит\n"
+"учебные материалы, связанные с книгой, и весь исходный код, испльзуемый\n"
+"в книге, в форме подходящей для загрузки и запуска.\n"
+"@end itemize"
+
+#: /home/bear/work/guile/doc/guile/en/scheme-reading.texi:34
+msgid ""
+"@c Local Variables:\n"
+"@c TeX-master: \"guile.texi\"\n"
+"@c End:"
+msgstr ""

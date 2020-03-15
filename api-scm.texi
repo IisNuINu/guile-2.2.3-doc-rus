@@ -1,0 +1,44 @@
+@c -*-texinfo-*-
+@c This is part of the GNU Guile Reference Manual.
+@c Copyright (C)  1996, 1997, 2000, 2001, 2002, 2003, 2004
+@c   Free Software Foundation, Inc.
+@c See the file guile.texi for copying conditions.
+
+@node The SCM Type
+@section Тип SCM
+
+Guile представляет все значения Scheme одним Си типом @code{SCM}.
+Для введения в эту тему, @xref{Dynamic Types}.
+
+@deftp {C Type} SCM
+@code{SCM} это абстрактный Си тип  пользовательского уровня, который используется
+для представления всех объектов Scheme в Guile, независимо от типа объекта Scheme.
+Нет операций Си, кроме присвоения гарантированно работающих с переменными типа
+@code{SCM}, поэтому вы должны использовать только макросы и функции для работы со
+значениями @code{SCM}.  Значения конвертируются между типами данных Си и типом 
+@code{SCM} с помощью функций утилит и макросов.
+@end deftp
+@cindex SCM data type
+
+@deftp {C Type} scm_t_bits
+@code{scm_t_bits} это беззнаковый обобщенный тип данных который гарантированно
+будет достаточно большим чтобы хранить всю информацию. которая потребуется для
+представления любого объекта Scheme.  Хотя этот тип данных в основном используется
+для реализации внутренних функций Guile,  испольование этого типа также необходимо
+для написания определенных видов расширений для Guile.
+@end deftp
+
+@deftp {C Type} scm_t_signed_bits
+Это обобщенный тип со знаком, того же размера что и @code{scm_t_bits}.
+@end deftp
+
+@deftypefn {C Macro} scm_t_bits SCM_UNPACK (SCM @var{x})
+Преобразует @code{SCM} значение @var{x} в его представление в виде обобщенного
+типа.  Только после применения @code{SCM_UNPACK} можно получить доступ к битам и
+содержимому значения @code{SCM}.
+@end deftypefn
+
+@deftypefn {C Macro} SCM SCM_PACK (scm_t_bits @var{x})
+Принимает правильное обобщенное представление объекта Scheme и преобразует
+его в представление в качестве значения @code{SCM}.
+@end deftypefn

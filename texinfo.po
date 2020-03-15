@@ -1,0 +1,1056 @@
+#. extracted from /home/bear/work/guile/doc/guile/en/texinfo.texi
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2018-05-07 12:37+0300\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Generator: Translate Toolkit 2.2.5\n"
+
+#: /home/bear/work/guile/doc/guile/en/texinfo.texi:5
+msgid ""
+"@c -*-texinfo-*-\n"
+"@c This is part of the GNU Guile Reference Manual.\n"
+"@c Copyright (C) 2013 Free Software Foundation, Inc.\n"
+"@c See the file guile.texi for copying conditions."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/texinfo.texi:12
+msgid ""
+"@c Note: Don't use \"Texinfo\" as the node name here because this leads to\n"
+"@c a clash in the HTML output between texinfo.html (from the \"texinfo\"\n"
+"@c node) and Texinfo.html on case-insensitive file systems such as\n"
+"@c HFS+ (MacOS X).\n"
+"@node Texinfo Processing\n"
+"@section Texinfo Processing"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/texinfo.texi:23
+msgid ""
+"@menu\n"
+"* texinfo::              Parse texinfo files or fragments into @code{stexi}, "
+"a scheme representation\n"
+"* texinfo docbook::      Transform a subset of docbook into @code{stexi}\n"
+"* texinfo html::         Transform @code{stexi} into HTML\n"
+"* texinfo indexing::     Extract an index from a piece of @code{stexi}\n"
+"* texinfo string-utils::  String utility functions used by the texinfo "
+"processor\n"
+"* texinfo plain-text::   Render @code{stexi} as plain text\n"
+"* texinfo serialize::    Render @code{stexi} as texinfo\n"
+"* texinfo reflection::   Enable texinfo across Guile's help system\n"
+"@end menu"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/texinfo.texi:34
+msgid ""
+"@node texinfo\n"
+"@subsection (texinfo)\n"
+"@subsubsection Overview\n"
+"@subheading Texinfo processing in scheme\n"
+"This module parses texinfo into SXML. TeX will always be the processor\n"
+"of choice for print output, of course. However, although @code{makeinfo}\n"
+"works well for info, its output in other formats is not very\n"
+"customizable, and the program is not extensible as a whole. This module\n"
+"aims to provide an extensible framework for texinfo processing that\n"
+"integrates texinfo into the constellation of SXML processing tools."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/texinfo.texi:37
+msgid ""
+"@subheading Notes on the SXML vocabulary\n"
+"Consider the following texinfo fragment:"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/texinfo.texi:43
+msgid ""
+"@example \n"
+" @@deffn Primitive set-car! pair value\n"
+" This function...\n"
+" @@end deffn\n"
+"@end example"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/texinfo.texi:51
+msgid ""
+"Logically, the category (Primitive), name (set-car!), and arguments\n"
+"(pair value) are ``attributes'' of the deffn, with the description as\n"
+"the content. However, texinfo allows for @@-commands within the\n"
+"arguments to an environment, like @code{@@deffn}, which means that\n"
+"texinfo ``attributes'' are PCDATA. XML attributes, on the other hand,\n"
+"are CDATA. For this reason, ``attributes'' of texinfo @@-commands are\n"
+"called ``arguments'', and are grouped under the special element, `%'."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/texinfo.texi:55
+msgid ""
+"Because `%' is not a valid NCName, stexinfo is a superset of SXML. In\n"
+"the interests of interoperability, this module provides a conversion\n"
+"function to replace the `%' with `texinfo-arguments'."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/texinfo.texi:63
+msgid ""
+"@subsubsection Usage\n"
+"@anchor{texinfo call-with-file-and-dir}@defun call-with-file-and-dir "
+"filename proc\n"
+"Call the one-argument procedure @var{proc} with an input port that reads\n"
+"from @var{filename}. During the dynamic extent of @var{proc}'s\n"
+"execution, the current directory will be @code{(dirname\n"
+"@var{filename})}. This is useful for parsing documents that can include\n"
+"files by relative path name."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/texinfo.texi:65
+msgctxt "/home/bear/work/guile/doc/guile/en/texinfo.texi:65"
+msgid "@end defun"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/texinfo.texi:68
+msgid ""
+"@anchor{texinfo texi-command-specs}@defvar texi-command-specs\n"
+"@end defvar"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/texinfo.texi:72
+msgid ""
+"@anchor{texinfo texi-command-depth}@defun texi-command-depth command max-"
+"depth\n"
+"Given the texinfo command @var{command}, return its nesting level, or\n"
+"@code{#f} if it nests too deep for @var{max-depth}."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/texinfo.texi:74
+msgid "Examples:"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/texinfo.texi:82
+msgid ""
+"@example \n"
+" (texi-command-depth 'chapter 4)        @result{} 1\n"
+" (texi-command-depth 'top 4)            @result{} 0\n"
+" (texi-command-depth 'subsection 4)     @result{} 3\n"
+" (texi-command-depth 'appendixsubsec 4) @result{} 3\n"
+" (texi-command-depth 'subsection 2)     @result{} #f\n"
+"@end example"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/texinfo.texi:84
+msgctxt "/home/bear/work/guile/doc/guile/en/texinfo.texi:84"
+msgid "@end defun"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/texinfo.texi:89
+msgid ""
+"@anchor{texinfo texi-fragment->stexi}@defun texi-fragment->stexi string-or-"
+"port\n"
+"Parse the texinfo commands in @var{string-or-port}, and return the\n"
+"resultant stexi tree. The head of the tree will be the special command,\n"
+"@code{*fragment*}."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/texinfo.texi:91
+msgctxt "/home/bear/work/guile/doc/guile/en/texinfo.texi:91"
+msgid "@end defun"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/texinfo.texi:96
+msgid ""
+"@anchor{texinfo texi->stexi}@defun texi->stexi port\n"
+"Read a full texinfo document from @var{port} and return the parsed stexi\n"
+"tree. The parsing will start at the @code{@@settitle} and end at\n"
+"@code{@@bye} or EOF."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/texinfo.texi:98
+msgctxt "/home/bear/work/guile/doc/guile/en/texinfo.texi:98"
+msgid "@end defun"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/texinfo.texi:103
+msgid ""
+"@anchor{texinfo stexi->sxml}@defun stexi->sxml tree\n"
+"Transform the stexi tree @var{tree} into sxml. This involves replacing\n"
+"the @code{%} element that keeps the texinfo arguments with an element\n"
+"for each argument."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/texinfo.texi:106
+msgid ""
+"FIXME: right now it just changes % to @code{texinfo-arguments} -- that\n"
+"doesn't hang with the idea of making a dtd at some point"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/texinfo.texi:108
+msgctxt "/home/bear/work/guile/doc/guile/en/texinfo.texi:108"
+msgid "@end defun"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/texinfo.texi:118
+msgid ""
+"@node texinfo docbook\n"
+"@subsection (texinfo docbook)\n"
+"@subsubsection Overview\n"
+"@c \n"
+"This module exports procedures for transforming a limited subset of the\n"
+"SXML representation of docbook into stexi. It is not complete by any\n"
+"means. The intention is to gather a number of routines and stylesheets\n"
+"so that external modules can parse specific subsets of docbook, for\n"
+"example that set generated by certain tools."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/texinfo.texi:122
+msgid ""
+"@subsubsection Usage\n"
+"@anchor{texinfo docbook *sdocbook->stexi-rules*}@defvar *sdocbook->stexi-"
+"rules*\n"
+"@end defvar"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/texinfo.texi:125
+msgid ""
+"@anchor{texinfo docbook *sdocbook-block-commands*}@defvar *sdocbook-block-"
+"commands*\n"
+"@end defvar"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/texinfo.texi:129
+msgid ""
+"@anchor{texinfo docbook sdocbook-flatten}@defun sdocbook-flatten sdocbook\n"
+"\"Flatten\" a fragment of sdocbook so that block elements do not nest\n"
+"inside each other."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/texinfo.texi:134
+msgid ""
+"Docbook is a nested format, where e.g. a @code{refsect2} normally\n"
+"appears inside a @code{refsect1}. Logical divisions in the document are\n"
+"represented via the tree topology; a @code{refsect2} element\n"
+"@emph{contains} all of the elements in its section."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/texinfo.texi:138
+msgid ""
+"On the contrary, texinfo is a flat format, in which sections are marked\n"
+"off by standalone section headers like @code{@@subsection}, and block\n"
+"elements do not nest inside each other."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/texinfo.texi:141
+msgid ""
+"This function takes a nested sdocbook fragment @var{sdocbook} and\n"
+"flattens all of the sections, such that e.g."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/texinfo.texi:145
+msgid ""
+"@example \n"
+" (refsect1 (refsect2 (para \"Hello\")))\n"
+"@end example"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/texinfo.texi:147
+msgid "becomes"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/texinfo.texi:151
+msgid ""
+"@example \n"
+" ((refsect1) (refsect2) (para \"Hello\"))\n"
+"@end example"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/texinfo.texi:158
+msgid ""
+"Oftentimes (always?) sectioning elements have @code{<title>} as their\n"
+"first element child; users interested in processing the @code{refsect*}\n"
+"elements into proper sectioning elements like @code{chapter} might be\n"
+"interested in @code{replace-titles} and @code{filter-empty-elements}.\n"
+"@xref{texinfo docbook replace-titles,,replace-titles}, and @ref{texinfo\n"
+"docbook filter-empty-elements,,filter-empty-elements}."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/texinfo.texi:161
+msgid ""
+"Returns a nodeset; that is to say, an untagged list of stexi elements.\n"
+"@xref{SXPath}, for the definition of a nodeset."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/texinfo.texi:163
+msgctxt "/home/bear/work/guile/doc/guile/en/texinfo.texi:163"
+msgid "@end defun"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/texinfo.texi:167
+msgid ""
+"@anchor{texinfo docbook filter-empty-elements}@defun filter-empty-elements "
+"sdocbook\n"
+"Filters out empty elements in an sdocbook nodeset. Mostly useful after\n"
+"running @code{sdocbook-flatten}."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/texinfo.texi:169
+msgctxt "/home/bear/work/guile/doc/guile/en/texinfo.texi:169"
+msgid "@end defun"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/texinfo.texi:175
+msgid ""
+"@anchor{texinfo docbook replace-titles}@defun replace-titles sdocbook-"
+"fragment\n"
+"Iterate over the sdocbook nodeset @var{sdocbook-fragment}, transforming\n"
+"contiguous @code{refsect} and @code{title} elements into the appropriate\n"
+"texinfo sectioning command. Most useful after having run\n"
+"@code{sdocbook-flatten}."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/texinfo.texi:177
+msgid "For example:"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/texinfo.texi:182
+msgid ""
+"@example \n"
+" (replace-titles '((refsect1) (title \"Foo\") (para \"Bar.\")))\n"
+"    @result{} '((chapter \"Foo\") (para \"Bar.\"))\n"
+"@end example"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/texinfo.texi:184
+msgctxt "/home/bear/work/guile/doc/guile/en/texinfo.texi:184"
+msgid "@end defun"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/texinfo.texi:193
+msgid ""
+"@node texinfo html\n"
+"@subsection (texinfo html)\n"
+"@subsubsection Overview\n"
+"This module implements transformation from @code{stexi} to HTML. Note\n"
+"that the output of @code{stexi->shtml} is actually SXML with the HTML\n"
+"vocabulary. This means that the output can be further processed, and\n"
+"that it must eventually be serialized by @code{sxml->xml}.\n"
+"@xref{Reading and Writing XML}."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/texinfo.texi:197
+msgid ""
+"References (i.e., the @code{@@ref} family of commands) are resolved by a\n"
+"@dfn{ref-resolver}.  @xref{texinfo html\n"
+"add-ref-resolver!,add-ref-resolver!}."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/texinfo.texi:204
+msgid ""
+"@subsubsection Usage\n"
+"@anchor{texinfo html add-ref-resolver!}@defun add-ref-resolver! proc\n"
+"Add @var{proc} to the head of the list of ref-resolvers. @var{proc} will\n"
+"be expected to take the name of a node and the name of a manual and\n"
+"return the URL of the referent, or @code{#f} to pass control to the next\n"
+"ref-resolver in the list."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/texinfo.texi:207
+msgid ""
+"The default ref-resolver will return the concatenation of the manual\n"
+"name, @code{#}, and the node name."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/texinfo.texi:209
+msgctxt "/home/bear/work/guile/doc/guile/en/texinfo.texi:209"
+msgid "@end defun"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/texinfo.texi:213
+msgid ""
+"@anchor{texinfo html stexi->shtml}@defun stexi->shtml tree\n"
+"Transform the stexi @var{tree} into shtml, resolving references via\n"
+"ref-resolvers. See the module commentary for more details."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/texinfo.texi:215
+msgctxt "/home/bear/work/guile/doc/guile/en/texinfo.texi:215"
+msgid "@end defun"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/texinfo.texi:218
+msgid ""
+"@anchor{texinfo html urlify}@defun urlify str\n"
+"@end defun"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/texinfo.texi:224
+msgid ""
+"@node texinfo indexing\n"
+"@subsection (texinfo indexing)\n"
+"@subsubsection Overview\n"
+"@c texinfo formatting\n"
+"Given a piece of stexi, return an index of a specified variety."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/texinfo.texi:227
+msgid ""
+"Note that currently, @code{stexi-extract-index} doesn't differentiate\n"
+"between different kinds of index entries. That's a bug ;)"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/texinfo.texi:237
+msgid ""
+"@subsubsection Usage\n"
+"@anchor{texinfo indexing stexi-extract-index}@defun stexi-extract-index tree "
+"manual-name kind\n"
+"Given an stexi tree @var{tree}, index all of the entries of type\n"
+"@var{kind}. @var{kind} can be one of the predefined texinfo indices\n"
+"(@code{concept}, @code{variable}, @code{function}, @code{key},\n"
+"@code{program}, @code{type}) or one of the special symbols @code{auto}\n"
+"or @code{all}. @code{auto} will scan the stext for a @code{(printindex)}\n"
+"statement, and @code{all} will generate an index from all entries,\n"
+"regardless of type."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/texinfo.texi:240
+msgid ""
+"The returned index is a list of pairs, the @sc{car} of which is the\n"
+"entry (a string) and the @sc{cdr} of which is a node name (a string)."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/texinfo.texi:242
+msgctxt "/home/bear/work/guile/doc/guile/en/texinfo.texi:242"
+msgid "@end defun"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/texinfo.texi:248
+msgid ""
+"@node texinfo string-utils\n"
+"@subsection (texinfo string-utils)\n"
+"@subsubsection Overview\n"
+"Module @samp{(texinfo string-utils)} provides various string-related\n"
+"functions useful to Guile's texinfo support."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/texinfo.texi:253
+msgid ""
+"@subsubsection Usage\n"
+"@anchor{texinfo string-utils escape-special-chars}@defun escape-special-"
+"chars str special-chars escape-char\n"
+"Returns a copy of @var{str} with all given special characters preceded\n"
+"by the given @var{escape-char}."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/texinfo.texi:256
+msgid ""
+"@var{special-chars} can either be a single character, or a string\n"
+"consisting of all the special characters."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/texinfo.texi:263
+msgid ""
+"@lisp \n"
+";; make a string regexp-safe...\n"
+" (escape-special-chars \"***(Example String)***\"  \n"
+"                      \"[]()/*.\" \n"
+"                      #\\\\)\n"
+"=> \"\\\\*\\\\*\\\\*\\\\(Example String\\\\)\\\\*\\\\*\\\\*\""
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/texinfo.texi:270
+msgid ""
+";; also can escape a singe char...\n"
+" (escape-special-chars \"richardt@@vzavenue.net\"\n"
+"                      #\\@@\n"
+"                      #\\@@)\n"
+"=> \"richardt@@@@vzavenue.net\"\n"
+"@end lisp"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/texinfo.texi:272
+msgctxt "/home/bear/work/guile/doc/guile/en/texinfo.texi:272"
+msgid "@end defun"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/texinfo.texi:276
+msgid ""
+"@anchor{texinfo string-utils transform-string}@defun transform-string str "
+"match? replace [start] [end]\n"
+"Uses @var{match?} against each character in @var{str}, and performs a\n"
+"replacement on each character for which matches are found."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/texinfo.texi:284
+msgid ""
+"@var{match?} may either be a function, a character, a string, or\n"
+"@code{#t}. If @var{match?} is a function, then it takes a single\n"
+"character as input, and should return @samp{#t} for matches.\n"
+"@var{match?} is a character, it is compared to each string character\n"
+"using @code{char=?}. If @var{match?} is a string, then any character in\n"
+"that string will be considered a match. @code{#t} will cause every\n"
+"character to be a match."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/texinfo.texi:289
+msgid ""
+"If @var{replace} is a function, it is called with the matched character\n"
+"as an argument, and the returned value is sent to the output string via\n"
+"@samp{display}. If @var{replace} is anything else, it is sent through\n"
+"the output string via @samp{display}."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/texinfo.texi:297
+msgid ""
+"Note that the replacement for the matched characters does not need to be\n"
+"a single character. That is what differentiates this function from\n"
+"@samp{string-map}, and what makes it useful for applications such as\n"
+"converting @samp{#\\&} to @samp{\"&amp;\"} in web page text. Some other\n"
+"functions in this module are just wrappers around common uses of\n"
+"@samp{transform-string}. Transformations not possible with this function\n"
+"should probably be done with regular expressions."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/texinfo.texi:302
+msgid ""
+"If @var{start} and @var{end} are given, they control which portion of\n"
+"the string undergoes transformation. The entire input string is still\n"
+"output, though. So, if @var{start} is @samp{5}, then the first five\n"
+"characters of @var{str} will still appear in the returned string."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/texinfo.texi:308
+msgid ""
+"@lisp \n"
+"; these two are equivalent...\n"
+" (transform-string str #\\space #\\-) ; change all spaces to -'s\n"
+" (transform-string str (lambda (c) (char=? #\\space c)) #\\-)\n"
+"@end lisp"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/texinfo.texi:310
+msgctxt "/home/bear/work/guile/doc/guile/en/texinfo.texi:310"
+msgid "@end defun"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/texinfo.texi:314
+msgid ""
+"@anchor{texinfo string-utils expand-tabs}@defun expand-tabs str [tab-size]\n"
+"Returns a copy of @var{str} with all tabs expanded to spaces.\n"
+"@var{tab-size} defaults to 8."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/texinfo.texi:316
+msgid "Assuming tab size of 8, this is equivalent to:"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/texinfo.texi:320
+msgid ""
+"@lisp \n"
+" (transform-string str #\\tab \"        \")\n"
+"@end lisp"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/texinfo.texi:322
+msgctxt "/home/bear/work/guile/doc/guile/en/texinfo.texi:322"
+msgid "@end defun"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/texinfo.texi:331
+msgid ""
+"@anchor{texinfo string-utils center-string}@defun center-string str [width] "
+"[chr] [rchr]\n"
+"Returns a copy of @var{str} centered in a field of @var{width}\n"
+"characters. Any needed padding is done by character @var{chr}, which\n"
+"defaults to @samp{#\\space}. If @var{rchr} is provided, then the padding\n"
+"to the right will use it instead. See the examples below. left and\n"
+"@var{rchr} on the right. The default @var{width} is 80. The default\n"
+"@var{chr} and @var{rchr} is @samp{#\\space}. The string is never\n"
+"truncated."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/texinfo.texi:335
+msgid ""
+"@lisp \n"
+" (center-string \"Richard Todd\" 24)\n"
+"=> \"      Richard Todd      \""
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/texinfo.texi:338
+msgid ""
+" (center-string \" Richard Todd \" 24 #\\=)\n"
+"=> \"===== Richard Todd =====\""
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/texinfo.texi:342
+msgid ""
+" (center-string \" Richard Todd \" 24 #\\< #\\>)\n"
+"=> \"<<<<< Richard Todd >>>>>\"\n"
+"@end lisp"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/texinfo.texi:344
+msgctxt "/home/bear/work/guile/doc/guile/en/texinfo.texi:344"
+msgid "@end defun"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/texinfo.texi:350
+msgid ""
+"@anchor{texinfo string-utils left-justify-string}@defun left-justify-string "
+"str [width] [chr]\n"
+"@code{left-justify-string str [width chr]}. Returns a copy of @var{str}\n"
+"padded with @var{chr} such that it is left justified in a field of\n"
+"@var{width} characters. The default @var{width} is 80. Unlike\n"
+"@samp{string-pad} from srfi-13, the string is never truncated."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/texinfo.texi:352
+msgctxt "/home/bear/work/guile/doc/guile/en/texinfo.texi:352"
+msgid "@end defun"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/texinfo.texi:358
+msgid ""
+"@anchor{texinfo string-utils right-justify-string}@defun right-justify-"
+"string str [width] [chr]\n"
+"Returns a copy of @var{str} padded with @var{chr} such that it is right\n"
+"justified in a field of @var{width} characters. The default @var{width}\n"
+"is 80. The default @var{chr} is @samp{#\\space}. Unlike @samp{string-pad}\n"
+"from srfi-13, the string is never truncated."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/texinfo.texi:360
+msgctxt "/home/bear/work/guile/doc/guile/en/texinfo.texi:360"
+msgid "@end defun"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/texinfo.texi:365
+msgid ""
+"@anchor{texinfo string-utils collapse-repeated-chars}@defun collapse-"
+"repeated-chars str [chr] [num]\n"
+"Returns a copy of @var{str} with all repeated instances of @var{chr}\n"
+"collapsed down to at most @var{num} instances. The default value for\n"
+"@var{chr} is @samp{#\\space}, and the default value for @var{num} is 1."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/texinfo.texi:374
+msgid ""
+"@lisp \n"
+" (collapse-repeated-chars \"H  e  l  l  o\")\n"
+"=> \"H e l l o\"\n"
+" (collapse-repeated-chars \"H--e--l--l--o\" #\\-)\n"
+"=> \"H-e-l-l-o\"\n"
+" (collapse-repeated-chars \"H-e--l---l----o\" #\\- 2)\n"
+"=> \"H-e--l--l--o\"\n"
+"@end lisp"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/texinfo.texi:376
+msgctxt "/home/bear/work/guile/doc/guile/en/texinfo.texi:376"
+msgid "@end defun"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/texinfo.texi:380
+msgid ""
+"@anchor{texinfo string-utils make-text-wrapper}@defun make-text-wrapper "
+"[#:line-width] [#:expand-tabs?] [#:tab-width] [#:collapse-whitespace?] "
+"[#:subsequent-indent] [#:initial-indent] [#:break-long-words?]\n"
+"Returns a procedure that will split a string into lines according to the\n"
+"given parameters."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/texinfo.texi:385
+msgid ""
+"@table @code\n"
+"@item #:line-width\n"
+"This is the target length used when deciding where to wrap lines.\n"
+"Default is 80."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/texinfo.texi:389
+msgid ""
+"@item #:expand-tabs?\n"
+"Boolean describing whether tabs in the input should be expanded. Default\n"
+"is #t."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/texinfo.texi:393
+msgid ""
+"@item #:tab-width\n"
+"If tabs are expanded, this will be the number of spaces to which they\n"
+"expand. Default is 8."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/texinfo.texi:397
+msgid ""
+"@item #:collapse-whitespace?\n"
+"Boolean describing whether the whitespace inside the existing text\n"
+"should be removed or not. Default is #t."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/texinfo.texi:404
+msgid ""
+"If text is already well-formatted, and is just being wrapped to fit in a\n"
+"different width, then set this to @samp{#f}. This way, many common text\n"
+"conventions (such as two spaces between sentences) can be preserved if\n"
+"in the original text. If the input text spacing cannot be trusted, then\n"
+"leave this setting at the default, and all repeated whitespace will be\n"
+"collapsed down to a single space."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/texinfo.texi:408
+msgid ""
+"@item #:initial-indent\n"
+"Defines a string that will be put in front of the first line of wrapped\n"
+"text. Default is the empty string, ``''."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/texinfo.texi:412
+msgid ""
+"@item #:subsequent-indent\n"
+"Defines a string that will be put in front of all lines of wrapped text,\n"
+"except the first one. Default is the empty string, ``''."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/texinfo.texi:418
+msgid ""
+"@item #:break-long-words?\n"
+"If a single word is too big to fit on a line, this setting tells the\n"
+"wrapper what to do. Defaults to #t, which will break up long words. When\n"
+"set to #f, the line will be allowed, even though it is longer than the\n"
+"defined @code{#:line-width}."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/texinfo.texi:420
+msgid "@end table"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/texinfo.texi:423
+msgid ""
+"The return value is a procedure of one argument, the input string, which\n"
+"returns a list of strings, where each element of the list is one line."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/texinfo.texi:425
+msgctxt "/home/bear/work/guile/doc/guile/en/texinfo.texi:425"
+msgid "@end defun"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/texinfo.texi:431
+msgid ""
+"@anchor{texinfo string-utils fill-string}@defun fill-string str . kwargs\n"
+"Wraps the text given in string @var{str} according to the parameters\n"
+"provided in @var{kwargs}, or the default setting if they are not given.\n"
+"Returns a single string with the wrapped text. Valid keyword arguments\n"
+"are discussed in @code{make-text-wrapper}."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/texinfo.texi:433
+msgctxt "/home/bear/work/guile/doc/guile/en/texinfo.texi:433"
+msgid "@end defun"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/texinfo.texi:440
+msgid ""
+"@anchor{texinfo string-utils string->wrapped-lines}@defun string->wrapped-"
+"lines str . kwargs\n"
+"@code{string->wrapped-lines str keywds ...}. Wraps the text given in\n"
+"string @var{str} according to the parameters provided in @var{keywds},\n"
+"or the default setting if they are not given. Returns a list of strings\n"
+"representing the formatted lines. Valid keyword arguments are discussed\n"
+"in @code{make-text-wrapper}."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/texinfo.texi:442
+msgctxt "/home/bear/work/guile/doc/guile/en/texinfo.texi:442"
+msgid "@end defun"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/texinfo.texi:448
+msgid ""
+"@node texinfo plain-text\n"
+"@subsection (texinfo plain-text)\n"
+"@subsubsection Overview\n"
+"Transformation from stexi to plain-text. Strives to re-create the output\n"
+"from @code{info}; comes pretty damn close."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/texinfo.texi:452
+msgid ""
+"@subsubsection Usage\n"
+"@anchor{texinfo plain-text stexi->plain-text}@defun stexi->plain-text tree\n"
+"Transform @var{tree} into plain text. Returns a string."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/texinfo.texi:454
+msgctxt "/home/bear/work/guile/doc/guile/en/texinfo.texi:454"
+msgid "@end defun"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/texinfo.texi:459
+msgid ""
+"@node texinfo serialize\n"
+"@subsection (texinfo serialize)\n"
+"@subsubsection Overview\n"
+"Serialization of @code{stexi} to plain texinfo."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/texinfo.texi:463
+msgid ""
+"@subsubsection Usage\n"
+"@anchor{texinfo serialize stexi->texi}@defun stexi->texi tree\n"
+"Serialize the stexi @var{tree} into plain texinfo."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/texinfo.texi:465
+msgctxt "/home/bear/work/guile/doc/guile/en/texinfo.texi:465"
+msgid "@end defun"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/texinfo.texi:470
+msgid ""
+"@node texinfo reflection\n"
+"@subsection (texinfo reflection)\n"
+"@subsubsection Overview\n"
+"Routines to generare @code{stexi} documentation for objects and modules."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/texinfo.texi:473
+msgid ""
+"Note that in this context, an @dfn{object} is just a value associated\n"
+"with a location. It has nothing to do with GOOPS."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/texinfo.texi:479
+msgid ""
+"@subsubsection Usage\n"
+"@anchor{texinfo reflection module-stexi-documentation}@defun module-stexi-"
+"documentation sym-name [%docs-resolver] [#:docs-resolver]\n"
+"Return documentation for the module named @var{sym-name}. The\n"
+"documentation will be formatted as @code{stexi}\n"
+"(@pxref{texinfo,texinfo})."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/texinfo.texi:481
+msgctxt "/home/bear/work/guile/doc/guile/en/texinfo.texi:481"
+msgid "@end defun"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/texinfo.texi:486
+msgid ""
+"@anchor{texinfo reflection script-stexi-documentation}@defun script-stexi-"
+"documentation scriptpath\n"
+"Return documentation for given script. The documentation will be taken\n"
+"from the script's commentary, and will be returned in the @code{stexi}\n"
+"format (@pxref{texinfo,texinfo})."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/texinfo.texi:488
+msgctxt "/home/bear/work/guile/doc/guile/en/texinfo.texi:488"
+msgid "@end defun"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/texinfo.texi:491
+msgid ""
+"@anchor{texinfo reflection object-stexi-documentation}@defun object-stexi-"
+"documentation _ [_] [#:force]\n"
+"@end defun"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/texinfo.texi:494
+msgid ""
+"@anchor{texinfo reflection package-stexi-standard-copying}@defun package-"
+"stexi-standard-copying name version updated years copyright-holder "
+"permissions\n"
+"Create a standard texinfo @code{copying} section."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/texinfo.texi:497
+msgid ""
+"@var{years} is a list of years (as integers) in which the modules being\n"
+"documented were released. All other arguments are strings."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/texinfo.texi:499
+msgctxt "/home/bear/work/guile/doc/guile/en/texinfo.texi:499"
+msgid "@end defun"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/texinfo.texi:502
+msgid ""
+"@anchor{texinfo reflection package-stexi-standard-titlepage}@defun package-"
+"stexi-standard-titlepage name version updated authors\n"
+"Create a standard GNU title page."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/texinfo.texi:505
+msgid ""
+"@var{authors} is a list of @code{(@var{name} . @var{email})} pairs. All\n"
+"other arguments are strings."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/texinfo.texi:507
+msgid "Here is an example of the usage of this procedure:"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/texinfo.texi:518
+msgid ""
+"@smallexample \n"
+" (package-stexi-standard-titlepage\n"
+"  \"Foolib\"\n"
+"  \"3.2\"\n"
+"  \"26 September 2006\"\n"
+"  '((\"Alyssa P Hacker\" . \"alyssa@@example.com\"))\n"
+"  '(2004 2005 2006)\n"
+"  \"Free Software Foundation, Inc.\"\n"
+"  \"Standard GPL permissions blurb goes here\")\n"
+"@end smallexample"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/texinfo.texi:520
+msgctxt "/home/bear/work/guile/doc/guile/en/texinfo.texi:520"
+msgid "@end defun"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/texinfo.texi:525
+msgid ""
+"@anchor{texinfo reflection package-stexi-generic-menu}@defun package-stexi-"
+"generic-menu name entries\n"
+"Create a menu from a generic alist of entries, the car of which should\n"
+"be the node name, and the cdr the description. As an exception, an entry\n"
+"of @code{#f} will produce a separator."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/texinfo.texi:527
+msgctxt "/home/bear/work/guile/doc/guile/en/texinfo.texi:527"
+msgid "@end defun"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/texinfo.texi:531
+msgid ""
+"@anchor{texinfo reflection package-stexi-standard-menu}@defun package-stexi-"
+"standard-menu name modules module-descriptions extra-entries\n"
+"Create a standard top node and menu, suitable for processing by\n"
+"makeinfo."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/texinfo.texi:533
+msgctxt "/home/bear/work/guile/doc/guile/en/texinfo.texi:533"
+msgid "@end defun"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/texinfo.texi:537
+msgid ""
+"@anchor{texinfo reflection package-stexi-extended-menu}@defun package-stexi-"
+"extended-menu name module-pairs script-pairs extra-entries\n"
+"Create an \"extended\" menu, like the standard menu but with a section for\n"
+"scripts."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/texinfo.texi:539
+msgctxt "/home/bear/work/guile/doc/guile/en/texinfo.texi:539"
+msgid "@end defun"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/texinfo.texi:543
+msgid ""
+"@anchor{texinfo reflection package-stexi-standard-prologue}@defun package-"
+"stexi-standard-prologue name filename category description copying titlepage "
+"menu\n"
+"Create a standard prologue, suitable for later serialization to texinfo\n"
+"and .info creation with makeinfo."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/texinfo.texi:552
+msgid ""
+"Returns a list of stexinfo forms suitable for passing to\n"
+"@code{package-stexi-documentation} as the prologue. @xref{texinfo\n"
+"reflection package-stexi-documentation}, @ref{texinfo reflection\n"
+"package-stexi-standard-titlepage,package-stexi-standard-titlepage},\n"
+"@ref{texinfo reflection\n"
+"package-stexi-standard-copying,package-stexi-standard-copying}, and\n"
+"@ref{texinfo reflection\n"
+"package-stexi-standard-menu,package-stexi-standard-menu}."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/texinfo.texi:554
+msgctxt "/home/bear/work/guile/doc/guile/en/texinfo.texi:554"
+msgid "@end defun"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/texinfo.texi:558
+msgid ""
+"@anchor{texinfo reflection package-stexi-documentation}@defun package-stexi-"
+"documentation modules name filename prologue epilogue [#:module-stexi-"
+"documentation-args] [#:scripts]\n"
+"Create stexi documentation for a @dfn{package}, where a package is a set\n"
+"of modules that is released together."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/texinfo.texi:562
+msgid ""
+"@var{modules} is expected to be a list of module names, where a module\n"
+"name is a list of symbols. The stexi that is returned will be titled\n"
+"@var{name} and a texinfo filename of @var{filename}."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/texinfo.texi:568
+msgid ""
+"@var{prologue} and @var{epilogue} are lists of stexi forms that will be\n"
+"spliced into the output document before and after the generated modules\n"
+"documentation, respectively. @xref{texinfo reflection\n"
+"package-stexi-standard-prologue}, to create a conventional GNU texinfo\n"
+"prologue."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/texinfo.texi:573
+msgctxt "/home/bear/work/guile/doc/guile/en/texinfo.texi:573"
+msgid ""
+"@var{module-stexi-documentation-args} is an optional argument that, if\n"
+"given, will be added to the argument list when\n"
+"@code{module-texi-documentation} is called. For example, it might be\n"
+"useful to define a @code{#:docs-resolver} argument."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/texinfo.texi:575
+msgctxt "/home/bear/work/guile/doc/guile/en/texinfo.texi:575"
+msgid "@end defun"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/texinfo.texi:579
+msgid ""
+"@anchor{texinfo reflection package-stexi-documentation-for-include}@defun "
+"package-stexi-documentation-for-include modules module-descriptions "
+"[#:module-stexi-documentation-args]\n"
+"Create stexi documentation for a @dfn{package}, where a package is a set\n"
+"of modules that is released together."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/texinfo.texi:582
+msgid ""
+"@var{modules} is expected to be a list of module names, where a module\n"
+"name is a list of symbols. Returns an stexinfo fragment."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/texinfo.texi:588
+msgid ""
+"Unlike @code{package-stexi-documentation}, this function simply produces\n"
+"a menu and the module documentations instead of producing a full texinfo\n"
+"document. This can be useful if you write part of your manual by hand,\n"
+"and just use @code{@@include} to pull in the automatically generated\n"
+"parts."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/texinfo.texi:593
+msgctxt "/home/bear/work/guile/doc/guile/en/texinfo.texi:593"
+msgid ""
+"@var{module-stexi-documentation-args} is an optional argument that, if\n"
+"given, will be added to the argument list when\n"
+"@code{module-texi-documentation} is called. For example, it might be\n"
+"useful to define a @code{#:docs-resolver} argument."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/texinfo.texi:594
+msgctxt "/home/bear/work/guile/doc/guile/en/texinfo.texi:594"
+msgid "@end defun"
+msgstr ""

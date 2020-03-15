@@ -1,0 +1,1828 @@
+#. extracted from /home/bear/work/guile/doc/guile/en/api-modules.texi
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2018-05-07 12:36+0300\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Generator: Translate Toolkit 2.2.5\n"
+
+#: /home/bear/work/guile/doc/guile/en/api-modules.texi:6
+msgid ""
+"@c -*-texinfo-*-\n"
+"@c This is part of the GNU Guile Reference Manual.\n"
+"@c Copyright (C)  1996, 1997, 2000-2004, 2007-2014\n"
+"@c   Free Software Foundation, Inc.\n"
+"@c See the file guile.texi for copying conditions."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-modules.texi:10
+msgid ""
+"@node Modules\n"
+"@section Modules\n"
+"@cindex modules"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-modules.texi:16
+msgid ""
+"When programs become large, naming conflicts can occur when a function\n"
+"or global variable defined in one file has the same name as a function\n"
+"or global variable in another file.  Even just a @emph{similarity}\n"
+"between function names can cause hard-to-find bugs, since a programmer\n"
+"might type the wrong function name."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-modules.texi:23
+msgid ""
+"The approach used to tackle this problem is called @emph{information\n"
+"encapsulation}, which consists of packaging functional units into a\n"
+"given name space that is clearly separated from other name spaces.\n"
+"@cindex encapsulation\n"
+"@cindex information encapsulation\n"
+"@cindex name space"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-modules.texi:27
+msgid ""
+"The language features that allow this are usually called @emph{the\n"
+"module system} because programs are broken up into modules that are\n"
+"compiled separately (or loaded separately in an interpreter)."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-modules.texi:33
+msgid ""
+"Older languages, like C, have limited support for name space\n"
+"manipulation and protection.  In C a variable or function is public by\n"
+"default, and can be made local to a module with the @code{static}\n"
+"keyword.  But you cannot reference public variables and functions from\n"
+"another module with different names."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-modules.texi:39
+msgid ""
+"More advanced module systems have become a common feature in recently\n"
+"designed languages: ML, Python, Perl, and Modula 3 all allow the\n"
+"@emph{renaming} of objects from a foreign module, so they will not\n"
+"clutter the global name space.\n"
+"@cindex name space - private"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-modules.texi:42
+msgid ""
+"In addition, Guile offers variables as first-class objects.  They can\n"
+"be used for interacting with the module system."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-modules.texi:56
+msgid ""
+"@menu\n"
+"* General Information about Modules::  Guile module basics.\n"
+"* Using Guile Modules::         How to use existing modules.\n"
+"* Creating Guile Modules::      How to package your code into modules.\n"
+"* Modules and the File System:: Installing modules in the file system.\n"
+"* R6RS Version References::     Using version numbers with modules.\n"
+"* R6RS Libraries::              The library and import forms.\n"
+"* Variables::                   First-class variables.\n"
+"* Module System Reflection::    First-class modules.\n"
+"* Accessing Modules from C::    How to work with modules with C code.\n"
+"* provide and require::         The SLIB feature mechanism.\n"
+"* Environments::                R5RS top-level environments.\n"
+"@end menu"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-modules.texi:59
+msgid ""
+"@node General Information about Modules\n"
+"@subsection General Information about Modules"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-modules.texi:63
+msgid ""
+"A Guile module can be thought of as a collection of named procedures,\n"
+"variables and macros.  More precisely, it is a set of @dfn{bindings}\n"
+"of symbols (names) to Scheme objects."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-modules.texi:69
+msgid ""
+"Within a module, all bindings are visible.  Certain bindings\n"
+"can be declared @dfn{public}, in which case they are added to the\n"
+"module's so-called @dfn{export list}; this set of public bindings is\n"
+"called the module's @dfn{public interface} (@pxref{Creating Guile\n"
+"Modules})."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-modules.texi:77
+msgid ""
+"A client module @dfn{uses} a providing module's bindings by either\n"
+"accessing the providing module's public interface, or by building a\n"
+"custom interface (and then accessing that).  In a custom interface, the\n"
+"client module can @dfn{select} which bindings to access and can also\n"
+"algorithmically @dfn{rename} bindings.  In contrast, when using the\n"
+"providing module's public interface, the entire export list is available\n"
+"without renaming (@pxref{Using Guile Modules})."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-modules.texi:81
+msgid ""
+"All Guile modules have a unique @dfn{module name}, for example\n"
+"@code{(ice-9 popen)} or @code{(srfi srfi-11)}.  Module names are lists\n"
+"of one or more symbols."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-modules.texi:87
+msgid ""
+"When Guile goes to use an interface from a module, for example\n"
+"@code{(ice-9 popen)}, Guile first looks to see if it has loaded\n"
+"@code{(ice-9 popen)} for any reason.  If the module has not been loaded\n"
+"yet, Guile searches a @dfn{load path} for a file that might define it,\n"
+"and loads that file."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-modules.texi:90
+msgid ""
+"The following subsections go into more detail on using, creating,\n"
+"installing, and otherwise manipulating modules and the module system."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-modules.texi:93
+msgid ""
+"@node Using Guile Modules\n"
+"@subsection Using Guile Modules"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-modules.texi:102
+msgid ""
+"To use a Guile module is to access either its public interface or a\n"
+"custom interface (@pxref{General Information about Modules}).  Both\n"
+"types of access are handled by the syntactic form @code{use-modules},\n"
+"which accepts one or more interface specifications and, upon evaluation,\n"
+"arranges for those interfaces to be available to the current module.\n"
+"This process may include locating and loading code for a given module if\n"
+"that code has not yet been loaded, following @code{%load-path}\n"
+"(@pxref{Modules and the File System})."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-modules.texi:106
+msgid ""
+"An @dfn{interface specification} has one of two forms.  The first\n"
+"variation is simply to name the module, in which case its public\n"
+"interface is the one accessed.  For example:"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-modules.texi:110
+msgid ""
+"@lisp\n"
+"(use-modules (ice-9 popen))\n"
+"@end lisp"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-modules.texi:114
+msgid ""
+"Here, the interface specification is @code{(ice-9 popen)}, and the\n"
+"result is that the current module now has access to @code{open-pipe},\n"
+"@code{close-pipe}, @code{open-input-pipe}, and so on (@pxref{Pipes})."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-modules.texi:121
+msgid ""
+"Note in the previous example that if the current module had already\n"
+"defined @code{open-pipe}, that definition would be overwritten by the\n"
+"definition in @code{(ice-9 popen)}.  For this reason (and others), there\n"
+"is a second variation of interface specification that not only names a\n"
+"module to be accessed, but also selects bindings from it and renames\n"
+"them to suit the current module's needs.  For example:"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-modules.texi:128
+msgid ""
+"@cindex binding renamer\n"
+"@lisp\n"
+"(use-modules ((ice-9 popen)\n"
+"              #:select ((open-pipe . pipe-open) close-pipe)\n"
+"              #:renamer (symbol-prefix-proc 'unixy:)))\n"
+"@end lisp"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-modules.texi:131
+msgid ""
+"@noindent\n"
+"or more simply:"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-modules.texi:138
+msgid ""
+"@cindex prefix\n"
+"@lisp\n"
+"(use-modules ((ice-9 popen)\n"
+"              #:select ((open-pipe . pipe-open) close-pipe)\n"
+"              #:prefix unixy:))\n"
+"@end lisp"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-modules.texi:143
+msgid ""
+"Here, the interface specification is more complex than before, and the\n"
+"result is that a custom interface with only two bindings is created and\n"
+"subsequently accessed by the current module.  The mapping of old to new\n"
+"names is as follows:"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-modules.texi:150
+msgid ""
+"@c Use `smallexample' since `table' is ugly.  --ttn\n"
+"@smallexample\n"
+"(ice-9 popen) sees:             current module sees:\n"
+"open-pipe                       unixy:pipe-open\n"
+"close-pipe                      unixy:close-pipe\n"
+"@end smallexample"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-modules.texi:153
+msgid ""
+"This example also shows how to use the convenience procedure\n"
+"@code{symbol-prefix-proc}."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-modules.texi:161
+msgid ""
+"You can also directly refer to bindings in a module by using the\n"
+"@code{@@} syntax.  For example, instead of using the\n"
+"@code{use-modules} statement from above and writing\n"
+"@code{unixy:pipe-open} to refer to the @code{pipe-open} from the\n"
+"@code{(ice-9 popen)}, you could also write @code{(@@ (ice-9 popen)\n"
+"open-pipe)}.  Thus an alternative to the complete @code{use-modules}\n"
+"statement would be"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-modules.texi:166
+msgid ""
+"@lisp\n"
+"(define unixy:pipe-open (@@ (ice-9 popen) open-pipe))\n"
+"(define unixy:close-pipe (@@ (ice-9 popen) close-pipe))\n"
+"@end lisp"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-modules.texi:172
+msgid ""
+"There is also @code{@@@@}, which can be used like @code{@@}, but does\n"
+"not check whether the variable that is being accessed is actually\n"
+"exported.  Thus, @code{@@@@} can be thought of as the impolite version\n"
+"of @code{@@} and should only be used as a last resort or for\n"
+"debugging, for example."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-modules.texi:176
+msgid ""
+"Note that just as with a @code{use-modules} statement, any module that\n"
+"has not yet been loaded will be loaded when referenced by a @code{@@} or\n"
+"@code{@@@@} form."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-modules.texi:179
+msgid ""
+"You can also use the @code{@@} and @code{@@@@} syntaxes as the target\n"
+"of a @code{set!} when the binding refers to a variable."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-modules.texi:184
+msgid ""
+"@deffn {Scheme Procedure} symbol-prefix-proc prefix-sym\n"
+"Return a procedure that prefixes its arg (a symbol) with\n"
+"@var{prefix-sym}.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-modules.texi:189
+msgid ""
+"@deffn syntax use-modules spec @dots{}\n"
+"Resolve each interface specification @var{spec} into an interface and\n"
+"arrange for these to be accessible by the current module.  The return\n"
+"value is unspecified."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-modules.texi:192
+msgid ""
+"@var{spec} can be a list of symbols, in which case it names a module\n"
+"whose public interface is found and used."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-modules.texi:194
+msgid "@var{spec} can also be of the form:"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-modules.texi:201
+msgid ""
+"@cindex binding renamer\n"
+"@lisp\n"
+" (MODULE-NAME [#:select SELECTION]\n"
+"              [#:prefix PREFIX]\n"
+"              [#:renamer RENAMER])\n"
+"@end lisp"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-modules.texi:210
+msgid ""
+"in which case a custom interface is newly created and used.\n"
+"@var{module-name} is a list of symbols, as above; @var{selection} is a\n"
+"list of selection-specs; @var{prefix} is a symbol that is prepended to\n"
+"imported names; and @var{renamer} is a procedure that takes a symbol and\n"
+"returns its new name.  A selection-spec is either a symbol or a pair of\n"
+"symbols @code{(ORIG . SEEN)}, where @var{orig} is the name in the used\n"
+"module and @var{seen} is the name in the using module.  Note that\n"
+"@var{seen} is also modified by @var{prefix} and @var{renamer}."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-modules.texi:215
+msgid ""
+"The @code{#:select}, @code{#:prefix}, and @code{#:renamer} clauses are\n"
+"optional.  If all are omitted, the returned interface has no bindings.\n"
+"If the @code{#:select} clause is omitted, @var{prefix} and @var{renamer}\n"
+"operate on the used module's public interface."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-modules.texi:218
+msgid ""
+"In addition to the above, @var{spec} can also include a @code{#:version} \n"
+"clause, of the form:"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-modules.texi:222
+msgid ""
+"@lisp\n"
+" #:version VERSION-SPEC\n"
+"@end lisp"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-modules.texi:228
+msgid ""
+"where @var{version-spec} is an R6RS-compatible version reference.  An\n"
+"error will be signaled in the case in which a module with the same name\n"
+"has already been loaded, if that module specifies a version and that\n"
+"version is not compatible with @var{version-spec}.  @xref{R6RS Version\n"
+"References}, for more on version references."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-modules.texi:232
+msgid ""
+"If the module name is not resolvable, @code{use-modules} will signal an\n"
+"error.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-modules.texi:237
+msgid ""
+"@deffn syntax @@ module-name binding-name\n"
+"Refer to the binding named @var{binding-name} in module\n"
+"@var{module-name}.  The binding must have been exported by the module.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-modules.texi:244
+msgid ""
+"@deffn syntax @@@@ module-name binding-name\n"
+"Refer to the binding named @var{binding-name} in module\n"
+"@var{module-name}.  The binding must not have been exported by the\n"
+"module.  This syntax is only intended for debugging purposes or as a\n"
+"last resort.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-modules.texi:247
+msgid ""
+"@node Creating Guile Modules\n"
+"@subsection Creating Guile Modules"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-modules.texi:250
+msgid ""
+"When you want to create your own modules, you have to take the following\n"
+"steps:"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-modules.texi:255
+msgid ""
+"@itemize @bullet\n"
+"@item\n"
+"Create a Scheme source file and add all variables and procedures you wish\n"
+"to export, or which are required by the exported procedures."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-modules.texi:258
+msgid ""
+"@item\n"
+"Add a @code{define-module} form at the beginning."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-modules.texi:263
+msgid ""
+"@item\n"
+"Export all bindings which should be in the public interface, either\n"
+"by using @code{define-public} or @code{export} (both documented below).\n"
+"@end itemize"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-modules.texi:266
+msgid ""
+"@deffn syntax define-module module-name option @dots{}\n"
+"@var{module-name} is a list of one or more symbols."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-modules.texi:270
+msgid ""
+"@lisp\n"
+"(define-module (ice-9 popen))\n"
+"@end lisp"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-modules.texi:273
+msgid ""
+"@code{define-module} makes this module available to Guile programs under\n"
+"the given @var{module-name}."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-modules.texi:277
+msgid ""
+"@var{option} @dots{} are keyword/value pairs which specify more about the\n"
+"defined module.  The recognized options and their meaning are shown in\n"
+"the following table."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-modules.texi:282
+msgid ""
+"@table @code\n"
+"@item #:use-module @var{interface-specification}\n"
+"Equivalent to a @code{(use-modules @var{interface-specification})}\n"
+"(@pxref{Using Guile Modules})."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-modules.texi:287
+msgid ""
+"@item #:autoload @var{module} @var{symbol-list}\n"
+"@cindex autoload\n"
+"Load @var{module} when any of @var{symbol-list} are accessed.  For\n"
+"example,"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-modules.texi:295
+msgid ""
+"@example\n"
+"(define-module (my mod)\n"
+"  #:autoload (srfi srfi-1) (partition delete-duplicates))\n"
+"...\n"
+"(if something\n"
+"    (set! foo (delete-duplicates ...)))\n"
+"@end example"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-modules.texi:298
+msgid ""
+"When a module is autoloaded, all its bindings become available.\n"
+"@var{symbol-list} is just those that will first trigger the load."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-modules.texi:302
+msgid ""
+"An autoload is a good way to put off loading a big module until it's\n"
+"really needed, for instance for faster startup or if it will only be\n"
+"needed in certain circumstances."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-modules.texi:306
+msgid ""
+"@code{@@} can do a similar thing (@pxref{Using Guile Modules}), but in\n"
+"that case an @code{@@} form must be written every time a binding from\n"
+"the module is used."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-modules.texi:312
+msgid ""
+"@item #:export @var{list}\n"
+"@cindex export\n"
+"Export all identifiers in @var{list} which must be a list of symbols\n"
+"or pairs of symbols.  This is equivalent to @code{(export @var{list})} \n"
+"in the module body."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-modules.texi:319
+msgid ""
+"@item #:re-export @var{list}\n"
+"@cindex re-export\n"
+"Re-export all identifiers in @var{list} which must be a list of\n"
+"symbols or pairs of symbols.  The symbols in @var{list} must be \n"
+"imported by the current module from other modules.  This is equivalent\n"
+"to @code{re-export} below."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-modules.texi:331
+msgid ""
+"@item #:replace @var{list}\n"
+"@cindex replace\n"
+"@cindex replacing binding\n"
+"@cindex overriding binding\n"
+"@cindex duplicate binding\n"
+"Export all identifiers in @var{list} (a list of symbols or pairs of\n"
+"symbols) and mark them as @dfn{replacing bindings}.  In the module \n"
+"user's name space, this will have the effect of replacing any binding \n"
+"with the same name that is not also ``replacing''.  Normally a \n"
+"replacement results in an ``override'' warning message, \n"
+"@code{#:replace} avoids that."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-modules.texi:339
+msgid ""
+"In general, a module that exports a binding for which the @code{(guile)}\n"
+"module already has a definition should use @code{#:replace} instead of\n"
+"@code{#:export}.  @code{#:replace}, in a sense, lets Guile know that the\n"
+"module @emph{purposefully} replaces a core binding.  It is important to\n"
+"note, however, that this binding replacement is confined to the name\n"
+"space of the module user.  In other words, the value of the core binding\n"
+"in question remains unchanged for other modules."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-modules.texi:348
+msgid ""
+"Note that although it is often a good idea for the replaced binding to\n"
+"remain compatible with a binding in @code{(guile)}, to avoid surprising\n"
+"the user, sometimes the bindings will be incompatible.  For example,\n"
+"SRFI-19 exports its own version of @code{current-time} (@pxref{SRFI-19\n"
+"Time}) which is not compatible with the core @code{current-time}\n"
+"function (@pxref{Time}).  Guile assumes that a user importing a module\n"
+"knows what she is doing, and uses @code{#:replace} for this binding\n"
+"rather than @code{#:export}."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-modules.texi:351
+msgid ""
+"A @code{#:replace} clause is equivalent to @code{(export! @var{list})}\n"
+"in the module body."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-modules.texi:354
+msgid ""
+"The @code{#:duplicates} (see below) provides fine-grain control about\n"
+"duplicate binding handling on the module-user side."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-modules.texi:361
+msgid ""
+"@item #:version @var{list}\n"
+"@cindex module version\n"
+"Specify a version for the module in the form of @var{list}, a list of\n"
+"zero or more exact, nonnegative integers.  The corresponding \n"
+"@code{#:version} option in the @code{use-modules} form allows callers\n"
+"to restrict the value of this option in various ways."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-modules.texi:370
+msgid ""
+"@item #:duplicates @var{list}\n"
+"@cindex duplicate binding handlers\n"
+"@cindex duplicate binding\n"
+"@cindex overriding binding\n"
+"Tell Guile to handle duplicate bindings for the bindings imported by\n"
+"the current module according to the policy defined by @var{list}, a\n"
+"list of symbols.  @var{list} must contain symbols representing a\n"
+"duplicate binding handling policy chosen among the following:"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-modules.texi:381
+msgid ""
+"@table @code\n"
+"@item check\n"
+"Raises an error when a binding is imported from more than one place.\n"
+"@item warn\n"
+"Issue a warning when a binding is imported from more than one place\n"
+"and leave the responsibility of actually handling the duplication to\n"
+"the next duplicate binding handler.\n"
+"@item replace\n"
+"When a new binding is imported that has the same name as a previously\n"
+"imported binding, then do the following:"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-modules.texi:395
+msgid ""
+"@enumerate\n"
+"@item\n"
+"@cindex replacing binding\n"
+"If the old binding was said to be @dfn{replacing} (via the\n"
+"@code{#:replace} option above) and the new binding is not replacing,\n"
+"the keep the old binding.\n"
+"@item\n"
+"If the old binding was not said to be replacing and the new binding is\n"
+"replacing, then replace the old binding with the new one.\n"
+"@item\n"
+"If neither the old nor the new binding is replacing, then keep the old\n"
+"one.\n"
+"@end enumerate"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-modules.texi:409
+msgid ""
+"@item warn-override-core\n"
+"Issue a warning when a core binding is being overwritten and actually\n"
+"override the core binding with the new one.\n"
+"@item first\n"
+"In case of duplicate bindings, the firstly imported binding is always\n"
+"the one which is kept.\n"
+"@item last\n"
+"In case of duplicate bindings, the lastly imported binding is always\n"
+"the one which is kept.\n"
+"@item noop\n"
+"In case of duplicate bindings, leave the responsibility to the next\n"
+"duplicate handler.\n"
+"@end table"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-modules.texi:415
+msgid ""
+"If @var{list} contains more than one symbol, then the duplicate\n"
+"binding handlers which appear first will be used first when resolving\n"
+"a duplicate binding situation.  As mentioned above, some resolution\n"
+"policies may explicitly leave the responsibility of handling the\n"
+"duplication to the next handler in @var{list}."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-modules.texi:419
+msgid ""
+"If GOOPS has been loaded before the @code{#:duplicates} clause is\n"
+"processed, there are additional strategies available for dealing with\n"
+"generic functions.  @xref{Merging Generics}, for more information."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-modules.texi:423
+msgid ""
+"@findex default-duplicate-binding-handler\n"
+"The default duplicate binding resolution policy is given by the\n"
+"@code{default-duplicate-binding-handler} procedure, and is"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-modules.texi:427
+msgid ""
+"@lisp\n"
+"(replace warn-override-core warn last)\n"
+"@end lisp"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-modules.texi:435
+msgid ""
+"@item #:pure\n"
+"@cindex pure module\n"
+"Create a @dfn{pure} module, that is a module which does not contain any\n"
+"of the standard procedure bindings except for the syntax forms.  This is\n"
+"useful if you want to create @dfn{safe} modules, that is modules which\n"
+"do not know anything about dangerous procedures.\n"
+"@end table"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-modules.texi:437
+msgctxt "/home/bear/work/guile/doc/guile/en/api-modules.texi:437"
+msgid "@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-modules.texi:445
+msgid ""
+"@deffn syntax export variable @dots{}\n"
+"Add all @var{variable}s (which must be symbols or pairs of symbols) to \n"
+"the list of exported bindings of the current module.  If @var{variable}\n"
+"is a pair, its @code{car} gives the name of the variable as seen by the\n"
+"current module and its @code{cdr} specifies a name for the binding in\n"
+"the current module's public interface.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-modules.texi:449
+msgid ""
+"@deffn syntax define-public @dots{}\n"
+"Equivalent to @code{(begin (define foo ...) (export foo))}.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-modules.texi:456
+msgid ""
+"@deffn syntax re-export variable @dots{}\n"
+"Add all @var{variable}s (which must be symbols or pairs of symbols) to \n"
+"the list of re-exported bindings of the current module.  Pairs of \n"
+"symbols are handled as in @code{export}.  Re-exported bindings must be\n"
+"imported by the current module from some other module.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-modules.texi:463
+msgid ""
+"@deffn syntax export! variable @dots{}\n"
+"Like @code{export}, but marking the exported variables as replacing.\n"
+"Using a module with replacing bindings will cause any existing bindings\n"
+"to be replaced without issuing any warnings.  See the discussion of\n"
+"@code{#:replace} above.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-modules.texi:466
+msgid ""
+"@node Modules and the File System\n"
+"@subsection Modules and the File System"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-modules.texi:470
+msgid ""
+"Typical programs only use a small subset of modules installed on a Guile\n"
+"system.  In order to keep startup time down, Guile only loads modules\n"
+"when a program uses them, on demand."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-modules.texi:474
+msgid ""
+"When a program evaluates @code{(use-modules (ice-9 popen))}, and the\n"
+"module is not loaded, Guile searches for a conventionally-named file\n"
+"from in the @dfn{load path}."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-modules.texi:484
+msgid ""
+"In this case, loading @code{(ice-9 popen)} will eventually cause Guile\n"
+"to run @code{(primitive-load-path \"ice-9/popen\")}.\n"
+"@code{primitive-load-path} will search for a file @file{ice-9/popen} in\n"
+"the @code{%load-path} (@pxref{Load Paths}).  For each directory in\n"
+"@code{%load-path}, Guile will try to find the file name, concatenated\n"
+"with the extensions from @code{%load-extensions}.  By default, this will\n"
+"cause Guile to @code{stat} @file{ice-9/popen.scm}, and then\n"
+"@file{ice-9/popen}.  @xref{Load Paths}, for more on\n"
+"@code{primitive-load-path}."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-modules.texi:491
+msgid ""
+"If a corresponding compiled @file{.go} file is found in the\n"
+"@code{%load-compiled-path} or in the fallback path, and is as fresh as\n"
+"the source file, it will be loaded instead of the source file.  If no\n"
+"compiled file is found, Guile may try to compile the source file and\n"
+"cache away the resulting @file{.go} file.  @xref{Compilation}, for more\n"
+"on compilation."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-modules.texi:495
+msgid ""
+"Once Guile finds a suitable source or compiled file is found, the file\n"
+"will be loaded.  If, after loading the file, the module under\n"
+"consideration is still not defined, Guile will signal an error."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-modules.texi:498
+msgid ""
+"For more information on where and how to install Scheme modules,\n"
+"@xref{Installing Site Packages}."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-modules.texi:502
+msgid ""
+"@node R6RS Version References\n"
+"@subsection R6RS Version References"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-modules.texi:509
+msgid ""
+"Guile's module system includes support for locating modules based on\n"
+"a declared version specifier of the same form as the one described in\n"
+"R6RS (@pxref{Library form, R6RS Library Form,, r6rs, The Revised^6 \n"
+"Report on the Algorithmic Language Scheme}).  By using the \n"
+"@code{#:version} keyword in a @code{define-module} form, a module may\n"
+"specify a version as a list of zero or more exact, nonnegative integers."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-modules.texi:515
+msgid ""
+"This version can then be used to locate the module during the module\n"
+"search process.  Client modules and callers of the @code{use-modules} \n"
+"function may specify constraints on the versions of target modules by\n"
+"providing a @dfn{version reference}, which has one of the following\n"
+"forms:"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-modules.texi:522
+msgid ""
+"@lisp\n"
+" (@var{sub-version-reference} ...)\n"
+" (and @var{version-reference} ...)\n"
+" (or @var{version-reference} ...)\n"
+" (not @var{version-reference})\n"
+"@end lisp"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-modules.texi:524
+msgid "in which @var{sub-version-reference} is in turn one of:"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-modules.texi:533
+msgid ""
+"@lisp\n"
+" (@var{sub-version})\n"
+" (>= @var{sub-version})\n"
+" (<= @var{sub-version})\n"
+" (and @var{sub-version-reference} ...)\n"
+" (or @var{sub-version-reference} ...)\n"
+" (not @var{sub-version-reference})\n"
+"@end lisp"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-modules.texi:538
+msgid ""
+"in which @var{sub-version} is an exact, nonnegative integer as above. A\n"
+"version reference matches a declared module version if each element of\n"
+"the version reference matches a corresponding element of the module \n"
+"version, according to the following rules:"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-modules.texi:544
+msgid ""
+"@itemize @bullet\n"
+"@item\n"
+"The @code{and} sub-form matches a version or version element if every \n"
+"element in the tail of the sub-form matches the specified version or \n"
+"version element."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-modules.texi:549
+msgid ""
+"@item\n"
+"The @code{or} sub-form matches a version or version element if any \n"
+"element in the tail of the sub-form matches the specified version or\n"
+"version element."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-modules.texi:553
+msgid ""
+"@item\n"
+"The @code{not} sub-form matches a version or version element if the tail\n"
+"of the sub-form does not match the version or version element.  "
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-modules.texi:558
+msgid ""
+"@item\n"
+"The @code{>=} sub-form matches a version element if the element is \n"
+"greater than or equal to the @var{sub-version} in the tail of the \n"
+"sub-form."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-modules.texi:562
+msgid ""
+"@item\n"
+"The @code{<=} sub-form matches a version element if the version is less\n"
+"than or equal to the @var{sub-version} in the tail of the sub-form."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-modules.texi:567
+msgid ""
+"@item\n"
+"A @var{sub-version} matches a version element if one is @var{eqv?} to\n"
+"the other.\n"
+"@end itemize"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-modules.texi:569
+msgid "For example, a module declared as:"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-modules.texi:573
+msgid ""
+"@lisp\n"
+" (define-module (mylib mymodule) #:version (1 2 0))\n"
+"@end lisp"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-modules.texi:576
+msgid ""
+"would be successfully loaded by any of the following @code{use-modules}\n"
+"expressions:"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-modules.texi:582
+msgid ""
+"@lisp\n"
+" (use-modules ((mylib mymodule) #:version (1 2 (>= 0))))\n"
+" (use-modules ((mylib mymodule) #:version (or (1 2 0) (1 2 1))))\n"
+" (use-modules ((mylib mymodule) #:version ((and (>= 1) (not 2)) 2 0)))\n"
+"@end lisp"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-modules.texi:586
+msgid ""
+"@node R6RS Libraries\n"
+"@subsection R6RS Libraries"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-modules.texi:597
+msgid ""
+"In addition to the API described in the previous sections, you also\n"
+"have the option to create modules using the portable @code{library} form\n"
+"described in R6RS (@pxref{Library form, R6RS Library Form,, r6rs, The\n"
+"Revised^6 Report on the Algorithmic Language Scheme}), and to import \n"
+"libraries created in this format by other programmers.  Guile's R6RS \n"
+"library implementation takes advantage of the flexibility built into the\n"
+"module system by expanding the R6RS library form into a corresponding \n"
+"Guile @code{define-module} form that specifies equivalent import and \n"
+"export requirements and includes the same body expressions.  The library\n"
+"expression:"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-modules.texi:603
+msgid ""
+"@lisp\n"
+"  (library (mylib (1 2))\n"
+"    (export mybinding)\n"
+"    (import (otherlib (3))))\n"
+"@end lisp"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-modules.texi:605
+msgid "is equivalent to the module definition:"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-modules.texi:612
+msgid ""
+"@lisp\n"
+"  (define-module (mylib)\n"
+"    #:version (1 2)\n"
+"    #:use-module ((otherlib) #:version (3))\n"
+"    #:export (mybinding))\n"
+"@end lisp"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-modules.texi:623
+msgid ""
+"Central to the mechanics of R6RS libraries is the concept of import\n"
+"and export @dfn{levels}, which control the visibility of bindings at\n"
+"various phases of a library's lifecycle --- macros necessary to \n"
+"expand forms in the library's body need to be available at expand \n"
+"time; variables used in the body of a procedure exported by the\n"
+"library must be available at runtime.  R6RS specifies the optional\n"
+"@code{for} sub-form of an @emph{import set} specification (see below)\n"
+"as a mechanism by which a library author can indicate that a\n"
+"particular library import should take place at a particular phase \n"
+"with respect to the lifecycle of the importing library.  "
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-modules.texi:630
+msgid ""
+"Guile's library implementation uses a technique called \n"
+"@dfn{implicit phasing} (first described by Abdulaziz Ghuloum and R. \n"
+"Kent Dybvig), which allows the expander and compiler to automatically \n"
+"determine the necessary visibility of a binding imported from another \n"
+"library.  As such, the @code{for} sub-form described below is ignored by\n"
+"Guile (but may be required by Schemes in which phasing is explicit)."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-modules.texi:635
+msgid ""
+"@deffn {Scheme Syntax} library name (export export-spec ...) (import import-"
+"spec ...) body ...\n"
+"Defines a new library with the specified name, exports, and imports,\n"
+"and evaluates the specified body expressions in this library's \n"
+"environment."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-modules.texi:639
+msgid ""
+"The library @var{name} is a non-empty list of identifiers, optionally\n"
+"ending with a version specification of the form described above\n"
+"(@pxref{Creating Guile Modules})."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-modules.texi:646
+msgid ""
+"Each @var{export-spec} is the name of a variable defined or imported\n"
+"by the library, or must take the form \n"
+"@code{(rename (internal-name external-name) ...)}, where the \n"
+"identifier @var{internal-name} names a variable defined or imported \n"
+"by the library and @var{external-name} is the name by which the\n"
+"variable is seen by importing libraries."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-modules.texi:650
+msgid ""
+"Each @var{import-spec} must be either an @dfn{import set} (see below)\n"
+"or must be of the form @code{(for import-set import-level ...)}, \n"
+"where each @var{import-level} is one of:"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-modules.texi:656
+msgid ""
+"@lisp\n"
+"  run\n"
+"  expand\n"
+"  (meta @var{level})\n"
+"@end lisp"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-modules.texi:661
+msgid ""
+"where @var{level} is an integer.  Note that since Guile does not\n"
+"require explicit phase specification, any @var{import-set}s found \n"
+"inside of @code{for} sub-forms will be ``unwrapped'' during \n"
+"expansion and processed as if they had been specified directly."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-modules.texi:663
+msgid "Import sets in turn take one of the following forms:"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-modules.texi:672
+msgid ""
+"@lisp\n"
+"  @var{library-reference}\n"
+"  (library @var{library-reference})\n"
+"  (only @var{import-set} @var{identifier} ...)\n"
+"  (except @var{import-set} @var{identifier} ...)\n"
+"  (prefix @var{import-set} @var{identifier})\n"
+"  (rename @var{import-set} (@var{internal-identifier} @var{external-"
+"identifier}) ...)\n"
+"@end lisp"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-modules.texi:677
+msgid ""
+"where @var{library-reference} is a non-empty list of identifiers\n"
+"ending with an optional version reference (@pxref{R6RS Version \n"
+"References}), and the other sub-forms have the following semantics,\n"
+"defined recursively on nested @var{import-set}s:"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-modules.texi:679
+msgid "@itemize @bullet"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-modules.texi:683
+msgid ""
+"@item\n"
+"The @code{library} sub-form is used to specify libraries for import\n"
+"whose names begin with the identifier ``library.''"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-modules.texi:687
+msgid ""
+"@item\n"
+"The @code{only} sub-form imports only the specified @var{identifier}s\n"
+"from the given @var{import-set}."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-modules.texi:692
+msgid ""
+"@item\n"
+"The @code{except} sub-form imports all of the bindings exported by \n"
+"@var{import-set} except for those that appear in the specified list\n"
+"of @var{identifier}s."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-modules.texi:697
+msgid ""
+"@item\n"
+"The @code{prefix} sub-form imports all of the bindings exported\n"
+"by @var{import-set}, first prefixing them with the specified\n"
+"@var{identifier}."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-modules.texi:704
+msgid ""
+"@item\n"
+"The @code{rename} sub-form imports all of the identifiers exported\n"
+"by @var{import-set}.  The binding for each @var{internal-identifier}\n"
+"among these identifiers is made visible to the importing library as\n"
+"the corresponding @var{external-identifier}; all other bindings are\n"
+"imported using the names provided by @var{import-set}."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-modules.texi:706
+msgid "@end itemize"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-modules.texi:711
+msgid ""
+"Note that because Guile translates R6RS libraries into module \n"
+"definitions, an import specification may be used to declare a\n"
+"dependency on a native Guile module --- although doing so may make \n"
+"your libraries less portable to other Schemes."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-modules.texi:713
+msgctxt "/home/bear/work/guile/doc/guile/en/api-modules.texi:713"
+msgid "@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-modules.texi:719
+msgid ""
+"@deffn {Scheme Syntax} import import-spec ...\n"
+"Import into the current environment the libraries specified by the\n"
+"given import specifications, where each @var{import-spec} takes the\n"
+"same form as in the @code{library} form described above.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-modules.texi:724
+msgid ""
+"@node Variables\n"
+"@subsection Variables\n"
+"@tpindex Variables"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-modules.texi:728
+msgid ""
+"Each module has its own hash table, sometimes known as an @dfn{obarray},\n"
+"that maps the names defined in that module to their corresponding\n"
+"variable objects."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-modules.texi:734
+msgid ""
+"A variable is a box-like object that can hold any Scheme value.  It is\n"
+"said to be @dfn{undefined} if its box holds a special Scheme value that\n"
+"denotes undefined-ness (which is different from all other Scheme values,\n"
+"including for example @code{#f}); otherwise the variable is\n"
+"@dfn{defined}."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-modules.texi:739
+msgid ""
+"On its own, a variable object is anonymous.  A variable is said to be\n"
+"@dfn{bound} when it is associated with a name in some way, usually a\n"
+"symbol in a module obarray.  When this happens, the name is said to be\n"
+"bound to the variable, in that module."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-modules.texi:746
+msgid ""
+"(That's the theory, anyway.  In practice, defined-ness and bound-ness\n"
+"sometimes get confused, because Lisp and Scheme implementations have\n"
+"often conflated --- or deliberately drawn no distinction between --- a\n"
+"name that is unbound and a name that is bound to a variable whose value\n"
+"is undefined.  We will try to be clear about the difference and explain\n"
+"any confusion where it is unavoidable.)"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-modules.texi:750
+msgid ""
+"Variables do not have a read syntax.  Most commonly they are created and\n"
+"bound implicitly by @code{define} expressions: a top-level @code{define}\n"
+"expression of the form"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-modules.texi:754
+msgid ""
+"@lisp\n"
+"(define @var{name} @var{value})\n"
+"@end lisp"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-modules.texi:760
+msgid ""
+"@noindent\n"
+"creates a variable with initial value @var{value} and binds it to the\n"
+"name @var{name} in the current module.  But they can also be created\n"
+"dynamically by calling one of the constructor procedures\n"
+"@code{make-variable} and @code{make-undefined-variable}."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-modules.texi:765
+msgid ""
+"@deffn {Scheme Procedure} make-undefined-variable\n"
+"@deffnx {C Function} scm_make_undefined_variable ()\n"
+"Return a variable that is initially unbound.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-modules.texi:770
+msgid ""
+"@deffn {Scheme Procedure} make-variable init\n"
+"@deffnx {C Function} scm_make_variable (init)\n"
+"Return a variable initialized to value @var{init}.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-modules.texi:776
+msgid ""
+"@deffn {Scheme Procedure} variable-bound? var\n"
+"@deffnx {C Function} scm_variable_bound_p (var)\n"
+"Return @code{#t} if @var{var} is bound to a value, or @code{#f}\n"
+"otherwise.  Throws an error if @var{var} is not a variable object.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-modules.texi:783
+msgid ""
+"@deffn {Scheme Procedure} variable-ref var\n"
+"@deffnx {C Function} scm_variable_ref (var)\n"
+"Dereference @var{var} and return its value.\n"
+"@var{var} must be a variable object; see @code{make-variable}\n"
+"and @code{make-undefined-variable}.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-modules.texi:790
+msgid ""
+"@deffn {Scheme Procedure} variable-set! var val\n"
+"@deffnx {C Function} scm_variable_set_x (var, val)\n"
+"Set the value of the variable @var{var} to @var{val}.\n"
+"@var{var} must be a variable object, @var{val} can be any\n"
+"value. Return an unspecified value.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-modules.texi:795
+msgid ""
+"@deffn {Scheme Procedure} variable-unset! var\n"
+"@deffnx {C Function} scm_variable_unset_x (var)\n"
+"Unset the value of the variable @var{var}, leaving @var{var} unbound.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-modules.texi:801
+msgid ""
+"@deffn {Scheme Procedure} variable? obj\n"
+"@deffnx {C Function} scm_variable_p (obj)\n"
+"Return @code{#t} if @var{obj} is a variable object, else return\n"
+"@code{#f}.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-modules.texi:805
+msgid ""
+"@node Module System Reflection\n"
+"@subsection Module System Reflection"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-modules.texi:810
+msgid ""
+"The previous sections have described a declarative view of the module\n"
+"system.  You can also work with it programmatically by accessing and\n"
+"modifying various parts of the Scheme objects that Guile uses to\n"
+"implement the module system."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-modules.texi:815
+msgid ""
+"At any time, there is a @dfn{current module}.  This module is the one\n"
+"where a top-level @code{define} and similar syntax will add new\n"
+"bindings.  You can find other module objects with @code{resolve-module},\n"
+"for example."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-modules.texi:817
+msgid "These module objects can be used as the second argument to @code{eval}."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-modules.texi:822
+msgid ""
+"@deffn {Scheme Procedure} current-module\n"
+"@deffnx {C Function} scm_current_module ()\n"
+"Return the current module object.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-modules.texi:828
+msgid ""
+"@deffn {Scheme Procedure} set-current-module module\n"
+"@deffnx {C Function} scm_set_current_module (module)\n"
+"Set the current module to @var{module} and return\n"
+"the previous current module.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-modules.texi:833
+msgid ""
+"@deffn {Scheme Procedure} save-module-excursion thunk\n"
+"Call @var{thunk} within a @code{dynamic-wind} such that the module that\n"
+"is current at invocation time is restored when @var{thunk}'s dynamic\n"
+"extent is left (@pxref{Dynamic Wind})."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-modules.texi:840
+msgid ""
+"More precisely, if @var{thunk} escapes non-locally, the current module\n"
+"(at the time of escape) is saved, and the original current module (at\n"
+"the time @var{thunk}'s dynamic extent was last entered) is restored.  If\n"
+"@var{thunk}'s dynamic extent is re-entered, then the current module is\n"
+"saved, and the previously saved inner module is set current again.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-modules.texi:851
+msgid ""
+"@deffn {Scheme Procedure} resolve-module name [autoload=#t] [version=#f] @\n"
+"                          [#:ensure=#t]\n"
+"@deffnx {C Function} scm_resolve_module (name)\n"
+"Find the module named @var{name} and return it.  When it has not already\n"
+"been defined and @var{autoload} is true, try to auto-load it.  When it\n"
+"can't be found that way either, create an empty module if @var{ensure}\n"
+"is true, otherwise return @code{#f}.  If @var{version} is true, ensure\n"
+"that the resulting module is compatible with the given version reference\n"
+"(@pxref{R6RS Version References}).  The name is a list of symbols.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-modules.texi:859
+msgid ""
+"@deffn {Scheme Procedure} resolve-interface name [#:select=#f] @\n"
+"                          [#:hide='()] [#:prefix=#f] @\n"
+"                          [#:renamer=#f] [#:version=#f]\n"
+"Find the module named @var{name} as with @code{resolve-module} and\n"
+"return its interface.  The interface of a module is also a module\n"
+"object, but it contains only the exported bindings.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-modules.texi:863
+msgid ""
+"@deffn {Scheme Procedure} module-uses module\n"
+"Return a list of the interfaces used by @var{module}.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-modules.texi:869
+msgid ""
+"@deffn {Scheme Procedure} module-use! module interface\n"
+"Add @var{interface} to the front of the use-list of @var{module}.  Both\n"
+"arguments should be module objects, and @var{interface} should very\n"
+"likely be a module returned by @code{resolve-interface}.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-modules.texi:874
+msgid ""
+"@deffn {Scheme Procedure} reload-module module\n"
+"Revisit the source file that corresponds to @var{module}.  Raises an\n"
+"error if no source file is associated with the given module.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-modules.texi:879
+msgid ""
+"As mentioned in the previous section, modules contain a mapping between\n"
+"identifiers (as symbols) and storage locations (as variables).  Guile\n"
+"defines a number of procedures to allow access to this mapping.  If you\n"
+"are programming in C, @ref{Accessing Modules from C}."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-modules.texi:884
+msgid ""
+"@deffn {Scheme Procedure} module-variable module name\n"
+"Return the variable bound to @var{name} (a symbol) in @var{module}, or\n"
+"@code{#f} if @var{name} is unbound.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-modules.texi:889
+msgid ""
+"@deffn {Scheme Procedure} module-add! module name var\n"
+"Define a new binding between @var{name} (a symbol) and @var{var} (a\n"
+"variable) in @var{module}.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-modules.texi:895
+msgid ""
+"@deffn {Scheme Procedure} module-ref module name\n"
+"Look up the value bound to @var{name} in @var{module}.  Like\n"
+"@code{module-variable}, but also does a @code{variable-ref} on the\n"
+"resulting variable, raising an error if @var{name} is unbound.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-modules.texi:903
+msgid ""
+"@deffn {Scheme Procedure} module-define! module name value\n"
+"Locally bind @var{name} to @var{value} in @var{module}.  If @var{name}\n"
+"was already locally bound in @var{module}, i.e., defined locally and not\n"
+"by an imported module, the value stored in the existing variable will be\n"
+"updated.  Otherwise, a new variable will be added to the module, via\n"
+"@code{module-add!}.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-modules.texi:908
+msgid ""
+"@deffn {Scheme Procedure} module-set! module name value\n"
+"Update the binding of @var{name} in @var{module} to @var{value}, raising\n"
+"an error if @var{name} is not already bound in @var{module}.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-modules.texi:912
+msgid ""
+"There are many other reflective procedures available in the default\n"
+"environment.  If you find yourself using one of them, please contact the\n"
+"Guile developers so that we can commit to stability for that interface."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-modules.texi:916
+msgid ""
+"@node Accessing Modules from C\n"
+"@subsection Accessing Modules from C"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-modules.texi:920
+msgid ""
+"The last sections have described how modules are used in Scheme code,\n"
+"which is the recommended way of creating and accessing modules.  You\n"
+"can also work with modules from C, but it is more cumbersome."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-modules.texi:922
+msgid "The following procedures are available."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-modules.texi:929
+msgid ""
+"@deftypefn {C Function} SCM scm_c_call_with_current_module (SCM @var{module}"
+", SCM (*@var{func})(void *), void *@var{data})\n"
+"Call @var{func} and make @var{module} the current module during the\n"
+"call.  The argument @var{data} is passed to @var{func}.  The return\n"
+"value of @code{scm_c_call_with_current_module} is the return value of\n"
+"@var{func}.\n"
+"@end deftypefn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-modules.texi:934
+msgid ""
+"@deftypefn {C Function} SCM scm_public_variable (SCM @var{module_name}, SCM "
+"@var{name})\n"
+"@deftypefnx {C Function} SCM scm_c_public_variable ({const char "
+"*}@var{module_name}, {const char *}@var{name})\n"
+"Find a the variable bound to the symbol @var{name} in the public\n"
+"interface of the module named @var{module_name}."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-modules.texi:938
+msgid ""
+"@var{module_name} should be a list of symbols, when represented as a\n"
+"Scheme object, or a space-separated string, in the @code{const char *}\n"
+"case.  See @code{scm_c_define_module} below, for more examples."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-modules.texi:942
+msgid ""
+"Signals an error if no module was found with the given name.  If\n"
+"@var{name} is not bound in the module, just returns @code{#f}.\n"
+"@end deftypefn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-modules.texi:949
+msgid ""
+"@deftypefn {C Function} SCM scm_private_variable (SCM @var{module_name}, SCM "
+"@var{name})\n"
+"@deftypefnx {C Function} SCM scm_c_private_variable ({const char "
+"*}@var{module_name}, {const char *}@var{name})\n"
+"Like @code{scm_public_variable}, but looks in the internals of the\n"
+"module named @var{module_name} instead of the public interface.\n"
+"Logically, these procedures should only be called on modules you write.\n"
+"@end deftypefn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-modules.texi:957
+msgid ""
+"@deftypefn {C Function} SCM scm_public_lookup (SCM @var{module_name}, SCM "
+"@var{name})\n"
+"@deftypefnx {C Function} SCM scm_c_public_lookup ({const char "
+"*}@var{module_name}, {const char *}@var{name})\n"
+"@deftypefnx {C Function} SCM scm_private_lookup (SCM @var{module_name}, SCM "
+"@var{name})\n"
+"@deftypefnx {C Function} SCM scm_c_private_lookup ({const char "
+"*}@var{module_name}, {const char *}@var{name})\n"
+"Like @code{scm_public_variable} or @code{scm_private_variable}, but if\n"
+"the @var{name} is not bound in the module, signals an error.  Returns a\n"
+"variable, always."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-modules.texi:960
+msgid ""
+"@example\n"
+"static SCM eval_string_var;"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-modules.texi:968
+msgid ""
+"/* NOTE: It is important that the call to 'my_init'\n"
+"   happens-before all calls to 'my_eval_string'. */\n"
+"void my_init (void)\n"
+"@{\n"
+"  eval_string_var = scm_c_public_lookup (\"ice-9 eval-string\",\n"
+"                                         \"eval-string\");\n"
+"@}"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-modules.texi:975
+msgid ""
+"SCM my_eval_string (SCM str)\n"
+"@{\n"
+"  return scm_call_1 (scm_variable_ref (eval_string_var), str);\n"
+"@}\n"
+"@end example\n"
+"@end deftypefn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-modules.texi:985
+msgid ""
+"@deftypefn {C Function} SCM scm_public_ref (SCM @var{module_name}, SCM "
+"@var{name})\n"
+"@deftypefnx {C Function} SCM scm_c_public_ref ({const char "
+"*}@var{module_name}, {const char *}@var{name})\n"
+"@deftypefnx {C Function} SCM scm_private_ref (SCM @var{module_name}, SCM "
+"@var{name})\n"
+"@deftypefnx {C Function} SCM scm_c_private_ref ({const char "
+"*}@var{module_name}, {const char *}@var{name})\n"
+"Like @code{scm_public_lookup} or @code{scm_private_lookup}, but\n"
+"additionally dereferences the variable.  If the variable object is\n"
+"unbound, signals an error.  Returns the value bound to @var{name} in\n"
+"@var{module_name}.\n"
+"@end deftypefn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-modules.texi:989
+msgid ""
+"In addition, there are a number of other lookup-related procedures.  We\n"
+"suggest that you use the @code{scm_public_} and @code{scm_private_}\n"
+"family of procedures instead, if possible."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-modules.texi:995
+msgid ""
+"@deftypefn {C Function} SCM scm_c_lookup ({const char *}@var{name})\n"
+"Return the variable bound to the symbol indicated by @var{name} in the\n"
+"current module.  If there is no such binding or the symbol is not\n"
+"bound to a variable, signal an error.\n"
+"@end deftypefn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-modules.texi:999
+msgid ""
+"@deftypefn {C Function} SCM scm_lookup (SCM @var{name})\n"
+"Like @code{scm_c_lookup}, but the symbol is specified directly.\n"
+"@end deftypefn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-modules.texi:1005
+msgid ""
+"@deftypefn {C Function} SCM scm_c_module_lookup (SCM @var{module}, {const "
+"char *}@var{name})\n"
+"@deftypefnx {C Function} SCM scm_module_lookup (SCM @var{module}, SCM "
+"@var{name})\n"
+"Like @code{scm_c_lookup} and @code{scm_lookup}, but the specified\n"
+"module is used instead of the current one.\n"
+"@end deftypefn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-modules.texi:1010
+msgid ""
+"@deftypefn {C Function} SCM scm_module_variable (SCM @var{module}, SCM "
+"@var{name})\n"
+"Like @code{scm_module_lookup}, but if the binding does not exist, just\n"
+"returns @code{#f} instead of raising an error.\n"
+"@end deftypefn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-modules.texi:1012
+msgid "To define a value, use @code{scm_define}:"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-modules.texi:1018
+msgid ""
+"@deftypefn {C Function} SCM scm_c_define ({const char *}@var{name}, SCM "
+"@var{val})\n"
+"Bind the symbol indicated by @var{name} to a variable in the current\n"
+"module and set that variable to @var{val}.  When @var{name} is already\n"
+"bound to a variable, use that.  Else create a new variable.\n"
+"@end deftypefn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-modules.texi:1022
+msgid ""
+"@deftypefn {C Function} SCM scm_define (SCM @var{name}, SCM @var{val})\n"
+"Like @code{scm_c_define}, but the symbol is specified directly.\n"
+"@end deftypefn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-modules.texi:1028
+msgid ""
+"@deftypefn {C Function} SCM scm_c_module_define (SCM @var{module}, {const "
+"char *}@var{name}, SCM @var{val})\n"
+"@deftypefnx {C Function} SCM scm_module_define (SCM @var{module}, SCM "
+"@var{name}, SCM @var{val})\n"
+"Like @code{scm_c_define} and @code{scm_define}, but the specified\n"
+"module is used instead of the current one.\n"
+"@end deftypefn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-modules.texi:1033
+msgid ""
+"In some rare cases, you may need to access the variable that\n"
+"@code{scm_module_define} would have accessed, without changing the\n"
+"binding of the existing variable, if one is present.  In that case, use\n"
+"@code{scm_module_ensure_local_variable}:"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-modules.texi:1039
+msgid ""
+"@deftypefn {C Function} SCM scm_module_ensure_local_variable (SCM "
+"@var{module}, SCM @var{sym})\n"
+"Like @code{scm_module_define}, but if the @var{sym} is already locally\n"
+"bound in that module, the variable's existing binding is not reset.\n"
+"Returns a variable.\n"
+"@end deftypefn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-modules.texi:1043
+msgid ""
+"@deftypefn {C Function} SCM scm_module_reverse_lookup (SCM @var{module}, SCM "
+"@var{variable})\n"
+"Find the symbol that is bound to @var{variable} in @var{module}.  When no "
+"such binding is found, return @code{#f}.\n"
+"@end deftypefn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-modules.texi:1047
+msgid ""
+"@deftypefn {C Function} SCM scm_c_define_module ({const char *}@var{name}, "
+"void (*@var{init})(void *), void *@var{data})\n"
+"Define a new module named @var{name} and make it current while\n"
+"@var{init} is called, passing it @var{data}.  Return the module."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-modules.texi:1051
+msgid ""
+"The parameter @var{name} is a string with the symbols that make up\n"
+"the module name, separated by spaces.  For example, @samp{\"foo bar\"} "
+"names\n"
+"the module @samp{(foo bar)}."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-modules.texi:1055
+msgid ""
+"When there already exists a module named @var{name}, it is used\n"
+"unchanged, otherwise, an empty module is created.\n"
+"@end deftypefn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-modules.texi:1062
+msgid ""
+"@deftypefn {C Function} SCM scm_c_resolve_module ({const char *}@var{name})\n"
+"Find the module name @var{name} and return it.  When it has not\n"
+"already been defined, try to auto-load it.  When it can't be found\n"
+"that way either, create an empty module.  The name is interpreted as\n"
+"for @code{scm_c_define_module}.\n"
+"@end deftypefn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-modules.texi:1068
+msgid ""
+"@deftypefn {C Function} SCM scm_c_use_module ({const char *}@var{name})\n"
+"Add the module named @var{name} to the uses list of the current\n"
+"module, as with @code{(use-modules @var{name})}.  The name is\n"
+"interpreted as for @code{scm_c_define_module}.\n"
+"@end deftypefn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-modules.texi:1074
+msgid ""
+"@deftypefn {C Function} void scm_c_export ({const char *}@var{name}, ...)\n"
+"Add the bindings designated by @var{name}, ... to the public interface\n"
+"of the current module.  The list of names is terminated by\n"
+"@code{NULL}.\n"
+"@end deftypefn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-modules.texi:1078
+msgid ""
+"@node provide and require\n"
+"@subsection provide and require"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-modules.texi:1083
+msgid ""
+"Aubrey Jaffer, mostly to support his portable Scheme library SLIB,\n"
+"implemented a provide/require mechanism for many Scheme implementations.\n"
+"Library files in SLIB @emph{provide} a feature, and when user programs\n"
+"@emph{require} that feature, the library file is loaded in."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-modules.texi:1086
+msgid ""
+"For example, the file @file{random.scm} in the SLIB package contains the\n"
+"line"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-modules.texi:1090
+msgid ""
+"@lisp\n"
+"(provide 'random)\n"
+"@end lisp"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-modules.texi:1092
+msgid "so to use its procedures, a user would type"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-modules.texi:1096
+msgid ""
+"@lisp\n"
+"(require 'random)\n"
+"@end lisp"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-modules.texi:1100
+msgid ""
+"and they would magically become available, @emph{but still have the same\n"
+"names!}  So this method is nice, but not as good as a full-featured\n"
+"module system."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-modules.texi:1103
+msgid ""
+"When SLIB is used with Guile, provide and require can be used to access\n"
+"its facilities."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-modules.texi:1107
+msgid ""
+"@node Environments\n"
+"@subsection Environments\n"
+"@cindex environment"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-modules.texi:1113
+msgid ""
+"Scheme, as defined in R5RS, does @emph{not} have a full module system.\n"
+"However it does define the concept of a top-level @dfn{environment}.\n"
+"Such an environment maps identifiers (symbols) to Scheme objects such\n"
+"as procedures and lists: @ref{About Closure}.  In other words, it\n"
+"implements a set of @dfn{bindings}."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-modules.texi:1119
+msgid ""
+"Environments in R5RS can be passed as the second argument to\n"
+"@code{eval} (@pxref{Fly Evaluation}).  Three procedures are defined to\n"
+"return environments: @code{scheme-report-environment},\n"
+"@code{null-environment} and @code{interaction-environment} (@pxref{Fly\n"
+"Evaluation})."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-modules.texi:1122
+msgid ""
+"In addition, in Guile any module can be used as an R5RS environment,\n"
+"i.e., passed as the second argument to @code{eval}."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-modules.texi:1125
+msgid ""
+"Note: the following two procedures are available only when the \n"
+"@code{(ice-9 r5rs)} module is loaded:"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-modules.texi:1129
+msgid ""
+"@lisp\n"
+"(use-modules (ice-9 r5rs))\n"
+"@end lisp"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-modules.texi:1141
+msgid ""
+"@deffn {Scheme Procedure} scheme-report-environment version\n"
+"@deffnx {Scheme Procedure} null-environment version\n"
+"@var{version} must be the exact integer `5', corresponding to revision\n"
+"5 of the Scheme report (the Revised^5 Report on Scheme).\n"
+"@code{scheme-report-environment} returns a specifier for an\n"
+"environment that is empty except for all bindings defined in the\n"
+"report that are either required or both optional and supported by the\n"
+"implementation. @code{null-environment} returns a specifier for an\n"
+"environment that is empty except for the (syntactic) bindings for all\n"
+"syntactic keywords defined in the report that are either required or\n"
+"both optional and supported by the implementation."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-modules.texi:1144
+msgid ""
+"Currently Guile does not support values of @var{version} for other\n"
+"revisions of the report."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-modules.texi:1150
+msgid ""
+"The effect of assigning (through the use of @code{eval}) a variable\n"
+"bound in a @code{scheme-report-environment} (for example @code{car})\n"
+"is unspecified.  Currently the environments specified by\n"
+"@code{scheme-report-environment} are not immutable in Guile.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-modules.texi:1155
+msgid ""
+"@c Local Variables:\n"
+"@c TeX-master: \"guile.texi\"\n"
+"@c End:"
+msgstr ""

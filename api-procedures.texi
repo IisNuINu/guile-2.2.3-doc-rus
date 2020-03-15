@@ -1,0 +1,913 @@
+@c -*-texinfo-*-
+@c This is part of the GNU Guile Reference Manual.
+@c Copyright (C)  1996, 1997, 2000, 2001, 2002, 2003, 2004, 2009, 2010,
+@c   2011, 2012, 2013  Free Software Foundation, Inc.
+@c See the file guile.texi for copying conditions.
+
+@node Procedures
+@section Процедуры
+
+@menu
+* Lambda::                      Basic procedure creation using lambda.
+* Primitive Procedures::        Procedures defined in C.
+* Compiled Procedures::         Scheme procedures can be compiled.
+* Optional Arguments::          Handling keyword, optional and rest arguments.
+* Case-lambda::                 One function, multiple arities.
+* Higher-Order Functions::      Function that take or return functions.
+* Procedure Properties::        Procedure properties and meta-information.
+* Procedures with Setters::     Procedures with setters.
+* Inlinable Procedures::        Procedures that can be inlined.
+@end menu
+
+@node Lambda
+@subsection Lambda: Базовое создание Процедуры
+@cindex lambda
+
+Выражение @code{lambda} вычисляется создавая процедуру.  Окружение, которое
+действует когда  вычисляется @code{lambda} выражение, привязывается к недавно
+созданной процедуре, это отсылка к замыканию(@dfn{closure}) (@pxref{About Closure}).
+
+Когда процедура, созданная @code{lambda} вызывается с некоторыми фактическими
+аргументами, окружение заключенное в процедуру(привязанное к ней), рассширяется
+связыванием переменных, названных в списке формальных аргументов, дополнительным
+пространством, где и сохраняются фактические аргументы. Затем тело @code{lambda} 
+выражения последовательно вычисляется. Результат последнего выражения в теле
+процедуры является результатом вызова процедуры.
+
+В следующих примерах показано, как процедуры могут быть созданы с использованием
+@code{lambda}, и что вы можете сделать с этими процедурами.
+
+@lisp
+(lambda (x) (+ x x))       @result{} @r{a procedure}
+((lambda (x) (+ x x)) 4)   @result{} 8
+@end lisp
+
+Тот факт, что среда, действующая при создании процедуры заключена в процедуре
+показан в следующем примере:
+
+@lisp
+(define add4
+  (let ((x 4))
+    (lambda (y) (+ x y))))
+(define x 5)
+(add4 6)                   @result{} 10
+@end lisp
+
+@deffn syntax lambda formals body
+@var{formals} должен быть формальным списком аргументов, как описано в следующей
+таблице.
+
+@table @code
+@item (@var{variable1} @dots{})
+Процедура принимает фиксированное количество аргументов; когда процерура
+вызвается, аргументы будут сохранены во вновь созданном месте для формальных
+переменных.
+@item @var{variable}
+Процедура принимает любое количество аргументов; когда вызывается процедура
+последовательность фактических аргументов преобразуется в список и хранится
+во вновь созданном месте для формальной переменной.
+@item (@var{variable1} @dots{} @var{variablen} . @var{variablen+1})
+Если точка предшествует последней переменной, про процедура принимает
+@var{n} или более переменных, где @var{n} это число формальных аргументов
+до точки.  До точки должен быть хотя бы один аргумент. Первые @var{n}
+фактических аргументов будут сохранены в недавно выделенных местах для
+первых  @var{n} формальных аргументов и последовательность оставшихся
+фактических аргументов преобразуется в список и сохраняется в месте для
+последнего формального аргумента. Если имеется ровно @var{n} фактических
+аргументов, в месте последнего формального аргумента храниться пустой
+список.
+@end table
+
+Спимок @var{variable} или @var{variablen+1} всегда создается и процедура
+при необходимости может изменить его.  Это так, даже если процедура
+применяется с помощью @code{apply}, необходимая часть аргумента спика
+будет скопирована. См. (@pxref{Fly Evaluation,,
+Procedures for On the Fly Evaluation}).
+
+@var{body} --- это последовательность выражений Scheme, которые вычисляются
+по порядку когда процедура вызывается.
+@end deffn
+
+@node Primitive Procedures
+@subsection Примитивные Процедуры
+@cindex primitives
+@cindex primitive procedures
+
+Процедуры написанные на Си могут быть зарегистрированы для использования
+из Scheme, если они принимают только аргументы типа @code{SCM} и возвращают
+значения @code{SCM}.  @code{scm_c_define_gsubr}, вероятно, будет самым полезным
+механизмом, объединяющим процесс регистрации
+(@code{scm_c_make_gsubr}) и определения (@code{scm_define}).
+
+@deftypefun SCM scm_c_make_gsubr (const char *name, int req, int opt, int rst, fcn)
+Регистрирует процедуру Си @var{fcn} как ``subr'' --- примитивную подпрограмму,
+которая может быть вызвана из Scheme.  Она будет связана с  данным именем @var{name},
+но без привязки к окружению в котором она создается. Аргументы @var{req}, @var{opt} и
+@var{rst} укзазывают количество требуемых, необязательных и  ``последний(rest)'' 
+аргументов соответственно.  Общее количество этих аргумегнтов дожно соответствовать
+фактическому числу аргументов в @var{fcn}, но не может превышать 10.  Количсество
+аргументов rest должно быть 0 или 1.
+@code{scm_c_make_gsubr} возвращает значение типа @code{SCM}, который является
+``дескриптором(handle)'' процедуры.
+@end deftypefun
+
+@deftypefun SCM scm_c_define_gsubr (const char *name, int req, int opt, int rst, fcn)
+Регистрирует процедуру Си @var{fcn}, как и для @code{scm_c_make_gsubr}
+выше, и дополнительно создает привязку верхенго уровня Scheme для процедуры в 
+``текущем окружении(current environment)'' используя @code{scm_define}.
+@code{scm_c_define_gsubr} возвращает дескриптор процедуры так же, как и
+@code{scm_c_make_gsubr}, который обычно не требуется.
+@end deftypefun
+
+@node Compiled Procedures
+@subsection Скомпилированные Процедуры
+
+Стратегия вычисления, приведенная в @ref{Lambda} описывает как процедуры
+интерпретируются(@dfn{interpreted}). Интерпретация работает непосредственно
+на расширенном исходном коде Scheme, рекурсивно вызывая вычислитель для получения
+значения вложенных выражений.
+
+Однако большинство процедур скомпилировано. Это означает, что Guile сделал
+некоторую преварительную работу с процедурой, чтобы определить, что ей нужно
+будет делать каждй раз, когда процедура запускается. Скомпилированные процедуры
+выполняются быстрее, чем интерпретируемые процедуры.
+
+Загрузка файлов - это нормальный способ создания скомпилированных процедур.
+Если Guile видит, что файл не скомпилирован, или что его скомпилированный
+файл устарел, он попытается скомпилировать файл когда он загружен, и сохранить
+результат на диск. Процедуры также могут быть скомпилированы во время выполнения.
+@xref{Read/Load/Eval/Compile}, для получения дополнительной информации о компиляции
+во время выполнения.
+
+Скомпилированные процедуры, также известные как программы(@dfn{programs}),
+отвечают всем процедурам, котоыре оперируют процедурами. Кроме того, есть
+несколько дополнительных процедур доступа(accessors) низкоуровневых 
+подробностей о программах.
+
+Большинство людей не должны использовать процедуры, описанные в этом
+разделе, но это хорошо для их документирования. Сначала вам нужно
+включить соответствующий модуль:
+
+@example
+(use-modules (system vm program))
+@end example
+
+@deffn {Scheme Procedure} program? obj
+@deffnx {C Function} scm_program_p (obj)
+Возвращает @code{#t} если @var{obj} скомпилированная процедура, или @code{#f}
+если нет.
+@end deffn
+
+@deffn {Scheme Procedure} program-code program
+@deffnx {C Function} scm_program_code (program)
+Возвращает адрес точки входа в программу, как целое число. Этот адрес в 
+основном полезен для процедур отладчика: @code{(system vm debug)}.
+@end deffn
+
+@deffn {Scheme Procedure} program-num-free-variable program
+@deffnx {C Function} scm_program_num_free_variables (program)
+Возвращает количество свободных переменных, захваченых этой
+программой.
+@end deffn
+
+@deffn {Scheme Procedure} program-free-variable-ref program n
+@deffnx {C Function} scm_program_free_variable-ref (program, n)
+@deffnx {Scheme Procedure} program-free-variable-set! program n val
+@deffnx {C Function} scm_program_free_variable_set_x (program, n, val)
+Аксессоры для свободных переменных программы. Некоторые из захваченных
+значений фактически в переменных ``boxes''.  @xref{Variables and the VM}, 
+для получения дополнительной информации.
+
+Пользователи не должны изменять возвращаемое значение, если не считаю,
+что они действительно умны.
+@end deffn
+
+@c FIXME
+
+@deffn {Scheme Procedure} program-bindings program
+@deffnx {Scheme Procedure} make-binding name boxed? index start end
+@deffnx {Scheme Procedure} binding:name binding
+@deffnx {Scheme Procedure} binding:boxed? binding
+@deffnx {Scheme Procedure} binding:index binding
+@deffnx {Scheme Procedure} binding:start binding
+@deffnx {Scheme Procedure} binding:end binding
+Анотация связанных переменных для программ, вместе со своими аксессорами.
+
+Связанные перменные объявляют именами и расширяют блок локальных переменных.
+Лучший путь, чтобы посмотреть, что это такое, поиграть с ними в REPL. 
+@xref{VM Concepts}, для получения дополнительной информации.
+
+Обратите внимание, что информация о связанных переменных храниться в программе
+как часть(thunk) метаданных, поэтому включение его в генерируемый объектный код
+не налагает штрафа на производительность во время выполнения.
+@end deffn
+
+@deffn {Scheme Procedure} program-sources program
+@deffnx {Scheme Procedure} source:addr source
+@deffnx {Scheme Procedure} source:line source
+@deffnx {Scheme Procedure} source:column source
+@deffnx {Scheme Procedure} source:file source
+Анотация местоположения исходного кода, вместе со своими аксессорами.
+
+Информация о расположении исходного кода распространяется через компилятор
+и заканчивается сериализацией в метаданные программы. Эта информация
+подкрепляется указателем смещения инструкции внутри объектного кода программы.
+В частности, это @code{ip} @emph{just following} последующих инструкций, так что
+обратная трассировка может найти местоположение источника кода, который выполняется.
+@end deffn
+
+@deffn {Scheme Procedure} program-arities program
+@deffnx {C Function} scm_program_arities (program)
+@deffnx {Scheme Procedure} program-arity program ip
+@deffnx {Scheme Procedure} arity:start arity
+@deffnx {Scheme Procedure} arity:end arity
+@deffnx {Scheme Procedure} arity:nreq arity
+@deffnx {Scheme Procedure} arity:nopt arity
+@deffnx {Scheme Procedure} arity:rest? arity
+@deffnx {Scheme Procedure} arity:kw arity
+@deffnx {Scheme Procedure} arity:allow-other-keys? arity
+Аксессоры для представления``арности(arity)'' программы.
+
+Обычный случай состоит в том, что процедура имеет одну арность. Например,
+@code{(lambda (x) x)}, принимает один требуемый аргумент, и все. Можно
+получить доступ к этому числу требуемых аргументов через @code{(arity:nreq
+(program-arities (lambda (x) x)))}. По аналогии, @code{arity:nopt} получает
+количество необязательных аргументов, и @code{arity:rest?} возвращает истиное
+значение, если процедура имеет аргумент rest.
+
+@code{arity:kw} возвращает список пар @code{(@var{kw} . @var{idx})},
+если в процедуре есть аргументы ключевые слова. @var{idx} ссылается
+на локальную переменную @var{idx}th; @xref{Variables and the VM}, для
+получения дополнительной информации. Наконец @code{arity:allow-other-keys?}
+возвращает истинное значение если разрешены другие ключи. 
+@xref{Optional Arguments}, для получения дополнительной информации.
+
+Так что насчет  @code{arity:start} и @code{arity:end}? Они возвращают
+диапазон байтов в байт-коде программы для которого арность действительна.
+Понимаете, процедура может на самом деле может импть больше чем одну
+арность. Вопрос только в том ``что такое арность процедуры'' действительно
+имеет смысл в определенных точках в программе, ограниченных этими значениями
+@code{arity:start} и @code{arity:end}.
+@end deffn
+
+@deffn {Scheme Procedure} program-arguments-alist program [ip]
+Возвращает ассоциативный список, описывающий аргументы которые принимает
+программа(@var{program}) или @code{#f} если информация не может быть получена.
+
+Ключами alist которые в настоящий момент определены являются: `required', `optional',
+`keyword', `allow-other-keys?', и `rest'.  Например:
+
+@example
+(program-arguments-alist
+ (lambda* (a b #:optional c #:key (d 1) #:rest e)
+   #t)) @result{}
+((required . (a b))
+ (optional . (c))
+ (keyword . ((#:d . 4)))
+ (allow-other-keys? . #f)
+ (rest . d))
+@end example
+@end deffn
+
+@deffn {Scheme Procedure} program-lambda-list program [ip]
+Возвращает представление аргументов программы(@var{program}) как лямбда
+список, или  @code{#f} если эта информация не доступна.
+
+Например:
+
+@example
+(program-lambda-list
+ (lambda* (a b #:optional c #:key (d 1) #:rest e)
+   #t)) @result{}
+@end example
+@end deffn
+
+@node Optional Arguments
+@subsection Необязательные Аргументы
+
+Процедуры Scheme, определенные в R5RS, могут обрабатывать фиксированное
+количество фактических аргументов, или фиксированное количество фактических
+аргументов, за которыми следует произвольно много дополнительных аргументов.
+Написание процедур переменной арности(arity) может быть полезным, но, к 
+сожалению, синтаксические средства для обработки списков аргументов различной
+длины немного не удобны. Возможно присвоение имен фиксированному числу 
+аргументов, но остальные(не обязательные) аргументы могут упоминаться только
+как список значений. см.(@pxref{Lambda}).
+
+По этой причине, Guile предоставляет расширение @code{lambda},
+@code{lambda*}, которое позволяет пользователю определять процедуры
+с необзательными аргументами и ключевыми словами. Кроме того, виртуальная
+машина Guile имеет низкоуровневую поддержку для передачи необязательных 
+аргументов и ключевых слов. Вызов процедур с необязательными аргументами
+и ключевыми словами можно сделать дешевым, без выделения списка (rest)
+остаточных аргументов.
+
+@menu
+* lambda* and define*::         Creating advanced argument handling procedures.
+* ice-9 optargs::               (ice-9 optargs) provides some utilities.
+@end menu
+
+@node lambda* and define*
+@subsubsection lambda* и define*.
+
+@code{lambda*} подобен @code{lambda}, за исключением некоторых расширений
+допускающих необязательные аргументы и ключевые слова.
+
+@deffn {library syntax} lambda* ([var@dots{}] @* @
+                        [#:optional vardef@dots{}] @* @
+                        [#:key  vardef@dots{} [#:allow-other-keys]] @* @
+                        [#:rest var | . var]) @* @
+                        body1 body2 @dots{}
+@sp 1
+Создает процедуру, которая принимает необзательные аргументы и/или ключевые слова
+указанные в @code{#:optional} и @code{#:key}.  Например,
+
+@lisp
+(lambda* (a b #:optional c d . e) '())
+@end lisp
+
+это процедура с фиксированными аргументами @var{a} и @var{b}, необязательными
+аргументами @var{c} и @var{d}, и остальными аргументами доступными через @var{e}.
+Если необязательные аргументы опущены в вызове, их переменные связаны с занчением
+@code{#f}.
+
+@fnindex define*
+Аналогично, @code{define*} это синтаксический сахар для определения процедур
+с использованием @code{lambda*}.
+
+@code{lambda*}так же может выполнять процедуры с аргументами ключевыми словами.
+Например, процедура определяется следующим образом:
+
+@lisp
+(define* (sir-yes-sir #:key action how-high)
+  (list action how-high))
+@end lisp
+
+может быть вызвана как @code{(sir-yes-sir #:action 'jump)},
+@code{(sir-yes-sir #:how-high 13)}, @code{(sir-yes-sir #:action
+'lay-down #:how-high 0)}, или просто just @code{(sir-yes-sir)}. Какие бы
+аргументы не указывались, ключевые слова привязаны к значениям(если не
+заданы то к значению @code{#f}).
+
+Необязательные аргументы и ключевые слова могут также иметь значение по
+уполчанию, если их нет в вызове, предоставив дву-элементный список переменных
+и выражений. Например в
+
+@lisp
+(define* (frob foo #:optional (bar 42) #:key (baz 73))
+  (list foo bar baz))
+@end lisp
+
+@var{foo} это фиксированный аргумент, @var{bar} это не обязательный аргумент
+с значением по умолчанию 42, и baz это аргумент ключевое слово со значением
+по умолчанию 73. Выражения по умолчанию не вычисляются, если они не нужны, и
+до тех пор пока процедура не будет вызвана.
+
+Обычно это ошибка, если в вызове есть ключевые слова, отличные от тех,
+которые указаны в  @code{#:key}, но добавление @code{#:allow-other-keys}
+к определению(после объявлений аргументов ключевых слов) будут 
+игнорироваться неизвестные ключевые слова.
+
+Если вызов имеет ключевое слово, заданное дважды, используется последнее
+значение. Например,
+
+@lisp
+(define* (flips #:key (heads 0) (tails 0))
+  (display (list heads tails)))
+
+(flips #:heads 37 #:tails 42 #:heads 99)
+@print{} (99 42)
+@end lisp
+
+@code{#:rest} являтся синонимом для синтаксиса точечного аргумента останова.
+Списки аргументов @code{(a . b)} и @code{(a #:rest b)} эквивалентны во всех
+отношениях. Это предусмотрено для большего сходства с DSSSL, MIT-Scheme и 
+Kawa в числе других, а также для переходящих из других диалектов Lisp.
+
+Когда @code{#:key} используется вместе с аргументом rest, параметры ключевые
+слова в вызове все они остаются в списке rest.  Это тоже самое, что и
+Common Lisp.  Например,
+
+@lisp
+((lambda* (#:key (x 0) #:allow-other-keys #:rest r)
+   (display r))
+ #:x 123 #:y 456)
+@print{} (#:x 123 #:y 456)
+@end lisp
+
+@code{#:optional} и @code{#:key} последовательно устанавливает свои привязки
+слева на право. Это означает, что выражения по умолчанию могут ссылаться на
+предыдущие параметры, например.
+
+@lisp
+(lambda* (start #:optional (end (+ 10 start)))
+  (do ((i start (1+ i)))
+      ((> i end))
+    (display i)))
+@end lisp
+
+Исключением является правило останова слева на право. Если есть rest
+аргумент, он связывается после необязательных аргументов, но до аргументов
+ключевых слов.
+@end deffn
+
+@node ice-9 optargs
+@subsubsection (ice-9 optargs)
+
+До Guile 2.0, @code{lambda*} и @code{define*} были реализованы с 
+использованием макросов, которые обрабатывали список остальных аргументов.
+Это не было оптимальным, поскольку вызов процедуры с дополнительными
+аргументами при каждом вызове размещал список rest. Guile 2.0 улучшил эту
+ситуацию привнеся дополнительные аргументы и ключевые слова в ядро Guile.
+
+Однако есть случаи. когда у вас есть список и вы хотите его разобрать для
+выделения необязательных аргументов и ключевых слов. Guile предоставляет
+в модуле @code{(ice-9 optargs)} некоторые макросы, чтобы помочь в решении
+этой задачи.
+
+Синтаксис @code{let-optional} и @code{let-optional*} предназначен для
+разбора списка аргументов rest и присвоения имен различным элементам
+списка.  @code{let-optional} связывает все переменные одновременно, а
+@code{let-optional*} связывает их последовательно, согласуясь с 
+@code{let} и @code{let*} (@pxref{Local Bindings}).
+
+@deffn {library syntax} let-optional rest-arg (binding @dots{}) body1 body2 @dots{}
+@deffnx {library syntax} let-optional* rest-arg (binding @dots{}) body1 body2 @dots{}
+Эти два макроса предоставляют вам интерфейс необязательных аргументов который является
+очень Схемным(@dfn{Schemey}) и не вводит никакого синтаксиса. Они совместимы с макросами
+scsh с теми же именами, но немного расширенне. Каждая из (@var{binding}) может быть одной
+из форм @var{var} или  @code{(@var{var} @var{default-value})}. @var{rest-arg} должен быть
+последним аргументом процедуры которая использует эту форму. Элементы в @var{rest-arg} 
+последовательно связываются к данным именам переменных. Когда @var{rest-arg} заканчивается,
+остальные переменные связываются либо со значением по умолчанию или с @code{#f}, если 
+значение по умолчанию не указано. @var{rest-arg} остается связанным связанным с тем,
+что останется от @var{rest-arg}.
+
+после привязки переменных вычисляются выражения @var{body1} @var{body2} @dots{}
+в порядке их следования.
+@end deffn
+
+Аналогично, @code{let-keywords} и @code{let-keywords*} извлекают значения
+из списка аргументов ключевых слов, привязывая локальные переменные к этим
+значениям или значениям по умолчанию.
+
+@deffn {library syntax} let-keywords args allow-other-keys? (binding @dots{}) body1 body2 @dots{}
+@deffnx {library syntax} let-keywords* args allow-other-keys? (binding @dots{}) body1 body2 @dots{}
+@var{args} вычисляется и должен быть доступен как список формы
+@code{(#:keyword1 value1 #:keyword2 value2 @dots{})}. 
+@var{binding} переменные и выражения по умолчанию, с переменными
+устанавливаемыми(по именам) из значений ключевых слов. 
+@var{body1} @var{body2} @dots{}  формы вычисляемые и значение последнего
+выражения является результатом.  An example will make the syntax clearest,
+
+@example
+(define args '(#:xyzzy "hello" #:foo "world"))
+
+(let-keywords args #t
+      ((foo  "default for foo")
+       (bar  (string-append "default" "for" "bar")))
+  (display foo)
+  (display ", ")
+  (display bar))
+@print{} world, defaultforbar
+@end example
+
+Связываение для @code{foo} приходит от ключевого слова @code{#:foo} в
+@code{args}.  Но связваение для @code{bar} является значение по умолчанию
+в @code{let-keywords}, поскольку в args нет ключа @code{#:bar}.
+
+@var{allow-other-keys?} вычисляет и управляет разрешением на использование
+неизвестных ключевых слов в списке аргументов @var{args}.  Когда она истинно
+неизветные ключи игнорируются (такие как, {#:xyzzy} в примере), когда @code{#f}
+генерируется ошибка для неизвестного ключевого слова.
+@end deffn
+
+@code{(ice-9 optargs)} также предоставляет еще несколько синтксического
+сахара @code{define*},  которые не так полезны с современным кодированием
+Guile, но все же поддерживаются: @code{define*-public} это @code{lambda*}
+версия @code{define-public}; @code{defmacro*} и @code{defmacro*-public}
+используются для определения макросов с улучшеной возможностью обработки
+списка аргументов. @code{-public} версии не только определяют процедуры и
+макросы, но также экспортировать их из текущего модуля.
+
+@deffn {library syntax} define*-public formals body1 body2 @dots{}
+это смесь @code{define*} и @code{define-public}.
+@end deffn
+
+@deffn {library syntax} defmacro* name formals body1 body2 @dots{}
+@deffnx {library syntax} defmacro*-public name formals body1 body2 @dots{}
+Это тоже , как  @code{defmacro} и @code{defmacro-public} за исключением того,
+что они берут @code{lambda*}-стиль расширения списка параметров, где, @code{#:optional},
+@code{#:key}, @code{#:allow-other-keys} и @code{#:rest} разрешены с использованием
+обычной семантики. Вот пример макроса с необязательным аргументом:
+
+@lisp
+(defmacro* transmogrify (a #:optional b)
+  (a 1))
+@end lisp
+@end deffn
+
+@node Case-lambda
+@subsection Case-lambda
+@cindex SRFI-16
+@cindex variable arity
+@cindex arity, variable
+
+R5RS определяет rest аргументы как действительно полезные и очень общие,
+но они часть не самые подходящие или эффективные средства для выполнения
+работы. Например, @code{lambda*} намного лучшее решение проблемы с 
+необязательными аргументами, чем @code{lambda} с аргументами rest.
+
+@fnindex case-lambda
+Аналогично, @code{case-lambda} хорошо работает, когда вы хотите, чтобы
+одна процедура выполняла двойную(или тройную, или ...) нагрузку, без
+штрафа на создание списка остаточных(rest) аргументов.
+
+Например:
+
+@lisp
+(define (make-accum n)
+  (case-lambda
+    (() n)
+    ((m) (set! n (+ n m)) n)))
+
+(define a (make-accum 20))
+(a) @result{} 20
+(a 10) @result{} 30
+(a) @result{} 30
+@end lisp
+
+Значение, возвращаемое формой @code{case-lambda}, это процедура, которая
+соответствует числу фактических аргументов, а не формальных, в различных
+вариантах испольования вызова. Первое совпадение, соответствующего значения
+из фактического списка параметров связывается с именем переменной в предложениях
+и теле вычисляемого предложения. Если никакая позиция не соответствует, выдается
+сообщение об ошибке.
+
+Синткасис формы @code{case-lambda} определяется следующей EBNF граматикой.
+Формальные(@dfn{Formals}) означает формальный список аргументов подобный
+используемому с @code{lambda} (@pxref{Lambda}).
+
+@example
+@group
+<case-lambda>
+   --> (case-lambda <case-lambda-clause>*)
+   --> (case-lambda <docstring> <case-lambda-clause>*)
+<case-lambda-clause>
+   --> (<formals> <definition-or-command>*)
+<formals>
+   --> (<identifier>*)
+     | (<identifier>* . <identifier>)
+     | <identifier>
+@end group
+@end example
+
+Остаточный(Rest) список может быть полезен дла использования с @code{case-lambda}:
+
+@lisp
+(define plus
+  (case-lambda
+    "Return the sum of all arguments."
+    (() 0)
+    ((a) a)
+    ((a b) (+ a b))
+    ((a b . rest) (apply plus (+ a b) rest))))
+(plus 1 2 3) @result{} 6
+@end lisp
+
+@fnindex case-lambda*
+Кроме того, для полноты. Guile определяет @code{case-lambda*} также
+как @code{case-lambda}, за исключением предложения @code{lambda*}.
+Предложение @code{case-lambda*} соответствует если аргументы заполняют
+требуемые аргументы, но не более необязательный и/или остаточных
+аргументов.
+
+Аргументы ключевые слова возможно использовать с @code{case-lambda*} также,
+но оне не вносят вклад в поведение вычисляющее ``совпадение'', и их взаимодействие
+с требуемыми, необязательными и остаточными аргументами может быть удивительным.
+
+Для целей @code{case-lambda*} (и @code{case-lambda}, в качестве особого
+случая), предложение соответствует(@dfn{matches}) если у него достаточно
+требуемых аргументов, и не слишком много позиционных аргументов. 
+Необходимыми аргументами являются любые аргументы перед аргументами 
+@code{#:optional}, @code{#:key}, и @code{#:rest}.  Позиционными(@dfn{Positional})
+аргументами являются необходимые аргументы, а также необязательные аргументы.
+
+В отсутствии аргументов @code{#:key} или @code{#:rest}, легко увидеть,
+как может быть слишком моного позиционных аргументов: вы передаете 5
+аргументов функции, которая принимает только 4 аргумента, включая необязательные
+аргументы. Если есть аргумент @code{#:rest}, никогда не может быть слишком
+много позиционных аргументов: любое приложение с достаточным числом необходимых
+аргументов для предложения будет соответствовать этому предложению, даже если есть
+аргументы @code{#:key}.
+
+В противном случае для приложений к предложению с аргументами @code{#:key}
+(и без аргумента @code{#:rest}), предложение будет соответствовать
+только там, где достаточно аргументов, и если следующий аргумент после
+связывание требуемых и необзяательных аргументов, если они есть, является
+ключевым словом. Для соображения эффективности, Guile в настоящее время
+не может включать аргументы ключевые слова в алгоритм поиска соответствия.
+Предложения проверяют совпадения только с позиционными аргументами, и не
+сравнивают доступные ключевые слова с доступным набором аргументов ключевых
+слов, который имеет функция.
+
+Ниже приводятся некоторые примеры.
+
+@example
+(define f
+  (case-lambda*
+    ((a #:optional b) 'clause-1)
+    ((a #:optional b #:key c) 'clause-2)
+    ((a #:key d) 'clause-3)
+    ((#:key e #:rest f) 'clause-4)))
+
+(f) @result{} clause-4
+(f 1) @result{} clause-1
+(f) @result{} clause-4
+(f #:e 10) clause-1
+(f 1 #:foo) clause-1
+(f 1 #:c 2) clause-2
+(f #:a #:b #:c #:d #:e) clause-4
+
+;; clause-2 will match anything that clause-3 would match.
+(f 1 #:d 2) @result{} error: bad keyword args in clause 2
+@end example
+
+Не забывайте, что предложения сопоставляются по порядку, и первое предложение
+соответствия будет принято. Это может привести к тому, что кючевое слово
+привязывается к требуемому аргументу, как в случае @code{f #:e 10}.
+
+@node Higher-Order Functions
+@subsection Функции более высокого порядка
+
+@cindex higher-order functions
+
+В качестве функционального языка программирования, Scheme позволяет определять
+функции более высокого порядка(@dfn{higher-order functions}), т.е. функции,
+которые принимают функци как аргументы и/или возвращают функции. Утилиты для
+получения процедур из других процедур и приводятся ниже.
+
+@deffn {Scheme Procedure} const value
+Возвращает процедуру, которая принимает любое количество аргументов и
+возвращает @var{value}.
+
+@lisp
+(procedure? (const 3))        @result{} #t
+((const 'hello))              @result{} hello
+((const 'hello) 'world)       @result{} hello
+@end lisp
+@end deffn
+
+@deffn {Scheme Procedure} negate proc
+Возвращает процедуру с той же арностью, что и @var{proc}, которая возвращает
+отритцание результата @var{proc}, т.е @code{not} @var{proc}.
+
+@lisp
+(procedure? (negate number?)) @result{} #t
+((negate odd?) 2)             @result{} #t
+((negate real?) 'dream)       @result{} #t
+((negate string-prefix?) "GNU" "GNU Guile")
+                              @result{} #f
+(filter (negate number?) '(a 2 "b"))
+                              @result{} (a "b")
+@end lisp
+@end deffn
+
+@deffn {Scheme Procedure} compose proc1 proc2 @dots{}
+Составляет @var{proc1} с процедурами @var{proc2} @dots{} , так что
+аргумент @var{proc} применяется сначала последней процедурой, затем
+результат передается в предшестующю процедуру и последней обрабатывает результат
+@var{proc1}, и возвращает полученную процедуру. Данные процедуры должны быть 
+совместимой арности.
+
+@lisp
+(procedure? (compose 1+ 1-)) @result{} #t
+((compose sqrt 1+ 1+) 2)     @result{} 2.0
+((compose 1+ sqrt) 3)        @result{} 2.73205080756888
+(eq? (compose 1+) 1+)        @result{} #t
+
+((compose zip unzip2) '((1 2) (a b)))
+                             @result{} ((1 2) (a b))
+@end lisp
+@end deffn
+
+@deffn {Scheme Procedure} identity x
+Возвращает X.
+@end deffn
+
+@deffn {Scheme Procedure} and=> value proc
+Когда @var{value} это @code{#f}, возвращается @code{#f}.  Иначе, возвращается
+@code{(@var{proc} @var{value})}.
+@end deffn
+
+@node Procedure Properties
+@subsection Свойства Процедур и Мета-Информация
+
+В дополнение к информации, которая строго необходима для запуска,
+процедуры могут иметь другую связанню с ними информацию. Например,
+имя процедуры - это информация не для процедуры, а о процедуре. Эту
+мета-информацию можно получить доступ через интерфейс свойств
+процедур.
+
+Первая группа процедур в этом мета-интерфейсе является предикатом
+для проверки того, является ли объект Scheme процедурой или специальной
+процедурой, соответственно.  @code{procedure?} наиболее общий предикат, 
+который возвращает @code{#t} для любой процедуры.
+
+@rnindex procedure?
+@deffn {Scheme Procedure} procedure? obj
+@deffnx {C Function} scm_procedure_p (obj)
+Возвращает @code{#t} если @var{obj} это процедура.
+@end deffn
+
+@deffn {Scheme Procedure} thunk? obj
+@deffnx {C Function} scm_thunk_p (obj)
+Возвращает @code{#t} если @var{obj} это thunk---процедура, которая не 
+принимает аргументов.
+@end deffn
+
+@cindex procedure properties
+Свойства процедуры --- это общие свойства, связанные с процедурами. Это
+могут быть название процедуры или другая соответствующая информация, например
+подсказки отладки.
+
+@deffn {Scheme Procedure} procedure-name proc
+@deffnx {C Function} scm_procedure_name (proc)
+Возвращает имя процедуры @var{proc}
+@end deffn
+
+@deffn {Scheme Procedure} procedure-source proc
+@deffnx {C Function} scm_procedure_source (proc)
+Возвращает исходный код процедуры @var{proc}. Возвращает  @code{#f} если
+исходный код недоступен.
+@end deffn
+
+@deffn {Scheme Procedure} procedure-properties proc
+@deffnx {C Function} scm_procedure_properties (proc)
+Возвращает свойства связанные с процедурой @var{proc}, как ассоциативный
+список.
+@end deffn
+
+@deffn {Scheme Procedure} procedure-property proc key
+@deffnx {C Function} scm_procedure_property (proc, key)
+Возвращает свойство процедуры @var{proc} с именем @var{key}.
+@end deffn
+
+@deffn {Scheme Procedure} set-procedure-properties! proc alist
+@deffnx {C Function} scm_set_procedure_properties_x (proc, alist)
+Устанавливает список свойств @var{proc} указанным ассоциативным
+списком @var{alist}.
+@end deffn
+
+@deffn {Scheme Procedure} set-procedure-property! proc key value
+@deffnx {C Function} scm_set_procedure_property_x (proc, key, value)
+В списке свойств @var{proc}, устанавливает свойство с именем @var{key} в
+значение @var{value}.
+@end deffn
+
+@cindex procedure documentation
+Документацию для процедуры можно получить с помощью процедуры
+@code{procedure-documentation}.
+
+@deffn {Scheme Procedure} procedure-documentation proc
+@deffnx {C Function} scm_procedure_documentation (proc)
+Возвращает строку документации, связанную с @code{proc}.  По соглашению,
+если процедура содержит более одного выражения, а первое выражение является
+строковой константой, предполагается, что эта строка содержит документацию
+для этой процедуры.
+@end deffn
+
+@node Procedures with Setters
+@subsection Процедуры с установщиками
+
+@c FIXME::martin: Review me!
+
+@c FIXME::martin: Document `operator struct'.
+
+@cindex procedure with setter
+@cindex setter
+Процедура с установщиком(@dfn{procedure with setter}) это особый вид процедуры,
+которая обычно ведет себя как любая процедура доступа, которая является процедурой
+обращающейся к структуре данных. Разница состоит в том, что эта процедура имеет
+так называемый установщик(@dfn{setter}), который является процедурой для сохранения
+чего-либо в структуру данных.
+
+Процедуры с установщиком обрабатываются специально, когда процедура появляется
+в специальной форме @code{set!} (REFFIXME).  Как это работает, лучше всего показано
+на примере.
+
+Предположим, что у нас есть процедура, называемая @code{foo-ref}, которая
+принимает два аргумента, значение типа @code{foo} и целое число. Процедура
+возвращает значение сохраненное в указанном индексе объекта @code{foo}.
+Пусть @code{f} переменная содержащая такую структуру данных @code{foo}.
+@footnote{Рабочее определение должно быть таким:
+@lisp
+(define foo-ref vector-ref)
+(define foo-set! vector-set!)
+(define f (make-vector 2 #f))
+@end lisp
+}
+
+@lisp
+(foo-ref f 0)       @result{} bar
+(foo-ref f 1)       @result{} braz
+@end lisp
+
+Также предположим, что соответствующая процедура установщик
+@code{foo-set!} существует.
+
+@lisp
+(foo-set! f 0 'bla)
+(foo-ref f 0)       @result{} bla
+@end lisp
+
+Теперь мы можем создать новую процедуру, называемую @code{foo}, которая
+является процедурой с установщиком, вызывав @code{make-procedure-with-setter}
+с процедурами доступа и устновки @code{foo-ref} и @code{foo-set!}.
+Назовем эту новую процедуру @code{foo}.
+
+@lisp
+(define foo (make-procedure-with-setter foo-ref foo-set!))
+@end lisp
+
+Теперь @code{foo} может использоваться для чтения из структуры данных,
+хранящейся в @code{f}, или для записи в эту структуру.
+
+@lisp
+(set! (foo f 0) 'dum)
+(foo f 0)          @result{} dum
+@end lisp
+
+@deffn {Scheme Procedure} make-procedure-with-setter procedure setter
+@deffnx {C Function} scm_make_procedure_with_setter (procedure, setter)
+Создает новую процедуру, которая ведет себя как процедура(@var{procedure}),
+но с соответствующим установщиком @var{setter}.
+@end deffn
+
+@deffn {Scheme Procedure} procedure-with-setter? obj
+@deffnx {C Function} scm_procedure_with_setter_p (obj)
+Возвращает @code{#t} если @var{obj} это процедура связана с
+процедурой устнановщика.
+@end deffn
+
+@deffn {Scheme Procedure} procedure proc
+@deffnx {C Function} scm_procedure (proc)
+Возвращает процедуру @var{proc}, которая должна быть применяемой
+структурой.
+@end deffn
+
+@deffn {Scheme Procedure} setter proc
+Возвращает установщик @var{proc}, который должне быть либо процедурой с 
+установщиком, либо оператором структуры.
+@end deffn
+
+@node Inlinable Procedures
+@subsection Встраиваемые Процедуры
+
+@cindex inlining
+@cindex procedure inlining
+Вы можете определить Встраиваемую Процедуру(@dfn{inlinable procedure})
+используя @code{define-inlinable}, а не @code{define}.  Встраиваемая
+процедура ведет себя так же, как и в обычная процедура, но прямые вызовы
+приводят к тому что тело процедуры вставляется в вызывающую процедуру.
+
+@cindex partial evaluator
+Имейте в виду, что начиная с версии 2.0.3 у Guile есть частичный
+оценщик, который может вставить тело внутренних процедур, если 
+сочтет это целесообразным.
+
+@example
+scheme@@(guile-user)> ,optimize (define (foo x)
+                                 (define (bar) (+ x 3))
+                                 (* (bar) 2))
+$1 = (define foo
+       (lambda (#@{x 94@}#) (* (+ #@{x 94@}# 3) 2)))
+@end example
+
+@noindent
+Частичный оценщик не устанавиливает привязки верхнего уровня, однако, бывают
+ситуации в которых вам может быть интересно будет использовать
+@code{define-inlinable}.
+
+Процедуры, определяемые с помощью @code{define-inlinable} всегда
+@emph{всегда} встраиваются, во всех местах где они вызываются на прямую.
+Это устраняет накладные расходы функций за счет увеличения расзмера
+кода. Дополнительно, вызывающий не будет использовать новое определение,
+если встроенная процедура переопределяется. Невозможно трассировать
+встроенные процедуры или установить в них точку останова (@pxref{Traps}).
+По этим причинам, вы должны делать встроенную процедуру, когда это явно
+улучшает производительность в критических местах.
+
+В целом, только небольшие процедуры следует рассматривать для встраивания,
+поскольку большие встраиваемые процедуры приведут к увеличению размера кода.
+Кроме того, устранение издержек вызова редко имеет значение для крупных 
+процедур.
+
+@deffn {Scheme Syntax} define-inlinable (name parameter @dots{}) body1 body2 @dots{}
+Определяет процедуру с именем @var{name} с параметрами @var{parameter} и телами
+@var{body1}, @var{body2}, @enddots{}.
+@end deffn
+
+@c Local Variables:
+@c TeX-master: "guile.texi"
+@c End:

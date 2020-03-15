@@ -1,0 +1,2940 @@
+@c -*-texinfo-*-
+@c This is part of the GNU Guile Reference Manual.
+@c Copyright (C)  2008, 2009, 2011
+@c   Free Software Foundation, Inc.
+@c See the file guile.texi for copying conditions.
+
+@macro goops
+GOOPS
+@end macro
+
+@macro guile
+Guile
+@end macro
+
+@node GOOPS
+@chapter GOOPS
+
+@goops{} - это объектно-ориентированное расширение для @guile{}. Его
+реализация проистекает из @w{STk-3.99.3} от Erick Gallesio и
+версии 1.3 of Gregor Kiczales' @cite{Tiny-Clos}.  Оно очень близко
+по духу к CLOS, Common Lisp Object System, но адаптировано для Scheme.
+
+@goops{} - это полная объектно-ориентированная система с классами,
+объектами, множественным наследованием и обобщенными функциями имеющими
+несколько методов обработки. Кроме того, ее реализация основывается
+на метаобъектном протоколе - это означает, что основные операции
+@goops{} сами определены как методы соответствующих классов, и их
+можно насторить путем переопределения классов или путем переопределения
+этих методов.
+
+Чтобы начать использовать @goops{}, вам сначала нужно импортировать модуль
+@code{(oop goops)}. Вы можете сделать это в Guile REPL выполнив:
+
+@lisp
+(use-modules (oop goops))
+@end lisp
+@findex (oop goops)
+
+@menu
+* Copyright Notice::
+* Class Definition::
+* Instance Creation::  
+* Slot Options::
+* Slot Description Example::
+* Methods and Generic Functions::           
+* Inheritance::                 
+* Introspection::
+* GOOPS Error Handling::
+* GOOPS Object Miscellany::
+* The Metaobject Protocol::
+* Redefining a Class::
+* Changing the Class of an Instance::
+@end menu
+
+@node Copyright Notice
+@section Copyright Notice
+
+The material in this chapter is partly derived from the STk Reference
+Manual written by Erick Gallesio, whose copyright notice is as follows.
+
+Copyright © 1993-1999 Erick Gallesio - I3S-CNRS/ESSI <eg@@unice.fr>
+Permission to use, copy, modify, distribute,and license this
+software and its documentation for any purpose is hereby granted,
+provided that existing copyright notices are retained in all
+copies and that this notice is included verbatim in any
+distributions.  No written agreement, license, or royalty fee is
+required for any of the authorized uses.
+This software is provided ``AS IS'' without express or implied
+warranty.
+
+Материал был адаптирован для использования в Guile с разрешения
+автора.
+
+@node Class Definition
+@section Определение Класса
+
+Новый класс определяется синтаксиом @code{define-class}:
+
+@findex define-class
+@cindex class
+@lisp
+(define-class @var{class} (@var{superclass} @dots{})
+   @var{slot-description} @dots{}
+   @var{class-option} @dots{})
+@end lisp
+
+@var{class} является именем определяемого класса.  Список суперклассов
+@var{superclass} указывает, какие существующие классы, если таковые
+имеются, наследуются для слотов и свойств.  @dfn{Slots} Слоты хранят
+per-instance@footnote{Обычно --- но также смотрите опцию @code{#:allocation}.} 
+данные, для экземпляров класса --- подобно ``полям(fields)'' или 
+``переменным членам(member variables)'' в других объектно ориентированных 
+системах.  Каждое @var{slot-description}  определение дает имя слота и, 
+возможно, некоторые ``свойства'' этого слота; например его начальное 
+значение, имя функции, которая получит доступ к его значению, и так 
+далее. Опции класса (Class options), описание слотов
+(slot descriptions) и наследование(inheritance) обсуждаются ниже
+@cindex slot
+
+@deffn syntax define-class name (super @dots{}) @
+              slot-definition @dots{} class-option @dots{}
+Определяет класс с именем @var{name} который наследуется от классов @var{super},
+со слотами определенными в  определении слотов@var{slot-definition}s 
+и опциями класса @var{class-option}.
+Созданный класс привязывается к переменной @var{name} в текущем окружении.
+
+Каждое определение слота @var{slot-definition} является либо символом,
+который обозначает слот либо списком,
+
+@example
+(@var{slot-name-symbol} . @var{slot-options})
+@end example
+
+где имя слота @var{slot-name-symbol} это символ, а опции слота
+@var{slot-options} это список с четным числом элементов.  Элементы
+с четными номерами слотов @var{slot-options}(считая от нуля) являются
+ключевыми словами; элементы с нечетными номерами являются соотвествующими
+значениями для этих ключевых слов.
+
+Каждая опция класса @var{class-option} это ключевое слово и соотвествующее
+значение.
+@end deffn
+
+В качестве примера, давайте определим тип для представления
+комплексного числа как двух вещественных чисел. @footnote{Конечно 
+Guile уже имеет определение комплексных чисел. А @code{<complex>} 
+на самом деле является предопределенным классом в  GOOPS; 
+но наше определение полезно здесь в качестве примера.}  
+Это можно сделать с помощью следующего определения
+класса:
+
+@lisp
+(define-class <my-complex> (<number>)
+   r i)
+@end lisp
+
+Это определение связывает переменную @code{<my-complex>} с новым классо
+экземпляры которого будут содержать два слота.  Эти слоты называются
+@code{r} и @code{i} и будут содержать действительную и мнимую части
+комплексного числа. Обратите внимание, что этот класс наследует
+от класса @code{<number>}, который является предопределенным классом.
+@footnote{@code{<number>} это прямой суперкласс предопределенного
+класса @code{<complex>}; @code{<complex>} является суперклассом для
+@code{<real>}, и @code{<real>} является суперклассом для @code{<integer>}.}
+
+Параметры слотов описаны в следующем разделе. Возможны следующие
+опции класса:
+
+@deffn {class option} #:metaclass metaclass
+Опция класса @code{#:metaclass} задает метакласс класса, который определяется.
+@var{metaclass} должен быть классом, который наследует от @code{<class>}.
+Для использоания метаклассов, см @ref{Metaobjects and the Metaobject Protocol}
+и @ref{Metaclasses}.
+
+Если опция @code{#:metaclass} отсутствует, GOOPS повторно использует или
+создает метакласс для нового класса, вызвав @code{ensure-metaclass}
+(@pxref{Class Definition Protocol,, ensure-metaclass}).
+@end deffn
+
+@deffn {class option} #:name name
+Опция класса @code{#:name} указывает имя нового класса. Это имя используется
+для идентификации класса, когда печатаются связанные объекты - сам класс, его 
+экземпляры и его подклассы.
+
+Если параметр @code{#:name} отсутствует, GOOPS использует первый аргумент для
+@code{define-class} как имя класса.
+@end deffn
+
+@node Instance Creation
+@section Создание экземпляров и доступ к слотам
+
+Экземпляр (или Объект) определенного класса может быть создан с помощью
+@code{make}.  @code{make} принимает один обязательный параметр, который 
+является классом создаваемого экземпляра, и список необязательных аргументов,
+которые будут использоваться для инициализации слотов нового экземпляра.
+Например, следующая форма:
+
+@findex make
+@cindex instance
+@lisp
+(define c (make <my-complex>))
+@end lisp
+
+@noindent
+создает новый объект @code{<my-complex>} и связывает его с переменно
+Scheme  @code{c}.
+
+@deffn generic make
+@deffnx method make (class <class>) initarg @dots{}
+Создает и инициализирует новый экземпляр класса @var{class}, 
+используя аргументы @var{initarg} 
+@enddots{}.
+
+Теоретически, @var{initarg} @dots{} может иметь любую структуру,
+которая понимается методами get, когда вызывается обобщенная функция
+@code{initialize} для вновь созданного объекта.
+
+На практике, специализированные методы @code{initialize} 
+обычно вызывают @code{(next-method)}, и поэтому в конечно
+итоге применяются стандартные методы инициализации GOOPS
+@code{initialize}.  Эти методы ожидают. что @var{initargs}
+будет списком с четным числом аргументов, где четные элементы
+(начиная с нуля)  это ключевые слова, а элементы с нечетным 
+номером - соответствующие значения.
+
+Процесс инициализации GOOPS автоматически обрабатывает аргументы ключевые 
+слова для слотов, определение которых включает опцию @code{#:init-keyword}
+(@pxref{Slot Options,, init-keyword}).  Другие пары значений ключевого
+слова могут обрабатываться только методом инициализации  @code{initialize}
+который специализируется на классе нового экземпляра. Любые пары 
+необработанных ключевых слов игнорируются.
+@end deffn
+
+@deffn generic make-instance
+@deffnx method make-instance (class <class>) initarg @dots{}
+@code{make-instance} is an alias for @code{make}.
+@end deffn
+
+Доступ к слотам нового комплексного числа можно получить используя
+@code{slot-ref} и @code{slot-set!}.  @code{slot-set!}  устанавливает
+значение слота объекта и @code{slot-ref} извлекает его.
+
+@findex slot-set!
+@findex slot-ref
+@lisp
+@group
+(slot-set! c 'r 10)
+(slot-set! c 'i 3)
+(slot-ref c 'r) @result{} 10
+(slot-ref c 'i) @result{} 3
+@end group
+@end lisp
+
+Модуль @code{(oop goops describe)} предоставляет функцию @code{describe},
+которая полезна для просмотра всех слотов объекта; она печатает слоты
+и их значения на стандартный вывод.
+
+@lisp
+(describe c)
+@print{}
+#<<my-complex> 401d8638> is an instance of class <my-complex>
+Slots are: 
+     r = 10
+     i = 3
+@end lisp
+
+@node Slot Options
+@section Опции Слотов(Slot Options)
+
+При определении слота (в форме a @code{(define-class @dots{})} ),
+могут быть указаны различные параметры в дополнение к названию
+слота. Каждый параметр задается ключевым словом. Список возможных
+ключевых слов следующий:
+
+@deffn {slot option} #:init-value init-value
+@deffnx {slot option} #:init-form init-form
+@deffnx {slot option} #:init-thunk init-thunk
+@deffnx {slot option} #:init-keyword init-keyword
+Эти параметры предоставляют различные способы указать, как инициализировать
+начальное значение слота во время создания нового экземпляра.
+@cindex default slot value
+
+@var{init-value} задает фиксированное начальное значение слота (совместно используемое
+во всех новых экземплярах класса).
+
+@var{init-thunk} указывает преобразователь(thunk) который предоставляет
+значение по умолчанию для слота. Преобразователь вызывается когда
+создается новый экземпляр класса и должен возвращать новое начальное
+значение слота.
+
+@var{init-form} указывает форму, которая при вызове возвращает
+начальное значение для слота. Форма выполняется каждый раз, когда
+создается экземпляр класса, в лексической среде содержащей выражение
+@code{define-class}.
+
+@var{init-keyword} указывает ключевое слово, которое может использоваться
+для передачи начального значения слота через вызов  @code{make}, которая 
+создает новый экземпляр класса.
+
+Обратите внимание: поскольку значение @code{init-value} является общим
+для всех экземпляров класса, вы должны использовать его тогда, когда
+начальное значение является неизменным, таким как константа. Если вы
+хотите инициализировать слот новым, независимо изменяемым значением,
+вы должны вместо этого использовать @code{init-thunk} или
+@code{init-form}.  Рассмотрим пример.
+
+@example
+(define-class <chbouib> ()
+  (hashtab #:init-value (make-hash-table)))
+@end example
+
+@noindent
+Здесь создается только одна хеш-таблица, и все экземпляры класса
+@code{<chbouib>} имеют свой слот @code{hashtab}.  Чтобы каждый
+экземпляр класса @code{<chbouib>} ссылался на новую хеш-таблицу,
+вы должны написать:
+
+@example
+(define-class <chbouib> ()
+  (hashtab #:init-thunk make-hash-table))
+@end example
+
+@noindent
+или:
+
+@example
+(define-class <chbouib> ()
+  (hashtab #:init-form (make-hash-table)))
+@end example
+
+Если для одного из слотов указано больее одного из этих параметров,
+порядок приоритета инициализации устанавливается вначале для:
+
+@itemize @bullet
+@item
+@code{#:init-keyword}, if @var{init-keyword} is present in the options
+passed to @code{make}
+
+@item
+@code{#:init-thunk}, @code{#:init-form} or @code{#:init-value}.
+@end itemize
+
+Если определение слота содержит более одного параметра инициализации того же
+приоритета, более поздние из них игнорируются. Если слот не инициализирован
+вообще, его значение не устанавливается.
+
+В общем случае слоты, которые разделяются между несколькими экземплярами,
+инициализируются только в момент создания нового экземпляраа, если
+значение слота еще не было связано. Однако, если при создание нового 
+экземпляра указывается ключевое слово init и значение для общего слота,
+слот инициализируется не зависимо от его предыдущего значения.
+
+Обратите внимание, однако, что мощь протокола метаобъектов GOOPS означает,
+что все написанные здесь процедуры, могут быть настроены или перенастроены
+для определенных классов!  Слот инициализации, описанный здесь, выполняется
+наименее специализированным методом обобщенной функции @code{initialize}, чья
+сигнатура такова:
+
+@example
+(define-method (initialize (object <object>) initargs) ...)
+@end example
+
+Инициализация экземпляров любого данного класса может быть настроена
+путем определения метода инициализации @code{initialize}, который 
+является специализированным для этого класса, и автор 
+специализированного метода может решить вызвать code{next-method} -
+менее специализированный метод инициализации @code{initialize} - 
+и в любой точке специализированного кода это правила могут быть
+переопределены и перестают работать.  В общем, поэтому механизмы 
+инициализации, описанные здесь, могут быть изменены или переопределены
+более специализированным кодом или вообще могут не поддерживаться
+для определенных классов.
+@end deffn
+
+@deffn {slot option} #:getter getter
+@deffnx {slot option} #:setter setter
+@deffnx {slot option} #:accessor accessor
+Доступный объект @var{obj} имеющий слоты с именами @code{foo} и @code{bar},
+можно всегда читать и писать, вызывая методы @code{slot-ref} и @code{slot-set!} 
+с соответствующим именем слота; например:
+
+@example
+(slot-ref @var{obj} 'foo)
+(slot-set! @var{obj} 'bar 25)
+@end example
+
+Опции @code{#:getter}, @code{#:setter} и @code{#:accessor}, если
+они присутствуют, сообщают GOOPS о создании обобщенной функции и определении
+методов, которые можно использовать для получения и установки значения
+слота. @var{getter} указывает обобщенную функцию, к которой GOOPS добавит
+метод получения значения слота.  @var{setter} указывает обобщенную функцию,
+к которой GOOPS добавит метод установки значения слота.
+@var{accessor} указывает обобщенную функцию accessor которой GOOPS добавит
+методы для получения и установки значения слота.
+
+Поэтому, если класс включает определение слота,
+например:
+
+@example
+(c #:getter get-count #:setter set-count #:accessor count)
+@end example
+
+GOOPS определяет методы обобщенной функций, так что на значение слота 
+можно ссылаться исользуя либо getter либо accessor - 
+
+@example
+(let ((current-count (get-count obj))) @dots{})
+(let ((current-count (count obj))) @dots{})
+@end example
+
+- и устанавливать с помощью либо setter или accessorа
+
+@example
+(set-count obj (+ 1 current-count))
+(set! (count obj) (+ 1 current-count))
+@end example
+
+Обратите внимание, что
+
+@itemize @bullet
+@item
+с accesor'ом значение слота устанавливается с использованием
+обобщенного синтаксиса @code{set!}
+
+@item
+на практике для слота неиспользуют все три из этих опций:
+только для чтения, только для записи и для чтения-записи
+@code{#:getter}, @code{#:setter} и @code{#:accessor}
+соответственно.
+@end itemize
+
+Связывание указанных имен выполняется в среде определения класса
+@code{define-class}.  Если имена уже связаны (в этой среде) значениями 
+которые не могут быть обновлены до  обобщеннх функций, эти значения будут
+перезаписаны, если выполняется выражение the @code{define-class}.
+Более подробно, См. @ref{Generic Function Internals,,ensure-generic}.
+@end deffn
+
+@deffn {slot option} #:allocation allocation
+Опция @code{#:allocation} указывает GOOPS, как распределить памиять,
+для слота. Возможные значения для @var{allocation}:
+
+@itemize @bullet
+@item @code{#:instance}
+
+@findex #:instance
+Указывает, что GOOPS должен создавать отдельное хранилище для этого слота
+в каждом новом экземпляре содержащего его класса (и его подклассов).  Это 
+значение устанавливается по умолчанию.
+
+@item @code{#:class}
+
+@findex #:class
+Указывает, что GOOPS должен создвать хранилище для слота, которое
+будет использоваться всеми экземплярами содержащего его класса
+(и его подклассов).  Другими словами, слот в классе @var{C} с
+распределением типа @code{#:class} разделяется всеми экземплярами
+@var{instance}s для которых выполнено @code{(is-a? @var{instance} @var{c})}.
+Это позволяет определенть некую глобальную переменную, к которой можно
+получить доступ только из прямых наследников класса, который определяет
+данный слот.
+
+@item @code{#:each-subclass}
+
+@findex #:each-subclass
+Указывает, что GOOPS должен создать хранилище для этого слота, который
+будет использоваться всеми непосредственными @emph{direct} экземплярами
+этого класса и что всякий раз, когда определяется подкласс данного класса,
+GOOPS должен создать новое хранилище для слота, который будет разделяться
+всеми непосредственными экземплярами данного подкласса.  Другими словами,
+слот с @code{#:each-subclass} разделяется всеми экземплярами одного
+класса @code{class-of}.
+
+@item @code{#:virtual}
+
+@findex #:slot-set!
+@findex #:slot-ref
+@findex #:virtual
+Указывает, что GOOPS не должен выделять память для этого слота. Определение
+слота также должны включать в себя опции @code{#:slot-ref} и
+@code{#:slot-set!} для получения значения или его установки для данного слота.
+Смотри пример ниже.
+@end itemize
+
+Параметры рапределения слотов обрабатываются при определении нового
+класса с помощью обобщенной функции @code{compute-get-n-set}, которая
+определяется в метаклассе класса.  Следовательно, новые типы
+распределения слотов могут быть реализованы путем определения
+нового метакласса и метода для @code{compute-get-n-set} который
+будет специализирован для нового метакласса.  Пример того, как
+это делается, см. @ref{Customizing Class Definition}.
+@end deffn
+
+@deffn {slot option} #:slot-ref getter
+@deffnx {slot option} #:slot-set! setter
+Опции @code{#:slot-ref} и @code{#:slot-set!} должны быть указаны, если
+распределение слотов является  @code{#:virtual}, и игнорируются
+иначе.
+
+@var{getter} должен быть замыканием, принимающим один параметр @var{instance},
+которое возвращает текущее значение слота.  @var{setter} должен быть замыканием
+получающим два параметра - @var{instance} и @var{new-val} - которое устанавливает
+новое значение слота в  @var{new-val}.
+@end deffn
+
+@node Slot Description Example
+@section Илюстрирование Описание Слота
+
+Чтобы проилюстрировать описание слота, мы можем переопределить класс @code{<my-complex>}
+рассмотренный ранее. Определение может быть:
+
+@lisp
+(define-class <my-complex> (<number>) 
+   (r #:init-value 0 #:getter get-r #:setter set-r! #:init-keyword #:r)
+   (i #:init-value 0 #:getter get-i #:setter set-i! #:init-keyword #:i))
+@end lisp
+
+@noindent
+При этом определении, слоты @code{r} и @code{i} по умолчанию устанавливаются
+в 0 и могут быть инициализированны другими значениями путем вызова @code{make}
+с ключевыми словами @code{#:r} и @code{#:i}.  Также обобщенные функции
+@code{get-r}, @code{set-r!}, @code{get-i} и @code{set-i!} автоматически
+определяются для чтения и записи слотов.
+
+@lisp
+(define c1 (make <my-complex> #:r 1 #:i 2))
+(get-r c1) @result{} 1
+(set-r! c1 12)
+(get-r c1) @result{} 12
+(define c2 (make <my-complex> #:r 2))
+(get-r c2) @result{} 2
+(get-i c2) @result{} 0
+@end lisp
+
+Аксессоры могут читать и записывать слот.  Итак, другое определение класса
+@code{<my-complex>}, использующее опцию @code{#:accessor}, может быть:
+
+@findex set!
+@lisp
+(define-class <my-complex> (<number>) 
+   (r #:init-value 0 #:accessor real-part #:init-keyword #:r)
+   (i #:init-value 0 #:accessor imag-part #:init-keyword #:i))
+@end lisp
+
+@noindent
+с помощью этого определения слот @code{r} можно прочитать с помощью:
+@lisp
+(real-part c)
+@end lisp
+@noindent
+и установить с помощью:
+@lisp
+(set! (real-part c) new-value)
+@end lisp
+
+Предположим теперь, что мы хотим манипулировать комплексными числами
+как прямоугольными, так и полярными координатами. Одним из решений может
+быть определение комплексных чисел, которое использует одно конкретное
+представление и некоторые функции преобразования для перехода из одного
+представления в другое. Лучшее решение - использовать виртуальные слоты,
+например:
+
+@lisp
+(define-class <my-complex> (<number>)
+   ;; True slots use rectangular coordinates
+   (r #:init-value 0 #:accessor real-part #:init-keyword #:r)
+   (i #:init-value 0 #:accessor imag-part #:init-keyword #:i)
+   ;; Virtual slots access do the conversion
+   (m #:accessor magnitude #:init-keyword #:magn  
+      #:allocation #:virtual
+      #:slot-ref (lambda (o)
+                  (let ((r (slot-ref o 'r)) (i (slot-ref o 'i)))
+                    (sqrt (+ (* r r) (* i i)))))
+      #:slot-set! (lambda (o m)
+                    (let ((a (slot-ref o 'a)))
+                      (slot-set! o 'r (* m (cos a)))
+                      (slot-set! o 'i (* m (sin a))))))
+   (a #:accessor angle #:init-keyword #:angle
+      #:allocation #:virtual
+      #:slot-ref (lambda (o)
+                  (atan (slot-ref o 'i) (slot-ref o 'r)))
+      #:slot-set! (lambda(o a)
+                   (let ((m (slot-ref o 'm)))
+                      (slot-set! o 'r (* m (cos a)))
+                      (slot-set! o 'i (* m (sin a)))))))
+
+@end lisp
+
+В этом определении класса, слоты размах(magnitude) @code{m} и угол(angle)
+ @code{a} виртуальные, и вчисляются когда при ссылке, из значений нормальных
+слотов (т.е.@: @code{#:allocation #:instance})  @code{r} и @code{i}, путем
+вызова функций, определенных в соответствующем параметре @code{#:slot-ref}.
+Соответственно, запись @code{m} или @code{a} приводит к вызову функций
+определенных в опции @code{#:slot-set!}.  Таким образом следующее
+выражение
+
+@findex #:slot-set!
+@findex #:slot-ref
+@lisp
+(slot-set! c 'a 3)
+@end lisp
+
+@noindent
+позволяет установить угол комплексного числа @code{c}.
+
+@lisp
+(define c (make <my-complex> #:r 12 #:i 20))
+(real-part c) @result{} 12
+(angle c) @result{} 1.03037682652431
+(slot-set! c 'i 10)
+(set! (real-part c) 1)
+(describe c)
+@print{}
+#<<my-complex> 401e9b58> is an instance of class <my-complex>
+Slots are: 
+     r = 1
+     i = 10
+     m = 10.0498756211209
+     a = 1.47112767430373
+@end lisp
+
+Поскольку ключевые слова инициализации были определены для четырех слотов,
+мы можем теперь определить стандартные примитивы Scheme @code{make-rectangular}
+и @code{make-polar}.
+
+@lisp
+(define make-rectangular 
+   (lambda (x y) (make <my-complex> #:r x #:i y)))
+
+(define make-polar
+   (lambda (x y) (make <my-complex> #:magn x #:angle y)))
+@end lisp
+
+@node Methods and Generic Functions
+@section Методы и Обобщенные Функции
+
+Метод GOOPS похож на процедуру Scheme, за исключением того, что он специализирован
+для конкретного набора классов аргументов и будет использоваться только тогда, когда
+фактические аргументы в вызове совпадают с классами в определении метода.
+
+@lisp
+(define-method (+ (x <string>) (y <string>))
+  (string-append x y))
+
+(+ "abc" "de") @result{} "abcde"
+@end lisp
+
+Метод не формально связан с каким-либо одним классом (как и во многих
+других объектно-ориентированных языках), поскольку метод может быть
+специализирован для комбинации нескольких классов. Если вы изучали ООП
+на примере не Лисп языков, вы можете помнить обсуждения, такие как метод
+растягивания(stretch) графического изображения вокруг поверхности(surface)
+должен быть методом класса изображения(image), с поверхностью(surface) в
+качестве параметра, или методом класса поверхность(surface), с изображением
+(image) в качестве параметра.  В GOOPS вы просто напишите:
+
+@lisp
+(define-method (stretch (im <image>) (sf <surface>))
+  ...)
+@end lisp
+
+@noindent
+и вопрос о том, к какому классу этот метод привязан, не нуждаеся в
+ответе.
+
+Одновременно может быть несколько методов с тем же именем, но разным
+набором указанных аргументов классов; например:
+
+@lisp
+(define-method (+ (x <string>) (y <string)) ...)
+(define-method (+ (x <matrix>) (y <matrix>)) ...)
+(define-method (+ (f <fish>) (b <bicycle>)) ...)
+(define-method (+ (a <foo>) (b <bar>) (c <baz>)) ...)
+@end lisp
+
+@noindent
+Обобщенная функция является контейнером для набора таких методов, которые
+программа намерена использовать.
+
+Если вы посмотрите на исходный код программы и увидите где то в ней
+@code{(+ x y)}, концептуально здесь происходит то, что программа в
+этот момент вызывает обобщенную функцию (в этом случае, обобщенная функция
+связана с идентификатором @code{+}).  Когда это происходит, Guile 
+разрбирается какой из методов обобщенной функции является наиболее подходящим
+для аргументов с которыми вызвана эта функция; после чего вычисляет этот
+метод с аргументами как формальными параметрами метода.  Это происходит
+каждый раз когда выполняется вызов обобщенной функции --- это не предполагает,
+что вызов данного исходного кода будет вызывать один и тот же метод
+каждый раз.
+
+Определение идентификатора как обобщенной функции выполняется с помощью
+макроса @code{define-generic}. Определение нового метода выполняется
+с помощью макроса @code{define-method}.  Обратите внимание, что определение
+метода @code{define-method} автоматически выполняет @code{define-generic},
+если соответствующий идентификатор еще не является обобщенной функцией,
+поэтому часто не требуется явно выраженного вызвова @code{define-generic}.
+@findex define-generic
+@findex define-method
+
+@deffn syntax define-generic symbol
+Создает обобщенную функцию с именем @var{symbol} и связывает ее с переменной
+@var{symbol}.  Если ранее @var{symbol} был связан с процедурой Scheme
+procedure (или процедурой с устновщиком), старая процедура (и установщик) 
+включаются в новую обобщенную функцию как процедура по умолчанию(и установщик).
+Любое другое предыдущее значение, включая существующую обобщенную функцию,
+отбрасывается и заменяется новой, пустой обобщенной функцией.
+@end deffn
+
+@deffn syntax define-method (generic parameter @dots{}) body @dots{}
+Определяет метод для обобщенной функции или обобщенного аксессора @var{generic} 
+параметрами @var{parameter} и телом @var{body} 
+@enddots{}.
+
+@var{generic} --- это Обобщенная функция.  Если @var{generic} это переменная,
+которая еще не связана с объектом обобщенной функции, расширение 
+@code{define-method} будет включать вызов @code{define-generic}.  Если
+@var{generic} это @code{(setter @var{generic-with-setter})}, где
+@var{generic-with-setter} это переменная еще не связанная с объктом
+generic-with-setter, расширение будет включать вызов @code{define-accessor}.
+
+Каждый @var{parameter} должен быть либо символом, либо двухэлементным
+списком @code{(@var{symbol} @var{class})}.  Символы относятся к переменным
+в теле форм, которые привязаны к параметрам предоставляемые вызывающим, при
+вызове этого метода.  @var{class}, если он есть, указывают возможные
+комбинации параметров, к которым может применяться этот метод
+
+@var{body} @dots{} является телом определения метода.
+@end deffn
+
+@code{define-method} выражения немного напоминают форму определения
+процедур Scheme
+
+@example
+(define (name formals @dots{}) . body)
+@end example
+
+Важным отличием является то, что каждый формальный параметр, помимо
+возможного аргумента ``rest'', может быть ограничен именем класса:
+@code{@var{formal}} становиться @code{(@var{formal} @var{class})}.
+Значение этого ограничения является то, что определяемый метод будет
+применим только в конкретном вызове обобщенной функции, если соответствующий
+аргумент является экземпляром классса @code{@var{class}}(или одного из его
+подклассов). Если более чем один из формальных параметров ограничен подобным
+образом, то метод будет применим только в том случае, если каждый из
+соответствующих аргументов является экземпляром соответствующим указанному
+классу.
+
+Обратите внимание, что не ограниченные формальные параметры действуют
+так, как если бы они были ограничены классом @code{<top>}, который GOOPS
+использует для обозначения суперкласса всех допустимых типов Scheme,
+включая примитивные типы и GOOPS классы.
+
+Например, если метод обобщенной функции определен с параметрами(@var{parameter})
+@code{(s1 <square>)} и @code{(n <number>)}, этот метод применим только к
+вызовам его обобщенной функции которые имеют два параметра, где первый параметр
+является экземпляром класса @code{<square>} и второй параметр
+является числом.
+
+@menu
+* Accessors::
+* Extending Primitives::
+* Merging Generics::
+* Next-method::                 
+* Generic Function and Method Examples::                     
+* Handling Invocation Errors::
+@end menu
+
+@node Accessors
+@subsection Аксессоры(методы доступа к значениям)
+
+Аксессор --- это обобщенная функция, которая может использоваться с обобщенным
+вызовом @code{set!} синтаксис (@pxref{Procedures with Setters}).  Guile
+будет обрабатывать вызов как
+
+@example
+(set! (@code{accessor} @code{args}@dots{}) @code{value})
+@end example
+
+@noindent
+вызывая наиболее специализированный метод доступа(аксессор/@code{accessor})
+соответствующий классам @code{args} и @code{value}.  @code{define-accessor} 
+используется для привязки идентификатора к аксессору.
+
+@deffn syntax define-accessor symbol
+Создает аксессор с именем @var{symbol} и связывает его с переменной
+@var{symbol}.  Если @var{symbol} ранее был связан с процедурой Scheme
+(илиr procedure-with-setter), старая процедура (и установщик) включается
+в новый аксессор в качестве процедуры по умолчанию (и установщик).
+Любое другое предыдущее значение, включая существующую обобщенную функцию
+или акцессор заменяются новым, пустым аксессором.
+@end deffn
+
+@node Extending Primitives
+@subsection Расширение Примитивов
+
+Многие из примитивных процедур Guile можно расширить, предоставив им
+обобщенную функцию которая работает в сочетании с их обычной Си-кодированной
+реализацией. Когда примитив расширяется таким образом, он ведет себя как
+обобщенная функция с Си кодированным методом по умолчанию.
+
+Это расширение происходит автоматически, если метод определен( вызовом
+@code{define-method}) для переменной, текущее значение которой является
+примитивным. Но его также можно выполнить принудительно вызвав
+@code{enable-primitive-generic!}.
+
+@deffn {primitive procedure} enable-primitive-generic! primitive
+Принудительное создание определения обобщенной функции для
+@var{primitive}.
+@end deffn
+
+Как только было создано определение обобщенной функции для примитива,
+оно может быть востановлено используя @code{primitive-generic-generic}.
+
+@deffn {primitive procedure} primitive-generic-generic primitive
+Возвращает обобщенной функции определение примитива @var{primitive}.
+
+@code{primitive-generic-generic} генерирует ошибку, если @var{primitive}
+не является примитивом с обобщенным расширением.
+@end deffn
+
+@node Merging Generics
+@subsection Объединение Обобщенных функций
+
+Обобщенные функции и аксессоры GOOPS часто имеют короткие, обобщенныые имена.
+Например, сли векторный пакет предоставляет аксессор для координаты X
+вектора, этот аксессор может быть просто назван @code{x}.  Его не нужно
+называть, например так, @code{vector:x}, потому что GOOPS будет работатт,
+когда видит код, подобный @code{(x @var{obj})}, что должен быть ввызван
+вектор-специфичный метод @code{x}, если @var{obj} это вектор.
+
+Тем не менее возникает вопрос о том, что происходит когда разные
+пакеты определяют обобщенную функцию с тем же именем. Предположим, мы
+работаем с графическим пакетом, который должен использовать два 
+независимых векторных пакета для 2D и 3D векторов соответственно.
+Если оба пакета экспортируют @code{x}, что делает код при
+использовании этих пакетов?
+
+@ref{Creating Guile Modules,,duplicate binding handlers} объясняет,
+как это разрешается для противоречивых привязок в общем. Для обобщенных,
+существует специальный обработчик дубликатов, @code{merge-generics}, 
+который предписывает модульной системе объединить обобщенные функции с 
+одинаковыми именами.
+Вот пример:
+
+@lisp
+(define-module (math 2D-vectors)
+  #:use-module (oop goops)
+  #:export (x y ...))
+
+(define-module (math 3D-vectors)
+  #:use-module (oop goops)
+  #:export (x y z ...))
+
+(define-module (my-module)
+  #:use-module (oop goops)
+  #:use-module (math 2D-vectors)
+  #:use-module (math 3D-vectors)
+  #:duplicates (merge-generics))
+@end lisp
+
+Обобщенная функция @code{x}  в модуле @code{(my-module)} теперь будет включать
+все методы  @code{x} из обоих импортированных модулей.
+
+Чтобы быть точным, теперь будут три различные обобщенные функции с именем
+@code{x}: @code{x} в @code{(math 2D-vectors)}, @code{x} в @code{(math
+3D-vectors)}, и @code{x} в @code{(my-module)}; и эти функции разделяют
+их методы интересным и динамичным способом.
+
+Чтобы объяснить, давайте назовем импортированные обобщенные функции (в @code{(math
+2D-vectors)} и @code{(math 3D-vectors)}) предками(@dfn{ancestors}), и
+объединенную обобщенную функцию (в @code{(my-module)}), потомком(@dfn{descendant}).
+Общее правило заключается в том, что для любой обобщенной функции G, применимы
+методы выбранные из объединения методов функций потомков G, сами методы G и
+методы функций пердков G.
+
+Таким образом, функции предков эффективно делят методы с их потомками и
+наоборот. В приведенном выше примере  @code{x} в
+@code{(math 2D-vectors)} будет совместно использовать методы @code{x} в
+@code{(my-module)} и наоборот. @footnote{Но обратите внимание, что @code{x}
+в @code{(math 2D-vectors)} не разделяет методы с @code{x} в
+@code{(math 3D-vectors)}, поэтому модульность сохраняется.}  Обмен динамический,
+поэтому добавление другого нового метода к потомству подразумевает добавление
+его к предкам потомка.
+
+@node Next-method
+@subsection Next-method
+
+Когда вы вызываете обобщенную функцию с определенным набором аргументов,
+GOOPS создает список всех методов, которые применимы к этим аргументам
+и упорядочивает его, тем, насколько близко определение метода соответствует
+фактическому типу аргументов. Затем он вызывает метод с верху этого списка.
+Если код выбранного метода хочет вызвать следующий метод в этом списке,
+он может это сделать используя @code{next-method}.
+
+@lisp
+(define-method (Test (a <integer>)) (cons 'integer (next-method)))
+(define-method (Test (a <number>))  (cons 'number  (next-method)))
+(define-method (Test a)             (list 'top))
+@end lisp
+
+С этими определениями,
+
+@lisp
+(Test 1)   @result{} (integer number top)
+(Test 1.0) @result{} (number top)
+(Test #t)  @result{} (top)
+@end lisp
+
+@code{next-method} всегда вызывается просто @code{(next-method)}.  Аргументы
+для вызова следующего метода всегда неявные и сегда те же, что и для вызова
+исходного метода.
+
+Если вы хотите вызвать метод с тем же именем, но с другим набором
+аргументов( например, как вы можете  с перегруженными методами
+Си++), не используйте  @code{next-method}, но в место этого просто
+напишите новый вызов, как обычно:
+
+@lisp
+(define-method (Test (a <number>) min max)
+  (if (and (>= a min) (<= a max))
+      (display "Number is in range\n"))
+  (Test a))
+
+(Test 2 1 10)
+@print{}
+Number is in range
+@result{}
+(integer number top)
+@end lisp
+
+(В этом случае вы должны быть осторожны, чтобы вызов @code{Test} не
+привел к бесконечной рекурсии, но соображение такое же, как и в 
+любом коде Scheme.)
+
+@node Generic Function and Method Examples
+@subsection Примеры обобщенных функций и Методов
+
+Рассмотрим следующие определения:
+
+@lisp
+(define-generic G)
+(define-method (G (a <integer>) b) 'integer)
+(define-method (G (a <real>) b) 'real)
+(define-method (G a b) 'top)
+@end lisp
+
+Вызов @code{define-generic} определяет  @var{G} как обобщенную функцию.
+Три следующие строки определяют методы для @var{G}.  Каждый метод 
+использует последовательность специализированных параметров
+(@dfn{parameter specializers}), которые определяют, когда данный
+метод применим.  Специализатор позволяет указать класс применяемого
+параметра, которому он должен принадлежать(напрямую или опосредованно).
+Если специализатор не указан, система по умолчанию присваивает значение
+@code{<top>}.  Таким образом, первое определение метода эквивалентно:
+
+@cindex parameter specializers
+@lisp
+(define-method (G (a <integer>) (b <top>)) 'integer)
+@end lisp
+
+Теперь давайте рассмотрим некоторые возможные вызовы обобщенной
+функции @var{G}:
+
+@lisp
+(G 2 3)    @result{} integer
+(G 2 #t)   @result{} integer
+(G 1.2 'a) @result{} real
+@c (G #3 'a) @result{} real       @c was {\sharpsign}
+(G #t #f)  @result{} top
+(G 1 2 3)  @result{} error (since no method exists for 3 parameters)
+@end lisp
+
+Приведенные выше методы используют только один специализированный параметр
+в списке параметров. Но в целом, любые или все параметры метода могут быть
+специализированы. Предположим, что мы определим теперь:
+
+@lisp
+(define-method (G (a <integer>) (b <number>))  'integer-number)
+(define-method (G (a <integer>) (b <real>))    'integer-real)
+(define-method (G (a <integer>) (b <integer>)) 'integer-integer)
+(define-method (G a (b <number>))              'top-number)
+@end lisp
+
+@noindent С этими определениями:
+
+@lisp
+(G 1 2)   @result{} integer-integer
+(G 1 1.0) @result{} integer-real
+(G 1 #t)  @result{} integer
+(G 'a 1)  @result{} top-number
+@end lisp
+
+В качестве дальнейшего примера мы продолжим определять операции над классом
+@code{<my-complex>}.  Предположим, что мы хотим использовать его для полной
+реализации комплексных чисел. Например, определение для сложения двух
+комплексных чисел может быть
+
+@lisp
+(define-method (new-+ (a <my-complex>) (b <my-complex>))
+  (make-rectangular (+ (real-part a) (real-part b))
+                    (+ (imag-part a) (imag-part b))))
+@end lisp
+
+Чтобы убедиться, что метод @code{+} используемый в методе
+@code{new-+} является стандартным суммированием мы можем
+сделать:
+
+@lisp
+(define-generic new-+)
+
+(let ((+ +))
+  (define-method (new-+ (a <my-complex>) (b <my-complex>))
+    (make-rectangular (+ (real-part a) (real-part b))
+                      (+ (imag-part a) (imag-part b)))))
+@end lisp
+
+@code{define-generic} обеспечивает здесь, что @code{new-+} будет определяться
+в глобальном окружении. Как только это будет сделано, мы можем добавить
+методы к обобщенной функции @code{new-+}, которые делают замыкание на символ @code{+}.  
+Полная запись метода @code{new-+} показана на @ref{fig:newplus}.
+
+@float Figure,fig:newplus
+@lisp
+(define-generic new-+)
+
+(let ((+ +))
+
+  (define-method (new-+ (a <real>) (b <real>)) (+ a b))
+
+  (define-method (new-+ (a <real>) (b <my-complex>)) 
+    (make-rectangular (+ a (real-part b)) (imag-part b)))
+
+  (define-method (new-+ (a <my-complex>) (b <real>))
+    (make-rectangular (+ (real-part a) b) (imag-part a)))
+
+  (define-method (new-+ (a <my-complex>) (b <my-complex>))
+    (make-rectangular (+ (real-part a) (real-part b))
+                      (+ (imag-part a) (imag-part b))))
+
+  (define-method (new-+ (a <number>))  a)
+
+  (define-method (new-+) 0)
+
+  (define-method (new-+ . args)
+    (new-+ (car args) 
+      (apply new-+ (cdr args)))))
+
+(set! + new-+)
+@end lisp
+
+@caption{Расширение @code{+} для обработки комплексных чисел}
+@end float
+
+Мы используем тот факр, что обобщенная функция не обязана иметь фиксированное
+количество параметров. Четыре первых метода реализуют двухэлементное 
+суммирование. Пятый метод говорит что добавление одного элемента это сам
+элемент. Шестой метод говорит, что использование добавления без параметра 
+всегда возвращает  0 (это верно и для примитива @code{+}). Последний метод
+принимает произвольное количество параметров
+parameters@footnote{The parameter list for a @code{define-method}
+follows the conventions used for Scheme procedures. In particular it can
+use the dot notation or a symbol to denote an arbitrary number of
+parameters}.  Этот метод действует как @code{reduce}: он вызывает
+двуэлементное суммирование для каждого элемента  @emph{car} из
+списка и результата его последнего выполнения.  В завершении,
+@code{set!} позволяет переопределить символ @code{+} нашему
+расширенному дополнению.
+
+Чтобы завершить нашу реализацию  комплексных чисел, мы 
+могли бы переопределить стандартные предикаты Scheme следующим
+образом:
+
+@lisp
+(define-method (complex? c <my-complex>) #t)
+(define-method (complex? c)           #f)
+
+(define-method (number? n <number>) #t)
+(define-method (number? n)          #f)
+@dots{}
+@end lisp
+
+Стандартные примитивы, в которых задействованы комплексные числа, также могут
+быть переопределены в той же манере.
+
+@node Handling Invocation Errors
+@subsection Обработка Ошибок Обращения
+
+Если вызывается обобщенная функция с комбинацией параметров, для которых
+нет применимого метода, GOOPS вызывает ошибку.
+
+@deffn generic no-method
+@deffnx method no-method (gf <generic>) args
+Когда приложение вызывает обобщенную функцию, и никакие методы
+не были определены для этой обобщенной функции, GOOPS вызывает
+универсальную обобщенную функцию @code{no-method}.  По умолчанию
+этот метод вызывает @code{goops-error} с сообщением об ошибке.
+@end deffn
+
+@deffn generic no-applicable-method
+@deffnx method no-applicable-method (gf <generic>) args
+Когда приложение применяет обобщенную функцию к набору аргументов и нет
+метода который был бы определен для этих типов аргументов, GOOPS вызывает
+обобщенную функцию @code{no-applicable-method}. Метод по умолчанию вызывает
+@code{goops-error} с сообщением об ошибке.
+@end deffn
+
+@deffn generic no-next-method
+@deffnx method no-next-method (gf <generic>) args
+Когда метод обобщенной функции вызывает @code{(next-method)} для вызова
+следующего менее специаизированного метода для этой обобщенной функции, и
+нет менее специализированного метода определенного для данной обобщенной
+функции для данного набора аргументов, GOOPS вызывает обобщенную функцию
+@code{no-next-method}. Метод по умолчанию вызывает  @code{goops-error}
+с соответствующим сообщением.
+@end deffn
+
+@node Inheritance
+@section Наследование
+
+Вот несколько определений классов, которые помогут проилюстрировать
+наследование
+
+@lisp
+(define-class A () a)
+(define-class B () b)
+(define-class C () c)
+(define-class D (A B) d a)
+(define-class E (A C) e c)
+(define-class F (D E) f)
+@end lisp
+
+@code{A}, @code{B}, @code{C} имеют нулевой список суперклассов. В этом
+случае, система заменит пустой список на список содержащий только
+класс @code{<object>}, это корень всех классов определяемых вызовом
+@code{define-class}.  @code{D}, @code{E}, @code{F} используют множественное
+наследование: каждый класс наследуется от двух ранее определенных классов.
+Т.е определения классов определяют иерархию, которая показана на 
+@ref{fig:hier}.  На этом рисунке так же показан класс @code{<top>};
+этот класс является суперклассом всех объектов  Scheme.  В частности,
+@code{<top>} является суперклассом для всех стандартных типов Scheme.
+
+@float Figure,fig:hier
+@iftex
+@c @center @image{hierarchy,5in}
+@end iftex
+@ifnottex
+@verbatiminclude hierarchy.txt
+@end ifnottex
+
+@caption{A class hierarchy.}
+@end float
+
+Когда класс имеет суперклассы, его набор слотов вычисляется путем
+объединения его собственных слотов и всех его суперклассов.
+Таким образом, каждый экземпляр класса D будет иметь три слота,
+@code{a}, @code{b} и @code{d}). Слоты класса могут быть просмотрены
+с помощью примитива @code{class-slots}.  Для классов,
+
+@lisp
+(class-slots A) @result{} ((a))
+(class-slots E) @result{} ((a) (e) (c))
+(class-slots F) @result{} ((e) (c) (b) (d) (a) (f))
+@end lisp
+
+@noindent
+Порядо вывода слотов не определен.
+
+@menu
+* Class Precedence List::
+* Sorting Methods::
+@end menu
+
+@node Class Precedence List
+@subsection Список Старшинства(предшествования) Классов (Class Precedence List)
+
+Что происходит, когда класс наследует от двух или более суперклассов,
+имеющих слот с одним и темже именем, но с несовместимыми определениями
+--- например, разными значениями инициализации или размещения слота?
+Нам нужно правило для определения того, какое определение слота получит
+производный класс, и это правило обеспечивается списком старшинства
+классов. @dfn{Class Precedence List}.@footnote{Данная секция является
+адаптацией материала Деффа Далтона (J.Dalton@@ed.ac.uk) 
+@cite{Brief introduction to CLOS}}
+
+Другая проблема возникает при вызове обобщенной функции, и есть более
+одного метода, которые можно применить к аргументам вызова. Здесь нам
+нужен способ упорядочения применения методов, так что бы Guile знал,
+какой метод использовать первым, чтобы использовать следующий метод,
+если этот метод вызывает @code{next-method}, и т.д. Одним из компонентов
+определения этого порядка является определение для каждого заданного
+аргумента вызова, котоыре из специализированных классов, из каждого
+определения применимого метода являющегося наиболее специфичным для
+этих аргументов, и здесь снова нам помогает список старшинства
+классов.
+
+Если наследование было ограничено, так что каждый класс мог иметь только
+один суперкласс --- также известное как одиночное @dfn{single} наследование
+--- упорядочение классов было бы легким.  Правило было бы просто, что подкласс
+считается более конкретным, чем его суперкласс.
+
+При множественном наследовании упорядочение менее очевидно, и мы
+вынуждены определять правило для определения приоритета. Предопложим,
+что мы имеем:
+
+@lisp
+(define-class X ()
+   (x #:init-value 1))
+
+(define-class Y ()
+   (x #:init-value 2))
+
+(define-class Z (X Y)
+   (@dots{}))
+@end lisp
+
+@noindent
+Очевидно, что @code{Z} класс является более конкретным(Старшим), чем
+@code{X} или @code{Y}, для экземпляров @code{Z}. Но какой из классов
+более конкретен(Старш) @code{X} или @code{Y} --- и, следовательно, для 
+определений выше, какое значение @code{#:init-value} вступит в силу
+при создании экземпляра класса @code{Z}?  Правило @goops{} заключается
+в том, что суперклассы перечисленные ранее, более конкретны(Старши), чем
+перечисленные позднее. Следовательно @code{X} более конкретный(Старш) чем
+@code{Y}, и значение @code{#:init-value} для слота @code{x} в
+экземпляре @code{Z} будет равно 1.
+
+Следовательно, существует линейный порядок для класса и всех его суперклассов,
+от наименее конкретных к более конкретным, и этот порядок называется Списком
+Старшинства(Предшествования) Классов(Class Precedence List) класса.
+
+На самом деле вышеприведенных правил не достаточно, чтобы всегда определять
+уникальный порядок, но они дают представление о том, как все работает.
+Например, для класса @code{F} показанного на @ref{fig:hier}, список старшинства
+классов такой
+
+@example
+(f d e a c b <object> <top>)
+@end example
+
+@noindent
+В тех случаях, когда существует какая-либо двусмысленность(например, как эта),
+для программиста плохой идеей будет, полагаться именно на порядок. Если порядок
+для некоторых суперклассов важен , это может быть выражено непосредственно
+в определении классов.
+
+Список Старшинства Классов можно поличть, вызвав @code{class-precedence-list}.
+Эта функция возвращает упорядоченный список, первым элементом которого является
+наиболее Старший(конкретный) класс. Например:
+
+@lisp
+(class-precedence-list B) @result{} (#<<class> B 401b97c8> 
+                                     #<<class> <object> 401e4a10> 
+                                     #<<class> <top> 4026a9d8>)
+@end lisp
+
+@noindent
+или для более быстрого чтения:
+
+@lisp
+(map class-name (class-precedence-list B)) @result{} (B <object> <top>) 
+@end lisp
+
+@node Sorting Methods
+@subsection Упорядочивание Методов
+
+Теперь, с идеей Списка Старшинста Классов, мы можем точно указать
+как можно упорядочить методы, когда применимы более чем один из
+методов обобщенной функции к аргументам вызова.
+
+Правила таковы:
+@itemize
+@item
+применяемые методы упорядочиваются по порядку конкретизации, а наиболее
+конкретный метод используется вначале, а затем следующий, если этот метод
+вызывает @code{next-method}, и т.д.
+
+@item
+метод M1  более конкретен, чем другой метод М2, если первый конкретизирующий
+класс, который отличается, между определиниями M1 и M2,
+более конкретен, в определении М1, для соответствующих фактических
+аргументов вызова, чем конкретизирующий класс в определении M2
+
+@item
+Класс C1 более конкретен. чем другой класс C2, для объекта фактического
+класса  C, если C1 предшествует(Старше) C2 в списке приоритетов класса C.
+@end itemize
+
+@node Introspection
+@section Интроспекция(Самонаблюдение у Классов- Introspection)
+
+@dfn{Introspection}Интроспекция, или  @dfn{reflection}Рефлексия, означает
+возможность динамического получения информации об объектах GOOPS.  Это
+пожалуй лучше всего илюстрируется рассмотрением объектно-ориентированнго 
+языка который не обеспечивает никакой интроспекции, а именно Си++.
+
+Ничто в Си++ не позволяет программе получать ответы на следующие типы
+вопросов:
+
+@itemize @bullet
+@item
+Что представляют собой данные этого объекта или класса?
+
+@item
+Какие классы наследует этот класс?
+
+@item
+Этот метод метод является виртуальным или не виртуальным?
+
+@item
+Если я вызываю @code{Employee::adjustHoliday()}, то какой класс
+содержит метод @code{adjustHoliday()} который будет применяться?
+@end itemize
+
+В Си++ ответы на эти вопросы могут быть даны только при просмотре
+исходного кода, если у вас есть к нему доступ. С другой стороны, GOOPS
+включает процедуры, позволяющие отвечать на эти вопросы - или их
+эквиваленты GOOPS - динамическе, т.е во время работы.
+
+@menu
+* Classes::
+* Instances::
+* Slots::
+* Generic Functions::
+* Accessing Slots::
+@end menu
+
+@node Classes
+@subsection Классы
+
+Класс GOOPS сам является экзепляром класса @code{<class>}, или подкласса
+@code{<class>}.  Определение класса @code{<class>} имеет слоты, которые
+используются для описания свойств класса, включая следующие.
+
+@deffn {primitive procedure} class-name class
+Возвращает имя класса @var{class}.  Им является значение слота
+@code{name} в @var{class}.
+@end deffn
+
+@deffn {primitive procedure} class-direct-supers class
+Возвращет список, содержащий прямые суперклассы @var{class}. Это значение
+слота @code{direct-supers} переменной @var{class}.
+@end deffn
+
+@deffn {primitive procedure} class-direct-slots class
+Взвращает список, содержащий определения словтов непосредственно
+заданных в @var{class}.  Это значение слота @code{direct-slots}
+переменной @var{class}.
+@end deffn
+
+@deffn {primitive procedure} class-direct-subclasses class
+возвращает список содержащий прямые подклассы класса @var{class}.  Это
+значение слота @code{direct-subclasses} переменной @var{class}
+@end deffn
+
+@deffn {primitive procedure} class-direct-methods class
+возвращает список всех методов обобщенных функций, которые используют
+класс @var{class} как формальный параметр конкретизации. Это значение
+слота непосредственно определенных методов класса @code{direct-methods}.
+@end deffn
+
+@deffn {primitive procedure} class-precedence-list class
+Возвращает список старшинства классов для класса @var{class} (@pxref{Class
+Precedence List}).  Это значение слота @code{cpl} для @var{class}.
+@end deffn
+
+@deffn {primitive procedure} class-slots class
+Возвращет список, содержащий определения слотов для всех слотов
+класса, включая любые слоты, котрые наследуются от суперклассов. Это
+значение слота @code{slots} в  @var{class}.
+@end deffn
+
+@deffn procedure class-subclasses class
+Возвращает список всех подклассов класса @var{class}.
+@end deffn
+
+@deffn procedure class-methods class
+Возвращает список всех методов которые использует @var{class} или
+подклассы @var{class}, как один из его формальных параметров
+конкретизирующие параметры.
+@end deffn
+
+@node Instances
+@subsection Экземпляры(Instances)
+
+@deffn {primitive procedure} class-of value
+Возвращает класс GOOPS для произвольного значения Scheme @var{value}.
+@end deffn
+
+@deffn {primitive procedure} instance? object
+Возвращает @code{#t} если @var{object} является экземпляром
+какого либо класса GOOPS, иначе @code{#f}.
+@end deffn
+
+@deffn procedure is-a? object class
+Взвращает @code{#t} если @var{object} является экземпляром класса
+@var{class} или одного из его подклассов.
+@end deffn
+
+Вы можете использовать предикат @code{is-a?}, чтобы узнать, принадлежит
+ли какое либо заданное значение данному классу, или @code{class-of} чтобы
+узнать класс заданного значения. Обратите внимание, что при загрузке GOOPS
+(код использующий модуль @code{(oop goops)}) встроенные классы, такие как
+@code{<string>}, @code{<list>} и @code{<number>} автоматически настраиваются,
+соотвественно всем типам Guile Scheme.
+
+@lisp
+(is-a? 2.3 <number>) @result{} #t
+(is-a? 2.3 <real>) @result{} #t
+(is-a? 2.3 <string>) @result{} #f
+(is-a? '("a" "b") <string>) @result{} #f
+(is-a? '("a" "b") <list>) @result{} #t
+(is-a? (car '("a" "b")) <string>) @result{} #t
+(is-a? <string> <class>) @result{} #t
+(is-a? <class> <string>) @result{} #f
+
+(class-of 2.3) @result{} #<<class> <real> 908c708>
+(class-of #(1 2 3)) @result{} #<<class> <vector> 908cd20>
+(class-of <string>) @result{} #<<class> <class> 8bd3e10>
+(class-of <class>) @result{} #<<class> <class> 8bd3e10>
+@end lisp
+
+@node Slots
+@subsection Слоты(Slots)
+
+@deffn procedure class-slot-definition class slot-name
+Возвращает определение слота для слота с именем @var{slot-name} в классе
+@var{class}.  @var{slot-name} должно быть символом.
+@end deffn
+
+@deffn procedure slot-definition-name slot-def
+Извлекает и возвращает имя слота из @var{slot-def}.
+@end deffn
+
+@deffn procedure slot-definition-options slot-def
+Извлекает и возвращает параметры слота из @var{slot-def}.
+@end deffn
+
+@deffn procedure slot-definition-allocation slot-def
+Извлекает и возвращает параметры размещения из @var{slot-def}.  Это
+значение ключевого слова @code{#:allocation} (@pxref{Slot Options,,
+allocation}), или @code{#:instance} если ключевое слово @code{#:allocation}
+отсутствует.
+@end deffn
+
+@deffn procedure slot-definition-getter slot-def
+Извлекает и возвращает параметр getter из @var{slot-def}.  Это значение
+ключевого слова @code{#:getter} (@pxref{Slot Options,,
+getter}), или @code{#f} если ключевое слово @code{#:getter} не задано.
+@end deffn
+
+@deffn procedure slot-definition-setter slot-def
+Извлекает и возвращает параметр слота setter из @var{slot-def}.  Это значение
+ключевого слова @code{#:setter} (@pxref{Slot Options,,
+setter}), или @code{#f} если ключевое слово @code{#:setter} отсутствует.
+@end deffn
+
+@deffn procedure slot-definition-accessor slot-def
+Извлекает и возвращает параметр слота accessor из @var{slot-def}.  Это
+значение ключевого слова @code{#:accessor} (@pxref{Slot Options,,
+accessor}), или @code{#f} если ключевое слово @code{#:accessor} отсутствует.
+@end deffn
+
+@deffn procedure slot-definition-init-value slot-def
+Извлекает и возвращает параметр слота начальное значение(init-value) из
+@var{slot-def}.  Это значение ключевого слова @code{#:init-value}
+(@pxref{Slot Options,,init-value}), или значение unbound если 
+ключевое слово @code{#:init-value} отсутствует.
+@end deffn
+
+@deffn procedure slot-definition-init-form slot-def
+Извлекает и возвращает опцию инициализации слота init-form из @var{slot-def}.
+Это значение ключевого слова @code{#:init-form} (@pxref{Slot Options,,
+init-form}), или unbound если значение ключевого слова @code{#:init-form}
+отсутствует.
+@end deffn
+
+@deffn procedure slot-definition-init-thunk slot-def
+Извлекает и возвращает опцию слота init-thunk из @var{slot-def}.  Это
+значение ключевого слова @code{#:init-thunk} (@pxref{Slot Options,,
+init-thunk}), или @code{#f} если ключевое слово @code{#:init-thunk}
+отстутствует.
+@end deffn
+
+@deffn procedure slot-definition-init-keyword slot-def
+Извлекает и возвращает параметр слота init-keyword из @var{slot-def}.
+Это значение ключевого слова @code{#:init-keyword} (@pxref{Slot
+Options,, init-keyword}), или @code{#f} если ключевое слово @code{#:init-keyword}
+отсутствует.
+@end deffn
+
+@deffn procedure slot-init-function class slot-name
+Возвращает функцию инициализации для слота с именем @var{slot-name} в
+классе @var{class}.  @var{slot-name} должно быть символом.
+
+Возвращенная функция инициализации включает эффекты стандартных
+опциций слота @code{#:init-thunk}, @code{#:init-form} и @code{#:init-value}.
+Эти инициализации могут быть переопределены опцией слота @code{#:init-keyword}
+или специальным методом @code{initialize}, таким образом, в общем случае,
+возвращаемая функцией @code{slot-init-function} может быть недостаточна.  
+Более подробное обсуждение, см. @ref{Slot Options,, init-value}.
+@end deffn
+
+@node Generic Functions
+@subsection обобщенные Функции(Generic Functions)
+
+обобщенная функция является экземпляром класса @code{<generic>}, или подкласса
+@code{<generic>}.  Определение класса @code{<generic>} имеет слоты,
+которые используются для описания свойств обобщенной функции.
+
+@deffn {primitive procedure} generic-function-name gf
+Возвращает имя обобщенной функции @var{gf}.
+@end deffn
+
+@deffn {primitive procedure} generic-function-methods gf
+Возвращает список методов обобщенной функции @var{gf}.  Этот список
+является значением слота @code{methods}  объекта @var{gf}.
+@end deffn
+
+Аналогичным образом, метод является экземпляром класса @code{<method>}, или
+подкласса @code{<method>}; и определение класса @code{<method>} имеет
+слоты, которые используются для описания свойств метода.
+
+@deffn {primitive procedure} method-generic-function method
+Возвращает обобщенную функцию, к которой принадлежит метод(@var{method}). Это
+значение слота @var{method} обобщенной функции @code{generic-function}.
+@end deffn
+
+@deffn {primitive procedure} method-specializers method
+Возвращает список формальных параметров конкретизирующих метод @var{method}. 
+Это значение слота @code{specializers} в  методе(@var{method}).
+@end deffn
+
+@deffn {primitive procedure} method-procedure method
+Возвращает процедуру, реализующую @var{method}.  Это значение слота @code{procedure}
+в методе(@var{method}).
+@end deffn
+
+@deffn generic method-source
+@deffnx method method-source (m <method>)
+Возвращает выражение для печати показывающее определение метода
+@var{m}.
+
+@example
+(define-generic cube)
+
+(define-method (cube (n <number>))
+  (* n n n))
+
+(map method-source (generic-function-methods cube))
+@result{}
+((method ((n <number>)) (* n n n)))
+@end example
+@end deffn
+
+@node Accessing Slots
+@subsection Доступ к Слотам(Accessing Slots)
+
+Любой слот, независимо от его размещения, может быть проверен, получен или
+установлен с использованием следующих четырех процедур.
+
+@deffn {primitive procedure} slot-exists? obj slot-name
+Возвращает @code{#t} если объект @var{obj} имеет слот с именем @var{slot-name},
+иначе @code{#f}.
+@end deffn
+
+@deffn {primitive procedure} slot-bound? obj slot-name
+Возвращает @code{#t} если слот с именем @var{slot-name} в объекте @var{obj}
+имеет значение, иначе @code{#f}.
+
+@code{slot-bound?} вызывает обобщенную функцию @code{slot-missing} если объект
+@var{obj} не имеет слота именуемого @var{slot-name} (@pxref{Accessing
+Slots, slot-missing}).
+@end deffn
+
+@deffn {primitive procedure} slot-ref obj slot-name
+Возвращает значение слота с именем @var{slot-name} в объекте @var{obj}.
+
+@code{slot-ref} вызывает обобщенную функцию @code{slot-missing} если объект
+@var{obj} не имеет слота называемого @var{slot-name} (@pxref{Accessing
+Slots, slot-missing}).
+
+@code{slot-ref} вызывает обобщенную функцию @code{slot-unbound} если именуемый
+слот объекта @var{obj} не имеет значения (@pxref{Accessing Slots,
+slot-unbound}).
+@end deffn
+
+@deffn {primitive procedure} slot-set! obj slot-name value
+Устанавливает значение слота с именем @var{slot-name} в объекте @var{obj} 
+значением @var{value}.
+
+@code{slot-set!} вызывает обобщенную функцию @code{slot-missing} если объект
+@var{obj} не имеет слота именуемого @var{slot-name} (@pxref{Accessing
+Slots, slot-missing}).
+@end deffn
+
+GOOPS хранит информацию о слотах в классах. Внутренне все эти процедуры
+работают проматривая определение слота для слота с именем @var{slot-name}
+в классе @code{(class-of @var{obj})}, а затем используют определенные для
+слотов функции доступа ``getter'' и ``setter'' чтобы получить или установить
+значение этих слотов.
+
+Следующие четыре процедуры отличаются от предыдущих, поскольку они
+принимают класс как явный аргумент, а не предполагают @code{(class-of @var{obj})}.  
+Поэтому они позволяют применить замыкания ``getter'' и ``setter'' определенные
+слотами в одном классе к экземпляру другого класса.
+
+@deffn {primitive procedure} slot-exists-using-class? class obj slot-name
+Возвращает @code{#t} если класс @var{class} имеет определение слота с именем
+@var{slot-name}, иначе @code{#f}.
+@end deffn
+
+@deffn {primitive procedure} slot-bound-using-class? class obj slot-name
+Возвращет @code{#t} если применение функции @code{slot-ref-using-class} к
+тем же аргументам вызовет обобщенную функцию @code{slot-unbound}, иначе
+@code{#f}.
+
+@code{slot-bound-using-class?} вызывает обобщенную функцию
+@code{slot-missing} если класс @var{class} не имеет определения слота для
+слота с именем @var{slot-name} (@pxref{Accessing Slots,
+slot-missing}).
+@end deffn
+
+@deffn {primitive procedure} slot-ref-using-class class obj slot-name
+Применяет замыкание ``getter'' для слота с именем @var{slot-name} класса
+@var{class} к объекту @var{obj}, и возвращает результат.
+
+@code{slot-ref-using-class} вызывает обобщенную функцию @code{slot-missing}
+если класс @var{class} не имеет определения определения слота с именем
+@var{slot-name} (@pxref{Accessing Slots,
+slot-missing}).
+
+@code{slot-ref-using-class} вызывает обобщенную функцию @code{slot-unbound}
+если применение замыкания ``getter'' к объекту @var{obj} возвращает
+ значение unbound (@pxref{Accessing Slots,
+slot-unbound}).
+@end deffn
+
+@deffn {primitive procedure} slot-set-using-class! class obj slot-name value
+Применяет замыкание ``setter'' для слота с именем @var{slot-name} в классе
+@var{class} объекта @var{obj} и новым значением @var{value}.
+
+@code{slot-set-using-class!} вызывает обобщенную функцию @code{slot-missing}
+если класс @var{class} не имеет определения слота с именем @var{slot-name}
+(@pxref{Accessing Slots, slot-missing}).
+@end deffn
+
+Слоты, чье размещение определено для класса, а не для каждого экземпляра,
+можно ссылаться и устанавливать без необходимости указывать какой либо
+конкретный экземпляр.
+
+@deffn procedure class-slot-ref class slot-name
+Возвращает значение слота с именем @var{slot-name} в классе @var{class}.
+Именованный слот должен иметь распределение типа @code{#:class} или @code{#:each-subclass}
+(@pxref{Slot Options,, allocation}).
+
+Если нет такого слота с кодом распределения @code{#:class} или @code{#:each-subclass},
+@code{class-slot-ref} вызывает обобщенную функцию @code{slot-missing} с аргументами
+@var{class} и @var{slot-name}.  Иначе, если значение слота не связано,
+@code{class-slot-ref} вызывает обобщенную функцию @code{slot-unbound}, с теми же
+самыми аргументами.
+@end deffn
+
+@deffn procedure class-slot-set! class slot-name value
+Задает значение слота с именем @var{slot-name} в классе @var{class} значением
+@var{value}.  Именованный слот должен иметь распределение типа @code{#:class}
+или @code{#:each-subclass} (@pxref{Slot Options,, allocation}).
+
+Если он не имеет тип размещения @code{#:class} или @code{#:each-subclass},
+@code{class-slot-ref} вызывает обобщенную функцию @code{slot-missing}
+с аргументами @var{class} или @var{slot-name}.
+@end deffn
+
+Когда вызов @code{slot-ref} или @code{slot-set!} указывает несуществующие
+имя слота или пытается получить ссылку на слот, значение которого не 
+установлено, GOOPS вызывает одну из следующих обобщенных функций.
+
+@deffn generic slot-missing
+@deffnx method slot-missing (class <class>) slot-name
+@deffnx method slot-missing (class <class>) (object <object>) slot-name
+@deffnx method slot-missing (class <class>) (object <object>) slot-name value
+Когда приложение пытается ссылаться или устанавливать слот класса или экземпляра
+по имени и с недопустимым именем слота для данного класса @var{class} или объекта
+@var{object}, GOOPS вызывает обобщенную функцию @code{slot-missing}.
+
+По умолчанию все методы вызывают @code{goops-error} с соответствюущим 
+сообщением.
+@end deffn
+
+@deffn generic slot-unbound
+@deffnx method slot-unbound (object <object>)
+@deffnx method slot-unbound (class <class>) slot-name
+@deffnx method slot-unbound (class <class>) (object <object>) slot-name
+Когда приложение пытается ссылатья на слот класса или экземпляра, а слот
+не имеет связанного значения, GOOPS вызывает обобщенную функцию
+@code{slot-unbound}.
+
+По умолчанию все методы вызывают @code{goops-error} с соответствующим сообщением.
+@end deffn
+
+@node GOOPS Error Handling
+@section Обработка Ошибок
+
+Процедура @code{goops-error} вызывается методами по умолчанию для генерации 
+соответствующей ошибки следующими обобщенными функциями:
+
+@itemize @bullet
+@item
+@code{slot-missing} (@pxref{Accessing Slots,, slot-missing})
+
+@item
+@code{slot-unbound} (@pxref{Accessing Slots,, slot-unbound})
+
+@item
+@code{no-method} (@pxref{Handling Invocation Errors,, no-method})
+
+@item
+@code{no-applicable-method} (@pxref{Handling Invocation Errors,,
+no-applicable-method})
+
+@item
+@code{no-next-method} (@pxref{Handling Invocation Errors,,
+no-next-method})
+@end itemize
+
+Если вы настраиваете эти функции для определенных классов или метаклассов, 
+вы все равно можете захотеть использовать @code{goops-error}, чтобы
+сигнализировать о любых обнаруженных ошибках.
+
+@deffn procedure goops-error format-string arg @dots{}
+Выбрасывает ошибку с ключем @code{goops-error} и сообщением об ошибке,
+построенному из @var{format-string} и аргументов @var{arg} @enddots{}.  
+Форматирование сообщений об ошибках выполняется с помощью @code{scm-error}.
+@end deffn
+
+@node GOOPS Object Miscellany
+@section Некоторые функции работы с Объектами GOOPS
+
+Здесь мы рассмотрим некоторые моменты, касающиеся объектов GOOPS, которые
+не достаточно существенны, что бы им посвятить отдельные разделы.
+
+@subheading Равенство Объектов
+
+Когда GOOPS загружается, @code{eqv?}, @code{equal?} и @code{=} становятся
+обобщенными функциями, и вы можете определять методы для них, специалзированные
+для ваших классов, чтобы контролировать то, как работают различные виды
+равенств для ваших классов.
+
+Например, процедура @code{assoc}, для поиска записи в ассоциированном
+списке alist, настроена на использование @code{equal?} для определения
+когда  начало списка alist(car) совпадет с ключевым параметром, с которым
+вызван @code{assoc}. Следовательно, если вы определили новый класс, и
+хотите испольовать экземпляры этого класса в качестве ключей alist, вы
+можете определить метод @code{equal?}, для вашего класса, чтобы точно
+контролировать соответствие при работе @code{assoc}.
+
+@subheading Клонирование Объектов
+
+@deffn generic shallow-clone
+@deffnx method shallow-clone (self <object>)
+Возвращает ``поверхностную'' копию объекта(@var{self}).  По умолчанию метод
+создает поверхностную копию размещающаую новый экземплфр и копируюя значения
+слотов из себя в новый экземпляр. Каждое значение слота копируется как немедленное
+значение или как ссылка.
+@end deffn
+
+@deffn generic deep-clone
+@deffnx method deep-clone (self <object>)
+Возвращает ``глубокую'' копию объекта(@var{self}).  По умолчанию метод
+делающий глубокую копию выделяет место для нового экземпляра и копирует
+или клонирует значение слотов от себе в новый экземпляр. Если значение
+слота является экземпляром (удовлетворяет @code{instance?}), оно клонируется
+вызовом @code{deep-clone} с этим значением. Другие слоты копируются либо
+как непосредственные значения, либо по ссылке.
+@end deffn
+
+@subheading Write and Display
+
+@deffn {primitive generic} write object port
+@deffnx {primitive generic} display object port
+Когда GOOPS загружается, @code{write} и @code{display} становятся обобщенными
+функциями со специальными методами для печати
+
+@itemize @bullet
+@item
+objects - экземпляр класса @code{<object>}
+
+@item
+foreign objects - экземпляр класса @code{<foreign-object>}
+
+@item
+classes - экземпляр класса @code{<class>}
+
+@item
+generic functions - экземпляр класса @code{<generic>}
+
+@item
+methods - экземпляр класса @code{<method>}.
+@end itemize
+
+@code{write} и @code{display} печатают не-GOOPS значения, также как
+примитивные Guile  функции @code{write} и @code{display}.
+@end deffn
+
+В дополнение к упомянутым случаям вы можете конечно определить
+методы @code{write} и @code{display} для ваших классов, чтобы настроить, 
+как будут печататься экземпляры этих классов.
+
+@node The Metaobject Protocol
+@section Метаобъектный Протокол
+
+До сего момента, мы говорили только о GOOPS, без сопоставления его
+с идеей протокола метаобъектов. Есть еще несколько тем, которые могут
+обсуждаться отдельно, первая - это переопределение класса, и вторая изменение
+класса  с существующими экземплярами, но на практике разработчики использующие
+их, должны быть достаточно продвинутыми, чтобы понять также и протокол
+метаобъектов, и, вероятно, точно будут использовать этот протокол для настройки
+того, что должно происходить во время этих событий.
+
+Итак давайте начнем.  GOOPS основан на ``метаобъектном протоколе'' (также
+известный как ``МОП'') производном из использумых в CLOS (the Common Lisp 
+Object System), tiny-clos (небольшая реализация Scheme подмножества функций 
+CLOS) и STKlos.
+
+МОП лежит в основе многих возможных настроек GOOPS --- таких как определение
+метода @code{initialize} для настройки инициализации экземпляров определенного
+класса приложений и понимание МОП делает гораздо более легким объяснение таких
+настроек в правильном порядке. И на более глубоком уровне понимание МОП является
+ключевой частью понимания GOOPS, и также полного использования мощи GOOPS, настройки
+поведения самого  GOOPS.
+
+@menu
+* Metaobjects and the Metaobject Protocol::
+* Metaclasses::
+* MOP Specification::
+* Instance Creation Protocol::
+* Class Definition Protocol::
+* Customizing Class Definition::
+* Method Definition::
+* Method Definition Internals::
+* Generic Function Internals::
+* Generic Function Invocation::
+@end menu
+
+@node Metaobjects and the Metaobject Protocol
+@subsection Метаобъекты и Метаобъектный Протокол(МОП)
+
+Основными строительными блоками GOOPS являются классы, определения слотов,
+экзепляров, обобщенных функций и методов. Класс - это группировка отношений
+наследования и определения слотов. Экземпляр объекта со слотами, которые
+размещаются следуя правилам, предусмотренными суперклассами этого класса
+и определениями слотов. Обобщенная функция представляет собой набор методов
+и правил определения какой из этих методов применяется при вызове обобщенной
+функции. Метод представляет собой процедуру и набор спецификаторов определяющих
+тип аргументов, к которым применима процедура.
+
+Из этих объектов, GOOPS представляет классы, обобщенные функции и методы
+как ``метаобъекты''.  Другими словами, значения в программе GOOPS
+описывающие классы, обобщенные функции и методы, сами являются экземплярами
+(или ``объектами'') специальных классов GOOPS которые инкапсулируют поведение
+соответственно, классов, обобщенных функций и методов.
+
+(Другими двумя объектами являются определение слотов и экземпляры. Определения
+слотов не являются строго экземплярами, но каждое определение слота связано
+с классом GOOPS, который определяет поведение слота в отношении доступности
+и защиты от сборки мусора. Экземпляры, конечно, объекты в обычном смысле, и
+нет никакой пользы от мысли о них как о метаобъектах.)
+
+``Метаобъектный протокол'' (или ``МОП'') это спецификация обобщенных функций,
+которые определяют поведение этих метаобъектов и обстоятельств при которых
+эти обобщенные функции вызываются.
+
+В качесте конкретного примера того, что это означает, рассмотрим как
+GOOPS вычисляет набор слотов для класса, который определяется с использованием
+@code{define-class}.  Желательным набором слотов является объединение прямых
+слотов и слотов всех его суперклассов. Но @code{define-class} сам не выполняет
+этот расчет. Вмето этого существует метод @code{initialize} обобщенной функции
+который специализирован для экземпляров типа @code{<class>}, и именно этот
+метод выполняет расчет слотов.
+
+@code{initialize} это обобщенная функция, которую GOOPS вызывает всякий раз,
+когда создается новый экземпляр, сразу после выделения памяти для нового
+экземпляра, чтобы инициализировать слоты нового экземпляра. Последовательность
+шагов следующая.
+
+@itemize @bullet
+@item
+@code{define-class} использует @code{make} для создания нового экземпляра
+класса @code{<class>}, передающегося как аргумент инициализации суперкласса,
+определения слотов и параметров класса, которые были указаны в форме
+@code{define-class}.
+
+@item
+@code{make} выделяет память для нового экземпляра и вызывает обобщенную
+функцию @code{initialize} для инициализации слотов нового экземляра.
+
+@item
+Обобщенная функция @code{initialize} применяет метод, который специализирован
+для экземпляров типа @code{<class>}, и этот метод выполняет расчет слотов.
+@end itemize
+
+Другими словами, вместо того чтобы быть жестко закодированным в @code{define-class},
+поведение определения класса по умолчанию инкапсулируется методами обобщенной
+функции, которые специализируются для класса @code{<class>}.
+
+Можно создать новый класс, который наследует от @code{<class>},
+который называется ``метаклассом'', и написать новый метод @code{initialize},
+который специализирован для экземпляров нового метакласса. Затем, если форма
+@code{define-class} включает опцию класса @code{#:metaclass}, чье значение это
+новый метакласс, класс который будет определен формой @code{define-class}
+будет экземпляром нового метакласса, а не стандартного @code{<class>}, и будет
+определен в соответствии с новым методом инициализации @code{initialize}.
+Таким образом, расчет слотов по умолчанию, а также любой другой аспект отношения
+нового класса с его суперклассами может быть изменен или переопределен.
+
+Аналогичным образом, поведение обобщенных функций может быть изменено или
+переопределено созданием нового класса, который наследуется от стандартного
+класса обобщенных функций @code{<generic>}, написанием соответствующих методов,
+которые конкретизируются в новом классе, и создают новые обобщенные функции,
+являющиеся экземплярами нового класса обобщенных функций.
+
+То же самое верно и для метаобъектов методов. И тот же самый базовый
+механизм применяется автором класса для написания метода @code{initialize}
+который конкретизирован для применения их класса, чтобы инициализировать
+экземпляры этого класса.
+
+Такова мощь МОП.  Обратите внимание, что @code{initialize} это просто
+одна из большого числа обобщенных функций, которые могут быть настроены
+для изменения поведения объектов приложения и классов и самого GOOPS.
+Каждый следующий раздел охватывает конкретную область функциональности GOOPS,
+и описывает обобщенные функции, которые имеют отношение к настройке этой
+области.
+
+@node Metaclasses
+@subsection Метаклассы
+
+Метакласс(@dfn{metaclass}) это класс, объекты которого представляют классы
+GOOPS. Или более лаконично, метакласс это класс классов.
+
+Большинство классов GOOPS имеют в качестве метакласса класс @code{<class>}
+и по умолчанию, любой новый класс создаваемый с использованием @code{define-class}
+имеет в качестве метакласса класс @code{<class>}.
+
+Но что это значит?  Чтобы узнать, давайте подробнее рассмотрим, что происходит
+когда создается новый класс с помощью @code{define-class}:
+
+@example
+(define-class <my-class> (<object>) . slots)
+@end example
+
+@noindent
+Guile расширяет это до чего-то вроде:
+
+@example
+(define <my-class> (class (<object>) . slots))
+@end example
+
+@noindent
+который в свою очередь расширяется до:
+
+@example
+(define <my-class>
+  (make <class> #:dsupers (list <object>) #:slots slots))
+@end example
+
+Как видно из этого расширения, результирующее значение @code{<my-class>}
+явлется экземпляром класса @code{<class>} со значениями слотов определяемыми
+суперклассами и определением слотов для класса  @code{<my-class>}.
+(@code{#:dsupers} и @code{#:slots} являются ключевыми словами иницализации
+для слотов @code{dsupers} и @code{dslots} в классе @code{<class>}.)
+
+Предположим теперь, что вы хотите определить новый класс с метаклассом,
+отличным от стандартного @code{<class>}.  Это делается путем написания:
+
+@example
+(define-class <my-class2> (<object>)
+   slot @dots{}
+   #:metaclass <my-metaclass>)
+@end example
+
+@noindent
+и Guile расширяет это(@emph{this}) определение до чегото вроде:
+
+@example
+(define <my-class2>
+  (make <my-metaclass> #:dsupers (list <object>) #:slots slots))
+@end example
+
+В этом случае значение @code{<my-class2>} является экземпляром более
+специализированного класса @code{<my-metaclass>}.  Обратите внимание,
+что сам @code{<my-metaclass>} должен быть предварительно определен как
+подкласс класса @code{<class>}.  Для более полного обсуждения того,
+когда и как полезно определять новые метаклассы, см. @ref{MOP Specification}.
+
+Теперь давайте создадим экземпляр @code{<my-class2>}:
+
+@example
+(define my-object (make <my-class2> ...))
+@end example
+
+Все последующие утверждения являются правильными выражениями 
+отношений между  @code{my-object}, @code{<my-class2>},
+@code{<my-metaclass>} и @code{<class>}.
+
+@itemize @bullet
+@item
+@code{my-object} это экземпляр класса @code{<my-class2>}.
+
+@item
+@code{<my-class2>} это экземпляр класса @code{<my-metaclass>}.
+
+@item
+@code{<my-metaclass>} это экземпляр класса @code{<class>}.
+
+@item
+Класс объекта @code{my-object} это @code{<my-class2>}.
+
+@item
+Класс объекта @code{<my-class2>} это @code{<my-metaclass>}.
+
+@item
+Класс объекта @code{<my-metaclass>} это @code{<class>}.
+@end itemize
+
+@node MOP Specification
+@subsection Спецификация МОП
+
+Цель спецификации МОП в этой главе --- указать все настраиваемые обобщенные
+функции вызовы которых могут выполняться стандартным синтаксисом GOOPS, 
+процедурами и методами, и объяснить протокол для настройки таких вызовов.
+
+Вызовы обобщенных функций настраиваются, если типы аргументов, к которым
+она применяется не полностью определяются лексическим контекстом, в котором
+этот вызов появляется. Например, вызов инициализации
+@code{(initialize @var{instance} @var{initargs})} по умолчанию метод
+@code{make-instance} настраивается, поскольку тип аргумента  @code{@var{instance}}
+определяемый классом, передается  @code{make-instance}.
+
+(Тогда как --- даем контр-пример --- @code{(make <generic> #:name ',name)} 
+вызов в @code{define-generic} не настраивается, потому что все его аргументы
+лексически  определенные типы.)
+
+При использовании этого правила для определения того, настраивается ли данный
+вызов обобщенной функции, мы игнорируем аргументы, которые, как ожидается,
+будут обрабатываться в определениях методов как один списковый аргумент ``rest''.
+
+Для каждого настраиваемого вызова обобщенной функции, протокол вызова
+(@dfn{invocation protocol}) разъясняется указанием:
+
+@itemize @bullet
+@item
+что, Концептуально, для чего предназначен применяемый метод
+
+@item
+какие предположения, если таковые имеются, вызывающий делает о побочных эффктах
+применяемого метода.
+
+@item
+что вызывающий ожидает получить в качестве возвращаемого значения 
+применяемого метода.
+@end itemize
+
+@node Instance Creation Protocol
+@subsection Протокол Создания Экземпляров
+
+@code{make <class> . @var{initargs}} (method)
+
+@itemize @bullet
+@item
+@code{allocate-instance @var{class} @var{initargs}} (generic)
+
+Применяемый метод @code{allocate-instance} должен выделять хранилище для
+нового экземпляра класса @var{class} и вернуть не инициализированный экзепляр.
+
+@item
+@code{initialize @var{instance} @var{initargs}} (generic)
+
+@var{instance} это не иницализированный экземпляр, возвращаемый 
+@code{allocate-instance}.  Применяемый метод должен инициализировать
+новый экземпляр в любом смысле, подходящем для его класса. Возвращаемое
+методом значение игнорируется.
+@end itemize
+
+@code{make} сама является обобщенной функцией.  Следовательно сам вызов
+@code{make} может быть настроен в зависимости от метакласса нового экземпляра,
+который является более специализированным чем класс по умолчанию @code{<class>},
+определением метода @code{make} специлизированного для этого метакласса.
+
+Обычно, однако, применяется метод для классов с метаклассом @code{<class>}.
+Этот метод вызывает две обобщенные функции:
+
+
+@itemize @bullet
+@item
+(allocate-instance @var{class} . @var{initargs})
+
+@item
+(initialize @var{instance} . @var{initargs})
+@end itemize
+
+@code{allocate-instance} распределяет память для нового экземпляра и
+возвращает новый экземпляр, не инициализированным. Вы можете настроить
+@code{allocate-instance}, например, если вы хотите предоставить
+GOOPS обертку вокруг некоторой другой объектной системы программирования.
+
+
+Для этого вы создадите специализированный метакласс, который будет дейстовать
+как метакласс для всех классов и экземпляров из другой системы. Затем
+определяйте метод @code{allocate-instance}, специализированный для этого
+метакласса, который вызывает примитив Guile Си функцию (или  код FFI), который в 
+свою очередь, выделит паамять для нового экземпляра с использованием
+интерфейса другой объектной системы.
+
+В этом случае для полной системы вам также потребуется настроить несколько
+других обобщенных функций, таких как @code{make} и @code{initialize}, так
+что GOOPS знает как создавать классы из другой системы, получать доступ к
+слотам объектов, и т.д.
+
+@code{initialize} инициализирует экземпляр, возвращаемый 
+@code{allocate-instance}.  Стадартный метод GOOPS выполняет
+инициализацию, соответствующую классу экземпляра.
+
+@itemize @bullet
+@item
+На наименее специализированном уровне выполняется метод для экземпляров
+типа @code{<object>} внутренняя инициализация экземпляра GOOPS, и
+инициализирует слоты экземпляра в соответствии с определениями слотов
+и любых ключевых слов иницализации слота, которые появляются в @var{initargs}.
+
+@item
+Метод для экземпляров типа @code{<class>} вызывает
+@code{(next-method)}, затем выполняет инициализацию класса, описанную в
+разделе @ref{Class Definition Protocol}.
+
+@item
+и т.д. для обобщенных функций, методов, операторов классов @dots{}
+@end itemize
+
+Аналогичным образом вы можете настроить инициализацию экземпляров любых
+определенных в приложении классов определяя метод @code{initialize} 
+специализированный для этого класса.
+
+Представьте себе класс, чьи экземпляры должны быть инициализированы во 
+время создания экземпляра путем запросов к базе данных. Хотя это может
+быть возможно, это сочетание ключевых слов @code{#:init-thunk} и замыкания
+в определениях слота, возможно более аккуратно написать метод @code{initialize}
+для класса, который опрашивает базу данных один раз и инициализирует
+все зависимые значения слотов в соответствии с результатами запроса.
+
+@node Class Definition Protocol
+@subsection Протокол Определения Класса
+
+Ниже приведена сводная диаграмма синтаксиса, процедур и обобщенных
+функций, которые могут учавствовать в определении класса.
+
+@noindent
+@code{define-class} (syntax)
+
+@itemize @bullet
+@item
+@code{class} (syntax)
+
+@itemize @bullet
+@item
+@code{make-class} (procedure)
+
+@itemize @bullet
+@item
+@code{ensure-metaclass} (procedure)
+
+@item
+@code{make @var{metaclass} @dots{}} (generic)
+
+@itemize @bullet
+@item
+@code{allocate-instance} (generic)
+
+@item
+@code{initialize} (generic)
+
+@itemize @bullet
+@item
+@code{compute-cpl} (generic)
+
+@itemize @bullet
+@item
+@code{compute-std-cpl} (procedure)
+@end itemize
+
+@item
+@code{compute-slots} (generic)
+
+@item
+@code{compute-get-n-set} (generic)
+
+@item
+@code{compute-getter-method} (generic)
+
+@item
+@code{compute-setter-method} (generic)
+@end itemize
+@end itemize
+@end itemize
+@end itemize
+
+@item
+@code{class-redefinition} (generic)
+
+@itemize @bullet
+@item
+@code{remove-class-accessors} (generic)
+
+@item
+@code{update-direct-method!} (generic)
+
+@item
+@code{update-direct-subclass!} (generic)
+@end itemize
+@end itemize
+
+Каждый вышеописанный шаг обозначенный как  ``обобщенный(generic)'', может
+быть настроен и детально покажем ниже как это сделать  ``правильно(correct)''
+поскольку он описывает какой метод по умолчанию используется обобщенной функцией.
+Например, если вы пишете метод @code{initialize}, для некоторого метакласса,
+который не вызывает @code{next-method} и не вызывает @code{compute-cpl}, 
+тогда @code{compute-cpl} не будет вызван когда класс определяется с этим
+метаклассом.
+
+Форма @code{(define-class ...)}  (@pxref{Class Definition}) расшираяется до
+выражения, которое:
+
+@itemize @bullet
+@item
+проверяет, что оно вычисляется только на верхнем уровне
+
+@item
+определяет любые аксессоры, которые подразумеваются определениями слотов
+@var{slot-definition}
+
+@item
+использует @code{class} для создания нового класса
+
+@item
+проверяет предыдущее определение для класса с именем @var{name} и, если
+оно найдено, обрабатывает переопределение путем вызова  @code{class-redefinition}
+(@pxref{Redefining a Class}).
+@end itemize
+
+@deffn syntax class name (super @dots{}) @
+              slot-definition @dots{} class-option @dots{}
+Возвращает вновь созданный класс, который наследуется от @var{super}, с
+непосредственно определенными слотами, определенными @var{slot-definition}
+и @var{class-option}. Формат @var{slot-definition} и @var{class-option}, см.
+@ref{Class Definition,, define-class}.
+@end deffn
+
+@noindent @code{class} расширяется до выражения, которое
+
+@itemize @bullet
+@item
+обрабатывает параметры определения класса и слота, чтобы проверить
+правильно ли они сформированы, чтобы конвертировать параметр 
+@code{#:init-form} в параметр @code{#:init-thunk}, поставляющий параметр
+среды по умолчанию, (текущая среда верхнего уровня) и вычисляет все биты
+ которые необходимо вычислить.
+
+@item
+вызывает @code{make-class} для создания класса с обработанными и
+вычисленными параметрами.
+@end itemize
+
+@deffn procedure make-class supers slots class-option @dots{}
+Возвращает вновь созданный класс, который наследуется от @var{supers}, с
+непосредственно определенными слотами @var{slots} и @var{class-option}.  Формат
+определения слотов @var{slots} и @var{class-option}s, см @ref{Class
+Definition,, define-class}, за исключением того, что для @code{make-class},
+@var{slots} представляет собой отдельный список определения слотов.
+@end deffn
+
+@noindent @code{make-class}
+
+@itemize @bullet
+@item
+добавляет @code{<object>} в список @var{supers} если @var{supers} пустой или
+если ни один из классов в @var{supers} не имеет @code{<object>} в своем 
+списке старшинства классов.
+
+@item
+по умолчанию заданы параметры @code{#:environment}, @code{#:name} и
+@code{#:metaclass}, если они не являются определенными в @var{options}, 
+в текущей среде верхнего уровня несвязанное значени и @code{(ensure-metaclass
+@var{supers})} соответственно
+
+@item
+проверяет наличие повторяющихся классов в @var{supers} и дублиурующиеся
+имена слотов в @var{slots}, и сигнализирует об ошибке если имеются
+дубликаты.
+
+@item
+вызывает @code{make}, передает метакласс как первый параметр и все остальные
+параметры как ключевые слова со значениями.
+@end itemize
+
+@deffn procedure ensure-metaclass supers env
+Возвращает метакласс, подходящий для класса, который наследуется от
+списка классов в @var{supers}.  Возвращенный метакласс это объединение
+наследуемых метаклассов из классов в @var{supers}.
+
+В простейшем случае, все the @var{supers} являются простыми классами
+с метаклассом @code{<class>} и возвращаемый метакласс это просто
+класс @code{<class>}.
+
+Для более сложного примера предположим, что @var{supers} содержит
+один класс с метаклассом @code{<operator-class>} и один класс
+с метаклассом @code{<foreign-object-class>}.  Тогда возвращенный
+метакласс будет классом, который наследуется от обоих метаклассов
+от @code{<operator-class>} и от @code{<foreign-object-class>}.
+
+Если @var{supers} это пустой список, @code{ensure-metaclass} возвращает
+метакласс  GOOPS по умолчанию, т.е. метакласс @code{<class>}.
+
+GOOPS хранит список метаклассов, созданных @code{ensure-metaclass},
+так что каждый требуемый тип метакласса создается только один раз.
+
+
+Параметр @code{env} игнорируется.
+@end deffn
+
+@deffn generic make metaclass initarg @dots{}
+@var{metaclass} это метакласс класса, который определяется, либо берется
+из опции класса @code{#:metaclass}, либо вычисляется с помощью 
+@code{ensure-metaclass}.  Применяемый метод должен создать и вернуть 
+полностью инициализированный метаобъект класса для определения нового класса.
+@end deffn
+
+Вызов @code{(make @var{metaclass} @var{initarg} @dots{})} является частным
+случаем протокола создания экземпляра, рассмотренный в предыдущем разделе.
+Он создаст метаобъект класса с метаклассом @var{metaclass}.  По умолчанию
+этот метаобъект будет инициализирован методом @code{initialize} специализированный
+для экземпляров типа @code{<class>}.
+
+Метод @code{initialize} для классов (signature @code{(initialize
+<class> initargs)}) вызывает следующие обобщенные функции.
+
+@itemize @bullet
+@item
+@code{compute-cpl @var{class}} (generic)
+
+Применяемый метод должен вычислить и вернуть список старшинства классов
+для класса @var{class} как список метаобъектов классов. Когда вызывается
+@code{compute-cpl} следующие слоты метаобъекта @var{class} должны быть
+инициализированы:
+@code{name}, @code{direct-supers}, @code{direct-slots},
+@code{direct-subclasses} (empty), @code{direct-methods}.  Значение
+возвращаемое @code{compute-cpl} будет храниться в слоте @code{cpl}.
+
+@item
+@code{compute-slots @var{class}} (generic)
+
+Применяемый метод должен вычислять и возвращать слоты (объединение
+прямых и наследуемых) для класса @var{class} как список определений
+слотов.  Когда вызывается @code{compute-slots} все слоты метаобъекта
+@var{class} упомянутые для @code{compute-cpl} должны быть инициализированы,
+плюс следующие слоты: following: @code{cpl}, @code{redefined} 
+(@code{#f}), @code{environment}.
+Значение возвращаемое @code{compute-slots} будет храниться в слоте
+@code{slots}.
+
+@item
+@code{compute-get-n-set @var{class} @var{slot-def}} (generic)
+
+@code{initialize} вызывает @code{compute-get-n-set} для каждого слота 
+вычисленного @code{compute-slots}.  Применяемый метод должен вычислить и 
+вернуть пару замыканий, которые соответственно, получают и устанавливают
+значение указанного слота. get замыкание должно иметь арность 1 и ожидать
+единственный аргумент, который является экземпляром слота, значение которого
+должно быть извлечено.  set замыкание должно иметь арность 2 и принимать
+два аргумента, где первым аргументом является экземпляр слота значение которого
+должно быть установлено, а второй аргумент - новое значение для этого слота.
+Замыкания должны быть возвращены в виде списка из двух элементов: 
+@code{(list @var{get} @var{set})}.
+
+Замыкания возвращаемые @code{compute-get-n-set} сохраняются как часть
+значения слота @code{getters-n-setters} метаобъекта @var{class}.
+В частности, значение этого слота представляет собой список с тем же
+количеством элементов, что и слоты в классе, и каждый элемент выглядит
+так:
+
+@example
+@code{(@var{slot-name-symbol} @var{init-function} . @var{index})}
+@end example
+
+или так:
+
+@example
+@code{(@var{slot-name-symbol} @var{init-function} @var{get} @var{set})}
+@end example
+
+Где замыкания get и set заменяются индексом @var{index}, слот является
+экземпляром слота и индекса @var{index} - индекс слота в базовой структуре:
+GOOPS знает как получить и установить значение такого слота, и следовательно,
+не требуется специально конструировать get и set замыкания для этого случая.
+В противном случае замыкания @var{get} и @var{set} возвращаемые
+@code{compute-get-n-set}.
+
+Структура значения слотов @code{getters-n-setters} важна при понимании
+следующих настраиваемых обобщенных функций которые вызывает @code{initialize}
+@dots{}
+
+@item
+@code{compute-getter-method @var{class} @var{gns}} (generic)
+
+@code{initialize} вызывает @code{compute-getter-method} для каждого
+из слотов класса(определенных @code{compute-slots}), который включает
+в себя опцию слота @code{#:getter} или @code{#:accessor}.  @var{gns} это
+элемент метаобъекта класса @var{class} слот @code{getters-n-setters} который
+определяется как слот с запросами сслыки и установки, как описано выше, в
+@code{compute-get-n-set}.  Применяемый метод должен создавать и возвращать
+метод, который специализирован для экземпляров типа @var{class} и использовать
+get замыкание для получения значения слота.
+@code{initialize} использует @code{add-method!} для добавления возвращаемого
+метода к обобщенной функции именуемой определением опции слота @code{#:getter} или
+@code{#:accessor}.
+
+@item
+@code{compute-setter-method @var{class} @var{gns}} (generic)
+
+@code{compute-setter-method} вызывается с теми же аргументами, что и
+@code{compute-getter-method}, для каждого слота класса, который включает
+в себе опцию @code{#:setter} или @code{#:accessor}.  Применяемый метод
+должен создать и вернуть метод, который специализирован для экземпляра
+типа @var{class} и использовать замыкание set для установки значения слота.
+@code{initialize} использует @code{add-method!} для добавления возвращаемого
+метода к обобщенной функции именуемой определением опции слота @code{#:setter}
+или @code{#:accessor}.
+@end itemize
+
+@node Customizing Class Definition
+@subsection Настройка Определения Класса
+
+Если метакласс нового класса является чем-то более специализированным,
+чем стандартный класс @code{<class>}, то тип @var{class} в вышеперечисленных
+вызовах более специализирован чем @code{<class>}, и следовательно, он
+может определить методы обобщенных функций, специализированные для 
+метакласса нового класса, которые могут изменить или отменять поведение
+по умолчанию для @code{initialize}, @code{compute-cpl} или
+@code{compute-get-n-set}.
+
+@code{compute-cpl} вычисляет список старшинства классов (``CPL'') для
+нового класса (@pxref{Class Precedence List}), и возвращает его как
+список объектов класса.  CPL важен, поскольку он определеят упорядочение
+суперклассов, которые используются, когда обобщенная функция вызывается
+для экземпляра класса, чтобы решить, какой из доступных методов обобщенной
+функции является наиболее конкретным(подходящим).  Следовательно, 
+@code{compute-cpl} можно настроить в порядке изменения для изменения
+алгоритма упорядочения CPL для всех классов со специальным метаклассом.
+
+Алгоритм CPL по умолчанию инкапсулируется процедурой @code{compute-std-cpl},
+которая вызывается методом по умолчанию @code{compute-cpl}.
+
+@deffn procedure compute-std-cpl class
+Вычисляет и возвращает список старшинства классов для класса @var{class} в соответствии
+с алгоритмом описанном в  @ref{Class Precedence List}.
+@end deffn
+
+@code{compute-slots} вычисляет и возвращает список всех определений
+слотов для нового класса. По умолчанию, этот список включает в себя
+непосредственно определенные в классе слоты из формы определения 
+@code{define-class}, плюс определения которые определения слотов, которые
+унаследованы от суперклассов. По умолчанию  метод @code{compute-slots}
+использует CPL вычисленный @code{compute-cpl} для вычисления этого 
+объединения слотов, с правилом, что слоты унаследованные от суперклассов,
+заменяются непосредственными слотами с тем же именем. Одной из возможных
+причин для настройки @code{compute-slots} будет реализация альтернативной
+стратегии разрешения конфликтов имен слотов.
+
+@code{compute-get-n-set} вычисляет низкоуровневые замыкания, которые будут
+использоваться для получения и установки значений определенных слотов, и
+возвращет их в списке с двумя элементами.
+
+Возвращемые замыкания зависят от того как распределяется хранилище для
+данного слота. Стандартный метод @code{compute-get-n-set} специализированный
+для классов типа @code{<class>}, обрабатывает стандартные значения GOOPS
+для опций слота @code{#:allocation} (@pxref{Slot Options,, allocation}).
+Определяя новый метод @code{compute-get-n-set} для более специализированного
+метакласса, возможна поддержка нового типа распределения слотов.
+
+Предположим, вы хотите создать большое количество экзепляров некоторого
+класса со слотом, который должен быть разделен между некоторыми, но
+не всеми экземплярами этого класса, скажем каждый 10 экземпляров должны
+испльзовать одно и тоже хранилище. В следующем примере показано, как 
+реализовать и использовать для этого новый тип расределения слотов.
+
+@example
+(define-class <batched-allocation-metaclass> (<class>))
+
+(let ((batch-allocation-count 0)
+      (batch-get-n-set #f))
+  (define-method (compute-get-n-set
+                     (class <batched-allocation-metaclass>) s)
+    (case (slot-definition-allocation s)
+      ((#:batched)
+       ;; If we've already used the same slot storage for 10 instances,
+       ;; reset variables.
+       (if (= batch-allocation-count 10)
+           (begin
+             (set! batch-allocation-count 0)
+             (set! batch-get-n-set #f)))
+       ;; If we don't have a current pair of get and set closures,
+       ;; create one.  make-closure-variable returns a pair of closures
+       ;; around a single Scheme variable - see goops.scm for details.
+       (or batch-get-n-set
+           (set! batch-get-n-set (make-closure-variable)))
+       ;; Increment the batch allocation count.
+       (set! batch-allocation-count (+ batch-allocation-count 1))
+       batch-get-n-set)
+
+      ;; Call next-method to handle standard allocation types.
+      (else (next-method)))))
+
+(define-class <class-using-batched-slot> ()
+  ...
+  (c #:allocation #:batched)
+  ...
+  #:metaclass <batched-allocation-metaclass>)
+@end example
+
+Использование методов @code{compute-getter-method} и @code{compute-setter-method}
+описано в @ref{Class Definition Protocol}.
+
+@code{compute-cpl} и @code{compute-get-n-set} вызываются стандартным
+методом @code{initialize} для классов, метаклассом которых является класс
+@code{<class>}.  Но сам @code{initialize} можно также модифицировать, 
+определяя метод @code{initialize} специализированный для нового класса
+метакласса. Такой метод может полностью переопределить стандартное поведение,
+не вызывая методов @code{(next-method)} вообще, но более типично он выполнял
+бы дополнительные шаги инициализации класса до или/и после вызова 
+@code{(next-method)} для стандартного поведения.
+
+@node Method Definition
+@subsection Определение Методов
+
+@code{define-method} (syntax)
+
+@itemize @bullet
+@item
+@code{add-method! @var{target} @var{method}} (generic)
+@end itemize
+
+@noindent
+@code{define-method} вызывает обобщенную функцию @code{add-method!} для
+обработки добавления нового метода к множеству возможных целей. GOOPS
+включает методы обработки @var{target} такие как:
+
+@itemize @bullet
+@item
+обобщенная функция (the most common case)
+
+@item
+процедура
+
+@item
+обобщенный примитив (@pxref{Extending Primitives})
+@end itemize
+
+Определив дальнейшие методы для for @code{add-method!}, вы теоретически
+можете обрабатывать добавление методов к другим типам целей.
+
+@node Method Definition Internals
+@subsection Определение Методов Изнутри
+
+@code{define-method}:
+
+@itemize @bullet
+@item
+проверяет форму первого параметра и применяет следующие шаги к аксессору
+установщика если он имеет форму  @code{(setter @dots{})}
+
+@item
+интерполирует вызов @code{define-generic} или @code{define-accessor}
+если обобщенная функция не является уже определенной с указанным именем.
+
+
+@item
+вызывает @code{method} с параметром @var{parameter}s и телом @var{body}, чтобы
+создать экзепляр нового метода.
+
+@item
+вызывает @code{add-method!} чтобы добавить этот метод к соответствующей
+обобщенной функции.
+@end itemize
+
+@deffn syntax method (parameter @dots{}) body @dots{}
+Создает метод, специализаторы которого определяются классами в параметрах
+@var{parameter} и чьё определение процедуры строиться из символов @var{parameter}
+и формы @var{body}.
+
+
+Параметры @var{parameter} и @var{body} должны быть такими же, как
+и для @code{define-method} (@pxref{Methods and Generic Functions,,
+define-method}).
+@end deffn
+
+@noindent
+@code{method}:
+
+@itemize @bullet
+@item
+извлекает формальные и специализированные классы из @var{parameter},
+по умолчанию класс не указанных параметров @code{<top>}
+
+@item
+создает замыкание, используя формальные параметры и форму @var{body}
+
+@item
+вызывает @code{make} с метаклассом @code{<method>} и специализаторами и
+замыканием используя ключевые слова @code{#:specializers} и @code{#:procedure}.
+@end itemize
+
+@deffn procedure make-method specializers procedure
+Создает метод используя @var{specializers} и @var{procedure}.
+
+@var{specializers} должен быть списком классов, который задает
+комбинацию параметров к которым этот метод применим.
+
+@var{procedure} должна быть замыканием, которое будет применяться к параметрам
+обобщенной функции когда этот метод вызывается.
+@end deffn
+
+@noindent
+@code{make-method} это простая обертка вокруг @code{make} с метаклассом
+@code{<method>}.
+
+@deffn generic add-method! target method
+Обобщенная функция для добавления метода @var{method} к @var{target}.
+@end deffn
+
+@deffn method add-method! (generic <generic>) (method <method>)
+Добавляет метод @var{method} к обобщенной функции @var{generic}.
+@end deffn
+
+@deffn method add-method! (proc <procedure>) (method <method>)
+Если @var{proc} это процедура с возможностью обобщения (@pxref{Extending
+Primitives,, generic-capability?}), обновляет ее до обобщенного примитива
+и добавляет метод @var{method} к его определению обобщенной функции.
+@end deffn
+
+@deffn method add-method! (pg <primitive-generic>) (method <method>)
+Добавляет метод @var{method} к определению обобщенной функции @var{pg}.
+
+Реализация: @code{(add-method! (primitive-generic-generic pg) method)}.
+@end deffn
+
+@deffn method add-method! (whatever <top>) (method <method>)
+Выбрасывает ошибку укзывающую, что @var{whatever} не является допустимой
+обобщенной функцией.
+@end deffn
+
+@node Generic Function Internals
+@subsection Обобщенные Функции изнутри
+
+@code{define-generic} вызов @code{ensure-generic} обновляет ранее
+существующее значение процедуры, или  @code{make} с укзанием в качестве
+метакласса @code{<generic>} создает новую обобщенную функцию.
+
+@code{define-accessor} вызов @code{ensure-accessor} обновляет ранее
+существовавшее значение процедуры, или @code{make-accessor} создает
+новый аксессор.
+
+@deffn procedure ensure-generic old-definition [name]
+Возвращает обобщенную функцию с именем @var{name}, если это возможно, 
+используя или обновляя старое определение(@var{old-definition}). 
+Если не указано @var{name} по умолчанию равно @code{#f}.
+
+Если старое определение(@var{old-definition}) уже является обобщенной функцией,
+вызов возвращает unchanged.
+
+Если старое определение(@var{old-definition}) это процедура Scheme или
+процедура с установщиком(procedure-with-setter),
+@code{ensure-generic} возвращает новую обобщенную функцию, которая использует
+старое определние(@var{old-definition}) для процедуры по умолчанию и для 
+установщика.
+
+В противном случае @code{ensure-generic} возвращает новую обобщенную процедуру
+без значения по умолчанию и без методов.
+@end deffn
+
+@deffn procedure make-generic [name]
+Возвращает новую обобщенную функцию с именем @code{(car @var{name})}.  Если
+неуказано имя @var{name} по умолчанию @code{#f}.
+@end deffn
+
+@code{ensure-generic} вызывает @code{make} с метаклассом @code{<generic>}
+и @code{<generic-with-setter>}, в зависимости от предыдущего значения
+переменной, которую он пытается обновить.
+
+@code{make-generic} это просто оболочка для @code{make} с метаклассом
+@code{<generic>}.
+
+@deffn procedure ensure-accessor proc [name]
+Возвращает аксессор с именем @var{name}, если возможно используя или
+обновляя @var{proc}.  Если не задано имя @var{name} по умолчанию @code{#f}.
+
+Если @var{proc} уже является аксессором, он возвращает unchanged.
+
+Если @var{proc} это процедура Scheme, процедура с установщиком
+(procedure-with-setter) или обобщенная процедура, @code{ensure-accessor}
+возвращает аксессор который повторно использует элементы @var{proc}.
+
+В противном случае @code{ensure-accessor} возвращает новый аксессор без
+умолчания и без методов.
+@end deffn
+
+@deffn procedure make-accessor [name]
+Возвращает новый аксессор с именем @code{(car @var{name})}.  Если
+не указано имя @var{name} по умолчанию @code{#f}.
+@end deffn
+
+@code{ensure-accessor} вызывает @code{make} с метаклассом  @code{<generic-with-setter>},
+а также вызывает @code{ensure-generic}, @code{make-accessor} и (хвостовой рекурсией)
+@code{ensure-accessor}.
+
+@code{make-accessor} вызывает @code{make} дважды, первый раз с метаклассом
+@code{<generic>} чтобы создать обобщенную функцию установщика, затем
+с метаклассом @code{<generic-with-setter>} для создания аксессора, передавая
+обобщенную функцию установщик как значение ключевого слова @code{#:setter}.
+
+@node Generic Function Invocation
+@subsection Вызовы Обобщенной Функции
+
+Существует подробный и настраиваемый протокол, использующийся в процессе
+вызова обобщенной функции --- т.е., в процессе определения того какие из
+методов обобщенной функции применимы к текущим аргументам и какие из них
+применять.  Вот краткая диаграмма запутанного протокола применения 
+обобщенной функции.
+
+@noindent
+@code{apply-generic} (generic)
+
+@itemize @bullet
+@item
+@code{no-method} (generic)
+
+@item
+@code{compute-applicable-methods} (generic)
+
+@item
+@code{sort-applicable-methods} (generic)
+
+@itemize @bullet
+@item
+@code{method-more-specific?} (generic)
+@end itemize
+
+@item
+@code{apply-methods} (generic)
+
+@itemize @bullet
+@item
+@code{apply-method} (generic)
+
+@item
+@code{no-next-method} (generic)
+@end itemize
+
+@item
+@code{no-applicable-method}
+@end itemize
+
+У нас нет пока полной документации. См. Код для полной информации (@file{oop/goops.scm}).
+
+@node Redefining a Class
+@section Переопределение класса(Redefining a Class)
+
+Предположим, что класс @code{<my-class>} определяется с помощью @code{define-class}
+(@pxref{Class Definition,, define-class}), со слотами, которые имеют функции
+доступа, и что приложение создало несколько экземпляров @code{<my-class>} используя
+@code{make} (@pxref{Instance Creation,,make}).  Что происходит, если @code{<my-class>}
+переопределяется вызовом @code{define-class}?
+
+@menu
+* Default Class Redefinition Behaviour::
+* Customizing Class Redefinition::
+@end menu
+
+@node Default Class Redefinition Behaviour
+@subsection Поведение по умолчанию при пероопределении класса(Default Class Redefinition Behaviour)
+
+Ответ GOOPS по умолчанию на этот вопрос выглядит следующим образом:
+
+@itemize @bullet
+@item
+Все существующие прямые экземпляры @code{<my-class>} преобразуются в
+экземпляры нового класса. Это достигается за счет сохранения значений
+слотов, которые существуют как в старом, так и в новом определении
+класса и инициализируя значение новых слотов обычным способом.
+(@pxref{Instance Creation,, make}).
+
+@item
+Все существующие подклассы @code{<my-class>} переопределяются, как будто
+выражения  @code{define-class} которые их определили, были выполнены
+после переопределения @code{<my-class>}, и описанный здесь процесс
+переопределения класса применяется рекурсивно к переопределяемым
+подклассам.
+
+@item
+Как только все его экземпляры и подклассы обновлены, метообъект
+класса ранее связанный с переменной @code{<my-class>} больше не
+нужен и поэтому можно отправить его в мусор(он будет уничтожен
+сборщиком мусора).
+@end itemize
+
+Чтобы все было в порядке, GOOPS также необходимо немного поработать над
+методами, которые связаны с переопредленным классом.
+
+@itemize @bullet
+@item
+Слоты методов доступа для слотов из старого определения должны быть
+удалены из обобщенной функции. Они будут заменены методами доступа для
+слотов нового определения класса.
+
+@item
+Любой метод обобщенной функции, который использует старый мета-объект 
+@code{<my-class>} как один из его формальных параметров должен быть
+обновлен, чтобы ссылаться на новый метаобъект @code{<my-class>}.  
+(Всякий раз, когда определяется новый метод обобщенной функции, 
+@code{define-method} добавляет метод к списку, хранящемуся в 
+метаобъекте класса для каждого класса, используемого в качестве
+указанного формального параметра., поэтому легко найти все методы, 
+которые необходимо обновить, когда переопределяется класс.)
+@end itemize
+
+Если эта стратегия переопределения класса поражает вас как довольно
+противоречащая интуиции, имейте в виду что она получена из аналогичного
+поведения в других объектных системах, таких как  CLOS, и что опыт
+в этих системах показал, что она очень полезна на практике.
+
+Так же имейте в виду, что как и большинство действий по умолчанию GOOPS,
+это поведение можно настроить @dots{}
+
+@node Customizing Class Redefinition
+@subsection Настройка переопределения класса(Customizing Class Redefinition)
+
+Когда @code{define-class} замечает, что класс переопределяется,
+он создает новый метаобъект класса, как обычно, затем вызывает 
+обобщенную функцию @code{class-redefinition} со старым и новым классом
+в качестве аргументов. Поэтому, если у старых или новых классов есть
+метаклассы отличные от класса по умолчанию @code{<class>}, поведение
+переопределения класса можно настроить определив метод  
+@code{class-redefinition}, который специализирован для соответствующих
+метаклассов.
+
+@deffn generic class-redefinition
+Handle the class redefinition from @var{old-class} to @var{new-class},
+and return the new class metaobject that should be bound to the
+variable specified by @code{define-class}'s first argument.
+@end deffn
+
+@deffn method class-redefinition (old-class <class>) (new-class <class>)
+Implements GOOPS' default class redefinition behaviour, as described in
+@ref{Default Class Redefinition Behaviour}.  Returns the metaobject
+for the new class definition.
+@end deffn
+
+Метод по умолчанию @code{class-redefinition}, для классов с 
+метаклассом по умолчанию @code{<class>}, вызывает следующие
+обобщенные функции, которые, конечно могут быть индивидуально
+настроены.
+
+@deffn generic remove-class-accessors! old
+The default @code{remove-class-accessors!} method removes the accessor
+methods of the old class from all classes which they specialize.
+@end deffn
+
+@deffn generic update-direct-method! method old new
+The default @code{update-direct-method!} method substitutes the new
+class for the old in all methods specialized to the old class.
+@end deffn
+
+@deffn generic update-direct-subclass! subclass old new
+The default @code{update-direct-subclass!} method invokes
+@code{class-redefinition} recursively to handle the redefinition of
+subclasses.
+@end deffn
+
+Альтернативная стратегия переопределения класса может заключатся в том,
+чтобы объявить все существующие экземпляры экземплярами старого класса,
+но признавая что старый класс теперь ``безымянный(nameless)'', поскольку
+его имя было получено новым определением. В этойо стратегии любые 
+существующие подклассы могли бы также остаться такими, как они есть,
+при том понимании, чо они наследутся от безымянного класса.
+
+Эта стратегия легко реализуется в GOOPS, определением нового метакласса,
+который будет использоваться для всех классов, к которым должна применяться
+эта стратегия, а затем определяется метод переопределения класса 
+@code{class-redefinition} который специализирован для этого метакласса:
+
+@example
+(define-class <can-be-nameless> (<class>))
+
+(define-method (class-redefinition (old <can-be-nameless>)
+                                   (new <class>))
+  new)
+@end example
+
+Когда настройка может быть такой же простой, разве вы не рады, что
+GOOPS реализует гораздо более сложную стратегию по умолчанию!?
+
+@node Changing the Class of an Instance
+@section Изменение Класса и Экземпляра
+
+Когда класс переопределяется, любой существующий экземпляр переопределенного
+класса будет изменен под определение новое определение класса до того момента,
+когда на любой из слотов экземпляра будут ссылаться или пытаться его установить.
+GOOPS изменяет каждый экземпляр, вызывая обобщенную функцию @code{change-class}.
+
+В более общем плане вы можете изменить класс существующего экземпляра
+в любое время, вызвав обобщенную функцию @code{change-class} с двумя аргументами:
+экземпляр(instance) и новый класс(new class).
+
+По умолчанию метод @code{change-class} рашает, как реализовать изменение
+класса глядя на определения слотов для существующего экземпляра класса
+и нового класса.  Если новый класс имеет слоты с тем же именем, что и 
+слоты в существующем классе, значения для этих слотов сохранаются.
+Слоты которые присутствуют только в существующем классе, отбрасываются.
+Слоты которые присутствуют только в новом классе, инициализируются
+с использованием соответствующего определения функции иницализации слота.
+(@pxref{Classes,,slot-init-function}).
+
+@deffn generic change-class instance new-class
+@end deffn
+
+@deffn {method} change-class (obj <object>) (new <class>)
+Изменить экземпляр @var{obj} что бы сделать его экземпляром класса @var{new}.
+
+Значение каждого из слотов @var{obj} сохраняется только в том случае, если аналогичный
+слот существует в новом @var{new} классе; любые другие значения слотов отбрасываются.
+
+Стоты нового класса@var{new}, которым нет соответстветствия ни однго из ранее
+существовавших слотов в @var{obj}, инициализируются в соответствии с функциями
+инициализации определенных для них в определении слотов класса @var{new}.
+@end deffn
+
+По умолчанию метод @code{change-class} также вызывает другую обобщенную функцию,
+@code{update-instance-for-different-class}, в конце своей работы, пред
+возвратом.  Примененный метод @code{update-instance-for-different-class}
+может в дальнейшем корректировать  новые экземпляры @var{new-instance} что
+необходимо для завершения изменения класса или изменять класс.  
+Возвращаемое значение применяемого метода
+игнорируется.
+
+@deffn generic update-instance-for-different-class old-instance new-instance
+обобщенная функция. которая может быть настроена для того, чтобы поместить завершающие
+штрихи в экземпляры чей класс был изменен. По умолчанию метод
+@code{update-instance-for-different-class} ничего не делает.
+@end deffn
+
+Индивидуальное изменение поведения класса может быть реализовано
+путем определения метода @code{change-class}, который специализируется
+либо по экземпляру класса, подлежащему модификации, либо по метаклассу
+нового класса.

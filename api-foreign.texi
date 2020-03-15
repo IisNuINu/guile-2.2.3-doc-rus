@@ -1,0 +1,1001 @@
+@c -*-texinfo-*-
+@c This is part of the GNU Guile Reference Manual.
+@c Copyright (C)  1996, 1997, 2000-2004, 2007-2014, 2016-2017
+@c   Free Software Foundation, Inc.
+@c See the file guile.texi for copying conditions.
+
+@node Foreign Function Interface
+@section Интерфейс Внешних Функций
+@cindex foreign function interface
+@cindex ffi
+
+Чем больше хакеров в Scheme, тем больше осознается, что на самом деле
+существуют два мира вычислений: один теплый и живой, это мир круглых
+скобок и один холодный и мертвый, это мир Си и ему подобный.
+
+Но все же мы, как программисты живем в обоих мирах, а сам Guile частично
+реализован на Си. Таким образом живая половина Guile платит дань уважения к
+ее мертвой половине, через спектр интерфейсов к Си, начиная от динамической
+загрузки примитивов Scheme до динамического связывания библиотечных Си процедур.
+
+@menu
+* Foreign Libraries::           Dynamically linking to libraries.
+* Foreign Functions::           Simple calls to C procedures.
+* C Extensions::                Extending Guile in C with loadable modules.
+* Modules and Extensions::      Loading C extensions into modules.
+* Foreign Pointers::            Accessing global variables.
+* Dynamic FFI::                 Calling arbitrary C functions.
+@end menu
+
+@node Foreign Libraries
+@subsection Внешние Библиотеки
+
+У большинства современных Юниксов есть что-то, что называется разделяемыми
+библиотеками(@dfn{shared libraries}).  Это обычно означает, что они имеют
+возможность совместно использовать исполняемый образ библиотеки между несколькими
+запущенными программами для экономии памяти и дискового пространства. Но как правило,
+разделяемые(общие) библиотеки  дают большую дополнительную гибкость по сравнению
+с традиционными статическими библиотеками.  Фактически, название их
+динмаическими(`dynamic') библиотеками так же корректно, как и название их общими(`shared').
+
+Разделяемые библиотеки действительно дают вам большую гибкость в дополнении
+к экономии памяти и пространства диска. Когда вы связываете программу с
+разделяемой библиотекой, эта библиотека не жестко включается в окончательный
+исполняемый файл. Вместо этого исполняемый файл вашей программы содержит только
+необходимую информацию для поиска необходимых разделяемых библиотек необходимых
+для запуска вашей программы. Только тогда, когда программа запускается, происходит
+последний шаг процесса связвания. Это означает, что вам не нужно перекомпилировать все
+программы при установке новой, только слегка изменной версии разделяемой библиотеки.
+Программы автоматически получат изменения при следующем запуске.
+
+Теперь, когда все необходимое для машины должно выполнять часть связывания
+во время выполнения, почему бы не сделать следующий шаг и позволить программисту
+явно воспользоваться преимуществами этого в рамках своей программы? Конечно, многие
+операционные системы поддерживающие разделяемые библиотеки делают именно это, и
+скорее всего, Guile позволит вам получить доступ к этой функции из ваших программ
+Scheme.  Как вы уже догадались эта функция называется динамическое связывание(@dfn{dynamic linking}).
+@footnote{Некоторые люди также ссылаются на конечный этап компоновки при запуске
+программы как на `динамическое связывание', поэтому если вы хотите прояснить
+этот вопрос окончательно, вероятно лучше использовать более технический термин
+ @dfn{dlopening}, как было предложено Gordon Matzigkeit
+в его документации по libtool.}
+
+Мы назвали этот разде Внешние библиотеки(``foreign libraries''), потому что, хотя
+название Внешние(``foreign'') не является утечкой в API, мир Си действительно внешний
+по отношению к Scheme -- и это отчуждение распространяется и на компоненты внешних 
+библиотек, как мы увидим в следующих разделах.
+
+@deffn {Scheme Procedure} dynamic-link [library]
+@deffnx {C Function} scm_dynamic_link (library)
+Ищет разделяемую библиотеку, указанную @var{library} (строка) и связывает
+ее с текущим выполняемым приложением Guile.  Когда все сработает, возвращает
+объект Scheme подходящий для представления связванного объектного файла.
+В противном случае возникает ошибка. Как объектные файлы ищутся зависит
+от системы.
+
+Обычно, @var{library} это просто имя файла разделяемой библиотеки, которую
+нужно искать в местах, где обычно находятся разделяемые библиотеки, например
+в @file{/usr/lib} и @file{/usr/local/lib}.
+
+@var{library} не должна содержать расширений, таких как @code{.so}.  Правильное
+расширение имени файла предоставляется автоматически в зависимости от операционной
+системы хоста, в соответствии с правилами libltdl (см. @pxref{Libltdl interface,
+lt_dlopenext, @code{lt_dlopenext}, libtool, Поддержка разделяемых библиотек для
+GNU}).
+
+Когда @var{library} пропущено, возвращается хендл/дескриптор(ручка, а по существу указатель)
+глобальных символов@dfn{global symbol handle}.  Этот дескриптор обеспечивает доступ к
+символам, доступным программе во время выполнения, включая экспортированные самой
+программой и уже загруженные разделяемые библиотеки.
+
+Обратите внимание, что на машине(хосте) использующем динамически загружаемые(компонуемые)
+библиотеки(DLLs), дескриптор глобальных символов возможно не сможет обеспечить доступк
+к символам из рекурсивно загружаемых библиотек DLL.  Только экспортируемые символы из этих
+DLL, непосредственно загружаемых программой, могут быть доступны.
+@end deffn
+
+@deffn {Scheme Procedure} dynamic-object? obj
+@deffnx {C Function} scm_dynamic_object_p (obj)
+Возвращает @code{#t} если @var{obj} является дескриптором/хендлом динамической библиотеки или @code{#f}
+в противном случае.
+@end deffn
+
+@deffn {Scheme Procedure} dynamic-unlink dobj
+@deffnx {C Function} scm_dynamic_unlink (dobj)
+Unlink указывает файловый объект отключен от приложения. Аргумент
+@var{dobj} должен быть получен путем вызова @code{dynamic-link}. 
+После вызова @code{dynamic-unlink} содержимое @var{dobj} 
+больше не доступно.
+@end deffn
+
+@smallexample
+(define libgl-obj (dynamic-link "libGL"))
+libgl-obj
+@result{} #<dynamic-object "libGL">
+(dynamic-unlink libGL-obj)
+libGL-obj
+@result{} #<dynamic-object "libGL" (unlinked)>
+@end smallexample
+
+Как вы можете видеть, после вызова @code{dynamic-unlink} с динамически
+связанной библиотекой, она помечается как отсоединенная(@samp{(unlinked)}) и
+вы больше не можете использовать ее с @code{dynamic-call}, и т.д. Независимо
+от того, действительно ли библиотека удалена из вашей программы в зависимости
+от системы и как правило ничего не произойдет, когда некоторые другие части вашей
+программы все еще используют ее.
+
+Когда динамическое связывание не доступно или не поддерживается вашей системой,
+вышеуказанные функции выбрасывают ошибки(исключения), но они все еще доступны.
+
+@node Foreign Functions
+@subsection Внешние Функции
+
+Самое естественное что можно сделать с динамической библиотекой это
+найти в ней(взять из нее) указатель на функцию: внешнюю функцию(@dfn{foreign function}).
+Для этой цели служит функция @code{dynamic-func} .
+
+@deffn {Scheme Procedure} dynamic-func name dobj
+@deffnx {C Function} scm_dynamic_func (name, dobj)
+Возвращает дескриптор(``handle'') для функции с именем @var{name} в разделяемом объекте
+на который ссылается @var{dobj}. Дескриптор может быть передан @code{dynamic-call} для
+фактического вызова функции.
+
+Независимо от того, добавляет ли ваш Си компилятор символ подчеркивания @samp{_} к глобальным
+именам в программе, вы @strong{не} должны включать это подчеркивание в имя, так как оно будет
+автоматически добавлено в @var{name} при необходимости.
+@end deffn
+
+Guile имеет статическую поддержку для вызовов функций без аргументов,
+@code{dynamic-call}.
+
+@deffn {Scheme Procedure} dynamic-call func dobj
+@deffnx {C Function} scm_dynamic_call (func, dobj)
+Вызывает Си функцию указанную @var{func} и @var{dobj}.
+Функции не передаются аргументы и возвращаемое ей значение игнорируется.
+Когда @var{function} возвращается как результат @code{dynamic-func}, вызовите
+эту функцию и игнорируйте @var{dobj}.
+Когда @var{func} является строкой, она ищет дескриптор функции в @var{dynobj}; этот вызов
+эквивалентен коду
+@smallexample
+(dynamic-call (dynamic-func @var{func} @var{dobj}) #f)
+@end smallexample
+@end deffn
+
+@code{dynamic-call} не очень мощная функция. Она в основном предназначена
+для использования специально написанных инициализирующих фунций, которые
+затем добавят новые примитивы в Guile. Например, мы не ожидаем что вы
+будете динамически связывать @file{libX11} используя @code{dynamic-link},
+а затем строить красивый графический интерфейс пользователя, используя
+@code{dynamic-call}. Вместо этого, обычным способом было бы написать
+спициальную библиотеку склеивающую Guile-с-X11, имеющую глубокие знания
+как о Guile, так и о X11 и делающую все, что необходимо для обеспечения их
+взаимодействия.
+Затем эту склеивающую библиотеку можно было бы динамически связать с чистым
+интерпретатором Guile и активировать ее вызовом функции инициализации.
+Эта функция добаит все новые типы и примитивы к интерпретатору Guile, всё
+что она может предложить.
+
+(Здесь предлагается другой, лучший способ: просто создать обертку
+@file{libX11} в Scheme используя динамический FFI. см. @xref{Dynamic FFI},
+дополнительную информацию.)
+
+Учитывая некоторый набор Си расширений для Guile, следующим логическим шагом
+является интеграция этих склеивающих библиотек в модульную систему Guile, чтобы
+вы могли загружать новые примитивы во время выполнения системы, также как вы
+можете загрузить новый код Scheme.
+
+@deffn {Scheme Procedure} load-extension lib init
+@deffnx {C Function} scm_load_extension (lib, init)
+Загружает и инициализирует расширение указанное LIB и INIT.
+Когда нет предварительно зарегистрированной функции для LIB/INIT, это
+эквивалентно
+
+@lisp
+(dynamic-call INIT (dynamic-link LIB))
+@end lisp
+
+Когда есть предварительно зарегистрированная функция, это функция вызывается вместо
+указанной(?).
+
+Обычно, нет предварительно зарегистрированной функции. Этот вариант существует
+только для ситуаций где динамическая компоновка недоступна или нежелательна.
+В этом случае вы статически связываете свою программу с нужной библиотекой и
+зарегистрируете ее функуию инициализации(init) сразу после инициализации Guile.
+
+Что касается @code{dynamic-link}, @var{lib} не должен содержать никакого
+суффикса, такого как @code{.so} (@pxref{Foreign Libraries, dynamic-link}).
+Он также не должен содержать компонетов каталога. Библиотеки которые
+реализуют Расширения Guile должны быть помещены в обычные места для разделяемых
+библиотек. Мы рекомендуем использовать соглашение об именах
+@file{libguile-bla-blum} для расширения связанного с модулем @code{(bla
+blum)}.
+
+Обычным способом использования расширения является написание небольшого
+файла Scheme который определяет модуль и загружает расширение в этот модуль.
+Когда модуль загружается автоматически, загружается и расширение. Например,
+
+@lisp
+(define-module (bla blum))
+
+(load-extension "libguile-bla-blum" "bla_init_blum")
+@end lisp
+@end deffn
+
+@node C Extensions
+@subsection Си Расширения
+
+Наиболее интересным применением динамически связываемых библиотек вероятно
+является их использование для предоставления скомпилированных модулей кода(@emph{compiled code modules})
+для программ Scheme.  Программирование на Scheme является очень веселым, но время от времени
+возникает потребоность написать некоторый низко уровневый Си код, чтобы сделать программирование
+на  Scheme еще веселей.
+
+Вы можете не только добавить эти новые примитивы в свой собственный модуль
+(см. предыдущий раздел), вы можете даже поместить их в разделяемую библиотеку, 
+которая подсоединяется к запущеному образу Guile только тогда, когда она
+действительно необходима.
+
+Пример, надеюсь, все разяснит.  Предположим, мы хотим чтобы сделать доступной
+функцию Бесселя(Bessel) библиотеки Си для Scheme в модуле @samp{(math bessel)}.
+Первое что нам необходимо сделать это написать соответствющий код клея,
+чтобы преобразовать аргументы и возвращаемые значения функций от
+Scheme в Си и обратно.  Кроме того, нам нужна функция которая добавит
+их к набору примитивов Guile.  Поскольку это всего лишь пример, мы будем
+реализовывать его лишь для функции @code{j0}.
+
+@smallexample
+#include <math.h>
+#include <libguile.h>
+
+SCM
+j0_wrapper (SCM x)
+@{
+  return scm_from_double (j0 (scm_to_double (x, "j0")));
+@}
+
+void
+init_math_bessel ()
+@{
+  scm_c_define_gsubr ("j0", 1, 0, 0, j0_wrapper);
+@}
+@end smallexample
+
+Мы уже можем попытаться привести это в действие, вручную вызвав функции
+низкого уровня для выполнения динамического связвания. Исходный файл Си
+должен быть скомпилирован в разделяемую библиотеку. Вот как это делается
+в GNU/Linux, пожалуйста обратитесь к документации по @code{libtool} для того
+чтоыбы узнать как создавать переносимые динамически связываемые библиотеки.
+
+@smallexample
+gcc -shared -o libbessel.so -fPIC bessel.c
+@end smallexample
+
+Теперь запустите Guile:
+
+@lisp
+(define bessel-lib (dynamic-link "./libbessel.so"))
+(dynamic-call "init_math_bessel" bessel-lib)
+(j0 2)
+@result{} 0.223890779141236
+@end lisp
+
+Имя файла @file{./libbessel.so} должно указывать на разделяемую библиотеку
+созданную с помощью команды @code{gcc} выше, конечно.  Вторая строка
+взаимодействия с Guile вызовет функцию @code{init_math_bessel} которая в
+свою очередь зарегистрирует Си функцию @code{j0_wrapper} в интерпретаторе Guile
+под именем @code{j0}.  Эта функция становиться сразу доступной и мы можем вызвать
+ее из Scheme.
+
+Всело, не так ли?  Но мы только на полпути. Это то, что,
+@code{apropos} говорит о @code{j0}:
+
+@smallexample
+(apropos "j0")
+@print{} (guile-user): j0     #<primitive-procedure j0>
+@end smallexample
+
+Как вы можете видеть, @code{j0} содержиться в корневом модуле, где и все
+остальные примитивы Guile, такие как @code{display}, и т.д.  В общем,
+примитив помещается в любой модуль являющийся текущим(@dfn{current module})
+в момент вызова @code{scm_c_define_gsubr}.
+
+Скомпилированный модуль должен иметь специально именованную функцию инициализации
+(@dfn{module init function}.  Guile знает об этом специальном имени и вызовет эту
+функцию автоматически после связывания(linked) с разделяемой библиотекой.  В нашем
+примере, мы заменим @code{init_math_bessel} следующим кодом в
+@file{bessel.c}:
+
+@smallexample
+void
+init_math_bessel (void *unused)
+@{
+  scm_c_define_gsubr ("j0", 1, 0, 0, j0_wrapper);
+  scm_c_export ("j0", NULL);
+@}
+
+void
+scm_init_math_bessel_module ()
+@{
+  scm_c_define_module ("math bessel", init_math_bessel, NULL);   
+@}
+@end smallexample
+
+Общий шаблон для имени функции инициализации модуля является:
+@samp{scm_init_}, затем имя модуля, в котором отдельные иерархические
+компоненты объединяются символами подчеркивания,
+а затем следует @samp{_module}.
+
+После того как @file{libbessel.so} будет перестроен, нам нужно поместить разделяемую
+библиотеку в нужное место.
+
+Как только модуль будет правильно установлен, его можно будет использовать следующим
+образом:
+
+@smallexample
+guile> (load-extension "./libbessel.so" "scm_init_math_bessel_module")
+guile> (use-modules (math bessel))
+guile> (j0 2)
+0.223890779141236
+guile> (apropos "j0")
+@print{} (math bessel): j0      #<primitive-procedure j0>
+@end smallexample
+
+Это то что надо!
+
+@node Modules and Extensions
+@subsection Модули и Расширения
+
+Новые примитивы которые вы добавляете в Guile с помощью @code{scm_c_define_gsubr}
+(@pxref{Primitive Procedures}) или используя любые другие механизмы, помещаются
+в модуль, являющийся текущим на момент выполнения
+@code{scm_c_define_gsubr}. Например, расширения, загруженные из REPL,
+будут помещены в модуль @code{(guile-user)}, если модуль
+REPL не был изменен.
+
+Чтобы определить примитивы Си в определенном модуле, самый простой способ:
+
+@example
+(define-module (foo bar))
+(load-extension "foobar-c-code" "foo_bar_init")
+@end example
+
+@cindex extensiondir
+При загрузке с помощью @code{(use-modules (foo bar))}, вызов
+@code{load-extension} ищет файл разделяемой библиотеки @file{foobar-c-code.so} (etc)
+в директории расширений Guile @code{extensiondir}, который обычно является подкаталогом
+из @code{libdir}. Например, если ваш libdir это
+@file{/usr/lib}, то директория для расширений @code{extensiondir} для  Guile @value{EFFECTIVE-VERSION}.@var{x}
+версии @file{/usr/lib/guile/@value{EFFECTIVE-VERSION}/}.
+
+Путь к расширениям включает основную и второстепенную версии Guile (
+т.е. эффективную версию/``effective version''), поскольку Guile гарантирует совместимость
+в рамках эффективной версии. Это дает вам возможность инсталировать различные версии
+одного и того же расширения для разных версий Guile.
+
+Если расширение не найдено в  @code{extensiondir}, Guile также будет
+искать его в стандартных местах размещения библиотек, таких как @file{/usr/lib}
+или @file{/usr/local/lib}. Однако предпочтительно убрать ваше расширение от туда,
+чтобы предотвратить непреднамеренное вмешательство в другие динамически связываемые
+библиотеки Си.
+
+Если кто-то устанавливает ваш модуль в нестандартное местоположение, тогда ваш
+объектный файл не будет найден. Вы можете решить эту проблему добавив место
+установки в файл @file{foo/bar.scm}.  Это удобно для пользователя, а также гарантирует,
+что предполагаемый объект прочтется, даже если старые или более новые версии находятся
+в пути загрузки.
+
+Обычный способ указать место установки с префиксом(@code{prefix})
+на этапе конфигурации(configure), для команды @samp{./configure prefix=/opt}
+результирующие библиотечные файлы будут размещены: @file{/opt/lib/foobar-c-code.so}.
+При использовании Autoconf (@pxref{Top, , Introduction, autoconf, The GNU
+Autoconf Manual}), расположение библиотеки находиться в переменной @code{libdir}.
+Его значение предполагается видно в команде @command{make}, и
+может быть подставлено в исходный файл, например @file{foo.scm.in}
+
+@example
+(define-module (foo bar))
+(load-extension "XXextensiondirXX/foobar-c-code" "foo_bar_init")
+@end example
+
+@noindent
+в следующем файле @file{Makefile}, используется команда @command{sed}
+(@pxref{Top, , Introduction, sed, SED, A Stream Editor}),
+
+@example
+foo.scm: foo.scm.in
+        sed 's|XXextensiondirXX|$(libdir)/guile/@value{EFFECTIVE-VERSION}|' <foo.scm.in >foo.scm
+@end example
+
+Фактический шаблон @code{XXextensiondirXX} выбран произвольно, лишь бы небыло
+совпадений с другими выражениями в файле. Если несколько модулей нуждаются в
+значении, его может быть проще создать в файле @file{foo/config.scm} определяющием
+местоположение @code{extensiondir} и используемым по мере необходимости.
+
+@example
+(define-module (foo config))
+(define-public foo-config-extensiondir "XXextensiondirXX"")
+@end example
+
+Такой файл может содержать и другие местоположения, например каталог
+для вспомогательных файлов данных, или @code{localedir} если имеет свой
+собственный каталог сообщений @code{gettext}, см (@pxref{Internationalization}).
+
+Следует отметить, что все вышеперечисленное требует, чтобы код Scheme был
+найден в пути загрузки @code{%load-path} (@pxref{Load Paths}).  В настоящее
+время он задается системным администратором или каждым пользователем отдельно
+когда модули Guile устанавливаются в нестандартные места.  Но достигнув кода
+Scheme, уже этот код должен заботитсья о том, чтобы найти любой из своих файлов
+и т.д.
+
+@node Foreign Pointers
+@subsection Внешние Указатели
+
+В предыдущих разделах показано, как Guile может быть расширен во время
+выполнения загрузкой скомпилированных Си расширений. Этот подход всегда
+хорош, но было бы неплохо, если бы у нас небыло необходимости вообще писать
+на Си? В этом разделе рассматривается проблема доступа к значениям Си из
+Scheme, а в следующей обсуждаются Си функции.
+
+@menu
+* Foreign Types::                  Expressing C types in Scheme.
+* Foreign Variables::              Pointers to C symbols.
+* Void Pointers and Byte Access::  Pointers into the ether.
+* Foreign Structs::                Packing and unpacking structs.
+@end menu
+
+@node Foreign Types
+@subsubsection Внешние Типы
+
+Первое несоответствие, которое наблюдается между Си и Scheme заключается
+в том, что в Си расположение хранилищ(переменные) является типизированным, но
+в Scheme типы связаны со значениями, а не переменными. @xref{Values and Variables}.
+
+Таким образом, при описании функции Си или структуры Си, чтобы к ней можно было
+получить доступ из Scheme, типы данных параметров или полей должны передаваться явно.
+
+
+Эти ``значения типов Си'' могут быть построены с использованием констант и 
+процедур из модуля @code{(system foreign)}, который может быть загружен
+следующим образом:
+
+@example
+(use-modules (system foreign))
+@end example
+
+@code{(system foreign)} экспортирует ряд значений, выражающих основные
+Си типы:
+
+@defvr {Scheme Variable} int8
+@defvrx {Scheme Variable} uint8
+@defvrx {Scheme Variable} uint16
+@defvrx {Scheme Variable} int16
+@defvrx {Scheme Variable} uint32
+@defvrx {Scheme Variable} int32
+@defvrx {Scheme Variable} uint64
+@defvrx {Scheme Variable} int64
+@defvrx {Scheme Variable} float
+@defvrx {Scheme Variable} double
+Эти значения представляют собой числовые типы Си указанных размеров и
+типов.
+@end defvr
+
+Кроме того, есть некоторые удобные привязки для указания типов размер которых зависит
+от платформы:
+
+@defvr {Scheme Variable} int
+@defvrx {Scheme Variable} unsigned-int
+@defvrx {Scheme Variable} long
+@defvrx {Scheme Variable} unsigned-long
+@defvrx {Scheme Variable} short
+@defvrx {Scheme Variable} unsigned-short
+@defvrx {Scheme Variable} size_t
+@defvrx {Scheme Variable} ssize_t
+@defvrx {Scheme Variable} ptrdiff_t
+@defvrx {Scheme Variable} intptr_t
+@defvrx {Scheme Variable} uintptr_t
+Значения, экспортируемые модулем @code{(system foreign)}, представляющие числовые типы 
+Си. Например, @code{long} может быть @code{equal?}(равным)
+@code{int64} на 64-битной платформе.
+@end defvr
+
+@defvr {Scheme Variable} void
+Тип @code{void}.  Его можно использовать в качестве первого аргумента для
+@code{pointer->procedure} создающей обертку Си функции которая ничего не
+возвращает.
+@end defvr
+
+Кроме того, знак @code{*} используется как условное обозначение
+разименовывающее указатель. Процедуры подробно описаны в следующих разделах, такие
+как @code{pointer->procedure}, принимают его как дескриптор(определитель) типа.
+
+@node Foreign Variables
+@subsubsection Внешние Переменные
+
+Указатели на переменные в текущем адресном пространстве можно искать
+динамически используя @code{dynamic-pointer}.
+
+@deffn {Scheme Procedure} dynamic-pointer name dobj
+@deffnx {C Function} scm_dynamic_pointer (name, dobj)
+Возвращает ``обернутый указатель(wrapped pointer)'' для символа @var{name} 
+в разделяемом объекте, на который ссылается @var{dobj}.  Возвращаемый указатель
+указывает на объект Си.
+
+Независимо от того, добавляет ли ваш Си компилятор подчеркивание @samp{_} к глобальным
+именам в программе, вы @strong{НЕ} должны включать включать это подчеркивание в 
+@var{name}, так как оно будет автоматически добавлено при необходимости.
+@end deffn
+
+Например, в настоящее время Guile имеет переменную @code{scm_numptob} как часть
+своего API. Она объявлена в как Си @code{long}. Итак, чтобы создать дескриптор,
+указывающий на это внешнее значени, мы делаем следующее:
+
+@example
+(use-modules (system foreign))
+(define numptob (dynamic-pointer "scm_numptob" (dynamic-link)))
+numptob
+@result{} #<pointer 0x7fb35b1b4688>
+@end example
+
+(В следующем разделе рассматривается способ разыменовывания указателей(т.е получения значений).)
+
+Значение возвращаемое @code{dynamic-pointer} представляет собой обертку
+(оболочку) в Scheme для указателя Си.
+
+@deffn {Scheme Procedure} pointer-address pointer
+@deffnx {C Function} scm_pointer_address (pointer)
+Возвращает числовое значение указателя @var{pointer}.
+
+@example
+(pointer-address numptob)
+@result{} 139984413364296 ; YMMV
+@end example
+@end deffn
+
+@deffn {Scheme Procedure} make-pointer address [finalizer]
+Возвращает объект внешний указатель указывающий на адрес @var{address}.  
+Если финализатор(@var{finalizer}) передан, он должен быть указателем на
+Си функцию с одним аргументом, которая будет вызываться, когда объект
+указатель становится недостижымым в Scheme(вызывается сборщиком мусора/GC).
+@end deffn
+
+@deffn {Scheme Procedure} pointer? obj
+Возвращает @code{#t} если @var{obj} является объектом-указателем, @code{#f} в противном случае.
+@end deffn
+
+@defvr {Scheme Variable} %null-pointer
+Внешний указатель значение которого равно 0.
+@end defvr
+
+@deffn {Scheme Procedure} null-pointer? pointer
+Возвращает @code{#t} если указатель @var{pointer} является нулевым указателем, @code{#f} в противном случае.
+@end deffn
+
+С целью передачи значений SCM непосредственно во внешние функции и
+разрешения им возвращать SCM значения, Guile также поддерживает
+некоторые небезопасные операторы приведения(указания) типов.
+
+@deffn {Scheme Procedure} scm->pointer scm
+Возвращает объект внешний указатель с адресом объекта @code{object-address}
+который имеет @var{scm}.
+@end deffn
+
+@deffn {Scheme Procedure} pointer->scm pointer
+Небезопасное преобразование указателя @var{pointer} в объект Scheme.
+Скрестите пальцы!
+@end deffn
+
+Иногда ван надо предоставить Си расширениям доступ к динамическому FFI.
+В этот момент имена путаются, поскольку указатель ``pointer'' может ссылаться
+на объект @code{SCM} который оборачивает указатель, или значение @code{void*}.
+Мы попытаемся использовать ``объект-указатель(pointer object)'' для обозначения
+объекта Scheme, и ``значение-указатель(pointer value)'' для обозначения
+значений @code{void *}.
+
+@deftypefn {C Function} SCM scm_from_pointer (void *ptr, void (*finalizer) (void*))
+Создает объект-указатель из значения указателя(pointer).
+
+Если финализатор(@var{finalizer}) не нулевой, Guile организует его вызов по значению
+указателя в некторой точке после того, как объект-указатель станет собираемым(мусором).
+@end deftypefn
+
+@deftypefn {C Function} void* scm_to_pointer (SCM obj)
+Распаковывает значение указателя из объекта-указателя.
+@end deftypefn
+
+@node Void Pointers and Byte Access
+@subsubsection Указатели типа Void и Байтовый Доступ
+
+Обернутые указатели являются нетипизированными, поэтому они по сущетсву
+эквивалентны Си укзателям на @code{void}. Как и в Си, в Scheme область памяти
+на которую указывает указатель, может быть доступна на уровне байта. Это
+достигается использованием байтовых векторов @emph{bytevectors} (@pxref{Bytevectors}).
+Модуль @code{(rnrs bytevectors)} содержит процедуры, которые могут использоваться для
+преобразования последовательностей байтов в объекты Scheme, такие как строки(string), 
+числа с плавающей запятой(floating point) или целые числа(integers).
+
+@deffn {Scheme Procedure} pointer->bytevector pointer len [offset [uvec_type]]
+@deffnx {C Function} scm_pointer_to_bytevector (pointer, len, offset, uvec_type)
+Возвращает байт-вектор(bytevector) наложенный на некоторое число @var{len} байтов
+начинающееся с адреса указываемого @var{pointer}.
+
+Пользователь может указать альтернативную имеющейся по умолчанию интерпретацию для
+памяти путем передачи аргумента @var{uvec_type}, чтобы указать, что память представляет
+собой массив элементов этого типа.  @var{uvec_type} должен быть чем-то вроде
+@code{array-type}, например @code{f32} или @code{s16}.
+
+Когда передается смещение( @var{offset} ) оно определяет смещение в байтах относительно
+указателя @var{pointer} на регион памяти возвращаемого констурктором bytevector.
+
+Изменение возвращаемого bytevector изменяет указываемую @var{pointer} память, поэтому
+пристегите ремни безопасности.
+@end deffn
+
+@deffn {Scheme Procedure} bytevector->pointer bv [offset]
+@deffnx {C Function} scm_bytevector_to_pointer (bv, offset)
+Возвращает указатель pointer налагающийся на память, на которую
+указывает @var{bv} или смещение @var{offset} в байтах после @var{bv} 
+когда передается @var{offset}.
+@end deffn
+
+В дополнении к этим примитивам, доступны удобные процедуры:
+
+@deffn {Scheme Procedure} dereference-pointer pointer
+Предполагая что указатель @var{pointer} указывает на область памяти, которая
+содержит указатель, возвращает этот указатель.
+@end deffn
+
+@deffn {Scheme Procedure} string->pointer string [encoding]
+Возвращает внешний указатель на копию строки заканчивающуюся нулем(си строку)
+ @var{string} в данной кодировке @var{encoding}, по умолчанию это текущая
+кодировка локали. Си строка освобождается, когда возвращаемый внешний
+указатель становиться недоступным.
+
+Это Scheme  Это эквивалент вызова @code{scm_to_stringn}.
+@end deffn
+
+@deffn {Scheme Procedure} pointer->string pointer [length] [encoding]
+Возвращает строку, представляющую Си строку, на которую указывает by @var{pointer}.
+Если @var{length} опущена или @code{-1}, предполагается что строка является
+(nul-terminated), т.е оканчивается нулем.  В противном случае @var{length} это количество
+байтов памяти, на которые указывает указатель @var{pointer}.  Предполагается, что Си
+строка находиться в заданной кодировке @var{encoding}, по умолчанию это
+текущая кодировка локали.
+
+Это Scheme эквивалент функции @code{scm_from_stringn}.
+@end deffn
+
+@cindex wrapped pointer types
+Большинство объектно-ориентированных библиотек Си используют укзатели на конкретные
+структуры данных для идентификации объектов. В таких случаях полезно использовать
+различные  типы указателей как непересекающиеся типы Scheme.  Макрос
+@code{define-wrapped-pointer-type} упрощает это.
+
+@deffn {Scheme Syntax} define-wrapped-pointer-type type-name pred wrap unwrap print
+Определяет вспомогательные процедуры для обертывания указываемых внешних объектов в
+объекты Scheme с помощью непересекающихся типов.  В частности этот макрос определяет:
+
+@itemize
+@item @var{pred}, предикат для нового типа Scheme;
+@item @var{wrap}, процедуру которая принимает указатель на объект и возвращает
+объект который удовлетворяет @var{pred};
+@item @var{unwrap}, процедуру которая делает обратное @var{wrap} преобразование.
+@end itemize
+
+@var{wrap} сохраняет идентификацию указателя, для двух объектов указателей @var{p1}
+и @var{p2} которые @code{equal?}, @code{(eq? (@var{wrap} @var{p1})
+(@var{wrap} @var{p2})) @result{} #t}.
+
+Наконец, @var{print} должна именовать(указывать) пользовательскую процедуру для печати
+таких объектов. Процедуре передается обернутый объект и порт для записи.
+
+Например, предположим что мы создаем обертку для библиотеки Си, которая
+определяет тип @code{bottle_t}, и функции которым могут быть переданы
+указатели не этот тип @code{bottle_t *}, чтобы они могли манипулировать им.
+Мы можем записать:
+
+@example
+(define-wrapped-pointer-type bottle
+  bottle?
+  wrap-bottle unwrap-bottle
+  (lambda (b p)
+    (format p "#<bottle of ~a ~x>"
+            (bottle-contents b)
+            (pointer-address (unwrap-bottle b)))))
+
+(define grab-bottle
+  ;; Wrapper for `bottle_t *grab (void)'.
+  (let ((grab (pointer->procedure '*
+                                  (dynamic-func "grab_bottle" libbottle)
+                                  '())))
+    (lambda ()
+      "Return a new bottle."
+      (wrap-bottle (grab)))))
+
+(define bottle-contents
+  ;; Wrapper for `const char *bottle_contents (bottle_t *)'.
+  (let ((contents (pointer->procedure '*
+                                      (dynamic-func "bottle_contents"
+                                                     libbottle)
+                                      '(*))))
+    (lambda (b)
+      "Return the contents of B."
+      (pointer->string (contents (unwrap-bottle b))))))
+
+(write (grab-bottle))
+@result{} #<bottle of Ch@^ateau Haut-Brion 803d36>
+@end example
+
+В этом примере, @code{grab-bottle} гарантированно возвращает подлинный
+объект @code{bottle} удовлетворяющий предикату @code{bottle?}.  Аналогичным образом,
+@code{bottle-contents} возвращает ошибку когда ее аргумент не является подлинным
+объектом @code{bottle}.
+@end deffn
+
+Возвращаясь к приведенному выше примеру с @code{scm_numptob}, мы можем прочитать его значение как
+Си длинное целое(@code{long} integer):
+
+@example
+(use-modules (rnrs bytevectors))
+
+(bytevector-uint-ref (pointer->bytevector numptob (sizeof long))
+                     0 (native-endianness)
+                     (sizeof long))
+@result{} 8
+@end example
+
+Если бы мы хотели повредить внутреннее состояние Guile, мы могли бы
+установить @code{scm_numptob} в другое значение; но мы этого делать
+недолжны, потому что эта переменная не предназначена для установки(присваивания).
+Действительно, этот момент применяется широко: Си API является опасным местом.
+Не только установка значения может вызвать крах вашей программы, простой доступ
+к данным, на которые указывает "висячий" указатель или аналогичное действие может
+оказаться стольже катастрофическим.
+
+@node Foreign Structs
+@subsubsection Внешние Структуры
+
+Наконец, последнее замечание по внешним значениям, прежде чем перейти
+к фактическим вызвовам внешних функций. Иногда вам приходиться иметь дело
+с Си структурами, что требует итерпретатции каждого элемента структуры в
+соответствии с его типом, смещением и выравниванием. У Guile есть несколько
+примитивова для поддержки этого.
+
+@deffn {Scheme Procedure} sizeof type
+@deffnx {C Function} scm_sizeof (type)
+Возвращает размер @var{type}, в байтах.
+
+@var{type} должен быть допустимым Си типом, например @code{int}.
+Альтернативным @var{type} может быть символ @code{*}, в этом случае
+возвращается размер указателя. @var{type} также может быть
+списком типов, в этом случае возвращается размер структуры
+@code{struct} с обычной для ABI упаковкой(размещением элементов).
+@end deffn
+
+@deffn {Scheme Procedure} alignof type
+@deffnx {C Function} scm_alignof (type)
+Возвращается выравнивание @var{type}, в байтах.
+
+@var{type} должен быть допустимым Си типом, например @code{int}.
+Альтернативным @var{type} может быть символ @code{*}, в этом случае
+возвращается размер указателя. @var{type} также может быть
+списком типов, в этом случае возвращается размер структуры
+@code{struct} с обычной для ABI упаковкой(размещением элементов).
+@end deffn
+
+Guile также предоставляет некоторые удобные методы для упаковки и распаковки
+внешних указателей обертывающих Си структуры.
+
+@deffn {Scheme Procedure} make-c-struct types vals
+Создает внешний указатель на Си структуру содержащую значения @var{vals} с типами
+@code{types}.
+
+@var{vals} и @code{types} должны быть списками одинаковой длины.
+@end deffn
+
+@deffn {Scheme Procedure} parse-c-struct foreign types
+Разбирает внешний указатель на Си структуру, возвращая список значений.
+
+@code{types} должен быть списком Си типов.
+@end deffn
+
+Например, создадим и разберем эквивалент структуры @code{struct @{
+int64_t a; uint8_t b; @}}:
+
+@example
+(parse-c-struct (make-c-struct (list int64 uint8)
+                               (list 300 43))
+                (list int64 uint8))
+@result{} (300 43)
+@end example
+
+Пока у Guile есть только удобные процедуры поддержки упакованных структур
+поддерживающих соглашение. Но учитывая процедуры @code{bytevector->pointer}
+и @code{pointer->bytevector}, можно создавать и разбирать плотно упакованные
+структуры и объединения(unions) в ручную. См. код для
+@code{(system foreign)} для ознакомления с деталями.
+
+@node Dynamic FFI
+@subsection Динамический FFI
+
+Конечно, земля Си это не только существительные и не глаголы: есть также
+функции, и Guile позволяет вам их вызывать.
+
+@deffn {Scheme Procedure} pointer->procedure return_type func_ptr arg_types @
+                                             [#:return-errno?=#f]
+@deffnx {C Function} scm_pointer_to_procedure (return_type, func_ptr, arg_types)
+@deffnx {C Function} scm_pointer_to_procedure_with_errno (return_type, func_ptr, arg_types)
+
+Создает внешнюю функцию.
+
+Данный внешний свободный/неопределенный(void) указатель @var{func_ptr}, является ее
+аргументом, как и типы аргументов @var{arg_types} и возвращаемый тип @var{return_type}, 
+она возвращает процедуру, которая будет передавать аргументы внешней функции и возвращать
+соответствующее значение.
+
+@var{arg_types} должен быть списком внешних типов.
+@code{return_type} должно быть внешним типом. @xref{Foreign Types}, для
+получения дополнительной информации о внешних типах.
+
+Если @var{return-errno?} равно истине, или при вызове
+@code{scm_pointer_to_procedure_with_errno}, возвращается процедура
+возвращающая два значения, вторым значением является
+кодом ошибки @code{errno}.
+@end deffn
+
+Вот лучшее определение @code{(math bessel)}:
+
+@example
+(define-module (math bessel)
+  #:use-module (system foreign)
+  #:export (j0))
+
+(define libm (dynamic-link "libm"))
+
+(define j0
+  (pointer->procedure double
+                      (dynamic-func "j0" libm)
+                      (list double)))
+@end example
+
+Вот так! Никаких Си вызовов.
+
+Числовые аргументы и возвращаемые значения из внешних функций представлены
+в виде значений Scheme. Например, @code{j0} в приведенном выше примере принимает
+в качестве аргумента число Scheme в качестве аргумента, и возвращает число
+Scheme.
+
+Указатели могут быть переданы и возвращены из внешних функций.
+В этом случае тип аргумента или возвращаемого значения должен быть
+символом @code{*}, обозначающим указатель. Например, следующий код
+делает функцию @code{memcpy} доступным для Scheme:
+
+@example
+(define memcpy
+  (let ((this (dynamic-link)))
+    (pointer->procedure '*
+                        (dynamic-func "memcpy" this)
+                        (list '* '* size_t))))
+@end example
+
+Чтобы вызвать @code{memcpy}, нужно передать ей внешние указатели:
+
+@example
+(use-modules (rnrs bytevectors))
+
+(define src-bits
+  (u8-list->bytevector '(0 1 2 3 4 5 6 7)))
+(define src
+  (bytevector->pointer src-bits))
+(define dest
+  (bytevector->pointer (make-bytevector 16 0)))
+
+(memcpy dest src (bytevector-length src-bits))
+
+(bytevector->u8-list (pointer->bytevector dest 16))
+@result{} (0 1 2 3 4 5 6 7 0 0 0 0 0 0 0 0)
+@end example
+
+Можно также передавать структуры как значения, передавая структуры как
+внешние указатели. @xref{Foreign Structs}, для получения дальнейшей информации
+о том как выразить структуру через типы и значения элементов структуры.
+
+Аргументы ``Out'' передаются как внешние указатели. Памеять на которую указывают
+внешние указатели изменяется на месте(просто изменяется внешней функцией).
+
+@example
+;; struct timeval @{
+;;      time_t      tv_sec;     /* seconds */
+;;      suseconds_t tv_usec;    /* microseconds */
+;; @};
+;; assuming fields are of type "long"
+
+(define gettimeofday
+  (let ((f (pointer->procedure
+            int
+            (dynamic-func "gettimeofday" (dynamic-link))
+            (list '* '*)))
+        (tv-type (list long long)))
+    (lambda ()
+      (let* ((timeval (make-c-struct tv-type (list 0 0)))
+             (ret (f timeval %null-pointer)))
+        (if (zero? ret)
+            (apply values (parse-c-struct timeval tv-type))
+            (error "gettimeofday returned an error" ret))))))
+
+(gettimeofday)    
+@result{} 1270587589
+@result{} 499553
+@end example
+
+Как вы можете видеть, этот интерфейс для внешних функций работает но очень
+низком уровне, очень опасном уровне@footnote{Весьма приветствуется вклад в Guile 
+в на высоком уровне FFI.}.
+
+@cindex callbacks
+FFI также может работать и в обратном направлении: создании процедур Scheme
+вызываемых из Си.  Это позволяет использовать процедуры Scheme как
+``обратные вызовы(callbacks)'', ожидаемые Си функцией.
+
+@deffn {Scheme Procedure} procedure->pointer return-type proc arg-types
+@deffnx {C Function} scm_procedure_to_pointer (return_type, proc, arg_types)
+Возвращает указатель на функцию Си возвращающую значение типа @var{return-type}
+и принимающую аргументы типов @var{arg-types} (это список) и ведет
+себя как посредник к процедуре @var{proc}.  Таким образом арность(размерность) 
+@var{proc} поддерживает типы аргументов @var{arg-types} и возвращает тип который должен соответствовать
+@var{return-type}.
+@end deffn
+
+В качестве примера можно привести функцию сортировки массива @code{qsort} библиотеки Си
+доступной для Scheme (@pxref{Array Sort Function,
+@code{qsort},, libc, The GNU C Library Reference Manual}):
+
+@example
+(define qsort!
+  (let ((qsort (pointer->procedure void
+                                   (dynamic-func "qsort"
+                                                 (dynamic-link))
+                                   (list '* size_t size_t '*))))
+    (lambda (bv compare)
+      ;; Sort bytevector BV in-place according to comparison
+      ;; procedure COMPARE.
+      (let ((ptr (procedure->pointer int
+                                     (lambda (x y)
+                                       ;; X and Y are pointers so,
+                                       ;; for convenience, dereference
+                                       ;; them before calling COMPARE.
+                                       (compare (dereference-uint8* x)
+                                                (dereference-uint8* y)))
+                                     (list '* '*))))
+        (qsort (bytevector->pointer bv)
+               (bytevector-length bv) 1 ;; we're sorting bytes
+               ptr)))))
+
+(define (dereference-uint8* ptr)
+  ;; Helper function: dereference the byte pointed to by PTR.
+  (let ((b (pointer->bytevector ptr 1)))
+    (bytevector-u8-ref b 0)))
+
+(define bv
+  ;; An unsorted array of bytes.
+  (u8-list->bytevector '(7 1 127 3 5 4 77 2 9 0)))
+
+;; Sort BV.
+(qsort! bv (lambda (x y) (- x y)))
+
+;; Let's see what the sorted array looks like:
+(bytevector->u8-list bv)
+@result{} (0 1 2 3 4 5 7 9 77 127)
+@end example
+
+И вуаля!
+
+Обратите внимание, что @code{procedure->pointer} не поддерживат(и не определена)
+на нескольких экзотических архитектурах. Таким образом, пользовательскому коду
+возможно потребуется проверять определенали эта процедура
+@code{(defined? 'procedure->pointer)}.  Тем не менее, она доступна на многих
+архитектурах, включая (как libffi 3.0.9) x86, ia64, SPARC,
+PowerPC, ARM, и MIPS.
+
+@c Local Variables:
+@c TeX-master: "guile.texi"
+@c End:

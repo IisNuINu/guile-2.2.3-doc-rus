@@ -1,0 +1,393 @@
+#
+# NuINu <don't@send.my>, 2019.
+#
+#. extracted from /home/bear/work/guile/doc/guile/en/autoconf-macros.texi
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2018-05-07 12:37+0300\n"
+"PO-Revision-Date: 2019-03-06 09:04+0300\n"
+"Last-Translator: NuINu <don't@send.my>\n"
+"Language-Team: Russian <don't@send.my>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Generator: Gtranslator 2.91.7\n"
+"Plural-Forms: nplurals=5; plural=n==1 ? 0 : n==2 ? 1 : n<7 ? 2 : n<11 ? 3 : "
+"4;\n"
+
+#: /home/bear/work/guile/doc/guile/en/autoconf-macros.texi:2
+msgid "@deffn {Autoconf Macro} GUILE_PKG [VERSIONS] "
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/autoconf-macros.texi:5
+msgid ""
+"This macro runs the @code{pkg-config} tool to find development files\n"
+"for an available version of Guile."
+msgstr ""
+"Этот макрос запускает утилиту @code{pkg-config} для поиска файлов "
+"разработки\n"
+"доступной версии Guile."
+
+#: /home/bear/work/guile/doc/guile/en/autoconf-macros.texi:11
+msgid ""
+"By default, this macro will search for the latest stable version of\n"
+"Guile (e.g. 2.2), falling back to the previous stable version\n"
+"(e.g. 2.0) if it is available.  If no guile-@var{VERSION}.pc file is\n"
+"found, an error is signalled.  The found version is stored in\n"
+"@var{GUILE_EFFECTIVE_VERSION}."
+msgstr ""
+"По умолчанию, этот макрос будет искать последнюю стабильную версию\n"
+"Guile (например 2.2), возвращаясь назад к предыдущей стабильной версии\n"
+"(например 2.0) если она доступна.  Если не найден файла guile-@var{VERSION}."
+"pc\n"
+"сообщается об ошибке.  Найденая версия сохраняется в \n"
+"@var{GUILE_EFFECTIVE_VERSION}."
+
+#: /home/bear/work/guile/doc/guile/en/autoconf-macros.texi:15
+msgid ""
+"If @code{GUILE_PROGS} was already invoked, this macro ensures that the\n"
+"development files have the same effective version as the Guile\n"
+"program."
+msgstr ""
+"Если @code{GUILE_PROGS} уже был вызван, этот макрос гарантирует, что\n"
+"файлы разработки будут иметь ту же версию, что и программа Guile."
+
+#: /home/bear/work/guile/doc/guile/en/autoconf-macros.texi:18
+msgid ""
+"@var{GUILE_EFFECTIVE_VERSION} is marked for substitution, as by\n"
+"@code{AC_SUBST}."
+msgstr ""
+"@var{GUILE_EFFECTIVE_VERSION} помечается для подстановки , как\n"
+"@code{AC_SUBST}."
+
+#: /home/bear/work/guile/doc/guile/en/autoconf-macros.texi:20
+msgctxt "/home/bear/work/guile/doc/guile/en/autoconf-macros.texi:20"
+msgid "@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/autoconf-macros.texi:22
+msgid "@deffn {Autoconf Macro} GUILE_FLAGS"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/autoconf-macros.texi:27
+msgid ""
+"This macro runs the @code{pkg-config} tool to find out how to compile\n"
+"and link programs against Guile.  It sets four variables:\n"
+"@var{GUILE_CFLAGS}, @var{GUILE_LDFLAGS}, @var{GUILE_LIBS}, and\n"
+"@var{GUILE_LTLIBS}."
+msgstr ""
+"Этот макрос запускает утилиту @code{pkg-config} чтобы найти как \n"
+"компилировать и связвать программы с  Guile. Он уставнавливает \n"
+"четыре переменных:\n"
+"@var{GUILE_CFLAGS}, @var{GUILE_LDFLAGS}, @var{GUILE_LIBS}, и\n"
+"@var{GUILE_LTLIBS}."
+
+#: /home/bear/work/guile/doc/guile/en/autoconf-macros.texi:31
+msgid ""
+"@var{GUILE_CFLAGS}: flags to pass to a C or C++ compiler to build code that\n"
+"uses Guile header files.  This is almost always just one or more @code{-I}\n"
+"flags."
+msgstr ""
+"@var{GUILE_CFLAGS}: флаги для передачи в C или C++ компилятор для создания "
+"кода\n"
+"использующего заголовочные файлы Guile.  Это почти всегда только один или "
+"несколько\n"
+"флагов @code{-I}."
+
+#: /home/bear/work/guile/doc/guile/en/autoconf-macros.texi:40
+msgid ""
+"@var{GUILE_LDFLAGS}: flags to pass to the compiler to link a program\n"
+"against Guile.  This includes @code{-lguile-@var{VERSION}} for the\n"
+"Guile library itself, and may also include one or more @code{-L} flag\n"
+"to tell the compiler where to find the libraries.  But it does not\n"
+"include flags that influence the program's runtime search path for\n"
+"libraries, and will therefore lead to a program that fails to start,\n"
+"unless all necessary libraries are installed in a standard location\n"
+"such as @file{/usr/lib}."
+msgstr ""
+"@var{GUILE_LDFLAGS}: флаги для передачи компилятору, чтобы связать\n"
+"программу с  Guile.  Они включают в себя @code{-lguile-@var{VERSION}}\n"
+"для библиотеки Guile, а также может включать один или более флагов\n"
+"@code{-L}, чтобы сообщить компилятору где искать библиотеки. Но это\n"
+"не включает флаги, которые влияют на путь поиска библиотек во время\n"
+"выполнения программы и это может привести к построению программы которая\n"
+"не запускается, если все необходимые библиотеки не установлены в \n"
+"стандартное расположение, такое как @file{/usr/lib}."
+
+#: /home/bear/work/guile/doc/guile/en/autoconf-macros.texi:48
+msgid ""
+"@var{GUILE_LIBS} and @var{GUILE_LTLIBS}: flags to pass to the compiler or "
+"to\n"
+"libtool, respectively, to link a program against Guile.  It includes flags\n"
+"that augment the program's runtime search path for libraries, so that "
+"shared\n"
+"libraries will be found at the location where they were during linking, "
+"even\n"
+"in non-standard locations.  @var{GUILE_LIBS} is to be used when linking the\n"
+"program directly with the compiler, whereas @var{GUILE_LTLIBS} is to be "
+"used\n"
+"when linking the program is done through libtool."
+msgstr ""
+"@var{GUILE_LIBS} и @var{GUILE_LTLIBS}: флаги для передачи в компилятор или\n"
+"libtool, соответственно, чтобы связать программу с Guile.  Они включают "
+"флаги,\n"
+"которые расширяют пусть поиска для библиотек во время выполнения, чтобы "
+"разделяемые\n"
+"библиотеки можно было найти в местах где они были во время связывания "
+"программы, даже\n"
+"в нестандартныхъ местах.  @var{GUILE_LIBS} должен быть использован при "
+"связывании\n"
+"программы непосредственно компилятором, тогда как @var{GUILE_LTLIBS} должен "
+"быть\n"
+"использован, когда связывание программы осуществляется через libtool."
+
+#: /home/bear/work/guile/doc/guile/en/autoconf-macros.texi:50
+msgctxt "/home/bear/work/guile/doc/guile/en/autoconf-macros.texi:50"
+msgid "The variables are marked for substitution, as by @code{AC_SUBST}."
+msgstr "Переменные помечаемые для подстановки, как @code{AC_SUBST}."
+
+#: /home/bear/work/guile/doc/guile/en/autoconf-macros.texi:52
+msgctxt "/home/bear/work/guile/doc/guile/en/autoconf-macros.texi:52"
+msgid "@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/autoconf-macros.texi:54
+msgid "@deffn {Autoconf Macro} GUILE_SITE_DIR"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/autoconf-macros.texi:67
+msgid ""
+"This looks for Guile's \"site\" directories.  The variable @var{GUILE_SITE} "
+"will\n"
+"be set to Guile's \"site\" directory for Scheme source files (usually "
+"something\n"
+"like PREFIX/share/guile/site).  @var{GUILE_SITE_CCACHE} will be set to the\n"
+"directory for compiled Scheme files also known as @code{.go} files\n"
+"(usually something like\n"
+"PREFIX/lib/guile/@var{GUILE_EFFECTIVE_VERSION}/site-ccache).\n"
+"@var{GUILE_EXTENSION} will be set to the directory for compiled C "
+"extensions\n"
+"(usually something like\n"
+"PREFIX/lib/guile/@var{GUILE_EFFECTIVE_VERSION}/extensions). The latter two\n"
+"are set to blank if the particular version of Guile does not support\n"
+"them.  Note that this macro will run the macros @code{GUILE_PKG} and\n"
+"@code{GUILE_PROGS} if they have not already been run."
+msgstr ""
+"Этот макрос ищет Guile директорию \"site\".  Переменная @var{GUILE_SITE} "
+"устанавливает\n"
+"Guile директорию \"site\" для исходных файлов Scheme (обычно это что-то "
+"похожее на\n"
+"PREFIX/share/guile/site).  @var{GUILE_SITE_CCACHE} будет указывать на "
+"каталог для\n"
+"скомпилированных файлов Scheme также исвестных как файлы @code{.go}\n"
+"(обычно это что то похожее на PREFIX/lib/guile/@var{GUILE_EFFECTIVE_VERSION}/"
+"site-ccache).\n"
+"@var{GUILE_EXTENSION} будет указывать на каталог для скомпилированных Си "
+"расширений\n"
+"(обычно это что то похожее на PREFIX/lib/guile/@var{GUILE_EFFECTIVE_VERSION}/"
+"extensions). \n"
+"Последние два устанавливаются пустыми, если конкретная версия  Guile не "
+"поддерживает их.\n"
+"Обратите внимание, что этот макрос будет запускать макросы @code{GUILE_PKG} "
+"и\n"
+"@code{GUILE_PROGS} если они небыли запущены ранее."
+
+#: /home/bear/work/guile/doc/guile/en/autoconf-macros.texi:69
+msgctxt "/home/bear/work/guile/doc/guile/en/autoconf-macros.texi:69"
+msgid "The variables are marked for substitution, as by @code{AC_SUBST}."
+msgstr "Переменные помечаются для подстановки как @code{AC_SUBST}."
+
+#: /home/bear/work/guile/doc/guile/en/autoconf-macros.texi:71
+msgctxt "/home/bear/work/guile/doc/guile/en/autoconf-macros.texi:71"
+msgid "@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/autoconf-macros.texi:73
+msgid "@deffn {Autoconf Macro} GUILE_PROGS [VERSION] "
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/autoconf-macros.texi:82
+msgid ""
+"This macro looks for programs @code{guile} and @code{guild}, setting\n"
+"variables @var{GUILE} and @var{GUILD} to their paths, respectively.\n"
+"The macro will attempt to find @code{guile} with the suffix of\n"
+"@code{-X.Y}, followed by looking for it with the suffix @code{X.Y}, and\n"
+"then fall back to looking for @code{guile} with no suffix. If\n"
+"@code{guile} is still not found, signal an error. The suffix, if any,\n"
+"that was required to find @code{guile} will be used for @code{guild}\n"
+"as well."
+msgstr ""
+"Этот макрос ищет программы @code{guile} и @code{guild}, устанавливая\n"
+"перменные @var{GUILE} и @var{GUILD} путями к ним, соответственно.\n"
+"Макрос попытается найти @code{guile} с суффиксом\n"
+"@code{-X.Y}, а затем ищет его с суффиксом @code{X.Y}, и затем\n"
+"возвращается к поиску для @code{guile} без суффикса. Если\n"
+"@code{guile} все еще не найден, выдает сигнал ошибки. Суффикс, если есть,\n"
+"то что требовалось, чтобы найти @code{guile} будет использован и для "
+"@code{guild}."
+
+#: /home/bear/work/guile/doc/guile/en/autoconf-macros.texi:86
+msgid ""
+"By default, this macro will search for the latest stable version of\n"
+"Guile (e.g. 2.2). x.y or x.y.z versions can be specified. If an older\n"
+"version is found, the macro will signal an error."
+msgstr ""
+"По умолчанию, этот макрос будет искать последнюю стабильную версию\n"
+"Guile (например 2.2). x.y или x.y.z версии могут быть указаны. Если найдена\n"
+"более старая версия, макрос сигнализирует об ошибке."
+
+#: /home/bear/work/guile/doc/guile/en/autoconf-macros.texi:91
+msgid ""
+"The effective version of the found @code{guile} is set to\n"
+"@var{GUILE_EFFECTIVE_VERSION}.  This macro ensures that the effective\n"
+"version is compatible with the result of a previous invocation of\n"
+"@code{GUILE_FLAGS}, if any."
+msgstr ""
+"Эффективная версия найденого @code{guile} устанавливает \n"
+"@var{GUILE_EFFECTIVE_VERSION}.  Этот макрос гарантирует, что эффективная\n"
+"версия совместима с результатом предыдущего вызова\n"
+"@code{GUILE_FLAGS}, если он был."
+
+#: /home/bear/work/guile/doc/guile/en/autoconf-macros.texi:94
+msgid ""
+"As a legacy interface, it also looks for @code{guile-config} and\n"
+"@code{guile-tools}, setting @var{GUILE_CONFIG} and @var{GUILE_TOOLS}."
+msgstr ""
+"Как устаревший интерфейс, он так же ищет  @code{guile-config} и\n"
+"@code{guile-tools}, устанавливая @var{GUILE_CONFIG} и @var{GUILE_TOOLS}."
+
+#: /home/bear/work/guile/doc/guile/en/autoconf-macros.texi:96
+msgctxt "/home/bear/work/guile/doc/guile/en/autoconf-macros.texi:96"
+msgid "The variables are marked for substitution, as by @code{AC_SUBST}."
+msgstr "Переменные помечаются для подстановки как @code{AC_SUBST}."
+
+#: /home/bear/work/guile/doc/guile/en/autoconf-macros.texi:98
+msgctxt "/home/bear/work/guile/doc/guile/en/autoconf-macros.texi:98"
+msgid "@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/autoconf-macros.texi:100
+msgid "@deffn {Autoconf Macro} GUILE_CHECK_RETVAL var check "
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/autoconf-macros.texi:106
+msgid ""
+"@var{var} is a shell variable name to be set to the return value.\n"
+"@var{check} is a Guile Scheme expression, evaluated with \"$GUILE -c\", and\n"
+"   returning either 0 or non-#f to indicate the check passed.\n"
+"   Non-0 number or #f indicates failure.\n"
+"   Avoid using the character \"#\" since that confuses autoconf."
+msgstr ""
+"@var{var} это имя переменной оболочки(shell), для которой необходимо "
+"установить\n"
+"возвращаемое значение.\n"
+"@var{check} это выражение Guile Scheme, вычисляемое с \"$GUILE -c\", и\n"
+"   возвращающее либо 0 или non-#f чтобы указать что успешность проверки.\n"
+"   Не-0 число или #f указывают на ошибку.\n"
+"   Избегайте использования символьного знака \"#\" поскольку это сбивает с "
+"толку\n"
+"   autoconf."
+
+#: /home/bear/work/guile/doc/guile/en/autoconf-macros.texi:108
+msgctxt "/home/bear/work/guile/doc/guile/en/autoconf-macros.texi:108"
+msgid "@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/autoconf-macros.texi:110
+msgid ""
+"@deffn {Autoconf Macro} GUILE_MODULE_CHECK var module featuretest "
+"description "
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/autoconf-macros.texi:115
+msgid ""
+"@var{var} is a shell variable name to be set to \"yes\" or \"no\".\n"
+"@var{module} is a list of symbols, like: (ice-9 common-list).\n"
+"@var{featuretest} is an expression acceptable to GUILE_CHECK, q.v.\n"
+"@var{description} is a present-tense verb phrase (passed to AC_MSG_CHECKING)."
+msgstr ""
+"@var{var} это имя переменной оболочки(shell), для которой нужно установить "
+"\"yes\" или \"no\".\n"
+"@var{module} это список символов, подобных: (ice-9 common-list).\n"
+"@var{featuretest} это выражение приемлемое для GUILE_CHECK, q.v.\n"
+"@var{description} описание, это фраза глагола в настоящем времени "
+"(передаваемая в AC_MSG_CHECKING)."
+
+#: /home/bear/work/guile/doc/guile/en/autoconf-macros.texi:117
+msgctxt "/home/bear/work/guile/doc/guile/en/autoconf-macros.texi:117"
+msgid "@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/autoconf-macros.texi:119
+msgid "@deffn {Autoconf Macro} GUILE_MODULE_AVAILABLE var module "
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/autoconf-macros.texi:122
+msgid ""
+"@var{var} is a shell variable name to be set to \"yes\" or \"no\".\n"
+"@var{module} is a list of symbols, like: (ice-9 common-list)."
+msgstr ""
+"@var{var} это имя перемнной оболочки, для которой надо установить \"yes\" "
+"или \"no\".\n"
+"@var{module} это список символов, таких как: (ice-9 common-list)."
+
+#: /home/bear/work/guile/doc/guile/en/autoconf-macros.texi:124
+msgctxt "/home/bear/work/guile/doc/guile/en/autoconf-macros.texi:124"
+msgid "@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/autoconf-macros.texi:126
+msgid "@deffn {Autoconf Macro} GUILE_MODULE_REQUIRED symlist "
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/autoconf-macros.texi:129
+msgid ""
+"@var{symlist} is a list of symbols, WITHOUT surrounding parens,\n"
+"like: ice-9 common-list."
+msgstr ""
+"@var{symlist} это список символов, БЕЗ окружающих скобок,\n"
+"например: ice-9 common-list."
+
+#: /home/bear/work/guile/doc/guile/en/autoconf-macros.texi:131
+msgctxt "/home/bear/work/guile/doc/guile/en/autoconf-macros.texi:131"
+msgid "@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/autoconf-macros.texi:133
+msgid "@deffn {Autoconf Macro} GUILE_MODULE_EXPORTS var module modvar "
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/autoconf-macros.texi:137
+msgid ""
+"@var{var} is a shell variable to be set to \"yes\" or \"no\".\n"
+"@var{module} is a list of symbols, like: (ice-9 common-list).\n"
+"@var{modvar} is the Guile Scheme variable to check."
+msgstr ""
+"@var{var} это переменная оболочки которую нужно установить в \"yes\" или \"no"
+"\".\n"
+"@var{module} это список симоволов, например: (ice-9 common-list).\n"
+"@var{modvar} это переменная Guile Scheme для проверки."
+
+#: /home/bear/work/guile/doc/guile/en/autoconf-macros.texi:139
+msgctxt "/home/bear/work/guile/doc/guile/en/autoconf-macros.texi:139"
+msgid "@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/autoconf-macros.texi:141
+msgid "@deffn {Autoconf Macro} GUILE_MODULE_REQUIRED_EXPORT module modvar "
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/autoconf-macros.texi:144
+msgid ""
+"@var{module} is a list of symbols, like: (ice-9 common-list).\n"
+"@var{modvar} is the Guile Scheme variable to check."
+msgstr ""
+"@var{module} это список символов, таких как: (ice-9 common-list).\n"
+"@var{modvar} это переменная Guile Scheme для проверки."
+
+#: /home/bear/work/guile/doc/guile/en/autoconf-macros.texi:146
+msgctxt "/home/bear/work/guile/doc/guile/en/autoconf-macros.texi:146"
+msgid "@end deffn"
+msgstr ""

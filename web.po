@@ -1,0 +1,2980 @@
+#. extracted from /home/bear/work/guile/doc/guile/en/web.texi
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2018-05-07 12:37+0300\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Generator: Translate Toolkit 2.2.5\n"
+
+#: /home/bear/work/guile/doc/guile/en/web.texi:5
+msgid ""
+"@c -*-texinfo-*-\n"
+"@c This is part of the GNU Guile Reference Manual.\n"
+"@c Copyright (C) 2010, 2011, 2012, 2013, 2015 Free Software Foundation, Inc."
+"\n"
+"@c See the file guile.texi for copying conditions."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/web.texi:11
+msgid ""
+"@node Web\n"
+"@section @acronym{HTTP}, the Web, and All That\n"
+"@cindex Web\n"
+"@cindex WWW\n"
+"@cindex HTTP"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/web.texi:16
+msgid ""
+"It has always been possible to connect computers together and share\n"
+"information between them, but the rise of the World Wide Web over the\n"
+"last couple of decades has made it much easier to do so.  The result is\n"
+"a richly connected network of computation, in which Guile forms a part."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/web.texi:22
+msgid ""
+"By ``the web'', we mean the HTTP protocol@footnote{Yes, the P is for\n"
+"protocol, but this phrase appears repeatedly in RFC 2616.} as handled by\n"
+"servers, clients, proxies, caches, and the various kinds of messages and\n"
+"message components that can be sent and received by that protocol,\n"
+"notably HTML."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/web.texi:29
+msgid ""
+"On one level, the web is text in motion: the protocols themselves are\n"
+"textual (though the payload may be binary), and it's possible to create\n"
+"a socket and speak text to the web.  But such an approach is obviously\n"
+"primitive.  This section details the higher-level data types and\n"
+"operations provided by Guile: URIs, HTTP request and response records,\n"
+"and a conventional web server implementation."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/web.texi:34
+msgid ""
+"The material in this section is arranged in ascending order, in which\n"
+"later concepts build on previous ones.  If you prefer to start with the\n"
+"highest-level perspective, @pxref{Web Examples}, and work your way\n"
+"back."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/web.texi:47
+msgid ""
+"@menu\n"
+"* Types and the Web::           Types prevent bugs and security problems.\n"
+"* URIs::                        Universal Resource Identifiers.\n"
+"* HTTP::                        The Hyper-Text Transfer Protocol.\n"
+"* HTTP Headers::                How Guile represents specific header values."
+"\n"
+"* Transfer Codings::            HTTP Transfer Codings.\n"
+"* Requests::                    HTTP requests.\n"
+"* Responses::                   HTTP responses.\n"
+"* Web Client::                  Accessing web resources over HTTP.\n"
+"* Web Server::                  Serving HTTP to the internet.\n"
+"* Web Examples::                How to use this thing.\n"
+"@end menu"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/web.texi:50
+msgid ""
+"@node Types and the Web\n"
+"@subsection Types and the Web"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/web.texi:55
+msgid ""
+"It is a truth universally acknowledged, that a program with good use of\n"
+"data types, will be free from many common bugs.  Unfortunately, the\n"
+"common practice in web programming seems to ignore this maxim.  This\n"
+"subsection makes the case for expressive data types in web programming."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/web.texi:63
+msgid ""
+"By ``expressive data types'', we mean that the data types @emph{say}\n"
+"something about how a program solves a problem.  For example, if we\n"
+"choose to represent dates using SRFI 19 date records (@pxref{SRFI-19}),\n"
+"this indicates that there is a part of the program that will always have\n"
+"valid dates.  Error handling for a number of basic cases, like invalid\n"
+"dates, occurs on the boundary in which we produce a SRFI 19 date record\n"
+"from other types, like strings."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/web.texi:66
+msgid ""
+"With regards to the web, data types are helpful in the two broad phases\n"
+"of HTTP messages: parsing and generation."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/web.texi:77
+msgid ""
+"Consider a server, which has to parse a request, and produce a response.\n"
+"Guile will parse the request into an HTTP request object\n"
+"(@pxref{Requests}), with each header parsed into an appropriate Scheme\n"
+"data type.  This transition from an incoming stream of characters to\n"
+"typed data is a state change in a program---the strings might parse, or\n"
+"they might not, and something has to happen if they do not.  (Guile\n"
+"throws an error in this case.)  But after you have the parsed request,\n"
+"``client'' code (code built on top of the Guile web framework) will not\n"
+"have to check for syntactic validity.  The types already make this\n"
+"information manifest."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/web.texi:82
+msgid ""
+"This state change on the parsing boundary makes programs more robust,\n"
+"as they themselves are freed from the need to do a number of common\n"
+"error checks, and they can use normal Scheme procedures to handle a\n"
+"request instead of ad-hoc string parsers."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/web.texi:87
+msgid ""
+"The need for types on the response generation side (in a server) is more\n"
+"subtle, though not less important.  Consider the example of a POST\n"
+"handler, which prints out the text that a user submits from a form.\n"
+"Such a handler might include a procedure like this:"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/web.texi:92
+msgid ""
+"@example\n"
+";; First, a helper procedure\n"
+"(define (para . contents)\n"
+"  (string-append \"<p>\" (string-concatenate contents) \"</p>\"))"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/web.texi:96
+msgid ""
+";; Now the meat of our simple web application\n"
+"(define (you-said text)\n"
+"  (para \"You said: \" text))"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/web.texi:100
+msgid ""
+"(display (you-said \"Hi!\"))\n"
+"@print{} <p>You said: Hi!</p>\n"
+"@end example"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/web.texi:106
+msgid ""
+"This is a perfectly valid implementation, provided that the incoming\n"
+"text does not contain the special HTML characters @samp{<}, @samp{>}, or\n"
+"@samp{&}.  But this provision of a restricted character set is not\n"
+"reflected anywhere in the program itself: we must @emph{assume} that the\n"
+"programmer understands this, and performs the check elsewhere."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/web.texi:113
+msgid ""
+"Unfortunately, the short history of the practice of programming does not\n"
+"bear out this assumption.  A @dfn{cross-site scripting} (@acronym{XSS})\n"
+"vulnerability is just such a common error in which unfiltered user input\n"
+"is allowed into the output.  A user could submit a crafted comment to\n"
+"your web site which results in visitors running malicious Javascript,\n"
+"within the security context of your domain:"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/web.texi:118
+msgid ""
+"@example\n"
+"(display (you-said \"<script src=\\\"http://bad.com/nasty.js\\\" />\"))\n"
+"@print{} <p>You said: <script src=\"http://bad.com/nasty.js\" /></p>\n"
+"@end example"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/web.texi:123
+msgid ""
+"The fundamental problem here is that both user data and the program\n"
+"template are represented using strings.  This identity means that types\n"
+"can't help the programmer to make a distinction between these two, so\n"
+"they get confused."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/web.texi:132
+msgid ""
+"There are a number of possible solutions, but perhaps the best is to\n"
+"treat HTML not as strings, but as native s-expressions: as SXML.  The\n"
+"basic idea is that HTML is either text, represented by a string, or an\n"
+"element, represented as a tagged list.  So @samp{foo} becomes\n"
+"@samp{\"foo\"}, and @samp{<b>foo</b>} becomes @samp{(b \"foo\")}.\n"
+"Attributes, if present, go in a tagged list headed by @samp{@@}, like\n"
+"@samp{(img (@@ (src \"http://example.com/foo.png\")))}.  @xref{SXML}, for\n"
+"more information."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/web.texi:135
+msgid ""
+"The good thing about SXML is that HTML elements cannot be confused with\n"
+"text.  Let's make a new definition of @code{para}:"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/web.texi:139
+msgid ""
+"@example\n"
+"(define (para . contents)\n"
+"  `(p ,@@contents))"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/web.texi:143
+msgid ""
+"(use-modules (sxml simple))\n"
+"(sxml->xml (you-said \"Hi!\"))\n"
+"@print{} <p>You said: Hi!</p>"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/web.texi:147
+msgid ""
+"(sxml->xml (you-said \"<i>Rats, foiled again!</i>\"))\n"
+"@print{} <p>You said: &lt;i&gt;Rats, foiled again!&lt;/i&gt;</p>\n"
+"@end example"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/web.texi:152
+msgid ""
+"So we see in the second example that HTML elements cannot be unwittingly\n"
+"introduced into the output.  However it is now perfectly acceptable to\n"
+"pass SXML to @code{you-said}; in fact, that is the big advantage of SXML\n"
+"over everything-as-a-string."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/web.texi:157
+msgid ""
+"@example\n"
+"(sxml->xml (you-said (you-said \"<Hi!>\")))\n"
+"@print{} <p>You said: <p>You said: &lt;Hi!&gt;</p></p>\n"
+"@end example"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/web.texi:163
+msgid ""
+"The SXML types allow procedures to @emph{compose}.  The types make\n"
+"manifest which parts are HTML elements, and which are text.  So you\n"
+"needn't worry about escaping user input; the type transition back to a\n"
+"string handles that for you.  @acronym{XSS} vulnerabilities are a thing\n"
+"of the past."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/web.texi:166
+msgid ""
+"Well.  That's all very nice and opinionated and such, but how do I use\n"
+"the thing?  Read on!"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/web.texi:169
+msgid ""
+"@node URIs\n"
+"@subsection Universal Resource Identifiers"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/web.texi:172
+msgid ""
+"Guile provides a standard data type for Universal Resource Identifiers\n"
+"(URIs), as defined in RFC 3986."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/web.texi:174
+msgid "The generic URI syntax is as follows:"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/web.texi:179
+msgid ""
+"@example\n"
+"URI-reference := [scheme \":\"] [\"//\" [userinfo \"@@\"] host [\":\" port]] "
+"path \\\n"
+"                 [ \"?\" query ] [ \"#\" fragment ]\n"
+"@end example"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/web.texi:183
+msgid ""
+"For example, in the URI, @indicateurl{http://www.gnu.org/help/}, the\n"
+"scheme is @code{http}, the host is @code{www.gnu.org}, the path is\n"
+"@code{/help/}, and there is no userinfo, port, query, or fragment."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/web.texi:189
+msgid ""
+"Userinfo is something of an abstraction, as some legacy URI schemes\n"
+"allowed userinfo of the form @code{@var{username}:@var{passwd}}.  But\n"
+"since passwords do not belong in URIs, the RFC does not want to condone\n"
+"this practice, so it calls anything before the @code{@@} sign\n"
+"@dfn{userinfo}."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/web.texi:193
+msgid ""
+"@example\n"
+"(use-modules (web uri))\n"
+"@end example"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/web.texi:197
+msgid ""
+"The following procedures can be found in the @code{(web uri)}\n"
+"module. Load it into your Guile, using a form like the above, to have\n"
+"access to them."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/web.texi:200
+msgid ""
+"The most common way to build a URI from Scheme is with the\n"
+"@code{build-uri} function."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/web.texi:213
+msgid ""
+"@deffn {Scheme Procedure} build-uri scheme @\n"
+"       [#:userinfo=@code{#f}] [#:host=@code{#f}] [#:port=@code{#f}] @\n"
+"       [#:path=@code{\"\"}] [#:query=@code{#f}] [#:fragment=@code{#f}] @\n"
+"       [#:validate?=@code{#t}]\n"
+"Construct a URI.  @var{scheme} should be a symbol, @var{port} either a\n"
+"positive, exact integer or @code{#f}, and the rest of the fields are\n"
+"either strings or @code{#f}.  If @var{validate?} is true, also run some\n"
+"consistency checks to make sure that the constructed URI is valid.\n"
+"@end deffn\n"
+"@deffn {Scheme Procedure} uri? obj\n"
+"Return @code{#t} if @var{obj} is a URI.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/web.texi:216
+msgid ""
+"Guile, URIs are represented as URI records, with a number of associated\n"
+"accessors."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/web.texi:229
+msgid ""
+"@deffn {Scheme Procedure} uri-scheme uri\n"
+"@deffnx {Scheme Procedure} uri-userinfo uri\n"
+"@deffnx {Scheme Procedure} uri-host uri\n"
+"@deffnx {Scheme Procedure} uri-port uri\n"
+"@deffnx {Scheme Procedure} uri-path uri\n"
+"@deffnx {Scheme Procedure} uri-query uri\n"
+"@deffnx {Scheme Procedure} uri-fragment uri\n"
+"Field accessors for the URI record type.  The URI scheme will be a\n"
+"symbol, or @code{#f} if the object is a relative-ref (see below).  The\n"
+"port will be either a positive, exact integer or @code{#f}, and the rest\n"
+"of the fields will be either strings or @code{#f} if not present.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/web.texi:234
+msgid ""
+"@deffn {Scheme Procedure} string->uri string\n"
+"Parse @var{string} into a URI object.  Return @code{#f} if the string\n"
+"could not be parsed.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/web.texi:241
+msgid ""
+"@deffn {Scheme Procedure} uri->string uri [#:include-fragment?=@code{#t}]\n"
+"Serialize @var{uri} to a string.  If the URI has a port that is the\n"
+"default port for its scheme, the port is not included in the\n"
+"serialization.  If @var{include-fragment?} is given as false, the\n"
+"resulting string will omit the fragment (if any).\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/web.texi:245
+msgid ""
+"@deffn {Scheme Procedure} declare-default-port! scheme port\n"
+"Declare a default port for the given URI scheme.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/web.texi:249
+msgid ""
+"@deffn {Scheme Procedure} uri-decode str [#:encoding=@code{\"utf-8\"}] "
+"[#:decode-plus-to-space? #t]\n"
+"Percent-decode the given @var{str}, according to @var{encoding}, which\n"
+"should be the name of a character encoding."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/web.texi:254
+msgid ""
+"Note that this function should not generally be applied to a full URI\n"
+"string. For paths, use @code{split-and-decode-uri-path} instead. For\n"
+"query strings, split the query on @code{&} and @code{=} boundaries, and\n"
+"decode the components separately."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/web.texi:262
+msgid ""
+"Note also that percent-encoded strings encode @emph{bytes}, not\n"
+"characters.  There is no guarantee that a given byte sequence is a valid\n"
+"string encoding. Therefore this routine may signal an error if the\n"
+"decoded bytes are not valid for the given encoding. Pass @code{#f} for\n"
+"@var{encoding} if you want decoded bytes as a bytevector directly.\n"
+"@xref{Ports, @code{set-port-encoding!}}, for more information on\n"
+"character encodings."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/web.texi:267
+msgid ""
+"If @var{decode-plus-to-space?} is true, which is the default, also\n"
+"replace instances of the plus character @samp{+} with a space character.\n"
+"This is needed when parsing @code{application/x-www-form-urlencoded}\n"
+"data."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/web.texi:271
+msgid ""
+"Returns a string of the decoded characters, or a bytevector if\n"
+"@var{encoding} was @code{#f}.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/web.texi:275
+msgid ""
+"@deffn {Scheme Procedure} uri-encode str [#:encoding=@code{\"utf-8\"}] "
+"[#:unescaped-chars]\n"
+"Percent-encode any character not in the character set,\n"
+"@var{unescaped-chars}."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/web.texi:283
+msgid ""
+"The default character set includes alphanumerics from ASCII, as well as\n"
+"the special characters @samp{-}, @samp{.}, @samp{_}, and @samp{~}.  Any\n"
+"other character will be percent-encoded, by writing out the character to\n"
+"a bytevector within the given @var{encoding}, then encoding each byte as\n"
+"@code{%@var{HH}}, where @var{HH} is the hexadecimal representation of\n"
+"the byte.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/web.texi:287
+msgid ""
+"@deffn {Scheme Procedure} split-and-decode-uri-path path\n"
+"Split @var{path} into its components, and decode each component,\n"
+"removing empty components."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/web.texi:291
+msgid ""
+"For example, @code{\"/foo/bar%20baz/\"} decodes to the two-element list,\n"
+"@code{(\"foo\" \"bar baz\")}.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/web.texi:295
+msgid ""
+"@deffn {Scheme Procedure} encode-and-join-uri-path parts\n"
+"URI-encode each element of @var{parts}, which should be a list of\n"
+"strings, and join the parts together with @code{/} as a delimiter."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/web.texi:299
+msgid ""
+"For example, the list @code{(\"scrambled eggs\" \"biscuits&gravy\")} "
+"encodes\n"
+"as @code{\"scrambled%20eggs/biscuits%26gravy\"}.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/web.texi:301
+msgid "@subsubheading Subtypes of URI"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/web.texi:311
+msgid ""
+"As we noted above, not all URI objects have a scheme.  You might have\n"
+"noted in the ``generic URI syntax'' example that the left-hand side of\n"
+"that grammar definition was URI-reference, not URI.  A\n"
+"@dfn{URI-reference} is a generalization of a URI where the scheme is\n"
+"optional.  If no scheme is specified, it is taken to be relative to some\n"
+"other related URI.  A common use of URI references is when you want to\n"
+"be vague regarding the choice of HTTP or HTTPS -- serving a web page\n"
+"referring to @code{/foo.css} will use HTTPS if loaded over HTTPS, or\n"
+"HTTP otherwise."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/web.texi:323
+msgid ""
+"@deffn {Scheme Procedure} build-uri-reference [#:scheme=@code{#f}]@\n"
+"       [#:userinfo=@code{#f}] [#:host=@code{#f}] [#:port=@code{#f}] @\n"
+"       [#:path=@code{\"\"}] [#:query=@code{#f}] [#:fragment=@code{#f}] @\n"
+"       [#:validate?=@code{#t}]\n"
+"Like @code{build-uri}, but with an optional scheme.\n"
+"@end deffn\n"
+"@deffn {Scheme Procedure} uri-reference? obj\n"
+"Return @code{#t} if @var{obj} is a URI-reference.  This is the most\n"
+"general URI predicate, as it includes not only full URIs that have\n"
+"schemes (those that match @code{uri?}) but also URIs without schemes.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/web.texi:326
+msgid ""
+"It's also possible to build a @dfn{relative-ref}: a URI-reference that\n"
+"explicitly lacks a scheme."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/web.texi:338
+msgid ""
+"@deffn {Scheme Procedure} build-relative-ref @\n"
+"       [#:userinfo=@code{#f}] [#:host=@code{#f}] [#:port=@code{#f}] @\n"
+"       [#:path=@code{\"\"}] [#:query=@code{#f}] [#:fragment=@code{#f}] @\n"
+"       [#:validate?=@code{#t}]\n"
+"Like @code{build-uri}, but with no scheme.\n"
+"@end deffn\n"
+"@deffn {Scheme Procedure} relative-ref? obj\n"
+"Return @code{#t} if @var{obj} is a ``relative-ref'': a URI-reference\n"
+"that has no scheme.  Every URI-reference will either match @code{uri?}\n"
+"or @code{relative-ref?} (but not both).\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/web.texi:345
+msgid ""
+"In case it's not clear from the above, the most general of these URI\n"
+"types is the URI-reference, with @code{build-uri-reference} as the most\n"
+"general constructor.  @code{build-uri} and @code{build-relative-ref}\n"
+"enforce enforce specific restrictions on the URI-reference.  The most\n"
+"generic URI parser is then @code{string->uri-reference}, and there is\n"
+"also a parser for when you know that you want a relative-ref."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/web.texi:350
+msgid ""
+"@deffn {Scheme Procedure} string->uri-reference string\n"
+"Parse @var{string} into a URI object, while not requiring a scheme.\n"
+"Return @code{#f} if the string could not be parsed.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/web.texi:355
+msgid ""
+"@deffn {Scheme Procedure} string->relative-ref string\n"
+"Parse @var{string} into a URI object, while asserting that no scheme is\n"
+"present.  Return @code{#f} if the string could not be parsed.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/web.texi:362
+msgid ""
+"For compatibility reasons, note that @code{uri?} will return @code{#t}\n"
+"for all URI objects, even relative-refs.  In contrast, @code{build-uri}\n"
+"and @code{string->uri} require that the resulting URI not be a\n"
+"relative-ref.  As a predicate to distinguish relative-refs from proper\n"
+"URIs (in the language of RFC 3986), use something like @code{(and\n"
+"(uri-reference? @var{x}) (not (relative-ref?  @var{x})))}."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/web.texi:366
+msgid ""
+"@node HTTP\n"
+"@subsection The Hyper-Text Transfer Protocol"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/web.texi:372
+msgid ""
+"The initial motivation for including web functionality in Guile, rather\n"
+"than rely on an external package, was to establish a standard base on\n"
+"which people can share code.  To that end, we continue the focus on data\n"
+"types by providing a number of low-level parsers and unparsers for\n"
+"elements of the HTTP protocol."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/web.texi:376
+msgid ""
+"If you are want to skip the low-level details for now and move on to web\n"
+"pages, @pxref{Web Client}, and @pxref{Web Server}.  Otherwise, load the\n"
+"HTTP module, and read on."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/web.texi:380
+msgctxt "/home/bear/work/guile/doc/guile/en/web.texi:380"
+msgid ""
+"@example\n"
+"(use-modules (web http))\n"
+"@end example"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/web.texi:385
+msgid ""
+"The focus of the @code{(web http)} module is to parse and unparse\n"
+"standard HTTP headers, representing them to Guile as native data\n"
+"structures.  For example, a @code{Date:} header will be represented as a\n"
+"SRFI-19 date record (@pxref{SRFI-19}), rather than as a string."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/web.texi:389
+msgid ""
+"Guile tries to follow RFCs fairly strictly---the road to perdition being\n"
+"paved with compatibility hacks---though some allowances are made for\n"
+"not-too-divergent texts."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/web.texi:391
+msgid "Header names are represented as lower-case symbols."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/web.texi:395
+msgid ""
+"@deffn {Scheme Procedure} string->header name\n"
+"Parse @var{name} to a symbolic header name.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/web.texi:399
+msgid ""
+"@deffn {Scheme Procedure} header->string sym\n"
+"Return the string form for the header named @var{sym}.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/web.texi:401
+msgid "For example:"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/web.texi:407
+msgid ""
+"@example\n"
+"(string->header \"Content-Length\")\n"
+"@result{} content-length\n"
+"(header->string 'content-length)\n"
+"@result{} \"Content-Length\""
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/web.texi:413
+msgid ""
+"(string->header \"FOO\")\n"
+"@result{} foo\n"
+"(header->string 'foo)\n"
+"@result{} \"Foo\"\n"
+"@end example"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/web.texi:417
+msgid ""
+"Guile keeps a registry of known headers, their string names, and some\n"
+"parsing and serialization procedures.  If a header is unknown, its\n"
+"string name is simply its symbol name in title-case."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/web.texi:422
+msgid ""
+"@deffn {Scheme Procedure} known-header? sym\n"
+"Return @code{#t} if @var{sym} is a known header, with associated\n"
+"parsers and serialization procedures, or @code{#f} otherwise.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/web.texi:429
+msgid ""
+"@deffn {Scheme Procedure} header-parser sym\n"
+"Return the value parser for headers named @var{sym}.  The result is a\n"
+"procedure that takes one argument, a string, and returns the parsed\n"
+"value.  If the header isn't known to Guile, a default parser is returned\n"
+"that passes through the string unchanged.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/web.texi:435
+msgid ""
+"@deffn {Scheme Procedure} header-validator sym\n"
+"Return a predicate which returns @code{#t} if the given value is valid\n"
+"for headers named @var{sym}.  The default validator for unknown headers\n"
+"is @code{string?}.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/web.texi:441
+msgid ""
+"@deffn {Scheme Procedure} header-writer sym\n"
+"Return a procedure that writes values for headers named @var{sym} to a\n"
+"port.  The resulting procedure takes two arguments: a value and a port.\n"
+"The default writer is @code{display}.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/web.texi:445
+msgid ""
+"For more on the set of headers that Guile knows about out of the box,\n"
+"@pxref{HTTP Headers}.  To add your own, use the @code{declare-header!}\n"
+"procedure:"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/web.texi:450
+msgid ""
+"@deffn {Scheme Procedure} declare-header! name parser validator writer @\n"
+"       [#:multiple?=@code{#f}]\n"
+"Declare a parser, validator, and writer for a given header.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/web.texi:457
+msgid ""
+"For example, let's say you are running a web server behind some sort of\n"
+"proxy, and your proxy adds an @code{X-Client-Address} header, indicating\n"
+"the IPv4 address of the original client.  You would like for the HTTP\n"
+"request record to parse out this header to a Scheme value, instead of\n"
+"leaving it as a string.  You could register this header with Guile's\n"
+"HTTP stack like this:"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/web.texi:467
+msgid ""
+"@example\n"
+"(declare-header! \"X-Client-Address\"\n"
+"  (lambda (str)\n"
+"    (inet-aton str))\n"
+"  (lambda (ip)\n"
+"    (and (integer? ip) (exact? ip) (<= 0 ip #xffffffff)))\n"
+"  (lambda (ip port)\n"
+"    (display (inet-ntoa ip) port)))\n"
+"@end example"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/web.texi:472
+msgid ""
+"@deffn {Scheme Procedure} declare-opaque-header! name\n"
+"A specialised version of @code{declare-header!} for the case in which\n"
+"you want a header's value to be returned/written ``as-is''.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/web.texi:477
+msgid ""
+"@deffn {Scheme Procedure} valid-header? sym val\n"
+"Return a true value if @var{val} is a valid Scheme value for the header\n"
+"with name @var{sym}, or @code{#f} otherwise.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/web.texi:480
+msgid ""
+"Now that we have a generic interface for reading and writing headers, we\n"
+"do just that."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/web.texi:485
+msgid ""
+"@deffn {Scheme Procedure} read-header port\n"
+"Read one HTTP header from @var{port}. Return two values: the header\n"
+"name and the parsed Scheme value. May raise an exception if the header\n"
+"was known but the value was invalid."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/web.texi:489
+msgid ""
+"Returns the end-of-file object for both values if the end of the message\n"
+"body was reached (i.e., a blank line).\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/web.texi:494
+msgid ""
+"@deffn {Scheme Procedure} parse-header name val\n"
+"Parse @var{val}, a string, with the parser for the header named\n"
+"@var{name}.  Returns the parsed value.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/web.texi:499
+msgid ""
+"@deffn {Scheme Procedure} write-header name val port\n"
+"Write the given header name and value to @var{port}, using the writer\n"
+"from @code{header-writer}.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/web.texi:504
+msgid ""
+"@deffn {Scheme Procedure} read-headers port\n"
+"Read the headers of an HTTP message from @var{port}, returning them\n"
+"as an ordered alist.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/web.texi:509
+msgid ""
+"@deffn {Scheme Procedure} write-headers headers port\n"
+"Write the given header alist to @var{port}. Doesn't write the final\n"
+"@samp{\\r\\n"
+"}, as the user might want to add another header.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/web.texi:512
+msgid ""
+"The @code{(web http)} module also has some utility procedures to read\n"
+"and write request and response lines."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/web.texi:517
+msgid ""
+"@deffn {Scheme Procedure} parse-http-method str [start] [end]\n"
+"Parse an HTTP method from @var{str}. The result is an upper-case symbol,\n"
+"like @code{GET}.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/web.texi:523
+msgid ""
+"@deffn {Scheme Procedure} parse-http-version str [start] [end]\n"
+"Parse an HTTP version from @var{str}, returning it as a major--minor\n"
+"pair. For example, @code{HTTP/1.1} parses as the pair of integers,\n"
+"@code{(1 . 1)}.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/web.texi:528
+msgid ""
+"@deffn {Scheme Procedure} parse-request-uri str [start] [end]\n"
+"Parse a URI from an HTTP request line. Note that URIs in requests do not\n"
+"have to have a scheme or host name. The result is a URI object.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/web.texi:533
+msgid ""
+"@deffn {Scheme Procedure} read-request-line port\n"
+"Read the first line of an HTTP request from @var{port}, returning three\n"
+"values: the method, the URI, and the version.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/web.texi:537
+msgid ""
+"@deffn {Scheme Procedure} write-request-line method uri version port\n"
+"Write the first line of an HTTP request to @var{port}.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/web.texi:542
+msgid ""
+"@deffn {Scheme Procedure} read-response-line port\n"
+"Read the first line of an HTTP response from @var{port}, returning three\n"
+"values: the HTTP version, the response code, and the ``reason phrase''.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/web.texi:546
+msgid ""
+"@deffn {Scheme Procedure} write-response-line version code reason-phrase "
+"port\n"
+"Write the first line of an HTTP response to @var{port}.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/web.texi:550
+msgid ""
+"@node HTTP Headers\n"
+"@subsection HTTP Headers"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/web.texi:554
+msgid ""
+"In addition to defining the infrastructure to parse headers, the\n"
+"@code{(web http)} module defines specific parsers and unparsers for all\n"
+"headers defined in the HTTP/1.1 standard."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/web.texi:558
+msgid ""
+"For example, if you receive a header named @samp{Accept-Language} with a\n"
+"value @samp{en, es;q=0.8}, Guile parses it as a quality list (defined\n"
+"below):"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/web.texi:563
+msgid ""
+"@example\n"
+"(parse-header 'accept-language \"en, es;q=0.8\")\n"
+"@result{} ((1000 . \"en\") (800 . \"es\"))\n"
+"@end example"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/web.texi:568
+msgid ""
+"The format of the value for @samp{Accept-Language} headers is defined\n"
+"below, along with all other headers defined in the HTTP standard.  (If\n"
+"the header were unknown, the value would have been returned as a\n"
+"string.)"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/web.texi:575
+msgid ""
+"For brevity, the header definitions below are given in the form,\n"
+"@var{Type} @code{@var{name}}, indicating that values for the header\n"
+"@code{@var{name}} will be of the given @var{Type}.  Since Guile\n"
+"internally treats header names in lower case, in this document we give\n"
+"types title-cased names.  A short description of the each header's\n"
+"purpose and an example follow."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/web.texi:578
+msgid ""
+"For full details on the meanings of all of these headers, see the HTTP\n"
+"1.1 standard, RFC 2616."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/web.texi:580
+msgid "@subsubsection HTTP Header Types"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/web.texi:582
+msgid "Here we define the types that are used below, when defining headers."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/web.texi:586
+msgid ""
+"@deftp {HTTP Header Type} Date\n"
+"A SRFI-19 date.\n"
+"@end deftp"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/web.texi:592
+msgid ""
+"@deftp {HTTP Header Type} KVList\n"
+"A list whose elements are keys or key-value pairs.  Keys are parsed to\n"
+"symbols.  Values are strings by default.  Non-string values are the\n"
+"exception, and are mentioned explicitly below, as appropriate.\n"
+"@end deftp"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/web.texi:596
+msgid ""
+"@deftp {HTTP Header Type} SList\n"
+"A list of strings.\n"
+"@end deftp"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/web.texi:601
+msgid ""
+"@deftp {HTTP Header Type} Quality\n"
+"An exact integer between 0 and 1000.  Qualities are used to express\n"
+"preference, given multiple options.  An option with a quality of 870,\n"
+"for example, is preferred over an option with quality 500."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/web.texi:607
+msgid ""
+"(Qualities are written out over the wire as numbers between 0.0 and\n"
+"1.0, but since the standard only allows three digits after the decimal,\n"
+"it's equivalent to integers between 0 and 1000, so that's what Guile\n"
+"uses.)\n"
+"@end deftp"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/web.texi:613
+msgid ""
+"@deftp {HTTP Header Type} QList\n"
+"A quality list: a list of pairs, the car of which is a quality, and the\n"
+"cdr a string.  Used to express a list of options, along with their\n"
+"qualities.\n"
+"@end deftp"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/web.texi:619
+msgid ""
+"@deftp {HTTP Header Type} ETag\n"
+"An entity tag, represented as a pair.  The car of the pair is an opaque\n"
+"string, and the cdr is @code{#t} if the entity tag is a ``strong'' entity\n"
+"tag, and @code{#f} otherwise.\n"
+"@end deftp"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/web.texi:621
+msgid "@subsubsection General Headers"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/web.texi:623
+msgid "General HTTP headers may be present in any HTTP message."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/web.texi:627
+msgid ""
+"@deftypevr {HTTP Header} KVList cache-control\n"
+"A key-value list of cache-control directives.  See RFC 2616, for more\n"
+"details."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/web.texi:631
+msgid ""
+"If present, parameters to @code{max-age}, @code{max-stale},\n"
+"@code{min-fresh}, and @code{s-maxage} are all parsed as non-negative\n"
+"integers."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/web.texi:634
+msgid ""
+"If present, parameters to @code{private} and @code{no-cache} are parsed\n"
+"as lists of header names, as symbols."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/web.texi:644
+msgid ""
+"@example\n"
+"(parse-header 'cache-control \"no-cache,no-store\"\n"
+"@result{} (no-cache no-store)\n"
+"(parse-header 'cache-control \"no-cache=\\\"Authorization,Date\\\",no-store\""
+"\n"
+"@result{} ((no-cache . (authorization date)) no-store)\n"
+"(parse-header 'cache-control \"no-cache=\\\"Authorization,Date\\\",max-age="
+"10\"\n"
+"@result{} ((no-cache . (authorization date)) (max-age . 10))\n"
+"@end example\n"
+"@end deftypevr"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/web.texi:655
+msgid ""
+"@deftypevr {HTTP Header} List connection\n"
+"A list of header names that apply only to this HTTP connection, as\n"
+"symbols.  Additionally, the symbol @samp{close} may be present, to\n"
+"indicate that the server should close the connection after responding to\n"
+"the request.\n"
+"@example\n"
+"(parse-header 'connection \"close\")\n"
+"@result{} (close)\n"
+"@end example\n"
+"@end deftypevr"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/web.texi:663
+msgid ""
+"@deftypevr {HTTP Header} Date date\n"
+"The date that a given HTTP message was originated.\n"
+"@example\n"
+"(parse-header 'date \"Tue, 15 Nov 1994 08:12:31 GMT\")\n"
+"@result{} #<date ...>\n"
+"@end example\n"
+"@end deftypevr"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/web.texi:671
+msgid ""
+"@deftypevr {HTTP Header} KVList pragma\n"
+"A key-value list of implementation-specific directives.\n"
+"@example\n"
+"(parse-header 'pragma \"no-cache, broccoli=tasty\")\n"
+"@result{} (no-cache (broccoli . \"tasty\"))\n"
+"@end example\n"
+"@end deftypevr"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/web.texi:680
+msgid ""
+"@deftypevr {HTTP Header} List trailer\n"
+"A list of header names which will appear after the message body, instead\n"
+"of with the message headers.\n"
+"@example\n"
+"(parse-header 'trailer \"ETag\")\n"
+"@result{} (etag)\n"
+"@end example\n"
+"@end deftypevr"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/web.texi:689
+msgid ""
+"@deftypevr {HTTP Header} List transfer-encoding\n"
+"A list of transfer codings, expressed as key-value lists.  The only\n"
+"transfer coding defined by the specification is @code{chunked}.\n"
+"@example\n"
+"(parse-header 'transfer-encoding \"chunked\")\n"
+"@result{} ((chunked))\n"
+"@end example\n"
+"@end deftypevr"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/web.texi:698
+msgid ""
+"@deftypevr {HTTP Header} List upgrade\n"
+"A list of strings, indicating additional protocols that a server could use\n"
+"in response to a request.\n"
+"@example\n"
+"(parse-header 'upgrade \"WebSocket\")\n"
+"@result{} (\"WebSocket\")\n"
+"@end example\n"
+"@end deftypevr"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/web.texi:709
+msgid ""
+"FIXME: parse out more fully?\n"
+"@deftypevr {HTTP Header} List via\n"
+"A list of strings, indicating the protocol versions and hosts of\n"
+"intermediate servers and proxies.  There may be multiple @code{via}\n"
+"headers in one message.\n"
+"@example\n"
+"(parse-header 'via \"1.0 venus, 1.1 mars\")\n"
+"@result{} (\"1.0 venus\" \"1.1 mars\")\n"
+"@end example\n"
+"@end deftypevr"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/web.texi:715
+msgid ""
+"@deftypevr {HTTP Header} List warning\n"
+"A list of warnings given by a server or intermediate proxy.  Each\n"
+"warning is a itself a list of four elements: a code, as an exact integer\n"
+"between 0 and 1000, a host as a string, the warning text as a string,\n"
+"and either @code{#f} or a SRFI-19 date."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/web.texi:722
+msgid ""
+"There may be multiple @code{warning} headers in one message.\n"
+"@example\n"
+"(parse-header 'warning \"123 foo \\\"core breach imminent\\\"\")\n"
+"@result{} ((123 \"foo\" \"core-breach imminent\" #f))\n"
+"@end example\n"
+"@end deftypevr"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/web.texi:725
+msgid "@subsubsection Entity Headers"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/web.texi:728
+msgid ""
+"Entity headers may be present in any HTTP message, and refer to the\n"
+"resource referenced in the HTTP request or response."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/web.texi:736
+msgid ""
+"@deftypevr {HTTP Header} List allow\n"
+"A list of allowed methods on a given resource, as symbols.\n"
+"@example\n"
+"(parse-header 'allow \"GET, HEAD\")\n"
+"@result{} (GET HEAD)\n"
+"@end example\n"
+"@end deftypevr"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/web.texi:744
+msgid ""
+"@deftypevr {HTTP Header} List content-encoding\n"
+"A list of content codings, as symbols.\n"
+"@example\n"
+"(parse-header 'content-encoding \"gzip\")\n"
+"@result{} (gzip)\n"
+"@end example\n"
+"@end deftypevr"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/web.texi:752
+msgid ""
+"@deftypevr {HTTP Header} List content-language\n"
+"The languages that a resource is in, as strings.\n"
+"@example\n"
+"(parse-header 'content-language \"en\")\n"
+"@result{} (\"en\")\n"
+"@end example\n"
+"@end deftypevr"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/web.texi:760
+msgid ""
+"@deftypevr {HTTP Header} UInt content-length\n"
+"The number of bytes in a resource, as an exact, non-negative integer.\n"
+"@example\n"
+"(parse-header 'content-length \"300\")\n"
+"@result{} 300\n"
+"@end example\n"
+"@end deftypevr"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/web.texi:769
+msgid ""
+"@deftypevr {HTTP Header} URI content-location\n"
+"The canonical URI for a resource, in the case that it is also accessible\n"
+"from a different URI.\n"
+"@example\n"
+"(parse-header 'content-location \"http://example.com/foo\")\n"
+"@result{} #<<uri> ...>\n"
+"@end example\n"
+"@end deftypevr"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/web.texi:777
+msgid ""
+"@deftypevr {HTTP Header} String content-md5\n"
+"The MD5 digest of a resource.\n"
+"@example\n"
+"(parse-header 'content-md5 \"ffaea1a79810785575e29e2bd45e2fa5\")\n"
+"@result{} \"ffaea1a79810785575e29e2bd45e2fa5\"\n"
+"@end example\n"
+"@end deftypevr"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/web.texi:789
+msgid ""
+"@deftypevr {HTTP Header} List content-range\n"
+"A range specification, as a list of three elements: the symbol\n"
+"@code{bytes}, either the symbol @code{*} or a pair of integers,\n"
+"indicating the byte rage, and either @code{*} or an integer, for the\n"
+"instance length.  Used to indicate that a response only includes part of\n"
+"a resource.\n"
+"@example\n"
+"(parse-header 'content-range \"bytes 10-20/*\")\n"
+"@result{} (bytes (10 . 20) *)\n"
+"@end example\n"
+"@end deftypevr"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/web.texi:802
+msgid ""
+"@deftypevr {HTTP Header} List content-type\n"
+"The MIME type of a resource, as a symbol, along with any parameters.\n"
+"@example\n"
+"(parse-header 'content-type \"text/plain\")\n"
+"@result{} (text/plain)\n"
+"(parse-header 'content-type \"text/plain;charset=utf-8\")\n"
+"@result{} (text/plain (charset . \"utf-8\"))\n"
+"@end example\n"
+"Note that the @code{charset} parameter is something is a misnomer, and\n"
+"the HTTP specification admits this.  It specifies the @emph{encoding} of\n"
+"the characters, not the character set.\n"
+"@end deftypevr"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/web.texi:811
+msgid ""
+"@deftypevr {HTTP Header} Date expires\n"
+"The date/time after which the resource given in a response is considered\n"
+"stale.\n"
+"@example\n"
+"(parse-header 'expires \"Tue, 15 Nov 1994 08:12:31 GMT\")\n"
+"@result{} #<date ...>\n"
+"@end example\n"
+"@end deftypevr"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/web.texi:820
+msgid ""
+"@deftypevr {HTTP Header} Date last-modified\n"
+"The date/time on which the resource given in a response was last\n"
+"modified.\n"
+"@example\n"
+"(parse-header 'expires \"Tue, 15 Nov 1994 08:12:31 GMT\")\n"
+"@result{} #<date ...>\n"
+"@end example\n"
+"@end deftypevr"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/web.texi:823
+msgid "@subsubsection Request Headers"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/web.texi:825
+msgid "Request headers may only appear in an HTTP request, not in a response."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/web.texi:839
+msgid ""
+"@deftypevr {HTTP Header} List accept\n"
+"A list of preferred media types for a response.  Each element of the\n"
+"list is itself a list, in the same format as @code{content-type}.  \n"
+"@example\n"
+"(parse-header 'accept \"text/html,text/plain;charset=utf-8\")\n"
+"@result{} ((text/html) (text/plain (charset . \"utf-8\")))\n"
+"@end example\n"
+"Preference is expressed with quality values:\n"
+"@example\n"
+"(parse-header 'accept \"text/html;q=0.8,text/plain;q=0.6\")\n"
+"@result{} ((text/html (q . 800)) (text/plain (q . 600)))\n"
+"@end example\n"
+"@end deftypevr"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/web.texi:848
+msgid ""
+"@deftypevr {HTTP Header} QList accept-charset\n"
+"A quality list of acceptable charsets.  Note again that what HTTP calls\n"
+"a ``charset'' is what Guile calls a ``character encoding''.\n"
+"@example\n"
+"(parse-header 'accept-charset \"iso-8859-5, unicode-1-1;q=0.8\")\n"
+"@result{} ((1000 . \"iso-8859-5\") (800 . \"unicode-1-1\"))\n"
+"@end example\n"
+"@end deftypevr"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/web.texi:856
+msgid ""
+"@deftypevr {HTTP Header} QList accept-encoding\n"
+"A quality list of acceptable content codings.\n"
+"@example\n"
+"(parse-header 'accept-encoding \"gzip,identity=0.8\")\n"
+"@result{} ((1000 . \"gzip\") (800 . \"identity\"))\n"
+"@end example\n"
+"@end deftypevr"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/web.texi:864
+msgid ""
+"@deftypevr {HTTP Header} QList accept-language\n"
+"A quality list of acceptable languages.\n"
+"@example\n"
+"(parse-header 'accept-language \"cn,en=0.75\")\n"
+"@result{} ((1000 . \"cn\") (750 . \"en\"))\n"
+"@end example\n"
+"@end deftypevr"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/web.texi:876
+msgid ""
+"@deftypevr {HTTP Header} Pair authorization\n"
+"Authorization credentials.  The car of the pair indicates the\n"
+"authentication scheme, like @code{basic}.  For basic authentication, the\n"
+"cdr of the pair will be the base64-encoded @samp{@var{user}:@var{pass}}\n"
+"string.  For other authentication schemes, like @code{digest}, the cdr\n"
+"will be a key-value list of credentials.\n"
+"@example\n"
+"(parse-header 'authorization \"Basic QWxhZGRpbjpvcGVuIHNlc2FtZQ==\"\n"
+"@result{} (basic . \"QWxhZGRpbjpvcGVuIHNlc2FtZQ==\")\n"
+"@end example\n"
+"@end deftypevr"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/web.texi:885
+msgid ""
+"@deftypevr {HTTP Header} List expect\n"
+"A list of expectations that a client has of a server.  The expectations\n"
+"are key-value lists.\n"
+"@example\n"
+"(parse-header 'expect \"100-continue\")\n"
+"@result{} ((100-continue))\n"
+"@end example\n"
+"@end deftypevr"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/web.texi:893
+msgid ""
+"@deftypevr {HTTP Header} String from\n"
+"The email address of a user making an HTTP request.\n"
+"@example\n"
+"(parse-header 'from \"bob@@example.com\")\n"
+"@result{} \"bob@@example.com\"\n"
+"@end example\n"
+"@end deftypevr"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/web.texi:904
+msgid ""
+"@deftypevr {HTTP Header} Pair host\n"
+"The host for the resource being requested, as a hostname-port pair.  If\n"
+"no port is given, the port is @code{#f}.\n"
+"@example\n"
+"(parse-header 'host \"gnu.org:80\")\n"
+"@result{} (\"gnu.org\" . 80)\n"
+"(parse-header 'host \"gnu.org\")\n"
+"@result{} (\"gnu.org\" . #f)\n"
+"@end example\n"
+"@end deftypevr"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/web.texi:918
+msgid ""
+"@deftypevr {HTTP Header} *|List if-match\n"
+"A set of etags, indicating that the request should proceed if and only\n"
+"if the etag of the resource is in that set.  Either the symbol @code{*},\n"
+"indicating any etag, or a list of entity tags.\n"
+"@example\n"
+"(parse-header 'if-match \"*\")\n"
+"@result{} *\n"
+"(parse-header 'if-match \"asdfadf\")\n"
+"@result{} ((\"asdfadf\" . #t))\n"
+"(parse-header 'if-match W/\"asdfadf\")\n"
+"@result{} ((\"asdfadf\" . #f))\n"
+"@end example\n"
+"@end deftypevr"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/web.texi:927
+msgid ""
+"@deftypevr {HTTP Header} Date if-modified-since\n"
+"Indicates that a response should proceed if and only if the resource has\n"
+"been modified since the given date.\n"
+"@example\n"
+"(parse-header 'if-modified-since \"Tue, 15 Nov 1994 08:12:31 GMT\")\n"
+"@result{} #<date ...>\n"
+"@end example\n"
+"@end deftypevr"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/web.texi:937
+msgid ""
+"@deftypevr {HTTP Header} *|List if-none-match\n"
+"A set of etags, indicating that the request should proceed if and only\n"
+"if the etag of the resource is not in the set.  Either the symbol\n"
+"@code{*}, indicating any etag, or a list of entity tags.\n"
+"@example\n"
+"(parse-header 'if-none-match \"*\")\n"
+"@result{} *\n"
+"@end example\n"
+"@end deftypevr"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/web.texi:947
+msgid ""
+"@deftypevr {HTTP Header} ETag|Date if-range\n"
+"Indicates that the range request should proceed if and only if the\n"
+"resource matches a modification date or an etag.  Either an entity tag,\n"
+"or a SRFI-19 date.\n"
+"@example\n"
+"(parse-header 'if-range \"\\\"original-etag\\\"\")\n"
+"@result{} (\"original-etag\" . #t)\n"
+"@end example\n"
+"@end deftypevr"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/web.texi:956
+msgid ""
+"@deftypevr {HTTP Header} Date if-unmodified-since\n"
+"Indicates that a response should proceed if and only if the resource has\n"
+"not been modified since the given date.\n"
+"@example\n"
+"(parse-header 'if-not-modified-since \"Tue, 15 Nov 1994 08:12:31 GMT\")\n"
+"@result{} #<date ...>\n"
+"@end example\n"
+"@end deftypevr"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/web.texi:965
+msgid ""
+"@deftypevr {HTTP Header} UInt max-forwards\n"
+"The maximum number of proxy or gateway hops that a request should be\n"
+"subject to.\n"
+"@example\n"
+"(parse-header 'max-forwards \"10\")\n"
+"@result{} 10\n"
+"@end example\n"
+"@end deftypevr"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/web.texi:974
+msgid ""
+"@deftypevr {HTTP Header} Pair proxy-authorization\n"
+"Authorization credentials for a proxy connection.  See the documentation\n"
+"for @code{authorization} above for more information on the format.\n"
+"@example\n"
+"(parse-header 'proxy-authorization \"Digest foo=bar,baz=qux\"\n"
+"@result{} (digest (foo . \"bar\") (baz . \"qux\"))\n"
+"@end example\n"
+"@end deftypevr"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/web.texi:986
+msgid ""
+"@deftypevr {HTTP Header} Pair range\n"
+"A range request, indicating that the client wants only part of a\n"
+"resource.  The car of the pair is the symbol @code{bytes}, and the cdr\n"
+"is a list of pairs. Each element of the cdr indicates a range; the car\n"
+"is the first byte position and the cdr is the last byte position, as\n"
+"integers, or @code{#f} if not given.\n"
+"@example\n"
+"(parse-header 'range \"bytes=10-30,50-\")\n"
+"@result{} (bytes (10 . 30) (50 . #f))\n"
+"@end example\n"
+"@end deftypevr"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/web.texi:995
+msgid ""
+"@deftypevr {HTTP Header} URI referer\n"
+"The URI of the resource that referred the user to this resource.  The\n"
+"name of the header is a misspelling, but we are stuck with it.\n"
+"@example\n"
+"(parse-header 'referer \"http://www.gnu.org/\")\n"
+"@result{} #<uri ...>\n"
+"@end example\n"
+"@end deftypevr"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/web.texi:1004
+msgid ""
+"@deftypevr {HTTP Header} List te\n"
+"A list of transfer codings, expressed as key-value lists.  A common\n"
+"transfer coding is @code{trailers}.\n"
+"@example\n"
+"(parse-header 'te \"trailers\")\n"
+"@result{} ((trailers))\n"
+"@end example\n"
+"@end deftypevr"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/web.texi:1014
+msgid ""
+"@deftypevr {HTTP Header} String user-agent\n"
+"A string indicating the user agent making the request.  The\n"
+"specification defines a structured format for this header, but it is\n"
+"widely disregarded, so Guile does not attempt to parse strictly.\n"
+"@example\n"
+"(parse-header 'user-agent \"Mozilla/5.0\")\n"
+"@result{} \"Mozilla/5.0\"\n"
+"@end example\n"
+"@end deftypevr"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/web.texi:1017
+msgid "@subsubsection Response Headers"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/web.texi:1025
+msgid ""
+"@deftypevr {HTTP Header} List accept-ranges\n"
+"A list of range units that the server supports, as symbols.\n"
+"@example\n"
+"(parse-header 'accept-ranges \"bytes\")\n"
+"@result{} (bytes)\n"
+"@end example\n"
+"@end deftypevr"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/web.texi:1033
+msgid ""
+"@deftypevr {HTTP Header} UInt age\n"
+"The age of a cached response, in seconds.\n"
+"@example\n"
+"(parse-header 'age \"3600\")\n"
+"@result{} 3600\n"
+"@end example\n"
+"@end deftypevr"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/web.texi:1041
+msgid ""
+"@deftypevr {HTTP Header} ETag etag\n"
+"The entity-tag of the resource.\n"
+"@example\n"
+"(parse-header 'etag \"\\\"foo\\\"\")\n"
+"@result{} (\"foo\" . #t)\n"
+"@end example\n"
+"@end deftypevr"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/web.texi:1051
+msgid ""
+"@deftypevr {HTTP Header} URI-reference location\n"
+"A URI reference on which a request may be completed.  Used in\n"
+"combination with a redirecting status code to perform client-side\n"
+"redirection.\n"
+"@example\n"
+"(parse-header 'location \"http://example.com/other\")\n"
+"@result{} #<uri ...>\n"
+"@end example\n"
+"@end deftypevr"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/web.texi:1059
+msgid ""
+"@deftypevr {HTTP Header} List proxy-authenticate\n"
+"A list of challenges to a proxy, indicating the need for authentication.\n"
+"@example\n"
+"(parse-header 'proxy-authenticate \"Basic realm=\\\"foo\\\"\")\n"
+"@result{} ((basic (realm . \"foo\")))\n"
+"@end example\n"
+"@end deftypevr"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/web.texi:1069
+msgid ""
+"@deftypevr {HTTP Header} UInt|Date retry-after\n"
+"Used in combination with a server-busy status code, like 503, to\n"
+"indicate that a client should retry later.  Either a number of seconds,\n"
+"or a date.\n"
+"@example\n"
+"(parse-header 'retry-after \"60\")\n"
+"@result{} 60\n"
+"@end example\n"
+"@end deftypevr"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/web.texi:1077
+msgid ""
+"@deftypevr {HTTP Header} String server\n"
+"A string identifying the server.\n"
+"@example\n"
+"(parse-header 'server \"My first web server\")\n"
+"@result{} \"My first web server\"\n"
+"@end example\n"
+"@end deftypevr"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/web.texi:1088
+msgid ""
+"@deftypevr {HTTP Header} *|List vary\n"
+"A set of request headers that were used in computing this response.\n"
+"Used to indicate that server-side content negotiation was performed, for\n"
+"example in response to the @code{accept-language} header.  Can also be\n"
+"the symbol @code{*}, indicating that all headers were considered.\n"
+"@example\n"
+"(parse-header 'vary \"Accept-Language, Accept\")\n"
+"@result{} (accept-language accept)\n"
+"@end example\n"
+"@end deftypevr"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/web.texi:1096
+msgid ""
+"@deftypevr {HTTP Header} List www-authenticate\n"
+"A list of challenges to a user, indicating the need for authentication.\n"
+"@example\n"
+"(parse-header 'www-authenticate \"Basic realm=\\\"foo\\\"\")\n"
+"@result{} ((basic (realm . \"foo\")))\n"
+"@end example\n"
+"@end deftypevr"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/web.texi:1099
+msgid ""
+"@node Transfer Codings\n"
+"@subsection Transfer Codings"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/web.texi:1103
+msgid ""
+"HTTP 1.1 allows for various transfer codings to be applied to message\n"
+"bodies. These include various types of compression, and HTTP chunked\n"
+"encoding. Currently, only chunked encoding is supported by guile."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/web.texi:1108
+msgid ""
+"Chunked coding is an optional coding that may be applied to message\n"
+"bodies, to allow messages whose length is not known beforehand to be\n"
+"returned. Such messages can be split into chunks, terminated by a final\n"
+"zero length chunk."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/web.texi:1112
+msgid ""
+"In order to make dealing with encodings more simple, guile provides\n"
+"procedures to create ports that ``wrap'' existing ports, applying\n"
+"transformations transparently under the hood."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/web.texi:1114
+msgid "These procedures are in the @code{(web http)} module."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/web.texi:1118
+msgctxt "/home/bear/work/guile/doc/guile/en/web.texi:1118"
+msgid ""
+"@example\n"
+"(use-modules (web http))\n"
+"@end example"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/web.texi:1125
+msgid ""
+"@deffn {Scheme Procedure} make-chunked-input-port port [#:keep-alive?=#f]\n"
+"Returns a new port, that transparently reads and decodes chunk-encoded\n"
+"data from @var{port}. If no more chunk-encoded data is available, it\n"
+"returns the end-of-file object. When the port is closed, @var{port} will\n"
+"also be closed, unless @var{keep-alive?} is true.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/web.texi:1128
+msgid ""
+"@example\n"
+"(use-modules (ice-9 rdelim))"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/web.texi:1136
+msgid ""
+"(define s \"5\\r\\n"
+"First\\r\\n"
+"A\\r\\n"
+" line\\n"
+" Sec\\r\\n"
+"8\\r\\n"
+"ond line\\r\\n"
+"0\\r\\n"
+"\")\n"
+"(define p (make-chunked-input-port (open-input-string s)))\n"
+"(read-line s)\n"
+"@result{} \"First line\"\n"
+"(read-line s)\n"
+"@result{} \"Second line\"\n"
+"@end example"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/web.texi:1145
+msgid ""
+"@deffn {Scheme Procedure} make-chunked-output-port port [#:keep-alive?=#f]\n"
+"Returns a new port, which transparently encodes data as chunk-encoded\n"
+"before writing it to @var{port}. Whenever a write occurs on this port,\n"
+"it buffers it, until the port is flushed, at which point it writes a\n"
+"chunk containing all the data written so far. When the port is closed,\n"
+"the data remaining is written to @var{port}, as is the terminating zero\n"
+"chunk. It also causes @var{port} to be closed, unless @var{keep-alive?}\n"
+"is true."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/web.texi:1150
+msgid ""
+"Note. Forcing a chunked output port when there is no data is buffered\n"
+"does not write a zero chunk, as this would cause the data to be\n"
+"interpreted incorrectly by the client.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/web.texi:1162
+msgid ""
+"@example\n"
+"(call-with-output-string\n"
+"  (lambda (out)\n"
+"    (define out* (make-chunked-output-port out #:keep-alive? #t))\n"
+"    (display \"first chunk\" out*)\n"
+"    (force-output out*)\n"
+"    (force-output out*) ; note this does not write a zero chunk\n"
+"    (display \"second chunk\" out*)\n"
+"    (close-port out*)))\n"
+"@result{} \"b\\r\\n"
+"first chunk\\r\\n"
+"c\\r\\n"
+"second chunk\\r\\n"
+"0\\r\\n"
+"\"\n"
+"@end example"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/web.texi:1165
+msgid ""
+"@node Requests\n"
+"@subsection HTTP Requests"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/web.texi:1169
+msgid ""
+"@example\n"
+"(use-modules (web request))\n"
+"@end example"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/web.texi:1171
+msgid "The request module contains a data type for HTTP requests.  "
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/web.texi:1173
+msgid "@subsubsection An Important Note on Character Sets"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/web.texi:1178
+msgid ""
+"HTTP requests consist of two parts: the request proper, consisting of a\n"
+"request line and a set of headers, and (optionally) a body.  The body\n"
+"might have a binary content-type, and even in the textual case its\n"
+"length is specified in bytes, not characters."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/web.texi:1184
+msgid ""
+"Therefore, HTTP is a fundamentally binary protocol.  However the request\n"
+"line and headers are specified to be in a subset of ASCII, so they can\n"
+"be treated as text, provided that the port's encoding is set to an\n"
+"ASCII-compatible one-byte-per-character encoding.  ISO-8859-1 (latin-1)\n"
+"is just such an encoding, and happens to be very efficient for Guile."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/web.texi:1188
+msgid ""
+"So what Guile does when reading requests from the wire, or writing them\n"
+"out, is to set the port's encoding to latin-1, and treating the request\n"
+"headers as text."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/web.texi:1194
+msgid ""
+"The request body is another issue.  For binary data, the data is\n"
+"probably in a bytevector, so we use the R6RS binary output procedures to\n"
+"write out the binary payload.  Textual data usually has to be written\n"
+"out to some character encoding, usually UTF-8, and then the resulting\n"
+"bytevector is written out to the port."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/web.texi:1197
+msgid ""
+"In summary, Guile reads and writes HTTP over latin-1 sockets, without\n"
+"any loss of generality."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/web.texi:1199
+msgid "@subsubsection Request API"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/web.texi:1226
+msgid ""
+"@deffn {Scheme Procedure} request? obj \n"
+"@deffnx {Scheme Procedure} request-method request\n"
+"@deffnx {Scheme Procedure} request-uri request\n"
+"@deffnx {Scheme Procedure} request-version request\n"
+"@deffnx {Scheme Procedure} request-headers request\n"
+"@deffnx {Scheme Procedure} request-meta request\n"
+"@deffnx {Scheme Procedure} request-port request\n"
+"A predicate and field accessors for the request type.  The fields are as\n"
+"follows:\n"
+"@table @code\n"
+"@item method\n"
+"The HTTP method, for example, @code{GET}.\n"
+"@item uri\n"
+"The URI as a URI record.\n"
+"@item version\n"
+"The HTTP version pair, like @code{(1 . 1)}.\n"
+"@item headers\n"
+"The request headers, as an alist of parsed values.\n"
+"@item meta\n"
+"An arbitrary alist of other data, for example information returned in\n"
+"the @code{sockaddr} from @code{accept} (@pxref{Network Sockets and\n"
+"Communication}).\n"
+"@item port\n"
+"The port on which to read or write a request body, if any.\n"
+"@end table\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/web.texi:1230
+msgid ""
+"@deffn {Scheme Procedure} read-request port [meta='()]\n"
+"Read an HTTP request from @var{port}, optionally attaching the given\n"
+"metadata, @var{meta}."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/web.texi:1234
+msgid ""
+"As a side effect, sets the encoding on @var{port} to ISO-8859-1\n"
+"(latin-1), so that reading one character reads one byte. See the\n"
+"discussion of character sets above, for more information."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/web.texi:1239
+msgid ""
+"Note that the body is not part of the request.  Once you have read a\n"
+"request, you may read the body separately, and likewise for writing\n"
+"requests.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/web.texi:1246
+msgid ""
+"@deffn {Scheme Procedure} build-request uri [#:method='GET] @\n"
+"       [#:version='(1 . 1)] [#:headers='()] [#:port=#f] [#:meta='()] @\n"
+"       [#:validate-headers?=#t]\n"
+"Construct an HTTP request object. If @var{validate-headers?} is true,\n"
+"the headers are each run through their respective validators.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/web.texi:1249
+msgid ""
+"@deffn {Scheme Procedure} write-request r port\n"
+"Write the given HTTP request to @var{port}."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/web.texi:1253
+msgid ""
+"Return a new request, whose @code{request-port} will continue writing\n"
+"on @var{port}, perhaps using some transfer encoding.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/web.texi:1258
+msgid ""
+"@deffn {Scheme Procedure} read-request-body r\n"
+"Reads the request body from @var{r}, as a bytevector.  Return @code{#f}\n"
+"if there was no request body.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/web.texi:1263
+msgid ""
+"@deffn {Scheme Procedure} write-request-body r bv\n"
+"Write @var{bv}, a bytevector, to the port corresponding to the HTTP\n"
+"request @var{r}.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/web.texi:1267
+msgid ""
+"The various headers that are typically associated with HTTP requests may\n"
+"be accessed with these dedicated accessors.  @xref{HTTP Headers}, for\n"
+"more information on the format of parsed headers."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/web.texi:1308
+msgid ""
+"@deffn {Scheme Procedure} request-accept request [default='()]\n"
+"@deffnx {Scheme Procedure} request-accept-charset request [default='()]\n"
+"@deffnx {Scheme Procedure} request-accept-encoding request [default='()]\n"
+"@deffnx {Scheme Procedure} request-accept-language request [default='()]\n"
+"@deffnx {Scheme Procedure} request-allow request [default='()]\n"
+"@deffnx {Scheme Procedure} request-authorization request [default=#f]\n"
+"@deffnx {Scheme Procedure} request-cache-control request [default='()]\n"
+"@deffnx {Scheme Procedure} request-connection request [default='()]\n"
+"@deffnx {Scheme Procedure} request-content-encoding request [default='()]\n"
+"@deffnx {Scheme Procedure} request-content-language request [default='()]\n"
+"@deffnx {Scheme Procedure} request-content-length request [default=#f]\n"
+"@deffnx {Scheme Procedure} request-content-location request [default=#f]\n"
+"@deffnx {Scheme Procedure} request-content-md5 request [default=#f]\n"
+"@deffnx {Scheme Procedure} request-content-range request [default=#f]\n"
+"@deffnx {Scheme Procedure} request-content-type request [default=#f]\n"
+"@deffnx {Scheme Procedure} request-date request [default=#f]\n"
+"@deffnx {Scheme Procedure} request-expect request [default='()]\n"
+"@deffnx {Scheme Procedure} request-expires request [default=#f]\n"
+"@deffnx {Scheme Procedure} request-from request [default=#f]\n"
+"@deffnx {Scheme Procedure} request-host request [default=#f]\n"
+"@deffnx {Scheme Procedure} request-if-match request [default=#f]\n"
+"@deffnx {Scheme Procedure} request-if-modified-since request [default=#f]\n"
+"@deffnx {Scheme Procedure} request-if-none-match request [default=#f]\n"
+"@deffnx {Scheme Procedure} request-if-range request [default=#f]\n"
+"@deffnx {Scheme Procedure} request-if-unmodified-since request [default=#f]\n"
+"@deffnx {Scheme Procedure} request-last-modified request [default=#f]\n"
+"@deffnx {Scheme Procedure} request-max-forwards request [default=#f]\n"
+"@deffnx {Scheme Procedure} request-pragma request [default='()]\n"
+"@deffnx {Scheme Procedure} request-proxy-authorization request [default=#f]\n"
+"@deffnx {Scheme Procedure} request-range request [default=#f]\n"
+"@deffnx {Scheme Procedure} request-referer request [default=#f]\n"
+"@deffnx {Scheme Procedure} request-te request [default=#f]\n"
+"@deffnx {Scheme Procedure} request-trailer request [default='()]\n"
+"@deffnx {Scheme Procedure} request-transfer-encoding request [default='()]\n"
+"@deffnx {Scheme Procedure} request-upgrade request [default='()]\n"
+"@deffnx {Scheme Procedure} request-user-agent request [default=#f]\n"
+"@deffnx {Scheme Procedure} request-via request [default='()]\n"
+"@deffnx {Scheme Procedure} request-warning request [default='()]\n"
+"Return the given request header, or @var{default} if none was present.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/web.texi:1316
+msgid ""
+"@deffn {Scheme Procedure} request-absolute-uri r [default-host=#f] @\n"
+"       [default-port=#f] [default-scheme=#f]\n"
+"A helper routine to determine the absolute URI of a request, using the\n"
+"@code{host} header and the default scheme, host and port.  If there is\n"
+"no default scheme and the URI is not itself absolute, an error is\n"
+"signalled.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/web.texi:1319
+msgid ""
+"@node Responses\n"
+"@subsection HTTP Responses"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/web.texi:1323
+msgid ""
+"@example\n"
+"(use-modules (web response))\n"
+"@end example"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/web.texi:1326
+msgid ""
+"As with requests (@pxref{Requests}), Guile offers a data type for HTTP\n"
+"responses.  Again, the body is represented separately from the request."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/web.texi:1349
+msgid ""
+"@deffn {Scheme Procedure} response? obj\n"
+"@deffnx {Scheme Procedure} response-version response\n"
+"@deffnx {Scheme Procedure} response-code response\n"
+"@deffnx {Scheme Procedure} response-reason-phrase response\n"
+"@deffnx {Scheme Procedure} response-headers response\n"
+"@deffnx {Scheme Procedure} response-port response\n"
+"A predicate and field accessors for the response type.  The fields are as\n"
+"follows:\n"
+"@table @code\n"
+"@item version\n"
+"The HTTP version pair, like @code{(1 . 1)}.\n"
+"@item code\n"
+"The HTTP response code, like @code{200}.\n"
+"@item reason-phrase\n"
+"The reason phrase, or the standard reason phrase for the response's\n"
+"code.\n"
+"@item headers\n"
+"The response headers, as an alist of parsed values.\n"
+"@item port\n"
+"The port on which to read or write a response body, if any.\n"
+"@end table\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/web.texi:1352
+msgid ""
+"@deffn {Scheme Procedure} read-response port\n"
+"Read an HTTP response from @var{port}."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/web.texi:1357
+msgid ""
+"As a side effect, sets the encoding on @var{port} to ISO-8859-1\n"
+"(latin-1), so that reading one character reads one byte. See the\n"
+"discussion of character sets in @ref{Responses}, for more information.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/web.texi:1362
+msgid ""
+"@deffn {Scheme Procedure} build-response [#:version='(1 . 1)] [#:code=200] "
+"[#:reason-phrase=#f] [#:headers='()] [#:port=#f] [#:validate-headers?=#t]\n"
+"Construct an HTTP response object. If @var{validate-headers?} is true,\n"
+"the headers are each run through their respective validators.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/web.texi:1366
+msgid ""
+"@deffn {Scheme Procedure} adapt-response-version response version\n"
+"Adapt the given response to a different HTTP version.  Return a new HTTP\n"
+"response."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/web.texi:1373
+msgid ""
+"The idea is that many applications might just build a response for the\n"
+"default HTTP version, and this method could handle a number of\n"
+"programmatic transformations to respond to older HTTP versions (0.9 and\n"
+"1.0). But currently this function is a bit heavy-handed, just updating\n"
+"the version field.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/web.texi:1376
+msgid ""
+"@deffn {Scheme Procedure} write-response r port\n"
+"Write the given HTTP response to @var{port}."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/web.texi:1380
+msgid ""
+"Return a new response, whose @code{response-port} will continue writing\n"
+"on @var{port}, perhaps using some transfer encoding.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/web.texi:1384
+msgid ""
+"@deffn {Scheme Procedure} response-must-not-include-body? r\n"
+"Some responses, like those with status code 304, are specified as never\n"
+"having bodies.  This predicate returns @code{#t} for those responses."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/web.texi:1388
+msgid ""
+"Note also, though, that responses to @code{HEAD} requests must also not\n"
+"have a body.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/web.texi:1394
+msgid ""
+"@deffn {Scheme Procedure} response-body-port r [#:decode?=#t] [#:keep-"
+"alive?=#t]\n"
+"Return an input port from which the body of @var{r} can be read.  The "
+"encoding\n"
+"of the returned port is set according to @var{r}'s @code{content-type} "
+"header,\n"
+"when it's textual, except if @var{decode?} is @code{#f}.  Return @code{#f}\n"
+"when no body is available."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/web.texi:1398
+msgid ""
+"When @var{keep-alive?} is @code{#f}, closing the returned port also closes\n"
+"@var{r}'s response port.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/web.texi:1403
+msgid ""
+"@deffn {Scheme Procedure} read-response-body r\n"
+"Read the response body from @var{r}, as a bytevector.  Returns @code{#f}\n"
+"if there was no response body.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/web.texi:1408
+msgid ""
+"@deffn {Scheme Procedure} write-response-body r bv\n"
+"Write @var{bv}, a bytevector, to the port corresponding to the HTTP\n"
+"response @var{r}.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/web.texi:1413
+msgid ""
+"As with requests, the various headers that are typically associated with\n"
+"HTTP responses may be accessed with these dedicated accessors.\n"
+"@xref{HTTP Headers}, for more information on the format of parsed\n"
+"headers."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/web.texi:1444
+msgid ""
+"@deffn {Scheme Procedure} response-accept-ranges response [default=#f]\n"
+"@deffnx {Scheme Procedure} response-age response [default='()]\n"
+"@deffnx {Scheme Procedure} response-allow response [default='()]\n"
+"@deffnx {Scheme Procedure} response-cache-control response [default='()]\n"
+"@deffnx {Scheme Procedure} response-connection response [default='()]\n"
+"@deffnx {Scheme Procedure} response-content-encoding response [default='()]\n"
+"@deffnx {Scheme Procedure} response-content-language response [default='()]\n"
+"@deffnx {Scheme Procedure} response-content-length response [default=#f]\n"
+"@deffnx {Scheme Procedure} response-content-location response [default=#f]\n"
+"@deffnx {Scheme Procedure} response-content-md5 response [default=#f]\n"
+"@deffnx {Scheme Procedure} response-content-range response [default=#f]\n"
+"@deffnx {Scheme Procedure} response-content-type response [default=#f]\n"
+"@deffnx {Scheme Procedure} response-date response [default=#f]\n"
+"@deffnx {Scheme Procedure} response-etag response [default=#f]\n"
+"@deffnx {Scheme Procedure} response-expires response [default=#f]\n"
+"@deffnx {Scheme Procedure} response-last-modified response [default=#f]\n"
+"@deffnx {Scheme Procedure} response-location response [default=#f]\n"
+"@deffnx {Scheme Procedure} response-pragma response [default='()]\n"
+"@deffnx {Scheme Procedure} response-proxy-authenticate response [default=#f]"
+"\n"
+"@deffnx {Scheme Procedure} response-retry-after response [default=#f]\n"
+"@deffnx {Scheme Procedure} response-server response [default=#f]\n"
+"@deffnx {Scheme Procedure} response-trailer response [default='()]\n"
+"@deffnx {Scheme Procedure} response-transfer-encoding response [default='()]"
+"\n"
+"@deffnx {Scheme Procedure} response-upgrade response [default='()]\n"
+"@deffnx {Scheme Procedure} response-vary response [default='()]\n"
+"@deffnx {Scheme Procedure} response-via response [default='()]\n"
+"@deffnx {Scheme Procedure} response-warning response [default='()]\n"
+"@deffnx {Scheme Procedure} response-www-authenticate response [default=#f]\n"
+"Return the given response header, or @var{default} if none was present.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/web.texi:1450
+msgid ""
+"@deffn {Scheme Procedure} text-content-type? @var{type}\n"
+"Return @code{#t} if @var{type}, a symbol as returned by\n"
+"@code{response-content-type}, represents a textual type such as\n"
+"@code{text/plain}.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/web.texi:1454
+msgid ""
+"@node Web Client\n"
+"@subsection Web Client"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/web.texi:1457
+msgid ""
+"@code{(web client)} provides a simple, synchronous HTTP client, built on\n"
+"the lower-level HTTP, request, and response modules."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/web.texi:1461
+msgid ""
+"@example\n"
+"(use-modules (web client))\n"
+"@end example"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/web.texi:1469
+msgid ""
+"@deffn {Scheme Procedure} open-socket-for-uri uri\n"
+"Return an open input/output port for a connection to URI.  Guile\n"
+"dynamically loads GnuTLS for HTTPS support.\n"
+"@xref{Guile Preparations,\n"
+"how to install the GnuTLS bindings for Guile,, gnutls-guile,\n"
+"GnuTLS-Guile}, for more information.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/web.texi:1477
+msgid ""
+"@deffn {Scheme Procedure} http-get uri arg...\n"
+"@deffnx {Scheme Procedure} http-head uri arg...\n"
+"@deffnx {Scheme Procedure} http-post uri arg...\n"
+"@deffnx {Scheme Procedure} http-put uri arg...\n"
+"@deffnx {Scheme Procedure} http-delete uri arg...\n"
+"@deffnx {Scheme Procedure} http-trace uri arg...\n"
+"@deffnx {Scheme Procedure} http-options uri arg..."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/web.texi:1480
+msgid ""
+"Connect to the server corresponding to @var{uri} and make a request over\n"
+"HTTP, using the appropriate method (@code{GET}, @code{HEAD}, etc.)."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/web.texi:1486
+msgid ""
+"All of these procedures have the same prototype: a URI followed by an\n"
+"optional sequence of keyword arguments.  These keyword arguments allow\n"
+"you to modify the requests in various ways, for example attaching a body\n"
+"to the request, or setting specific headers.  The following table lists\n"
+"the keyword arguments and their default values."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/web.texi:1496
+msgid ""
+"@table @code\n"
+"@item #:body #f\n"
+"@item #:port (open-socket-for-uri @var{uri})]\n"
+"@item #:version '(1 . 1)\n"
+"@item #:keep-alive? #f\n"
+"@item #:headers '()\n"
+"@item #:decode-body? #t\n"
+"@item #:streaming? #f\n"
+"@end table"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/web.texi:1500
+msgid ""
+"If you already have a port open, pass it as @var{port}.  Otherwise, a\n"
+"connection will be opened to the server corresponding to @var{uri}.  Any\n"
+"extra headers in the alist @var{headers} will be added to the request."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/web.texi:1507
+msgid ""
+"If @var{body} is not @code{#f}, a message body will also be sent with\n"
+"the HTTP request.  If @var{body} is a string, it is encoded according to\n"
+"the content-type in @var{headers}, defaulting to UTF-8.  Otherwise\n"
+"@var{body} should be a bytevector, or @code{#f} for no body.  Although a\n"
+"message body may be sent with any request, usually only @code{POST} and\n"
+"@code{PUT} requests have bodies."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/web.texi:1511
+msgid ""
+"If @var{decode-body?} is true, as is the default, the body of the\n"
+"response will be decoded to string, if it is a textual content-type.\n"
+"Otherwise it will be returned as a bytevector."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/web.texi:1516
+msgid ""
+"However, if @var{streaming?} is true, instead of eagerly reading the\n"
+"response body from the server, this function only reads off the headers.\n"
+"The response body will be returned as a port on which the data may be\n"
+"read."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/web.texi:1519
+msgid ""
+"Unless @var{keep-alive?} is true, the port will be closed after the full\n"
+"response body has been read."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/web.texi:1524
+msgid ""
+"Returns two values: the response read from the server, and the response\n"
+"body as a string, bytevector, #f value, or as a port (if\n"
+"@var{streaming?} is true).\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/web.texi:1529
+msgid ""
+"@code{http-get} is useful for making one-off requests to web sites.  If\n"
+"you are writing a web spider or some other client that needs to handle a\n"
+"number of requests in parallel, it's better to build an event-driven URL\n"
+"fetcher, similar in structure to the web server (@pxref{Web Server})."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/web.texi:1532
+msgid ""
+"Another option, good but not as performant, would be to use threads,\n"
+"possibly via par-map or futures."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/web.texi:1538
+msgid ""
+"@deffn {Scheme Parameter} current-http-proxy\n"
+"Either @code{#f} or a non-empty string containing the URL of the HTTP\n"
+"proxy server to be used by the procedures in the @code{(web client)}\n"
+"module, including @code{open-socket-for-uri}.  Its initial value is\n"
+"based on the @env{http_proxy} environment variable."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/web.texi:1546
+msgid ""
+"@example\n"
+"(current-http-proxy) @result{} \"http://localhost:8123/\"\n"
+"(parameterize ((current-http-proxy #f))\n"
+"  (http-get \"http://example.com/\"))  ; temporarily bypass proxy\n"
+"(current-http-proxy) @result{} \"http://localhost:8123/\"\n"
+"@end example\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/web.texi:1550
+msgid ""
+"@node Web Server\n"
+"@subsection Web Server"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/web.texi:1553
+msgid ""
+"@code{(web server)} is a generic web server interface, along with a main\n"
+"loop implementation for web servers controlled by Guile."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/web.texi:1557
+msgid ""
+"@example\n"
+"(use-modules (web server))\n"
+"@end example"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/web.texi:1564
+msgid ""
+"The lowest layer is the @code{<server-impl>} object, which defines a set\n"
+"of hooks to open a server, read a request from a client, write a\n"
+"response to a client, and close a server.  These hooks -- @code{open},\n"
+"@code{read}, @code{write}, and @code{close}, respectively -- are bound\n"
+"together in a @code{<server-impl>} object.  Procedures in this module take "
+"a\n"
+"@code{<server-impl>} object, if needed."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/web.texi:1571
+msgid ""
+"A @code{<server-impl>} may also be looked up by name.  If you pass the\n"
+"@code{http} symbol to @code{run-server}, Guile looks for a variable\n"
+"named @code{http} in the @code{(web server http)} module, which should\n"
+"be bound to a @code{<server-impl>} object.  Such a binding is made by\n"
+"instantiation of the @code{define-server-impl} syntax.  In this way the\n"
+"run-server loop can automatically load other backends if available."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/web.texi:1573
+msgid "The life cycle of a server goes as follows:"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/web.texi:1579
+msgid ""
+"@enumerate\n"
+"@item\n"
+"The @code{open} hook is called, to open the server. @code{open} takes\n"
+"zero or more arguments, depending on the backend, and returns an opaque\n"
+"server socket object, or signals an error."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/web.texi:1587
+msgid ""
+"@item\n"
+"The @code{read} hook is called, to read a request from a new client.\n"
+"The @code{read} hook takes one argument, the server socket.  It should\n"
+"return three values: an opaque client socket, the request, and the\n"
+"request body. The request should be a @code{<request>} object, from\n"
+"@code{(web request)}.  The body should be a string or a bytevector, or\n"
+"@code{#f} if there is no body."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/web.texi:1590
+msgid ""
+"If the read failed, the @code{read} hook may return #f for the client\n"
+"socket, request, and body."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/web.texi:1596
+msgid ""
+"@item\n"
+"A user-provided handler procedure is called, with the request and body\n"
+"as its arguments.  The handler should return two values: the response,\n"
+"as a @code{<response>} record from @code{(web response)}, and the\n"
+"response body as bytevector, or @code{#f} if not present."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/web.texi:1606
+msgid ""
+"The respose and response body are run through @code{sanitize-response},\n"
+"documented below.  This allows the handler writer to take some\n"
+"convenient shortcuts: for example, instead of a @code{<response>}, the\n"
+"handler can simply return an alist of headers, in which case a default\n"
+"response object is constructed with those headers.  Instead of a\n"
+"bytevector for the body, the handler can return a string, which will be\n"
+"serialized into an appropriate encoding; or it can return a procedure,\n"
+"which will be called on a port to write out the data.  See the\n"
+"@code{sanitize-response} documentation, for more."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/web.texi:1611
+msgid ""
+"@item\n"
+"The @code{write} hook is called with three arguments: the client\n"
+"socket, the response, and the body.  The @code{write} hook returns no\n"
+"values."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/web.texi:1615
+msgid ""
+"@item\n"
+"At this point the request handling is complete. For a loop, we\n"
+"loop back and try to read a new request."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/web.texi:1620
+msgid ""
+"@item\n"
+"If the user interrupts the loop, the @code{close} hook is called on\n"
+"the server socket.\n"
+"@end enumerate"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/web.texi:1622
+msgid "A user may define a server implementation with the following form:"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/web.texi:1628
+msgid ""
+"@deffn {Scheme Syntax} define-server-impl name open read write close\n"
+"Make a @code{<server-impl>} object with the hooks @var{open},\n"
+"@var{read}, @var{write}, and @var{close}, and bind it to the symbol\n"
+"@var{name} in the current module.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/web.texi:1634
+msgid ""
+"@deffn {Scheme Procedure} lookup-server-impl impl\n"
+"Look up a server implementation.  If @var{impl} is a server\n"
+"implementation already, it is returned directly.  If it is a symbol, the\n"
+"binding named @var{impl} in the @code{(web server @var{impl})} module is\n"
+"looked up.  Otherwise an error is signaled."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/web.texi:1638
+msgid ""
+"Currently a server implementation is a somewhat opaque type, useful only\n"
+"for passing to other procedures in this module, like @code{read-client}.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/web.texi:1644
+msgid ""
+"The @code{(web server)} module defines a number of routines that use\n"
+"@code{<server-impl>} objects to implement parts of a web server.  Given\n"
+"that we don't expose the accessors for the various fields of a\n"
+"@code{<server-impl>}, indeed these routines are the only procedures with\n"
+"any access to the impl objects."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/web.texi:1650
+msgid ""
+"@deffn {Scheme Procedure} open-server impl open-params\n"
+"Open a server for the given implementation.  Return one value, the new\n"
+"server object.  The implementation's @code{open} procedure is applied to\n"
+"@var{open-params}, which should be a list.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/web.texi:1658
+msgid ""
+"@deffn {Scheme Procedure} read-client impl server\n"
+"Read a new client from @var{server}, by applying the implementation's\n"
+"@code{read} procedure to the server.  If successful, return three\n"
+"values: an object corresponding to the client, a request object, and the\n"
+"request body.  If any exception occurs, return @code{#f} for all three\n"
+"values.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/web.texi:1661
+msgid ""
+"@deffn {Scheme Procedure} handle-request handler request body state\n"
+"Handle a given request, returning the response and body."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/web.texi:1664
+msgid ""
+"The response and response body are produced by calling the given\n"
+"@var{handler} with @var{request} and @var{body} as arguments."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/web.texi:1672
+msgid ""
+"The elements of @var{state} are also passed to @var{handler} as\n"
+"arguments, and may be returned as additional values.  The new\n"
+"@var{state}, collected from the @var{handler}'s return values, is then\n"
+"returned as a list.  The idea is that a server loop receives a handler\n"
+"from the user, along with whatever state values the user is interested\n"
+"in, allowing the user's handler to explicitly manage its state.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/web.texi:1676
+msgid ""
+"@deffn {Scheme Procedure} sanitize-response request response body\n"
+"``Sanitize'' the given response and body, making them appropriate for\n"
+"the given request."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/web.texi:1683
+msgid ""
+"As a convenience to web handler authors, @var{response} may be given as\n"
+"an alist of headers, in which case it is used to construct a default\n"
+"response.  Ensures that the response version corresponds to the request\n"
+"version.  If @var{body} is a string, encodes the string to a bytevector,\n"
+"in an encoding appropriate for @var{response}.  Adds a\n"
+"@code{content-length} and @code{content-type} header, as necessary."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/web.texi:1690
+msgid ""
+"If @var{body} is a procedure, it is called with a port as an argument,\n"
+"and the output collected as a bytevector.  In the future we might try to\n"
+"instead use a compressing, chunk-encoded port, and call this procedure\n"
+"later, in the write-client procedure.  Authors are advised not to rely on\n"
+"the procedure being called at any particular time.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/web.texi:1697
+msgid ""
+"@deffn {Scheme Procedure} write-client impl server client response body\n"
+"Write an HTTP response and body to @var{client}.  If the server and\n"
+"client support persistent connections, it is the implementation's\n"
+"responsibility to keep track of the client thereafter, presumably by\n"
+"attaching it to the @var{server} argument somehow.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/web.texi:1702
+msgid ""
+"@deffn {Scheme Procedure} close-server impl server\n"
+"Release resources allocated by a previous invocation of\n"
+"@code{open-server}.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/web.texi:1704
+msgid "Given the procedures above, it is a small matter to make a web server:"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/web.texi:1710
+msgid ""
+"@deffn {Scheme Procedure} serve-one-client handler impl server state\n"
+"Read one request from @var{server}, call @var{handler} on the request\n"
+"and body, and write the response to the client.  Return the new state\n"
+"produced by the handler procedure.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/web.texi:1715
+msgid ""
+"@deffn {Scheme Procedure} run-server handler @\n"
+"                          [impl='http] [open-params='()] @\n"
+"                          arg @dots{}\n"
+"Run Guile's built-in web server."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/web.texi:1719
+msgid ""
+"@var{handler} should be a procedure that takes two or more arguments,\n"
+"the HTTP request and request body, and returns two or more values, the\n"
+"response and response body."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/web.texi:1721
+msgid "For examples, skip ahead to the next section, @ref{Web Examples}."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/web.texi:1724
+msgid ""
+"The response and body will be run through @code{sanitize-response}\n"
+"before sending back to the client."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/web.texi:1731
+msgid ""
+"Additional arguments to @var{handler} are taken from @var{arg}\n"
+"@enddots{}.  These arguments comprise a @dfn{state}.  Additional return\n"
+"values are accumulated into a new state, which will be used for\n"
+"subsequent requests.  In this way a handler can explicitly manage its\n"
+"state.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/web.texi:1734
+msgid ""
+"The default web server implementation is @code{http}, which binds to a\n"
+"socket, listening for request on that port."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/web.texi:1743
+msgid ""
+"@deffn {HTTP Implementation} http [#:host=#f] @\n"
+"                             [#:family=AF_INET] @\n"
+"                             [#:addr=INADDR_LOOPBACK] @\n"
+"                             [#:port 8080] [#:socket]\n"
+"The default HTTP implementation.  We document it as a function with\n"
+"keyword arguments, because that is precisely the way that it is -- all\n"
+"of the @var{open-params} to @code{run-server} get passed to the\n"
+"implementation's open function."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/web.texi:1757
+msgid ""
+"@example\n"
+";; The defaults: localhost:8080\n"
+"(run-server handler)\n"
+";; Same thing\n"
+"(run-server handler 'http '())\n"
+";; On a different port\n"
+"(run-server handler 'http '(#:port 8081))\n"
+";; IPv6\n"
+"(run-server handler 'http '(#:family AF_INET6 #:port 8081))\n"
+";; Custom socket\n"
+"(run-server handler 'http `(#:socket ,(sudo-make-me-a-socket)))\n"
+"@end example\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/web.texi:1760
+msgid ""
+"@node Web Examples\n"
+"@subsection Web Examples"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/web.texi:1762
+msgid ""
+"Well, enough about the tedious internals.  Let's make a web application!"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/web.texi:1764
+msgid "@subsubsection Hello, World!"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/web.texi:1768
+msgid ""
+"The first program we have to write, of course, is ``Hello, World!''.\n"
+"This means that we have to implement a web handler that does what we\n"
+"want."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/web.texi:1771
+msgid ""
+"Now we define a handler, a function of two arguments and two return\n"
+"values:"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/web.texi:1776
+msgid ""
+"@example\n"
+"(define (handler request request-body)\n"
+"  (values @var{response} @var{response-body}))\n"
+"@end example"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/web.texi:1780
+msgid ""
+"In this first example, we take advantage of a short-cut, returning an\n"
+"alist of headers instead of a proper response object. The response body\n"
+"is our payload:"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/web.texi:1786
+msgid ""
+"@example\n"
+"(define (hello-world-handler request request-body)\n"
+"  (values '((content-type . (text/plain)))\n"
+"          \"Hello World!\"))\n"
+"@end example"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/web.texi:1790
+msgid ""
+"Now let's test it, by running a server with this handler. Load up the\n"
+"web server module if you haven't yet done so, and run a server with this\n"
+"handler:"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/web.texi:1795
+msgid ""
+"@example\n"
+"(use-modules (web server))\n"
+"(run-server hello-world-handler)\n"
+"@end example"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/web.texi:1799
+msgid ""
+"By default, the web server listens for requests on\n"
+"@code{localhost:8080}.  Visit that address in your web browser to\n"
+"test.  If you see the string, @code{Hello World!}, sweet!"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/web.texi:1801
+msgid "@subsubsection Inspecting the Request"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/web.texi:1806
+msgid ""
+"The Hello World program above is a general greeter, responding to all\n"
+"URIs.  To make a more exclusive greeter, we need to inspect the request\n"
+"object, and conditionally produce different results.  So let's load up\n"
+"the request, response, and URI modules, and do just that."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/web.texi:1812
+msgid ""
+"@example\n"
+"(use-modules (web server)) ; you probably did this already\n"
+"(use-modules (web request)\n"
+"             (web response)\n"
+"             (web uri))"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/web.texi:1815
+msgid ""
+"(define (request-path-components request)\n"
+"  (split-and-decode-uri-path (uri-path (request-uri request))))"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/web.texi:1822
+msgid ""
+"(define (hello-hacker-handler request body)\n"
+"  (if (equal? (request-path-components request)\n"
+"              '(\"hacker\"))\n"
+"      (values '((content-type . (text/plain)))\n"
+"              \"Hello hacker!\")\n"
+"      (not-found request)))"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/web.texi:1825
+msgid ""
+"(run-server hello-hacker-handler)\n"
+"@end example"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/web.texi:1830
+msgid ""
+"Here we see that we have defined a helper to return the components of\n"
+"the URI path as a list of strings, and used that to check for a request\n"
+"to @code{/hacker/}. Then the success case is just as before -- visit\n"
+"@code{http://localhost:8080/hacker/} in your browser to check."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/web.texi:1834
+msgid ""
+"You should always match against URI path components as decoded by\n"
+"@code{split-and-decode-uri-path}. The above example will work for\n"
+"@code{/hacker/}, @code{//hacker///}, and @code{/h%61ck%65r}."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/web.texi:1838
+msgid ""
+"But we forgot to define @code{not-found}!  If you are pasting these\n"
+"examples into a REPL, accessing any other URI in your web browser will\n"
+"drop your Guile console into the debugger:"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/web.texi:1842
+msgid ""
+"@example\n"
+"<unnamed port>:38:7: In procedure module-lookup:\n"
+"<unnamed port>:38:7: Unbound variable: not-found"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/web.texi:1846
+msgid ""
+"Entering a new prompt.  Type `,bt' for a backtrace or `,q' to continue.\n"
+"scheme@@(guile-user) [1]> \n"
+"@end example"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/web.texi:1849
+msgid ""
+"So let's define the function, right there in the debugger.  As you\n"
+"probably know, we'll want to return a 404 response."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/web.texi:1856
+msgid ""
+"@example\n"
+";; Paste this in your REPL\n"
+"(define (not-found request)\n"
+"  (values (build-response #:code 404)\n"
+"          (string-append \"Resource not found: \"\n"
+"                         (uri->string (request-uri request)))))"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/web.texi:1860
+msgid ""
+";; Now paste this to let the web server keep going:\n"
+",continue\n"
+"@end example"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/web.texi:1865
+msgid ""
+"Now if you access @code{http://localhost/foo/}, you get this error\n"
+"message.  (Note that some popular web browsers won't show\n"
+"server-generated 404 messages, showing their own instead, unless the 404\n"
+"message body is long enough.)"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/web.texi:1867
+msgid "@subsubsection Higher-Level Interfaces"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/web.texi:1872
+msgid ""
+"The web handler interface is a common baseline that all kinds of Guile\n"
+"web applications can use.  You will usually want to build something on\n"
+"top of it, however, especially when producing HTML.  Here is a simple\n"
+"example that builds up HTML output using SXML (@pxref{SXML})."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/web.texi:1874
+msgid "First, load up the modules:"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/web.texi:1881
+msgid ""
+"@example\n"
+"(use-modules (web server)\n"
+"             (web request)\n"
+"             (web response)\n"
+"             (sxml simple))\n"
+"@end example"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/web.texi:1884
+msgid ""
+"Now we define a simple templating function that takes a list of HTML\n"
+"body elements, as SXML, and puts them in our super template:"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/web.texi:1890
+msgid ""
+"@example\n"
+"(define (templatize title body)\n"
+"  `(html (head (title ,title))\n"
+"         (body ,@@body)))\n"
+"@end example"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/web.texi:1892
+msgid "For example, the simplest Hello HTML can be produced like this:"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/web.texi:1898
+msgid ""
+"@example\n"
+"(sxml->xml (templatize \"Hello!\" '((b \"Hi!\"))))\n"
+"@print{}\n"
+"<html><head><title>Hello!</title></head><body><b>Hi!</b></body></html>\n"
+"@end example"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/web.texi:1901
+msgid ""
+"Much better to work with Scheme data types than to work with HTML as\n"
+"strings. Now we define a little response helper:"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/web.texi:1922
+msgid ""
+"@example\n"
+"(define* (respond #:optional body #:key\n"
+"                  (status 200)\n"
+"                  (title \"Hello hello!\")\n"
+"                  (doctype \"<!DOCTYPE html>\\n"
+"\")\n"
+"                  (content-type-params '((charset . \"utf-8\")))\n"
+"                  (content-type 'text/html)\n"
+"                  (extra-headers '())\n"
+"                  (sxml (and body (templatize title body))))\n"
+"  (values (build-response\n"
+"           #:code status\n"
+"           #:headers `((content-type\n"
+"                        . (,content-type ,@@content-type-params))\n"
+"                       ,@@extra-headers))\n"
+"          (lambda (port)\n"
+"            (if sxml\n"
+"                (begin\n"
+"                  (if doctype (display doctype port))\n"
+"                  (sxml->xml sxml port))))))\n"
+"@end example"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/web.texi:1926
+msgid ""
+"Here we see the power of keyword arguments with default initializers. By\n"
+"the time the arguments are fully parsed, the @code{sxml} local variable\n"
+"will hold the templated SXML, ready for sending out to the client."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/web.texi:1930
+msgid ""
+"Also, instead of returning the body as a string, @code{respond} gives a\n"
+"procedure, which will be called by the web server to write out the\n"
+"response to the client."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/web.texi:1933
+msgid ""
+"Now, a simple example using this responder, which lays out the incoming\n"
+"headers in an HTML table."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/web.texi:1947
+msgid ""
+"@example\n"
+"(define (debug-page request body)\n"
+"  (respond\n"
+"   `((h1 \"hello world!\")\n"
+"     (table\n"
+"      (tr (th \"header\") (th \"value\"))\n"
+"      ,@@(map (lambda (pair)\n"
+"               `(tr (td (tt ,(with-output-to-string\n"
+"                               (lambda () (display (car pair))))))\n"
+"                    (td (tt ,(with-output-to-string\n"
+"                               (lambda ()\n"
+"                                 (write (cdr pair))))))))\n"
+"             (request-headers request))))))"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/web.texi:1950
+msgid ""
+"(run-server debug-page)\n"
+"@end example"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/web.texi:1953
+msgid ""
+"Now if you visit any local address in your web browser, we actually see\n"
+"some HTML, finally."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/web.texi:1955
+msgid "@subsubsection Conclusion"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/web.texi:1963
+msgid ""
+"Well, this is about as far as Guile's built-in web support goes, for\n"
+"now.  There are many ways to make a web application, but hopefully by\n"
+"standardizing the most fundamental data types, users will be able to\n"
+"choose the approach that suits them best, while also being able to\n"
+"switch between implementations of the server.  This is a relatively new\n"
+"part of Guile, so if you have feedback, let us know, and we can take it\n"
+"into account.  Happy hacking on the web!"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/web.texi:1966
+msgid ""
+"@c Local Variables:\n"
+"@c TeX-master: \"guile.texi\"\n"
+"@c End:"
+msgstr ""

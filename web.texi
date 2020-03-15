@@ -1,0 +1,1959 @@
+@c -*-texinfo-*-
+@c This is part of the GNU Guile Reference Manual.
+@c Copyright (C) 2010, 2011, 2012, 2013, 2015 Free Software Foundation, Inc.
+@c See the file guile.texi for copying conditions.
+
+@node Web
+@section @acronym{HTTP}, the Web, and All That
+@cindex Web
+@cindex WWW
+@cindex HTTP
+
+It has always been possible to connect computers together and share
+information between them, but the rise of the World Wide Web over the
+last couple of decades has made it much easier to do so.  The result is
+a richly connected network of computation, in which Guile forms a part.
+
+By ``the web'', we mean the HTTP protocol@footnote{Yes, the P is for
+protocol, but this phrase appears repeatedly in RFC 2616.} as handled by
+servers, clients, proxies, caches, and the various kinds of messages and
+message components that can be sent and received by that protocol,
+notably HTML.
+
+On one level, the web is text in motion: the protocols themselves are
+textual (though the payload may be binary), and it's possible to create
+a socket and speak text to the web.  But such an approach is obviously
+primitive.  This section details the higher-level data types and
+operations provided by Guile: URIs, HTTP request and response records,
+and a conventional web server implementation.
+
+The material in this section is arranged in ascending order, in which
+later concepts build on previous ones.  If you prefer to start with the
+highest-level perspective, @pxref{Web Examples}, and work your way
+back.
+
+@menu
+* Types and the Web::           Types prevent bugs and security problems.
+* URIs::                        Universal Resource Identifiers.
+* HTTP::                        The Hyper-Text Transfer Protocol.
+* HTTP Headers::                How Guile represents specific header values.
+* Transfer Codings::            HTTP Transfer Codings.
+* Requests::                    HTTP requests.
+* Responses::                   HTTP responses.
+* Web Client::                  Accessing web resources over HTTP.
+* Web Server::                  Serving HTTP to the internet.
+* Web Examples::                How to use this thing.
+@end menu
+
+@node Types and the Web
+@subsection Types and the Web
+
+It is a truth universally acknowledged, that a program with good use of
+data types, will be free from many common bugs.  Unfortunately, the
+common practice in web programming seems to ignore this maxim.  This
+subsection makes the case for expressive data types in web programming.
+
+By ``expressive data types'', we mean that the data types @emph{say}
+something about how a program solves a problem.  For example, if we
+choose to represent dates using SRFI 19 date records (@pxref{SRFI-19}),
+this indicates that there is a part of the program that will always have
+valid dates.  Error handling for a number of basic cases, like invalid
+dates, occurs on the boundary in which we produce a SRFI 19 date record
+from other types, like strings.
+
+With regards to the web, data types are helpful in the two broad phases
+of HTTP messages: parsing and generation.
+
+Consider a server, which has to parse a request, and produce a response.
+Guile will parse the request into an HTTP request object
+(@pxref{Requests}), with each header parsed into an appropriate Scheme
+data type.  This transition from an incoming stream of characters to
+typed data is a state change in a program---the strings might parse, or
+they might not, and something has to happen if they do not.  (Guile
+throws an error in this case.)  But after you have the parsed request,
+``client'' code (code built on top of the Guile web framework) will not
+have to check for syntactic validity.  The types already make this
+information manifest.
+
+This state change on the parsing boundary makes programs more robust,
+as they themselves are freed from the need to do a number of common
+error checks, and they can use normal Scheme procedures to handle a
+request instead of ad-hoc string parsers.
+
+The need for types on the response generation side (in a server) is more
+subtle, though not less important.  Consider the example of a POST
+handler, which prints out the text that a user submits from a form.
+Such a handler might include a procedure like this:
+
+@example
+;; First, a helper procedure
+(define (para . contents)
+  (string-append "<p>" (string-concatenate contents) "</p>"))
+
+;; Now the meat of our simple web application
+(define (you-said text)
+  (para "You said: " text))
+
+(display (you-said "Hi!"))
+@print{} <p>You said: Hi!</p>
+@end example
+
+This is a perfectly valid implementation, provided that the incoming
+text does not contain the special HTML characters @samp{<}, @samp{>}, or
+@samp{&}.  But this provision of a restricted character set is not
+reflected anywhere in the program itself: we must @emph{assume} that the
+programmer understands this, and performs the check elsewhere.
+
+Unfortunately, the short history of the practice of programming does not
+bear out this assumption.  A @dfn{cross-site scripting} (@acronym{XSS})
+vulnerability is just such a common error in which unfiltered user input
+is allowed into the output.  A user could submit a crafted comment to
+your web site which results in visitors running malicious Javascript,
+within the security context of your domain:
+
+@example
+(display (you-said "<script src=\"http://bad.com/nasty.js\" />"))
+@print{} <p>You said: <script src="http://bad.com/nasty.js" /></p>
+@end example
+
+The fundamental problem here is that both user data and the program
+template are represented using strings.  This identity means that types
+can't help the programmer to make a distinction between these two, so
+they get confused.
+
+There are a number of possible solutions, but perhaps the best is to
+treat HTML not as strings, but as native s-expressions: as SXML.  The
+basic idea is that HTML is either text, represented by a string, or an
+element, represented as a tagged list.  So @samp{foo} becomes
+@samp{"foo"}, and @samp{<b>foo</b>} becomes @samp{(b "foo")}.
+Attributes, if present, go in a tagged list headed by @samp{@@}, like
+@samp{(img (@@ (src "http://example.com/foo.png")))}.  @xref{SXML}, for
+more information.
+
+The good thing about SXML is that HTML elements cannot be confused with
+text.  Let's make a new definition of @code{para}:
+
+@example
+(define (para . contents)
+  `(p ,@@contents))
+
+(use-modules (sxml simple))
+(sxml->xml (you-said "Hi!"))
+@print{} <p>You said: Hi!</p>
+
+(sxml->xml (you-said "<i>Rats, foiled again!</i>"))
+@print{} <p>You said: &lt;i&gt;Rats, foiled again!&lt;/i&gt;</p>
+@end example
+
+So we see in the second example that HTML elements cannot be unwittingly
+introduced into the output.  However it is now perfectly acceptable to
+pass SXML to @code{you-said}; in fact, that is the big advantage of SXML
+over everything-as-a-string.
+
+@example
+(sxml->xml (you-said (you-said "<Hi!>")))
+@print{} <p>You said: <p>You said: &lt;Hi!&gt;</p></p>
+@end example
+
+The SXML types allow procedures to @emph{compose}.  The types make
+manifest which parts are HTML elements, and which are text.  So you
+needn't worry about escaping user input; the type transition back to a
+string handles that for you.  @acronym{XSS} vulnerabilities are a thing
+of the past.
+
+Well.  That's all very nice and opinionated and such, but how do I use
+the thing?  Read on!
+
+@node URIs
+@subsection Universal Resource Identifiers
+
+Guile provides a standard data type for Universal Resource Identifiers
+(URIs), as defined in RFC 3986.
+
+The generic URI syntax is as follows:
+
+@example
+URI-reference := [scheme ":"] ["//" [userinfo "@@"] host [":" port]] path \
+                 [ "?" query ] [ "#" fragment ]
+@end example
+
+For example, in the URI, @indicateurl{http://www.gnu.org/help/}, the
+scheme is @code{http}, the host is @code{www.gnu.org}, the path is
+@code{/help/}, and there is no userinfo, port, query, or fragment.
+
+Userinfo is something of an abstraction, as some legacy URI schemes
+allowed userinfo of the form @code{@var{username}:@var{passwd}}.  But
+since passwords do not belong in URIs, the RFC does not want to condone
+this practice, so it calls anything before the @code{@@} sign
+@dfn{userinfo}.
+
+@example
+(use-modules (web uri))
+@end example
+
+The following procedures can be found in the @code{(web uri)}
+module. Load it into your Guile, using a form like the above, to have
+access to them.
+
+The most common way to build a URI from Scheme is with the
+@code{build-uri} function.
+
+@deffn {Scheme Procedure} build-uri scheme @
+       [#:userinfo=@code{#f}] [#:host=@code{#f}] [#:port=@code{#f}] @
+       [#:path=@code{""}] [#:query=@code{#f}] [#:fragment=@code{#f}] @
+       [#:validate?=@code{#t}]
+Construct a URI.  @var{scheme} should be a symbol, @var{port} either a
+positive, exact integer or @code{#f}, and the rest of the fields are
+either strings or @code{#f}.  If @var{validate?} is true, also run some
+consistency checks to make sure that the constructed URI is valid.
+@end deffn
+@deffn {Scheme Procedure} uri? obj
+Return @code{#t} if @var{obj} is a URI.
+@end deffn
+
+Guile, URIs are represented as URI records, with a number of associated
+accessors.
+
+@deffn {Scheme Procedure} uri-scheme uri
+@deffnx {Scheme Procedure} uri-userinfo uri
+@deffnx {Scheme Procedure} uri-host uri
+@deffnx {Scheme Procedure} uri-port uri
+@deffnx {Scheme Procedure} uri-path uri
+@deffnx {Scheme Procedure} uri-query uri
+@deffnx {Scheme Procedure} uri-fragment uri
+Field accessors for the URI record type.  The URI scheme will be a
+symbol, or @code{#f} if the object is a relative-ref (see below).  The
+port will be either a positive, exact integer or @code{#f}, and the rest
+of the fields will be either strings or @code{#f} if not present.
+@end deffn
+
+@deffn {Scheme Procedure} string->uri string
+Parse @var{string} into a URI object.  Return @code{#f} if the string
+could not be parsed.
+@end deffn
+
+@deffn {Scheme Procedure} uri->string uri [#:include-fragment?=@code{#t}]
+Serialize @var{uri} to a string.  If the URI has a port that is the
+default port for its scheme, the port is not included in the
+serialization.  If @var{include-fragment?} is given as false, the
+resulting string will omit the fragment (if any).
+@end deffn
+
+@deffn {Scheme Procedure} declare-default-port! scheme port
+Declare a default port for the given URI scheme.
+@end deffn
+
+@deffn {Scheme Procedure} uri-decode str [#:encoding=@code{"utf-8"}] [#:decode-plus-to-space? #t]
+Percent-decode the given @var{str}, according to @var{encoding}, which
+should be the name of a character encoding.
+
+Note that this function should not generally be applied to a full URI
+string. For paths, use @code{split-and-decode-uri-path} instead. For
+query strings, split the query on @code{&} and @code{=} boundaries, and
+decode the components separately.
+
+Note also that percent-encoded strings encode @emph{bytes}, not
+characters.  There is no guarantee that a given byte sequence is a valid
+string encoding. Therefore this routine may signal an error if the
+decoded bytes are not valid for the given encoding. Pass @code{#f} for
+@var{encoding} if you want decoded bytes as a bytevector directly.
+@xref{Ports, @code{set-port-encoding!}}, for more information on
+character encodings.
+
+If @var{decode-plus-to-space?} is true, which is the default, also
+replace instances of the plus character @samp{+} with a space character.
+This is needed when parsing @code{application/x-www-form-urlencoded}
+data.
+
+Returns a string of the decoded characters, or a bytevector if
+@var{encoding} was @code{#f}.
+@end deffn
+
+@deffn {Scheme Procedure} uri-encode str [#:encoding=@code{"utf-8"}] [#:unescaped-chars]
+Percent-encode any character not in the character set,
+@var{unescaped-chars}.
+
+The default character set includes alphanumerics from ASCII, as well as
+the special characters @samp{-}, @samp{.}, @samp{_}, and @samp{~}.  Any
+other character will be percent-encoded, by writing out the character to
+a bytevector within the given @var{encoding}, then encoding each byte as
+@code{%@var{HH}}, where @var{HH} is the hexadecimal representation of
+the byte.
+@end deffn
+
+@deffn {Scheme Procedure} split-and-decode-uri-path path
+Split @var{path} into its components, and decode each component,
+removing empty components.
+
+For example, @code{"/foo/bar%20baz/"} decodes to the two-element list,
+@code{("foo" "bar baz")}.
+@end deffn
+
+@deffn {Scheme Procedure} encode-and-join-uri-path parts
+URI-encode each element of @var{parts}, which should be a list of
+strings, and join the parts together with @code{/} as a delimiter.
+
+For example, the list @code{("scrambled eggs" "biscuits&gravy")} encodes
+as @code{"scrambled%20eggs/biscuits%26gravy"}.
+@end deffn
+
+@subsubheading Subtypes of URI
+
+As we noted above, not all URI objects have a scheme.  You might have
+noted in the ``generic URI syntax'' example that the left-hand side of
+that grammar definition was URI-reference, not URI.  A
+@dfn{URI-reference} is a generalization of a URI where the scheme is
+optional.  If no scheme is specified, it is taken to be relative to some
+other related URI.  A common use of URI references is when you want to
+be vague regarding the choice of HTTP or HTTPS -- serving a web page
+referring to @code{/foo.css} will use HTTPS if loaded over HTTPS, or
+HTTP otherwise.
+
+@deffn {Scheme Procedure} build-uri-reference [#:scheme=@code{#f}]@
+       [#:userinfo=@code{#f}] [#:host=@code{#f}] [#:port=@code{#f}] @
+       [#:path=@code{""}] [#:query=@code{#f}] [#:fragment=@code{#f}] @
+       [#:validate?=@code{#t}]
+Like @code{build-uri}, but with an optional scheme.
+@end deffn
+@deffn {Scheme Procedure} uri-reference? obj
+Return @code{#t} if @var{obj} is a URI-reference.  This is the most
+general URI predicate, as it includes not only full URIs that have
+schemes (those that match @code{uri?}) but also URIs without schemes.
+@end deffn
+
+It's also possible to build a @dfn{relative-ref}: a URI-reference that
+explicitly lacks a scheme.
+
+@deffn {Scheme Procedure} build-relative-ref @
+       [#:userinfo=@code{#f}] [#:host=@code{#f}] [#:port=@code{#f}] @
+       [#:path=@code{""}] [#:query=@code{#f}] [#:fragment=@code{#f}] @
+       [#:validate?=@code{#t}]
+Like @code{build-uri}, but with no scheme.
+@end deffn
+@deffn {Scheme Procedure} relative-ref? obj
+Return @code{#t} if @var{obj} is a ``relative-ref'': a URI-reference
+that has no scheme.  Every URI-reference will either match @code{uri?}
+or @code{relative-ref?} (but not both).
+@end deffn
+
+In case it's not clear from the above, the most general of these URI
+types is the URI-reference, with @code{build-uri-reference} as the most
+general constructor.  @code{build-uri} and @code{build-relative-ref}
+enforce enforce specific restrictions on the URI-reference.  The most
+generic URI parser is then @code{string->uri-reference}, and there is
+also a parser for when you know that you want a relative-ref.
+
+@deffn {Scheme Procedure} string->uri-reference string
+Parse @var{string} into a URI object, while not requiring a scheme.
+Return @code{#f} if the string could not be parsed.
+@end deffn
+
+@deffn {Scheme Procedure} string->relative-ref string
+Parse @var{string} into a URI object, while asserting that no scheme is
+present.  Return @code{#f} if the string could not be parsed.
+@end deffn
+
+For compatibility reasons, note that @code{uri?} will return @code{#t}
+for all URI objects, even relative-refs.  In contrast, @code{build-uri}
+and @code{string->uri} require that the resulting URI not be a
+relative-ref.  As a predicate to distinguish relative-refs from proper
+URIs (in the language of RFC 3986), use something like @code{(and
+(uri-reference? @var{x}) (not (relative-ref?  @var{x})))}.
+
+@node HTTP
+@subsection The Hyper-Text Transfer Protocol
+
+The initial motivation for including web functionality in Guile, rather
+than rely on an external package, was to establish a standard base on
+which people can share code.  To that end, we continue the focus on data
+types by providing a number of low-level parsers and unparsers for
+elements of the HTTP protocol.
+
+If you are want to skip the low-level details for now and move on to web
+pages, @pxref{Web Client}, and @pxref{Web Server}.  Otherwise, load the
+HTTP module, and read on.
+
+@example
+(use-modules (web http))
+@end example
+
+The focus of the @code{(web http)} module is to parse and unparse
+standard HTTP headers, representing them to Guile as native data
+structures.  For example, a @code{Date:} header will be represented as a
+SRFI-19 date record (@pxref{SRFI-19}), rather than as a string.
+
+Guile tries to follow RFCs fairly strictly---the road to perdition being
+paved with compatibility hacks---though some allowances are made for
+not-too-divergent texts.
+
+Header names are represented as lower-case symbols.
+
+@deffn {Scheme Procedure} string->header name
+Parse @var{name} to a symbolic header name.
+@end deffn
+
+@deffn {Scheme Procedure} header->string sym
+Return the string form for the header named @var{sym}.
+@end deffn
+
+For example:
+
+@example
+(string->header "Content-Length")
+@result{} content-length
+(header->string 'content-length)
+@result{} "Content-Length"
+
+(string->header "FOO")
+@result{} foo
+(header->string 'foo)
+@result{} "Foo"
+@end example
+
+Guile keeps a registry of known headers, their string names, and some
+parsing and serialization procedures.  If a header is unknown, its
+string name is simply its symbol name in title-case.
+
+@deffn {Scheme Procedure} known-header? sym
+Return @code{#t} if @var{sym} is a known header, with associated
+parsers and serialization procedures, or @code{#f} otherwise.
+@end deffn
+
+@deffn {Scheme Procedure} header-parser sym
+Return the value parser for headers named @var{sym}.  The result is a
+procedure that takes one argument, a string, and returns the parsed
+value.  If the header isn't known to Guile, a default parser is returned
+that passes through the string unchanged.
+@end deffn
+
+@deffn {Scheme Procedure} header-validator sym
+Return a predicate which returns @code{#t} if the given value is valid
+for headers named @var{sym}.  The default validator for unknown headers
+is @code{string?}.
+@end deffn
+
+@deffn {Scheme Procedure} header-writer sym
+Return a procedure that writes values for headers named @var{sym} to a
+port.  The resulting procedure takes two arguments: a value and a port.
+The default writer is @code{display}.
+@end deffn
+
+For more on the set of headers that Guile knows about out of the box,
+@pxref{HTTP Headers}.  To add your own, use the @code{declare-header!}
+procedure:
+
+@deffn {Scheme Procedure} declare-header! name parser validator writer @
+       [#:multiple?=@code{#f}]
+Declare a parser, validator, and writer for a given header.
+@end deffn
+
+For example, let's say you are running a web server behind some sort of
+proxy, and your proxy adds an @code{X-Client-Address} header, indicating
+the IPv4 address of the original client.  You would like for the HTTP
+request record to parse out this header to a Scheme value, instead of
+leaving it as a string.  You could register this header with Guile's
+HTTP stack like this:
+
+@example
+(declare-header! "X-Client-Address"
+  (lambda (str)
+    (inet-aton str))
+  (lambda (ip)
+    (and (integer? ip) (exact? ip) (<= 0 ip #xffffffff)))
+  (lambda (ip port)
+    (display (inet-ntoa ip) port)))
+@end example
+
+@deffn {Scheme Procedure} declare-opaque-header! name
+A specialised version of @code{declare-header!} for the case in which
+you want a header's value to be returned/written ``as-is''.
+@end deffn
+
+@deffn {Scheme Procedure} valid-header? sym val
+Return a true value if @var{val} is a valid Scheme value for the header
+with name @var{sym}, or @code{#f} otherwise.
+@end deffn
+
+Now that we have a generic interface for reading and writing headers, we
+do just that.
+
+@deffn {Scheme Procedure} read-header port
+Read one HTTP header from @var{port}. Return two values: the header
+name and the parsed Scheme value. May raise an exception if the header
+was known but the value was invalid.
+
+Returns the end-of-file object for both values if the end of the message
+body was reached (i.e., a blank line).
+@end deffn
+
+@deffn {Scheme Procedure} parse-header name val
+Parse @var{val}, a string, with the parser for the header named
+@var{name}.  Returns the parsed value.
+@end deffn
+
+@deffn {Scheme Procedure} write-header name val port
+Write the given header name and value to @var{port}, using the writer
+from @code{header-writer}.
+@end deffn
+
+@deffn {Scheme Procedure} read-headers port
+Read the headers of an HTTP message from @var{port}, returning them
+as an ordered alist.
+@end deffn
+
+@deffn {Scheme Procedure} write-headers headers port
+Write the given header alist to @var{port}. Doesn't write the final
+@samp{\r\n}, as the user might want to add another header.
+@end deffn
+
+The @code{(web http)} module also has some utility procedures to read
+and write request and response lines.
+
+@deffn {Scheme Procedure} parse-http-method str [start] [end]
+Parse an HTTP method from @var{str}. The result is an upper-case symbol,
+like @code{GET}.
+@end deffn
+
+@deffn {Scheme Procedure} parse-http-version str [start] [end]
+Parse an HTTP version from @var{str}, returning it as a major--minor
+pair. For example, @code{HTTP/1.1} parses as the pair of integers,
+@code{(1 . 1)}.
+@end deffn
+
+@deffn {Scheme Procedure} parse-request-uri str [start] [end]
+Parse a URI from an HTTP request line. Note that URIs in requests do not
+have to have a scheme or host name. The result is a URI object.
+@end deffn
+
+@deffn {Scheme Procedure} read-request-line port
+Read the first line of an HTTP request from @var{port}, returning three
+values: the method, the URI, and the version.
+@end deffn
+
+@deffn {Scheme Procedure} write-request-line method uri version port
+Write the first line of an HTTP request to @var{port}.
+@end deffn
+
+@deffn {Scheme Procedure} read-response-line port
+Read the first line of an HTTP response from @var{port}, returning three
+values: the HTTP version, the response code, and the ``reason phrase''.
+@end deffn
+
+@deffn {Scheme Procedure} write-response-line version code reason-phrase port
+Write the first line of an HTTP response to @var{port}.
+@end deffn
+
+@node HTTP Headers
+@subsection HTTP Headers
+
+In addition to defining the infrastructure to parse headers, the
+@code{(web http)} module defines specific parsers and unparsers for all
+headers defined in the HTTP/1.1 standard.
+
+For example, if you receive a header named @samp{Accept-Language} with a
+value @samp{en, es;q=0.8}, Guile parses it as a quality list (defined
+below):
+
+@example
+(parse-header 'accept-language "en, es;q=0.8")
+@result{} ((1000 . "en") (800 . "es"))
+@end example
+
+The format of the value for @samp{Accept-Language} headers is defined
+below, along with all other headers defined in the HTTP standard.  (If
+the header were unknown, the value would have been returned as a
+string.)
+
+For brevity, the header definitions below are given in the form,
+@var{Type} @code{@var{name}}, indicating that values for the header
+@code{@var{name}} will be of the given @var{Type}.  Since Guile
+internally treats header names in lower case, in this document we give
+types title-cased names.  A short description of the each header's
+purpose and an example follow.
+
+For full details on the meanings of all of these headers, see the HTTP
+1.1 standard, RFC 2616.
+
+@subsubsection HTTP Header Types
+
+Here we define the types that are used below, when defining headers.
+
+@deftp {HTTP Header Type} Date
+A SRFI-19 date.
+@end deftp
+
+@deftp {HTTP Header Type} KVList
+A list whose elements are keys or key-value pairs.  Keys are parsed to
+symbols.  Values are strings by default.  Non-string values are the
+exception, and are mentioned explicitly below, as appropriate.
+@end deftp
+
+@deftp {HTTP Header Type} SList
+A list of strings.
+@end deftp
+
+@deftp {HTTP Header Type} Quality
+An exact integer between 0 and 1000.  Qualities are used to express
+preference, given multiple options.  An option with a quality of 870,
+for example, is preferred over an option with quality 500.
+
+(Qualities are written out over the wire as numbers between 0.0 and
+1.0, but since the standard only allows three digits after the decimal,
+it's equivalent to integers between 0 and 1000, so that's what Guile
+uses.)
+@end deftp
+
+@deftp {HTTP Header Type} QList
+A quality list: a list of pairs, the car of which is a quality, and the
+cdr a string.  Used to express a list of options, along with their
+qualities.
+@end deftp
+
+@deftp {HTTP Header Type} ETag
+An entity tag, represented as a pair.  The car of the pair is an opaque
+string, and the cdr is @code{#t} if the entity tag is a ``strong'' entity
+tag, and @code{#f} otherwise.
+@end deftp
+
+@subsubsection General Headers
+
+General HTTP headers may be present in any HTTP message.
+
+@deftypevr {HTTP Header} KVList cache-control
+A key-value list of cache-control directives.  See RFC 2616, for more
+details.
+
+If present, parameters to @code{max-age}, @code{max-stale},
+@code{min-fresh}, and @code{s-maxage} are all parsed as non-negative
+integers.
+
+If present, parameters to @code{private} and @code{no-cache} are parsed
+as lists of header names, as symbols.
+
+@example
+(parse-header 'cache-control "no-cache,no-store"
+@result{} (no-cache no-store)
+(parse-header 'cache-control "no-cache=\"Authorization,Date\",no-store"
+@result{} ((no-cache . (authorization date)) no-store)
+(parse-header 'cache-control "no-cache=\"Authorization,Date\",max-age=10"
+@result{} ((no-cache . (authorization date)) (max-age . 10))
+@end example
+@end deftypevr
+
+@deftypevr {HTTP Header} List connection
+A list of header names that apply only to this HTTP connection, as
+symbols.  Additionally, the symbol @samp{close} may be present, to
+indicate that the server should close the connection after responding to
+the request.
+@example
+(parse-header 'connection "close")
+@result{} (close)
+@end example
+@end deftypevr
+
+@deftypevr {HTTP Header} Date date
+The date that a given HTTP message was originated.
+@example
+(parse-header 'date "Tue, 15 Nov 1994 08:12:31 GMT")
+@result{} #<date ...>
+@end example
+@end deftypevr
+
+@deftypevr {HTTP Header} KVList pragma
+A key-value list of implementation-specific directives.
+@example
+(parse-header 'pragma "no-cache, broccoli=tasty")
+@result{} (no-cache (broccoli . "tasty"))
+@end example
+@end deftypevr
+
+@deftypevr {HTTP Header} List trailer
+A list of header names which will appear after the message body, instead
+of with the message headers.
+@example
+(parse-header 'trailer "ETag")
+@result{} (etag)
+@end example
+@end deftypevr
+
+@deftypevr {HTTP Header} List transfer-encoding
+A list of transfer codings, expressed as key-value lists.  The only
+transfer coding defined by the specification is @code{chunked}.
+@example
+(parse-header 'transfer-encoding "chunked")
+@result{} ((chunked))
+@end example
+@end deftypevr
+
+@deftypevr {HTTP Header} List upgrade
+A list of strings, indicating additional protocols that a server could use
+in response to a request.
+@example
+(parse-header 'upgrade "WebSocket")
+@result{} ("WebSocket")
+@end example
+@end deftypevr
+
+FIXME: parse out more fully?
+@deftypevr {HTTP Header} List via
+A list of strings, indicating the protocol versions and hosts of
+intermediate servers and proxies.  There may be multiple @code{via}
+headers in one message.
+@example
+(parse-header 'via "1.0 venus, 1.1 mars")
+@result{} ("1.0 venus" "1.1 mars")
+@end example
+@end deftypevr
+
+@deftypevr {HTTP Header} List warning
+A list of warnings given by a server or intermediate proxy.  Each
+warning is a itself a list of four elements: a code, as an exact integer
+between 0 and 1000, a host as a string, the warning text as a string,
+and either @code{#f} or a SRFI-19 date.
+
+There may be multiple @code{warning} headers in one message.
+@example
+(parse-header 'warning "123 foo \"core breach imminent\"")
+@result{} ((123 "foo" "core-breach imminent" #f))
+@end example
+@end deftypevr
+
+@subsubsection Entity Headers
+
+Entity headers may be present in any HTTP message, and refer to the
+resource referenced in the HTTP request or response.
+
+@deftypevr {HTTP Header} List allow
+A list of allowed methods on a given resource, as symbols.
+@example
+(parse-header 'allow "GET, HEAD")
+@result{} (GET HEAD)
+@end example
+@end deftypevr
+
+@deftypevr {HTTP Header} List content-encoding
+A list of content codings, as symbols.
+@example
+(parse-header 'content-encoding "gzip")
+@result{} (gzip)
+@end example
+@end deftypevr
+
+@deftypevr {HTTP Header} List content-language
+The languages that a resource is in, as strings.
+@example
+(parse-header 'content-language "en")
+@result{} ("en")
+@end example
+@end deftypevr
+
+@deftypevr {HTTP Header} UInt content-length
+The number of bytes in a resource, as an exact, non-negative integer.
+@example
+(parse-header 'content-length "300")
+@result{} 300
+@end example
+@end deftypevr
+
+@deftypevr {HTTP Header} URI content-location
+The canonical URI for a resource, in the case that it is also accessible
+from a different URI.
+@example
+(parse-header 'content-location "http://example.com/foo")
+@result{} #<<uri> ...>
+@end example
+@end deftypevr
+
+@deftypevr {HTTP Header} String content-md5
+The MD5 digest of a resource.
+@example
+(parse-header 'content-md5 "ffaea1a79810785575e29e2bd45e2fa5")
+@result{} "ffaea1a79810785575e29e2bd45e2fa5"
+@end example
+@end deftypevr
+
+@deftypevr {HTTP Header} List content-range
+A range specification, as a list of three elements: the symbol
+@code{bytes}, either the symbol @code{*} or a pair of integers,
+indicating the byte rage, and either @code{*} or an integer, for the
+instance length.  Used to indicate that a response only includes part of
+a resource.
+@example
+(parse-header 'content-range "bytes 10-20/*")
+@result{} (bytes (10 . 20) *)
+@end example
+@end deftypevr
+
+@deftypevr {HTTP Header} List content-type
+The MIME type of a resource, as a symbol, along with any parameters.
+@example
+(parse-header 'content-type "text/plain")
+@result{} (text/plain)
+(parse-header 'content-type "text/plain;charset=utf-8")
+@result{} (text/plain (charset . "utf-8"))
+@end example
+Note that the @code{charset} parameter is something is a misnomer, and
+the HTTP specification admits this.  It specifies the @emph{encoding} of
+the characters, not the character set.
+@end deftypevr
+
+@deftypevr {HTTP Header} Date expires
+The date/time after which the resource given in a response is considered
+stale.
+@example
+(parse-header 'expires "Tue, 15 Nov 1994 08:12:31 GMT")
+@result{} #<date ...>
+@end example
+@end deftypevr
+
+@deftypevr {HTTP Header} Date last-modified
+The date/time on which the resource given in a response was last
+modified.
+@example
+(parse-header 'expires "Tue, 15 Nov 1994 08:12:31 GMT")
+@result{} #<date ...>
+@end example
+@end deftypevr
+
+@subsubsection Request Headers
+
+Request headers may only appear in an HTTP request, not in a response.
+
+@deftypevr {HTTP Header} List accept
+A list of preferred media types for a response.  Each element of the
+list is itself a list, in the same format as @code{content-type}.  
+@example
+(parse-header 'accept "text/html,text/plain;charset=utf-8")
+@result{} ((text/html) (text/plain (charset . "utf-8")))
+@end example
+Preference is expressed with quality values:
+@example
+(parse-header 'accept "text/html;q=0.8,text/plain;q=0.6")
+@result{} ((text/html (q . 800)) (text/plain (q . 600)))
+@end example
+@end deftypevr
+
+@deftypevr {HTTP Header} QList accept-charset
+A quality list of acceptable charsets.  Note again that what HTTP calls
+a ``charset'' is what Guile calls a ``character encoding''.
+@example
+(parse-header 'accept-charset "iso-8859-5, unicode-1-1;q=0.8")
+@result{} ((1000 . "iso-8859-5") (800 . "unicode-1-1"))
+@end example
+@end deftypevr
+
+@deftypevr {HTTP Header} QList accept-encoding
+A quality list of acceptable content codings.
+@example
+(parse-header 'accept-encoding "gzip,identity=0.8")
+@result{} ((1000 . "gzip") (800 . "identity"))
+@end example
+@end deftypevr
+
+@deftypevr {HTTP Header} QList accept-language
+A quality list of acceptable languages.
+@example
+(parse-header 'accept-language "cn,en=0.75")
+@result{} ((1000 . "cn") (750 . "en"))
+@end example
+@end deftypevr
+
+@deftypevr {HTTP Header} Pair authorization
+Authorization credentials.  The car of the pair indicates the
+authentication scheme, like @code{basic}.  For basic authentication, the
+cdr of the pair will be the base64-encoded @samp{@var{user}:@var{pass}}
+string.  For other authentication schemes, like @code{digest}, the cdr
+will be a key-value list of credentials.
+@example
+(parse-header 'authorization "Basic QWxhZGRpbjpvcGVuIHNlc2FtZQ=="
+@result{} (basic . "QWxhZGRpbjpvcGVuIHNlc2FtZQ==")
+@end example
+@end deftypevr
+
+@deftypevr {HTTP Header} List expect
+A list of expectations that a client has of a server.  The expectations
+are key-value lists.
+@example
+(parse-header 'expect "100-continue")
+@result{} ((100-continue))
+@end example
+@end deftypevr
+
+@deftypevr {HTTP Header} String from
+The email address of a user making an HTTP request.
+@example
+(parse-header 'from "bob@@example.com")
+@result{} "bob@@example.com"
+@end example
+@end deftypevr
+
+@deftypevr {HTTP Header} Pair host
+The host for the resource being requested, as a hostname-port pair.  If
+no port is given, the port is @code{#f}.
+@example
+(parse-header 'host "gnu.org:80")
+@result{} ("gnu.org" . 80)
+(parse-header 'host "gnu.org")
+@result{} ("gnu.org" . #f)
+@end example
+@end deftypevr
+
+@deftypevr {HTTP Header} *|List if-match
+A set of etags, indicating that the request should proceed if and only
+if the etag of the resource is in that set.  Either the symbol @code{*},
+indicating any etag, or a list of entity tags.
+@example
+(parse-header 'if-match "*")
+@result{} *
+(parse-header 'if-match "asdfadf")
+@result{} (("asdfadf" . #t))
+(parse-header 'if-match W/"asdfadf")
+@result{} (("asdfadf" . #f))
+@end example
+@end deftypevr
+
+@deftypevr {HTTP Header} Date if-modified-since
+Indicates that a response should proceed if and only if the resource has
+been modified since the given date.
+@example
+(parse-header 'if-modified-since "Tue, 15 Nov 1994 08:12:31 GMT")
+@result{} #<date ...>
+@end example
+@end deftypevr
+
+@deftypevr {HTTP Header} *|List if-none-match
+A set of etags, indicating that the request should proceed if and only
+if the etag of the resource is not in the set.  Either the symbol
+@code{*}, indicating any etag, or a list of entity tags.
+@example
+(parse-header 'if-none-match "*")
+@result{} *
+@end example
+@end deftypevr
+
+@deftypevr {HTTP Header} ETag|Date if-range
+Indicates that the range request should proceed if and only if the
+resource matches a modification date or an etag.  Either an entity tag,
+or a SRFI-19 date.
+@example
+(parse-header 'if-range "\"original-etag\"")
+@result{} ("original-etag" . #t)
+@end example
+@end deftypevr
+
+@deftypevr {HTTP Header} Date if-unmodified-since
+Indicates that a response should proceed if and only if the resource has
+not been modified since the given date.
+@example
+(parse-header 'if-not-modified-since "Tue, 15 Nov 1994 08:12:31 GMT")
+@result{} #<date ...>
+@end example
+@end deftypevr
+
+@deftypevr {HTTP Header} UInt max-forwards
+The maximum number of proxy or gateway hops that a request should be
+subject to.
+@example
+(parse-header 'max-forwards "10")
+@result{} 10
+@end example
+@end deftypevr
+
+@deftypevr {HTTP Header} Pair proxy-authorization
+Authorization credentials for a proxy connection.  See the documentation
+for @code{authorization} above for more information on the format.
+@example
+(parse-header 'proxy-authorization "Digest foo=bar,baz=qux"
+@result{} (digest (foo . "bar") (baz . "qux"))
+@end example
+@end deftypevr
+
+@deftypevr {HTTP Header} Pair range
+A range request, indicating that the client wants only part of a
+resource.  The car of the pair is the symbol @code{bytes}, and the cdr
+is a list of pairs. Each element of the cdr indicates a range; the car
+is the first byte position and the cdr is the last byte position, as
+integers, or @code{#f} if not given.
+@example
+(parse-header 'range "bytes=10-30,50-")
+@result{} (bytes (10 . 30) (50 . #f))
+@end example
+@end deftypevr
+
+@deftypevr {HTTP Header} URI referer
+The URI of the resource that referred the user to this resource.  The
+name of the header is a misspelling, but we are stuck with it.
+@example
+(parse-header 'referer "http://www.gnu.org/")
+@result{} #<uri ...>
+@end example
+@end deftypevr
+
+@deftypevr {HTTP Header} List te
+A list of transfer codings, expressed as key-value lists.  A common
+transfer coding is @code{trailers}.
+@example
+(parse-header 'te "trailers")
+@result{} ((trailers))
+@end example
+@end deftypevr
+
+@deftypevr {HTTP Header} String user-agent
+A string indicating the user agent making the request.  The
+specification defines a structured format for this header, but it is
+widely disregarded, so Guile does not attempt to parse strictly.
+@example
+(parse-header 'user-agent "Mozilla/5.0")
+@result{} "Mozilla/5.0"
+@end example
+@end deftypevr
+
+@subsubsection Response Headers
+
+@deftypevr {HTTP Header} List accept-ranges
+A list of range units that the server supports, as symbols.
+@example
+(parse-header 'accept-ranges "bytes")
+@result{} (bytes)
+@end example
+@end deftypevr
+
+@deftypevr {HTTP Header} UInt age
+The age of a cached response, in seconds.
+@example
+(parse-header 'age "3600")
+@result{} 3600
+@end example
+@end deftypevr
+
+@deftypevr {HTTP Header} ETag etag
+The entity-tag of the resource.
+@example
+(parse-header 'etag "\"foo\"")
+@result{} ("foo" . #t)
+@end example
+@end deftypevr
+
+@deftypevr {HTTP Header} URI-reference location
+A URI reference on which a request may be completed.  Used in
+combination with a redirecting status code to perform client-side
+redirection.
+@example
+(parse-header 'location "http://example.com/other")
+@result{} #<uri ...>
+@end example
+@end deftypevr
+
+@deftypevr {HTTP Header} List proxy-authenticate
+A list of challenges to a proxy, indicating the need for authentication.
+@example
+(parse-header 'proxy-authenticate "Basic realm=\"foo\"")
+@result{} ((basic (realm . "foo")))
+@end example
+@end deftypevr
+
+@deftypevr {HTTP Header} UInt|Date retry-after
+Used in combination with a server-busy status code, like 503, to
+indicate that a client should retry later.  Either a number of seconds,
+or a date.
+@example
+(parse-header 'retry-after "60")
+@result{} 60
+@end example
+@end deftypevr
+
+@deftypevr {HTTP Header} String server
+A string identifying the server.
+@example
+(parse-header 'server "My first web server")
+@result{} "My first web server"
+@end example
+@end deftypevr
+
+@deftypevr {HTTP Header} *|List vary
+A set of request headers that were used in computing this response.
+Used to indicate that server-side content negotiation was performed, for
+example in response to the @code{accept-language} header.  Can also be
+the symbol @code{*}, indicating that all headers were considered.
+@example
+(parse-header 'vary "Accept-Language, Accept")
+@result{} (accept-language accept)
+@end example
+@end deftypevr
+
+@deftypevr {HTTP Header} List www-authenticate
+A list of challenges to a user, indicating the need for authentication.
+@example
+(parse-header 'www-authenticate "Basic realm=\"foo\"")
+@result{} ((basic (realm . "foo")))
+@end example
+@end deftypevr
+
+@node Transfer Codings
+@subsection Transfer Codings
+
+HTTP 1.1 allows for various transfer codings to be applied to message
+bodies. These include various types of compression, and HTTP chunked
+encoding. Currently, only chunked encoding is supported by guile.
+
+Chunked coding is an optional coding that may be applied to message
+bodies, to allow messages whose length is not known beforehand to be
+returned. Such messages can be split into chunks, terminated by a final
+zero length chunk.
+
+In order to make dealing with encodings more simple, guile provides
+procedures to create ports that ``wrap'' existing ports, applying
+transformations transparently under the hood.
+
+These procedures are in the @code{(web http)} module.
+
+@example
+(use-modules (web http))
+@end example
+
+@deffn {Scheme Procedure} make-chunked-input-port port [#:keep-alive?=#f]
+Returns a new port, that transparently reads and decodes chunk-encoded
+data from @var{port}. If no more chunk-encoded data is available, it
+returns the end-of-file object. When the port is closed, @var{port} will
+also be closed, unless @var{keep-alive?} is true.
+@end deffn
+
+@example
+(use-modules (ice-9 rdelim))
+
+(define s "5\r\nFirst\r\nA\r\n line\n Sec\r\n8\r\nond line\r\n0\r\n")
+(define p (make-chunked-input-port (open-input-string s)))
+(read-line s)
+@result{} "First line"
+(read-line s)
+@result{} "Second line"
+@end example
+
+@deffn {Scheme Procedure} make-chunked-output-port port [#:keep-alive?=#f]
+Returns a new port, which transparently encodes data as chunk-encoded
+before writing it to @var{port}. Whenever a write occurs on this port,
+it buffers it, until the port is flushed, at which point it writes a
+chunk containing all the data written so far. When the port is closed,
+the data remaining is written to @var{port}, as is the terminating zero
+chunk. It also causes @var{port} to be closed, unless @var{keep-alive?}
+is true.
+
+Note. Forcing a chunked output port when there is no data is buffered
+does not write a zero chunk, as this would cause the data to be
+interpreted incorrectly by the client.
+@end deffn
+
+@example
+(call-with-output-string
+  (lambda (out)
+    (define out* (make-chunked-output-port out #:keep-alive? #t))
+    (display "first chunk" out*)
+    (force-output out*)
+    (force-output out*) ; note this does not write a zero chunk
+    (display "second chunk" out*)
+    (close-port out*)))
+@result{} "b\r\nfirst chunk\r\nc\r\nsecond chunk\r\n0\r\n"
+@end example
+
+@node Requests
+@subsection HTTP Requests
+
+@example
+(use-modules (web request))
+@end example
+
+The request module contains a data type for HTTP requests.  
+
+@subsubsection An Important Note on Character Sets
+
+HTTP requests consist of two parts: the request proper, consisting of a
+request line and a set of headers, and (optionally) a body.  The body
+might have a binary content-type, and even in the textual case its
+length is specified in bytes, not characters.
+
+Therefore, HTTP is a fundamentally binary protocol.  However the request
+line and headers are specified to be in a subset of ASCII, so they can
+be treated as text, provided that the port's encoding is set to an
+ASCII-compatible one-byte-per-character encoding.  ISO-8859-1 (latin-1)
+is just such an encoding, and happens to be very efficient for Guile.
+
+So what Guile does when reading requests from the wire, or writing them
+out, is to set the port's encoding to latin-1, and treating the request
+headers as text.
+
+The request body is another issue.  For binary data, the data is
+probably in a bytevector, so we use the R6RS binary output procedures to
+write out the binary payload.  Textual data usually has to be written
+out to some character encoding, usually UTF-8, and then the resulting
+bytevector is written out to the port.
+
+In summary, Guile reads and writes HTTP over latin-1 sockets, without
+any loss of generality.
+
+@subsubsection Request API
+
+@deffn {Scheme Procedure} request? obj 
+@deffnx {Scheme Procedure} request-method request
+@deffnx {Scheme Procedure} request-uri request
+@deffnx {Scheme Procedure} request-version request
+@deffnx {Scheme Procedure} request-headers request
+@deffnx {Scheme Procedure} request-meta request
+@deffnx {Scheme Procedure} request-port request
+A predicate and field accessors for the request type.  The fields are as
+follows:
+@table @code
+@item method
+The HTTP method, for example, @code{GET}.
+@item uri
+The URI as a URI record.
+@item version
+The HTTP version pair, like @code{(1 . 1)}.
+@item headers
+The request headers, as an alist of parsed values.
+@item meta
+An arbitrary alist of other data, for example information returned in
+the @code{sockaddr} from @code{accept} (@pxref{Network Sockets and
+Communication}).
+@item port
+The port on which to read or write a request body, if any.
+@end table
+@end deffn
+
+@deffn {Scheme Procedure} read-request port [meta='()]
+Read an HTTP request from @var{port}, optionally attaching the given
+metadata, @var{meta}.
+
+As a side effect, sets the encoding on @var{port} to ISO-8859-1
+(latin-1), so that reading one character reads one byte. See the
+discussion of character sets above, for more information.
+
+Note that the body is not part of the request.  Once you have read a
+request, you may read the body separately, and likewise for writing
+requests.
+@end deffn
+
+@deffn {Scheme Procedure} build-request uri [#:method='GET] @
+       [#:version='(1 . 1)] [#:headers='()] [#:port=#f] [#:meta='()] @
+       [#:validate-headers?=#t]
+Construct an HTTP request object. If @var{validate-headers?} is true,
+the headers are each run through their respective validators.
+@end deffn
+
+@deffn {Scheme Procedure} write-request r port
+Write the given HTTP request to @var{port}.
+
+Return a new request, whose @code{request-port} will continue writing
+on @var{port}, perhaps using some transfer encoding.
+@end deffn
+
+@deffn {Scheme Procedure} read-request-body r
+Reads the request body from @var{r}, as a bytevector.  Return @code{#f}
+if there was no request body.
+@end deffn
+
+@deffn {Scheme Procedure} write-request-body r bv
+Write @var{bv}, a bytevector, to the port corresponding to the HTTP
+request @var{r}.
+@end deffn
+
+The various headers that are typically associated with HTTP requests may
+be accessed with these dedicated accessors.  @xref{HTTP Headers}, for
+more information on the format of parsed headers.
+
+@deffn {Scheme Procedure} request-accept request [default='()]
+@deffnx {Scheme Procedure} request-accept-charset request [default='()]
+@deffnx {Scheme Procedure} request-accept-encoding request [default='()]
+@deffnx {Scheme Procedure} request-accept-language request [default='()]
+@deffnx {Scheme Procedure} request-allow request [default='()]
+@deffnx {Scheme Procedure} request-authorization request [default=#f]
+@deffnx {Scheme Procedure} request-cache-control request [default='()]
+@deffnx {Scheme Procedure} request-connection request [default='()]
+@deffnx {Scheme Procedure} request-content-encoding request [default='()]
+@deffnx {Scheme Procedure} request-content-language request [default='()]
+@deffnx {Scheme Procedure} request-content-length request [default=#f]
+@deffnx {Scheme Procedure} request-content-location request [default=#f]
+@deffnx {Scheme Procedure} request-content-md5 request [default=#f]
+@deffnx {Scheme Procedure} request-content-range request [default=#f]
+@deffnx {Scheme Procedure} request-content-type request [default=#f]
+@deffnx {Scheme Procedure} request-date request [default=#f]
+@deffnx {Scheme Procedure} request-expect request [default='()]
+@deffnx {Scheme Procedure} request-expires request [default=#f]
+@deffnx {Scheme Procedure} request-from request [default=#f]
+@deffnx {Scheme Procedure} request-host request [default=#f]
+@deffnx {Scheme Procedure} request-if-match request [default=#f]
+@deffnx {Scheme Procedure} request-if-modified-since request [default=#f]
+@deffnx {Scheme Procedure} request-if-none-match request [default=#f]
+@deffnx {Scheme Procedure} request-if-range request [default=#f]
+@deffnx {Scheme Procedure} request-if-unmodified-since request [default=#f]
+@deffnx {Scheme Procedure} request-last-modified request [default=#f]
+@deffnx {Scheme Procedure} request-max-forwards request [default=#f]
+@deffnx {Scheme Procedure} request-pragma request [default='()]
+@deffnx {Scheme Procedure} request-proxy-authorization request [default=#f]
+@deffnx {Scheme Procedure} request-range request [default=#f]
+@deffnx {Scheme Procedure} request-referer request [default=#f]
+@deffnx {Scheme Procedure} request-te request [default=#f]
+@deffnx {Scheme Procedure} request-trailer request [default='()]
+@deffnx {Scheme Procedure} request-transfer-encoding request [default='()]
+@deffnx {Scheme Procedure} request-upgrade request [default='()]
+@deffnx {Scheme Procedure} request-user-agent request [default=#f]
+@deffnx {Scheme Procedure} request-via request [default='()]
+@deffnx {Scheme Procedure} request-warning request [default='()]
+Return the given request header, or @var{default} if none was present.
+@end deffn
+
+@deffn {Scheme Procedure} request-absolute-uri r [default-host=#f] @
+       [default-port=#f] [default-scheme=#f]
+A helper routine to determine the absolute URI of a request, using the
+@code{host} header and the default scheme, host and port.  If there is
+no default scheme and the URI is not itself absolute, an error is
+signalled.
+@end deffn
+
+@node Responses
+@subsection HTTP Responses
+
+@example
+(use-modules (web response))
+@end example
+
+As with requests (@pxref{Requests}), Guile offers a data type for HTTP
+responses.  Again, the body is represented separately from the request.
+
+@deffn {Scheme Procedure} response? obj
+@deffnx {Scheme Procedure} response-version response
+@deffnx {Scheme Procedure} response-code response
+@deffnx {Scheme Procedure} response-reason-phrase response
+@deffnx {Scheme Procedure} response-headers response
+@deffnx {Scheme Procedure} response-port response
+A predicate and field accessors for the response type.  The fields are as
+follows:
+@table @code
+@item version
+The HTTP version pair, like @code{(1 . 1)}.
+@item code
+The HTTP response code, like @code{200}.
+@item reason-phrase
+The reason phrase, or the standard reason phrase for the response's
+code.
+@item headers
+The response headers, as an alist of parsed values.
+@item port
+The port on which to read or write a response body, if any.
+@end table
+@end deffn
+
+@deffn {Scheme Procedure} read-response port
+Read an HTTP response from @var{port}.
+
+As a side effect, sets the encoding on @var{port} to ISO-8859-1
+(latin-1), so that reading one character reads one byte. See the
+discussion of character sets in @ref{Responses}, for more information.
+@end deffn
+
+@deffn {Scheme Procedure} build-response [#:version='(1 . 1)] [#:code=200] [#:reason-phrase=#f] [#:headers='()] [#:port=#f] [#:validate-headers?=#t]
+Construct an HTTP response object. If @var{validate-headers?} is true,
+the headers are each run through their respective validators.
+@end deffn
+
+@deffn {Scheme Procedure} adapt-response-version response version
+Adapt the given response to a different HTTP version.  Return a new HTTP
+response.
+
+The idea is that many applications might just build a response for the
+default HTTP version, and this method could handle a number of
+programmatic transformations to respond to older HTTP versions (0.9 and
+1.0). But currently this function is a bit heavy-handed, just updating
+the version field.
+@end deffn
+
+@deffn {Scheme Procedure} write-response r port
+Write the given HTTP response to @var{port}.
+
+Return a new response, whose @code{response-port} will continue writing
+on @var{port}, perhaps using some transfer encoding.
+@end deffn
+
+@deffn {Scheme Procedure} response-must-not-include-body? r
+Some responses, like those with status code 304, are specified as never
+having bodies.  This predicate returns @code{#t} for those responses.
+
+Note also, though, that responses to @code{HEAD} requests must also not
+have a body.
+@end deffn
+
+@deffn {Scheme Procedure} response-body-port r [#:decode?=#t] [#:keep-alive?=#t]
+Return an input port from which the body of @var{r} can be read.  The encoding
+of the returned port is set according to @var{r}'s @code{content-type} header,
+when it's textual, except if @var{decode?} is @code{#f}.  Return @code{#f}
+when no body is available.
+
+When @var{keep-alive?} is @code{#f}, closing the returned port also closes
+@var{r}'s response port.
+@end deffn
+
+@deffn {Scheme Procedure} read-response-body r
+Read the response body from @var{r}, as a bytevector.  Returns @code{#f}
+if there was no response body.
+@end deffn
+
+@deffn {Scheme Procedure} write-response-body r bv
+Write @var{bv}, a bytevector, to the port corresponding to the HTTP
+response @var{r}.
+@end deffn
+
+As with requests, the various headers that are typically associated with
+HTTP responses may be accessed with these dedicated accessors.
+@xref{HTTP Headers}, for more information on the format of parsed
+headers.
+
+@deffn {Scheme Procedure} response-accept-ranges response [default=#f]
+@deffnx {Scheme Procedure} response-age response [default='()]
+@deffnx {Scheme Procedure} response-allow response [default='()]
+@deffnx {Scheme Procedure} response-cache-control response [default='()]
+@deffnx {Scheme Procedure} response-connection response [default='()]
+@deffnx {Scheme Procedure} response-content-encoding response [default='()]
+@deffnx {Scheme Procedure} response-content-language response [default='()]
+@deffnx {Scheme Procedure} response-content-length response [default=#f]
+@deffnx {Scheme Procedure} response-content-location response [default=#f]
+@deffnx {Scheme Procedure} response-content-md5 response [default=#f]
+@deffnx {Scheme Procedure} response-content-range response [default=#f]
+@deffnx {Scheme Procedure} response-content-type response [default=#f]
+@deffnx {Scheme Procedure} response-date response [default=#f]
+@deffnx {Scheme Procedure} response-etag response [default=#f]
+@deffnx {Scheme Procedure} response-expires response [default=#f]
+@deffnx {Scheme Procedure} response-last-modified response [default=#f]
+@deffnx {Scheme Procedure} response-location response [default=#f]
+@deffnx {Scheme Procedure} response-pragma response [default='()]
+@deffnx {Scheme Procedure} response-proxy-authenticate response [default=#f]
+@deffnx {Scheme Procedure} response-retry-after response [default=#f]
+@deffnx {Scheme Procedure} response-server response [default=#f]
+@deffnx {Scheme Procedure} response-trailer response [default='()]
+@deffnx {Scheme Procedure} response-transfer-encoding response [default='()]
+@deffnx {Scheme Procedure} response-upgrade response [default='()]
+@deffnx {Scheme Procedure} response-vary response [default='()]
+@deffnx {Scheme Procedure} response-via response [default='()]
+@deffnx {Scheme Procedure} response-warning response [default='()]
+@deffnx {Scheme Procedure} response-www-authenticate response [default=#f]
+Return the given response header, or @var{default} if none was present.
+@end deffn
+
+@deffn {Scheme Procedure} text-content-type? @var{type}
+Return @code{#t} if @var{type}, a symbol as returned by
+@code{response-content-type}, represents a textual type such as
+@code{text/plain}.
+@end deffn
+
+@node Web Client
+@subsection Web Client
+
+@code{(web client)} provides a simple, synchronous HTTP client, built on
+the lower-level HTTP, request, and response modules.
+
+@example
+(use-modules (web client))
+@end example
+
+@deffn {Scheme Procedure} open-socket-for-uri uri
+Return an open input/output port for a connection to URI.  Guile
+dynamically loads GnuTLS for HTTPS support.
+@xref{Guile Preparations,
+how to install the GnuTLS bindings for Guile,, gnutls-guile,
+GnuTLS-Guile}, for more information.
+@end deffn
+
+@deffn {Scheme Procedure} http-get uri arg...
+@deffnx {Scheme Procedure} http-head uri arg...
+@deffnx {Scheme Procedure} http-post uri arg...
+@deffnx {Scheme Procedure} http-put uri arg...
+@deffnx {Scheme Procedure} http-delete uri arg...
+@deffnx {Scheme Procedure} http-trace uri arg...
+@deffnx {Scheme Procedure} http-options uri arg...
+
+Connect to the server corresponding to @var{uri} and make a request over
+HTTP, using the appropriate method (@code{GET}, @code{HEAD}, etc.).
+
+All of these procedures have the same prototype: a URI followed by an
+optional sequence of keyword arguments.  These keyword arguments allow
+you to modify the requests in various ways, for example attaching a body
+to the request, or setting specific headers.  The following table lists
+the keyword arguments and their default values.
+
+@table @code
+@item #:body #f
+@item #:port (open-socket-for-uri @var{uri})]
+@item #:version '(1 . 1)
+@item #:keep-alive? #f
+@item #:headers '()
+@item #:decode-body? #t
+@item #:streaming? #f
+@end table
+
+If you already have a port open, pass it as @var{port}.  Otherwise, a
+connection will be opened to the server corresponding to @var{uri}.  Any
+extra headers in the alist @var{headers} will be added to the request.
+
+If @var{body} is not @code{#f}, a message body will also be sent with
+the HTTP request.  If @var{body} is a string, it is encoded according to
+the content-type in @var{headers}, defaulting to UTF-8.  Otherwise
+@var{body} should be a bytevector, or @code{#f} for no body.  Although a
+message body may be sent with any request, usually only @code{POST} and
+@code{PUT} requests have bodies.
+
+If @var{decode-body?} is true, as is the default, the body of the
+response will be decoded to string, if it is a textual content-type.
+Otherwise it will be returned as a bytevector.
+
+However, if @var{streaming?} is true, instead of eagerly reading the
+response body from the server, this function only reads off the headers.
+The response body will be returned as a port on which the data may be
+read.
+
+Unless @var{keep-alive?} is true, the port will be closed after the full
+response body has been read.
+
+Returns two values: the response read from the server, and the response
+body as a string, bytevector, #f value, or as a port (if
+@var{streaming?} is true).
+@end deffn
+
+@code{http-get} is useful for making one-off requests to web sites.  If
+you are writing a web spider or some other client that needs to handle a
+number of requests in parallel, it's better to build an event-driven URL
+fetcher, similar in structure to the web server (@pxref{Web Server}).
+
+Another option, good but not as performant, would be to use threads,
+possibly via par-map or futures.
+
+@deffn {Scheme Parameter} current-http-proxy
+Either @code{#f} or a non-empty string containing the URL of the HTTP
+proxy server to be used by the procedures in the @code{(web client)}
+module, including @code{open-socket-for-uri}.  Its initial value is
+based on the @env{http_proxy} environment variable.
+
+@example
+(current-http-proxy) @result{} "http://localhost:8123/"
+(parameterize ((current-http-proxy #f))
+  (http-get "http://example.com/"))  ; temporarily bypass proxy
+(current-http-proxy) @result{} "http://localhost:8123/"
+@end example
+@end deffn
+
+@node Web Server
+@subsection Web Server
+
+@code{(web server)} is a generic web server interface, along with a main
+loop implementation for web servers controlled by Guile.
+
+@example
+(use-modules (web server))
+@end example
+
+The lowest layer is the @code{<server-impl>} object, which defines a set
+of hooks to open a server, read a request from a client, write a
+response to a client, and close a server.  These hooks -- @code{open},
+@code{read}, @code{write}, and @code{close}, respectively -- are bound
+together in a @code{<server-impl>} object.  Procedures in this module take a
+@code{<server-impl>} object, if needed.
+
+A @code{<server-impl>} may also be looked up by name.  If you pass the
+@code{http} symbol to @code{run-server}, Guile looks for a variable
+named @code{http} in the @code{(web server http)} module, which should
+be bound to a @code{<server-impl>} object.  Such a binding is made by
+instantiation of the @code{define-server-impl} syntax.  In this way the
+run-server loop can automatically load other backends if available.
+
+The life cycle of a server goes as follows:
+
+@enumerate
+@item
+The @code{open} hook is called, to open the server. @code{open} takes
+zero or more arguments, depending on the backend, and returns an opaque
+server socket object, or signals an error.
+
+@item
+The @code{read} hook is called, to read a request from a new client.
+The @code{read} hook takes one argument, the server socket.  It should
+return three values: an opaque client socket, the request, and the
+request body. The request should be a @code{<request>} object, from
+@code{(web request)}.  The body should be a string or a bytevector, or
+@code{#f} if there is no body.
+
+If the read failed, the @code{read} hook may return #f for the client
+socket, request, and body.
+
+@item
+A user-provided handler procedure is called, with the request and body
+as its arguments.  The handler should return two values: the response,
+as a @code{<response>} record from @code{(web response)}, and the
+response body as bytevector, or @code{#f} if not present.
+
+The respose and response body are run through @code{sanitize-response},
+documented below.  This allows the handler writer to take some
+convenient shortcuts: for example, instead of a @code{<response>}, the
+handler can simply return an alist of headers, in which case a default
+response object is constructed with those headers.  Instead of a
+bytevector for the body, the handler can return a string, which will be
+serialized into an appropriate encoding; or it can return a procedure,
+which will be called on a port to write out the data.  See the
+@code{sanitize-response} documentation, for more.
+
+@item
+The @code{write} hook is called with three arguments: the client
+socket, the response, and the body.  The @code{write} hook returns no
+values.
+
+@item
+At this point the request handling is complete. For a loop, we
+loop back and try to read a new request.
+
+@item
+If the user interrupts the loop, the @code{close} hook is called on
+the server socket.
+@end enumerate
+
+A user may define a server implementation with the following form:
+
+@deffn {Scheme Syntax} define-server-impl name open read write close
+Make a @code{<server-impl>} object with the hooks @var{open},
+@var{read}, @var{write}, and @var{close}, and bind it to the symbol
+@var{name} in the current module.
+@end deffn
+
+@deffn {Scheme Procedure} lookup-server-impl impl
+Look up a server implementation.  If @var{impl} is a server
+implementation already, it is returned directly.  If it is a symbol, the
+binding named @var{impl} in the @code{(web server @var{impl})} module is
+looked up.  Otherwise an error is signaled.
+
+Currently a server implementation is a somewhat opaque type, useful only
+for passing to other procedures in this module, like @code{read-client}.
+@end deffn
+
+The @code{(web server)} module defines a number of routines that use
+@code{<server-impl>} objects to implement parts of a web server.  Given
+that we don't expose the accessors for the various fields of a
+@code{<server-impl>}, indeed these routines are the only procedures with
+any access to the impl objects.
+
+@deffn {Scheme Procedure} open-server impl open-params
+Open a server for the given implementation.  Return one value, the new
+server object.  The implementation's @code{open} procedure is applied to
+@var{open-params}, which should be a list.
+@end deffn
+
+@deffn {Scheme Procedure} read-client impl server
+Read a new client from @var{server}, by applying the implementation's
+@code{read} procedure to the server.  If successful, return three
+values: an object corresponding to the client, a request object, and the
+request body.  If any exception occurs, return @code{#f} for all three
+values.
+@end deffn
+
+@deffn {Scheme Procedure} handle-request handler request body state
+Handle a given request, returning the response and body.
+
+The response and response body are produced by calling the given
+@var{handler} with @var{request} and @var{body} as arguments.
+
+The elements of @var{state} are also passed to @var{handler} as
+arguments, and may be returned as additional values.  The new
+@var{state}, collected from the @var{handler}'s return values, is then
+returned as a list.  The idea is that a server loop receives a handler
+from the user, along with whatever state values the user is interested
+in, allowing the user's handler to explicitly manage its state.
+@end deffn
+
+@deffn {Scheme Procedure} sanitize-response request response body
+``Sanitize'' the given response and body, making them appropriate for
+the given request.
+
+As a convenience to web handler authors, @var{response} may be given as
+an alist of headers, in which case it is used to construct a default
+response.  Ensures that the response version corresponds to the request
+version.  If @var{body} is a string, encodes the string to a bytevector,
+in an encoding appropriate for @var{response}.  Adds a
+@code{content-length} and @code{content-type} header, as necessary.
+
+If @var{body} is a procedure, it is called with a port as an argument,
+and the output collected as a bytevector.  In the future we might try to
+instead use a compressing, chunk-encoded port, and call this procedure
+later, in the write-client procedure.  Authors are advised not to rely on
+the procedure being called at any particular time.
+@end deffn
+
+@deffn {Scheme Procedure} write-client impl server client response body
+Write an HTTP response and body to @var{client}.  If the server and
+client support persistent connections, it is the implementation's
+responsibility to keep track of the client thereafter, presumably by
+attaching it to the @var{server} argument somehow.
+@end deffn
+
+@deffn {Scheme Procedure} close-server impl server
+Release resources allocated by a previous invocation of
+@code{open-server}.
+@end deffn
+
+Given the procedures above, it is a small matter to make a web server:
+
+@deffn {Scheme Procedure} serve-one-client handler impl server state
+Read one request from @var{server}, call @var{handler} on the request
+and body, and write the response to the client.  Return the new state
+produced by the handler procedure.
+@end deffn
+
+@deffn {Scheme Procedure} run-server handler @
+                          [impl='http] [open-params='()] @
+                          arg @dots{}
+Run Guile's built-in web server.
+
+@var{handler} should be a procedure that takes two or more arguments,
+the HTTP request and request body, and returns two or more values, the
+response and response body.
+
+For examples, skip ahead to the next section, @ref{Web Examples}.
+
+The response and body will be run through @code{sanitize-response}
+before sending back to the client.
+
+Additional arguments to @var{handler} are taken from @var{arg}
+@enddots{}.  These arguments comprise a @dfn{state}.  Additional return
+values are accumulated into a new state, which will be used for
+subsequent requests.  In this way a handler can explicitly manage its
+state.
+@end deffn
+
+The default web server implementation is @code{http}, which binds to a
+socket, listening for request on that port.
+
+@deffn {HTTP Implementation} http [#:host=#f] @
+                             [#:family=AF_INET] @
+                             [#:addr=INADDR_LOOPBACK] @
+                             [#:port 8080] [#:socket]
+The default HTTP implementation.  We document it as a function with
+keyword arguments, because that is precisely the way that it is -- all
+of the @var{open-params} to @code{run-server} get passed to the
+implementation's open function.
+
+@example
+;; The defaults: localhost:8080
+(run-server handler)
+;; Same thing
+(run-server handler 'http '())
+;; On a different port
+(run-server handler 'http '(#:port 8081))
+;; IPv6
+(run-server handler 'http '(#:family AF_INET6 #:port 8081))
+;; Custom socket
+(run-server handler 'http `(#:socket ,(sudo-make-me-a-socket)))
+@end example
+@end deffn
+
+@node Web Examples
+@subsection Web Examples
+
+Well, enough about the tedious internals.  Let's make a web application!
+
+@subsubsection Hello, World!
+
+The first program we have to write, of course, is ``Hello, World!''.
+This means that we have to implement a web handler that does what we
+want.
+
+Now we define a handler, a function of two arguments and two return
+values:
+
+@example
+(define (handler request request-body)
+  (values @var{response} @var{response-body}))
+@end example
+
+In this first example, we take advantage of a short-cut, returning an
+alist of headers instead of a proper response object. The response body
+is our payload:
+
+@example
+(define (hello-world-handler request request-body)
+  (values '((content-type . (text/plain)))
+          "Hello World!"))
+@end example
+
+Now let's test it, by running a server with this handler. Load up the
+web server module if you haven't yet done so, and run a server with this
+handler:
+
+@example
+(use-modules (web server))
+(run-server hello-world-handler)
+@end example
+
+By default, the web server listens for requests on
+@code{localhost:8080}.  Visit that address in your web browser to
+test.  If you see the string, @code{Hello World!}, sweet!
+
+@subsubsection Inspecting the Request
+
+The Hello World program above is a general greeter, responding to all
+URIs.  To make a more exclusive greeter, we need to inspect the request
+object, and conditionally produce different results.  So let's load up
+the request, response, and URI modules, and do just that.
+
+@example
+(use-modules (web server)) ; you probably did this already
+(use-modules (web request)
+             (web response)
+             (web uri))
+
+(define (request-path-components request)
+  (split-and-decode-uri-path (uri-path (request-uri request))))
+
+(define (hello-hacker-handler request body)
+  (if (equal? (request-path-components request)
+              '("hacker"))
+      (values '((content-type . (text/plain)))
+              "Hello hacker!")
+      (not-found request)))
+
+(run-server hello-hacker-handler)
+@end example
+
+Here we see that we have defined a helper to return the components of
+the URI path as a list of strings, and used that to check for a request
+to @code{/hacker/}. Then the success case is just as before -- visit
+@code{http://localhost:8080/hacker/} in your browser to check.
+
+You should always match against URI path components as decoded by
+@code{split-and-decode-uri-path}. The above example will work for
+@code{/hacker/}, @code{//hacker///}, and @code{/h%61ck%65r}.
+
+But we forgot to define @code{not-found}!  If you are pasting these
+examples into a REPL, accessing any other URI in your web browser will
+drop your Guile console into the debugger:
+
+@example
+<unnamed port>:38:7: In procedure module-lookup:
+<unnamed port>:38:7: Unbound variable: not-found
+
+Entering a new prompt.  Type `,bt' for a backtrace or `,q' to continue.
+scheme@@(guile-user) [1]> 
+@end example
+
+So let's define the function, right there in the debugger.  As you
+probably know, we'll want to return a 404 response.
+
+@example
+;; Paste this in your REPL
+(define (not-found request)
+  (values (build-response #:code 404)
+          (string-append "Resource not found: "
+                         (uri->string (request-uri request)))))
+
+;; Now paste this to let the web server keep going:
+,continue
+@end example
+
+Now if you access @code{http://localhost/foo/}, you get this error
+message.  (Note that some popular web browsers won't show
+server-generated 404 messages, showing their own instead, unless the 404
+message body is long enough.)
+
+@subsubsection Higher-Level Interfaces
+
+The web handler interface is a common baseline that all kinds of Guile
+web applications can use.  You will usually want to build something on
+top of it, however, especially when producing HTML.  Here is a simple
+example that builds up HTML output using SXML (@pxref{SXML}).
+
+First, load up the modules:
+
+@example
+(use-modules (web server)
+             (web request)
+             (web response)
+             (sxml simple))
+@end example
+
+Now we define a simple templating function that takes a list of HTML
+body elements, as SXML, and puts them in our super template:
+
+@example
+(define (templatize title body)
+  `(html (head (title ,title))
+         (body ,@@body)))
+@end example
+
+For example, the simplest Hello HTML can be produced like this:
+
+@example
+(sxml->xml (templatize "Hello!" '((b "Hi!"))))
+@print{}
+<html><head><title>Hello!</title></head><body><b>Hi!</b></body></html>
+@end example
+
+Much better to work with Scheme data types than to work with HTML as
+strings. Now we define a little response helper:
+
+@example
+(define* (respond #:optional body #:key
+                  (status 200)
+                  (title "Hello hello!")
+                  (doctype "<!DOCTYPE html>\n")
+                  (content-type-params '((charset . "utf-8")))
+                  (content-type 'text/html)
+                  (extra-headers '())
+                  (sxml (and body (templatize title body))))
+  (values (build-response
+           #:code status
+           #:headers `((content-type
+                        . (,content-type ,@@content-type-params))
+                       ,@@extra-headers))
+          (lambda (port)
+            (if sxml
+                (begin
+                  (if doctype (display doctype port))
+                  (sxml->xml sxml port))))))
+@end example
+
+Here we see the power of keyword arguments with default initializers. By
+the time the arguments are fully parsed, the @code{sxml} local variable
+will hold the templated SXML, ready for sending out to the client.
+
+Also, instead of returning the body as a string, @code{respond} gives a
+procedure, which will be called by the web server to write out the
+response to the client.
+
+Now, a simple example using this responder, which lays out the incoming
+headers in an HTML table.
+
+@example
+(define (debug-page request body)
+  (respond
+   `((h1 "hello world!")
+     (table
+      (tr (th "header") (th "value"))
+      ,@@(map (lambda (pair)
+               `(tr (td (tt ,(with-output-to-string
+                               (lambda () (display (car pair))))))
+                    (td (tt ,(with-output-to-string
+                               (lambda ()
+                                 (write (cdr pair))))))))
+             (request-headers request))))))
+
+(run-server debug-page)
+@end example
+
+Now if you visit any local address in your web browser, we actually see
+some HTML, finally.
+
+@subsubsection Conclusion
+
+Well, this is about as far as Guile's built-in web support goes, for
+now.  There are many ways to make a web application, but hopefully by
+standardizing the most fundamental data types, users will be able to
+choose the approach that suits them best, while also being able to
+switch between implementations of the server.  This is a relatively new
+part of Guile, so if you have feedback, let us know, and we can take it
+into account.  Happy hacking on the web!
+
+@c Local Variables:
+@c TeX-master: "guile.texi"
+@c End:

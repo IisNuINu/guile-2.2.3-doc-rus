@@ -1,0 +1,35 @@
+#!/usr/bin/tclsh
+
+set infile [lindex $argv 0]
+set outfile ${infile}s
+
+set fd [open $infile]
+fconfigure $fd -encoding utf-8
+set lines [split [read $fd] \n]
+close $fd
+
+set entries {}
+foreach line $lines {
+    if {[regexp {^\\entry\{(.*)\}\{(.*)\}\{(.*)\}} $line -> f1 f2 f3]} {
+	# HACK to perform the correct E/YO sorting order
+	lappend entries [string tolower $f1] \
+			[string map {\u0451 \u0435} [string tolower $f1]] \
+			$f2 $f3
+    }
+}
+
+set fd [open $outfile w]
+fconfigure $fd -encoding utf-8
+set currInitial {}
+foreach {key0 key page contents} \
+	[lsort -dictionary -stride 4 -index 1 \
+		[lsort -dictionary -stride 4 -index 0 $entries]] {
+    set initial [string toupper [string range $key 0 0]]
+    if {$initial ne $currInitial} {
+	puts $fd "\\initial {$initial}"
+	set currInitial $initial
+    }
+    puts $fd "\\entry {$contents}{$page}"
+}
+
+close $fd

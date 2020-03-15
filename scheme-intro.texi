@@ -1,0 +1,37 @@
+@c -*-texinfo-*-
+@c This is part of the GNU Guile Reference Manual.
+@c Copyright (C)  1996, 1997, 2000, 2001, 2002, 2003, 2004
+@c   Free Software Foundation, Inc.
+@c See the file guile.texi for copying conditions.
+
+@node Guile Scheme
+@section Guile реализация Scheme
+
+Основной язык Guile это Scheme, которая описана в серии отчетов известной
+как @dfn{RnRS}.  @dfn{RnRS} является сокращением от
+@iftex
+@dfn{Revised@math{^n} Report on the Algorithmic Language Scheme}.
+@end iftex
+@ifnottex
+@dfn{Revised^n Report on the Algorithmic Language Scheme}.
+@end ifnottex
+Guile полностью соответствует R5RS (@pxref{Top,
+,Introduction,r5rs,R5RS}), и реализует некоторые аспекты R6RS.
+
+Guile также имеет множество расширений, выходящих за рамки этих отчетов.
+Некоторые из областей, где Guile расширяет R5RS такие:
+
+@itemize @bullet
+@item
+Интерактивная система документации Guile
+
+@item
+Guile поддерживает POSIX-совместиоме сетевое программирование
+
+@item
+GOOPS -- Guile фреймворк для объектно ориентированного программирования.
+@end itemize
+
+@c Local Variables:
+@c TeX-master: "guile.texi"
+@c End:

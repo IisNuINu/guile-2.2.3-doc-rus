@@ -1,0 +1,102 @@
+#
+# Gagin <mikhail-gagin@yandex.ru>, 2018.
+#
+#. extracted from /home/bear/work/guile/doc/guile/en/scheme-intro.texi
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2018-05-07 12:37+0300\n"
+"PO-Revision-Date: 2018-05-10 10:31+0300\n"
+"Last-Translator: Gagin <mikhail-gagin@yandex.ru>\n"
+"Language-Team: Russian <mikhail-gagin@yandex.ru>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Generator: Gtranslator 2.91.7\n"
+"Plural-Forms: nplurals=5; plural=n==1 ? 0 : n==2 ? 1 : n<7 ? 2 : n<11 ? 3 : "
+"4;\n"
+
+#: /home/bear/work/guile/doc/guile/en/scheme-intro.texi:6
+msgid ""
+"@c -*-texinfo-*-\n"
+"@c This is part of the GNU Guile Reference Manual.\n"
+"@c Copyright (C)  1996, 1997, 2000, 2001, 2002, 2003, 2004\n"
+"@c   Free Software Foundation, Inc.\n"
+"@c See the file guile.texi for copying conditions."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/scheme-intro.texi:9
+msgid ""
+"@node Guile Scheme\n"
+"@section Guile's Implementation of Scheme"
+msgstr ""
+"@node Guile Scheme\n"
+"@section Guile реализация Scheme"
+
+#: /home/bear/work/guile/doc/guile/en/scheme-intro.texi:20
+msgid ""
+"Guile's core language is Scheme, which is specified and described in the\n"
+"series of reports known as @dfn{RnRS}.  @dfn{RnRS} is shorthand for the\n"
+"@iftex\n"
+"@dfn{Revised@math{^n} Report on the Algorithmic Language Scheme}.\n"
+"@end iftex\n"
+"@ifnottex\n"
+"@dfn{Revised^n Report on the Algorithmic Language Scheme}.\n"
+"@end ifnottex\n"
+"Guile complies fully with R5RS (@pxref{Top,\n"
+",Introduction,r5rs,R5RS}), and implements some aspects of R6RS."
+msgstr ""
+"Основной язык Guile это Scheme, которая описана в серии отчетов известной\n"
+"как @dfn{RnRS}.  @dfn{RnRS} является сокращением от\n"
+"@iftex\n"
+"@dfn{Revised@math{^n} Report on the Algorithmic Language Scheme}.\n"
+"@end iftex\n"
+"@ifnottex\n"
+"@dfn{Revised^n Report on the Algorithmic Language Scheme}.\n"
+"@end ifnottex\n"
+"Guile полностью соответствует R5RS (@pxref{Top,\n"
+",Introduction,r5rs,R5RS}), и реализует некоторые аспекты R6RS."
+
+#: /home/bear/work/guile/doc/guile/en/scheme-intro.texi:23
+msgid ""
+"Guile also has many extensions that go beyond these reports.  Some of\n"
+"the areas where Guile extends R5RS are:"
+msgstr ""
+"Guile также имеет множество расширений, выходящих за рамки этих отчетов.\n"
+"Некоторые из областей, где Guile расширяет R5RS такие:"
+
+#: /home/bear/work/guile/doc/guile/en/scheme-intro.texi:27
+msgid ""
+"@itemize @bullet\n"
+"@item\n"
+"Guile's interactive documentation system"
+msgstr ""
+"@itemize @bullet\n"
+"@item\n"
+"Интерактивная система документации Guile"
+
+#: /home/bear/work/guile/doc/guile/en/scheme-intro.texi:30
+msgid ""
+"@item\n"
+"Guile's support for POSIX-compliant network programming"
+msgstr ""
+"@item\n"
+"Guile поддерживает POSIX-совместиоме сетевое программирование"
+
+#: /home/bear/work/guile/doc/guile/en/scheme-intro.texi:34
+msgid ""
+"@item\n"
+"GOOPS -- Guile's framework for object oriented programming.\n"
+"@end itemize"
+msgstr ""
+"@item\n"
+"GOOPS -- Guile фреймворк для объектно ориентированного программирования.\n"
+"@end itemize"
+
+#: /home/bear/work/guile/doc/guile/en/scheme-intro.texi:38
+msgid ""
+"@c Local Variables:\n"
+"@c TeX-master: \"guile.texi\"\n"
+"@c End:"
+msgstr ""

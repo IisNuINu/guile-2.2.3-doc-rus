@@ -1,0 +1,3011 @@
+#
+# NuINu <don't@send.my>, 2019.
+#
+#. extracted from /home/bear/work/guile/doc/guile/en/api-io.texi
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2018-05-07 12:36+0300\n"
+"PO-Revision-Date: 2019-03-13 13:31+0300\n"
+"Last-Translator: NuINu <don't@send.my>\n"
+"Language-Team: Russian <don't@send.my>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Generator: Gtranslator 2.91.7\n"
+"Plural-Forms: nplurals=5; plural=n==1 ? 0 : n==2 ? 1 : n<7 ? 2 : n<11 ? 3 : "
+"4;\n"
+
+#: /home/bear/work/guile/doc/guile/en/api-io.texi:6
+msgid ""
+"@c -*-texinfo-*-\n"
+"@c This is part of the GNU Guile Reference Manual.\n"
+"@c Copyright (C)  1996, 1997, 2000, 2001, 2002, 2003, 2004, 2007, 2009,\n"
+"@c   2010, 2011, 2013, 2016  Free Software Foundation, Inc.\n"
+"@c See the file guile.texi for copying conditions."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-io.texi:9
+msgid ""
+"@node Input and Output\n"
+"@section Input and Output"
+msgstr ""
+"@node Input and Output\n"
+"@section Ввод и Вывод"
+
+#: /home/bear/work/guile/doc/guile/en/api-io.texi:27
+msgid ""
+"@menu\n"
+"* Ports::                       What's a port?\n"
+"* Binary I/O::                  Reading and writing bytes.\n"
+"* Encoding::                    Characters as bytes.\n"
+"* Textual I/O::                 Reading and writing characters.\n"
+"* Simple Output::               Simple syntactic sugar solution.\n"
+"* Buffering::                   Controlling when data is written to ports.\n"
+"* Random Access::               Moving around a random access port.\n"
+"* Line/Delimited::              Read and write lines or delimited text.\n"
+"* Default Ports::               Defaults for input, output and errors.\n"
+"* Port Types::                  Types of port and how to make them.\n"
+"* Venerable Port Interfaces::   Procedures from the last millenium.\n"
+"* Using Ports from C::          Nice interfaces for C.\n"
+"* I/O Extensions::              Implementing new port types in C.\n"
+"* Non-Blocking I/O::            How Guile deals with EWOULDBLOCK.\n"
+"* BOM Handling::                Handling of Unicode byte order marks.\n"
+"@end menu"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-io.texi:32
+msgid ""
+"@node Ports\n"
+"@subsection Ports\n"
+"@cindex Port"
+msgstr ""
+"@node Ports\n"
+"@subsection Порты(Ports)\n"
+"@cindex Port"
+
+#: /home/bear/work/guile/doc/guile/en/api-io.texi:36
+msgid ""
+"Ports are the way that Guile performs input and output.  Guile can read\n"
+"in characters or bytes from an @dfn{input port}, or write them out to an\n"
+"@dfn{output port}.  Some ports support both interfaces."
+msgstr ""
+"Порты, это способ, которым Guile выполняет ввод и вывод.  Guile может "
+"читать\n"
+"в символах или байтах из порта ввода(@dfn{input port}), или записывать их\n"
+"в порт вывода(@dfn{output port}).  Некоторые порты поддерживают оба "
+"интерфейса."
+
+#: /home/bear/work/guile/doc/guile/en/api-io.texi:40
+msgid ""
+"There are a number of different port types implemented in Guile.  File\n"
+"ports provide input and output over files, as you might imagine.  For\n"
+"example, we might display a string to a file like this:"
+msgstr ""
+"В Guile реализованы несколько различных типов портов.  Файловые порты\n"
+"обеспечивают ввод и вывод поверх файлов, как вы можете представить. "
+"Например,\n"
+"мы можем отобразить строку в файл, так:"
+
+#: /home/bear/work/guile/doc/guile/en/api-io.texi:46
+msgid ""
+"@example\n"
+"(let ((port (open-output-file \"foo.txt\")))\n"
+"  (display \"Hello, world!\\n\" port)\n"
+"  (close-port port))\n"
+"@end example"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-io.texi:52
+msgid ""
+"There are also string ports, for taking input from a string, or\n"
+"collecting output to a string; bytevector ports, for doing the same but\n"
+"using a bytevector as a source or sink of data; and soft ports, for\n"
+"arranging to call Scheme functions to provide input or handle output.\n"
+"@xref{Port Types}."
+msgstr ""
+"Существуют также строковые порты, для получения ввода из строки или\n"
+"сброса вывода в строку; байтвекторные(bytevector) порты, для того же\n"
+"самого, но используя байтвектор(bytevector) как источника или приемника\n"
+"данных; и программные порты, для организации вызова функций Scheme \n"
+"для обеспечения ввода или обработки вывода.\n"
+"@xref{Port Types}."
+
+#: /home/bear/work/guile/doc/guile/en/api-io.texi:61
+msgid ""
+"Ports should be @dfn{closed} when they are not needed by calling\n"
+"@code{close-port} on them, as in the example above.  This will make sure\n"
+"that any pending output is successfully written out to disk, in the case\n"
+"of a file port, or otherwise to whatever mutable store is backed by the\n"
+"port.  Any error that occurs while writing out that buffered data would\n"
+"also be raised promptly at the @code{close-port}, and not later when the\n"
+"port is closed by the garbage collector.  @xref{Buffering}, for more on\n"
+"buffered output."
+msgstr ""
+"Порты должны быть закрыты(@dfn{closed}) когда они не нужны, вызовом\n"
+"@code{close-port}, как в примере выше.  Это обеспечит успешную запись\n"
+"любого ожидающего вывода на диск, в случае файлового порта, или иным\n"
+"образом в любое изменяемое хранилище поддерживаемое портом. Любая ошибка,\n"
+"которая возникает при записи этих буфферезированных данных, также будет\n"
+"возникать незамедлительно при закрытии порта(@code{close-port}), но не "
+"позднее,\n"
+"когда порт закрывается с помощью сборщика мусора.  @xref{Buffering}, для "
+"получения\n"
+"дополнительной информации о буферизированном выводе."
+
+#: /home/bear/work/guile/doc/guile/en/api-io.texi:69
+msgid ""
+"Closing a port also releases any precious resource the file might have.\n"
+"Usually in Scheme a programmer doesn't have to clean up after their data\n"
+"structures (@pxref{Memory Management}), but most systems have strict\n"
+"limits on how many files can be open, both on a per-process and a\n"
+"system-wide basis.  A program that uses many files should take care not\n"
+"to hit those limits.  The same applies to similar system resources such\n"
+"as pipes and sockets."
+msgstr ""
+"Закрытие порта также освобождает любой драгоценный ресурс, который может\n"
+"иметь файл. Обычно в Scheme программисту не нужно очищать свои структуры\n"
+"данных (@pxref{Memory Management}), но большинство систем имеют жесткие\n"
+"ограничения на количество открытых файлов, как для отдельных процессов,\n"
+"так и для всей системы.  Программа, которая использует много файлов, должна\n"
+"стараться не выходить за эти пределы. То же самое относиться к аналогичным\n"
+"системным ресурсам, таким как сокеты(socket) и каналы/трубы(pipe)."
+
+#: /home/bear/work/guile/doc/guile/en/api-io.texi:74
+msgid ""
+"Indeed for these reasons the above example is not the most idiomatic way\n"
+"to use ports.  It is more common to acquire ports via procedures like\n"
+"@code{call-with-output-file}, which handle the @code{close-port}\n"
+"automatically:"
+msgstr ""
+"Действительно, по этим причинам приведенный выше пример на самый "
+"идеоматичный\n"
+"способ использования портов. В более общем случае получать порты надо через\n"
+"процедуры подобные @code{call-with-output-file}, которые обрабатывают "
+"@code{close-port}\n"
+"автоматически:"
+
+#: /home/bear/work/guile/doc/guile/en/api-io.texi:80
+msgid ""
+"@example\n"
+"(call-with-output-file \"foo.txt\"\n"
+"  (lambda (port)\n"
+"    (display \"Hello, world!\\n\" port)))\n"
+"@end example"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-io.texi:89
+msgid ""
+"Finally, all ports have associated input and output buffers, as\n"
+"appropriate.  Buffering is a common strategy to limit the overhead of\n"
+"small reads and writes: without buffering, each character fetched from a\n"
+"file would involve at least one call into the kernel, and maybe more\n"
+"depending on the character and the encoding.  Instead, Guile will batch\n"
+"reads and writes into internal buffers.  However, sometimes you want to\n"
+"make output on a port show up immediately.  @xref{Buffering}, for more\n"
+"on interfaces to control port buffering."
+msgstr ""
+"Наконец, все порты имеют соответсвтующие входные и выходные буферы, в "
+"зависимости\n"
+"от ситуации. Буферизация это общая стратегия для ограничения накладных "
+"расходов\n"
+"на небольшие операции чтения и записи: без буферизации, каждый символьный "
+"знак извлекаемый\n"
+"из файла, будет включать как минимум один вызов ядра, и, возможно, больше в "
+"зависимости\n"
+"от символа и кодировки. Вместо этого, Guile будет пакетно читать и "
+"записывать во внутренние\n"
+"буферы. Однако, иногда вы хотите сделать вывод в порт и получить отображение "
+"немедленно. См.\n"
+"  @xref{Buffering}, для получения дополнительной информации о управлении "
+"буферизацией порта."
+
+#: /home/bear/work/guile/doc/guile/en/api-io.texi:94
+msgid ""
+"@deffn {Scheme Procedure} port? x\n"
+"@deffnx {C Function} scm_port_p (x)\n"
+"Return a boolean indicating whether @var{x} is a port.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-io.texi:102
+msgid ""
+"@rnindex input-port?\n"
+"@deffn {Scheme Procedure} input-port? x\n"
+"@deffnx {C Function} scm_input_port_p (x)\n"
+"Return @code{#t} if @var{x} is an input port, otherwise return\n"
+"@code{#f}.  Any object satisfying this predicate also satisfies\n"
+"@code{port?}.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-io.texi:110
+msgid ""
+"@rnindex output-port?\n"
+"@deffn {Scheme Procedure} output-port? x\n"
+"@deffnx {C Function} scm_output_port_p (x)\n"
+"Return @code{#t} if @var{x} is an output port, otherwise return\n"
+"@code{#f}.  Any object satisfying this predicate also satisfies\n"
+"@code{port?}.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-io.texi:121
+msgid ""
+"@cindex Closing ports\n"
+"@cindex Port, close\n"
+"@deffn {Scheme Procedure} close-port port\n"
+"@deffnx {C Function} scm_close_port (port)\n"
+"Close the specified port object.  Return @code{#t} if it successfully\n"
+"closes a port or @code{#f} if it was already closed.  An exception may\n"
+"be raised if an error occurs, for example when flushing buffered output.\n"
+"@xref{Buffering}, for more on buffered output.  @xref{Ports and File\n"
+"Descriptors, close}, for a procedure which can close file descriptors.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-io.texi:127
+msgid ""
+"@deffn {Scheme Procedure} port-closed? port\n"
+"@deffnx {C Function} scm_port_closed_p (port)\n"
+"Return @code{#t} if @var{port} is closed or @code{#f} if it is\n"
+"open.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-io.texi:131
+msgid ""
+"@node Binary I/O\n"
+"@subsection Binary I/O"
+msgstr ""
+"@node Binary I/O\n"
+"@subsection Бинарный Ввод/Вывод(Binary I/O)"
+
+#: /home/bear/work/guile/doc/guile/en/api-io.texi:136
+msgid ""
+"Guile's ports are fundamentally binary in nature: at the lowest level,\n"
+"they work on bytes.  This section describes Guile's core binary I/O\n"
+"operations.  @xref{Textual I/O}, for input and output of strings and\n"
+"characters."
+msgstr ""
+"Порты Guile по своей природе являются двоичными: на самом низком уровне,\n"
+"они работают с байтами.  В этом разделе описываются основные операции\n"
+"двоичного ввода/вывода.  @xref{Textual I/O}, для ввода и вывода строк и\n"
+"символьных знаков."
+
+#: /home/bear/work/guile/doc/guile/en/api-io.texi:138
+msgid "To use these routines, first include the binary I/O module:"
+msgstr ""
+"Чтобы использовать эти функции, сначала подключите модуль \n"
+"бинарного ввода/вывода:"
+
+#: /home/bear/work/guile/doc/guile/en/api-io.texi:142
+msgid ""
+"@example\n"
+"(use-modules (ice-9 binary-ports))\n"
+"@end example"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-io.texi:146
+msgid ""
+"Note that although this module's name suggests that binary ports are\n"
+"some different kind of port, that's not the case: all ports in Guile are\n"
+"both binary and textual ports."
+msgstr ""
+"Обратите внимание, что хотя название модуля предполагает, что бинарные "
+"порты\n"
+"отличаются от портов, это не так: все порты Guile являются и бинарными и\n"
+"текстовыми портами."
+
+#: /home/bear/work/guile/doc/guile/en/api-io.texi:153
+msgid ""
+"@cindex binary input\n"
+"@deffn {Scheme Procedure} get-u8 port\n"
+"@deffnx {C Function} scm_get_u8 (port)\n"
+"Return an octet read from @var{port}, an input port, blocking as\n"
+"necessary, or the end-of-file object.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-io.texi:159
+msgid ""
+"@deffn {Scheme Procedure} lookahead-u8 port\n"
+"@deffnx {C Function} scm_lookahead_u8 (port)\n"
+"Like @code{get-u8} but does not update @var{port}'s position to point\n"
+"past the octet.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-io.texi:163
+msgid ""
+"The end-of-file object is unlike any other kind of object: it's not a\n"
+"pair, a symbol, or anything else.  To check if a value is the\n"
+"end-of-file object, use the @code{eof-object?} predicate."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-io.texi:171
+msgid ""
+"@rnindex eof-object?\n"
+"@cindex End of file object\n"
+"@deffn {Scheme Procedure} eof-object? x\n"
+"@deffnx {C Function} scm_eof_object_p (x)\n"
+"Return @code{#t} if @var{x} is an end-of-file object, or @code{#f}\n"
+"otherwise.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-io.texi:174
+msgid ""
+"Note that unlike other procedures in this module, @code{eof-object?} is\n"
+"defined in the default environment."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-io.texi:181
+msgid ""
+"@deffn {Scheme Procedure} get-bytevector-n port count\n"
+"@deffnx {C Function} scm_get_bytevector_n (port, count)\n"
+"Read @var{count} octets from @var{port}, blocking as necessary and\n"
+"return a bytevector containing the octets read.  If fewer bytes are\n"
+"available, a bytevector smaller than @var{count} is returned.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-io.texi:188
+msgid ""
+"@deffn {Scheme Procedure} get-bytevector-n! port bv start count\n"
+"@deffnx {C Function} scm_get_bytevector_n_x (port, bv, start, count)\n"
+"Read @var{count} bytes from @var{port} and store them in @var{bv}\n"
+"starting at index @var{start}.  Return either the number of bytes\n"
+"actually read or the end-of-file object.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-io.texi:196
+msgid ""
+"@deffn {Scheme Procedure} get-bytevector-some port\n"
+"@deffnx {C Function} scm_get_bytevector_some (port)\n"
+"Read from @var{port}, blocking as necessary, until bytes are available\n"
+"or an end-of-file is reached.  Return either the end-of-file object or a\n"
+"new bytevector containing some of the available bytes (at least one),\n"
+"and update the port position to point just past these bytes.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-io.texi:203
+msgid ""
+"@deffn {Scheme Procedure} get-bytevector-all port\n"
+"@deffnx {C Function} scm_get_bytevector_all (port)\n"
+"Read from @var{port}, blocking as necessary, until the end-of-file is\n"
+"reached.  Return either a new bytevector containing the data read or the\n"
+"end-of-file object (if no data were available).\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-io.texi:212
+msgid ""
+"@deffn {Scheme Procedure} unget-bytevector port bv [start [count]]\n"
+"@deffnx {C Function} scm_unget_bytevector (port, bv, start, count)\n"
+"Place the contents of @var{bv} in @var{port}, optionally starting at\n"
+"index @var{start} and limiting to @var{count} octets, so that its bytes\n"
+"will be read from left-to-right as the next bytes from @var{port} during\n"
+"subsequent read operations.  If called multiple times, the unread bytes\n"
+"will be read again in last-in first-out order.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-io.texi:216
+msgid ""
+"@cindex binary output\n"
+"To perform binary output on a port, use @code{put-u8} or\n"
+"@code{put-bytevector}."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-io.texi:222
+msgid ""
+"@deffn {Scheme Procedure} put-u8 port octet\n"
+"@deffnx {C Function} scm_put_u8 (port, octet)\n"
+"Write @var{octet}, an integer in the 0--255 range, to @var{port}, a\n"
+"binary output port.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-io.texi:228
+msgid ""
+"@deffn {Scheme Procedure} put-bytevector port bv [start [count]]\n"
+"@deffnx {C Function} scm_put_bytevector (port, bv, start, count)\n"
+"Write the contents of @var{bv} to @var{port}, optionally starting at\n"
+"index @var{start} and limiting to @var{count} octets.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-io.texi:231
+msgid ""
+"@node Encoding\n"
+"@subsection Encoding"
+msgstr ""
+"@node Encoding\n"
+"@subsection Кодировка(Encoding)"
+
+#: /home/bear/work/guile/doc/guile/en/api-io.texi:236
+msgid ""
+"Textual input and output on Guile ports is layered on top of binary\n"
+"operations.  To this end, each port has an associated character encoding\n"
+"that controls how bytes read from the port are converted to characters,\n"
+"and how characters written to the port are converted to bytes."
+msgstr ""
+"Текстовый ввод и вывод через порты Guile располагается поверх бинарных\n"
+"операций. Каждый порт имеет связанную с ним кодировку символов, которая\n"
+"контролирует, как байты читаемые из порта преобразуются в симольные знаки,\n"
+"и как символьные знаки записвываемые в порт преобразуются в байты."
+
+#: /home/bear/work/guile/doc/guile/en/api-io.texi:242
+msgid ""
+"@deffn {Scheme Procedure} port-encoding port\n"
+"@deffnx {C Function} scm_port_encoding (port)\n"
+"Returns, as a string, the character encoding that @var{port} uses to\n"
+"interpret its input and output.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-io.texi:251
+msgid ""
+"@deffn {Scheme Procedure} set-port-encoding! port enc\n"
+"@deffnx {C Function} scm_set_port_encoding_x (port, enc)\n"
+"Sets the character encoding that will be used to interpret I/O to\n"
+"@var{port}.  @var{enc} is a string containing the name of an encoding.\n"
+"Valid encoding names are those\n"
+"@url{http://www.iana.org/assignments/character-sets, defined by IANA},\n"
+"for example @code{\"UTF-8\"} or @code{\"ISO-8859-1\"}.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-io.texi:255
+msgid ""
+"When ports are created, they are assigned an encoding.  The usual\n"
+"process to determine the initial encoding for a port is to take the\n"
+"value of the @code{%default-port-encoding} fluid."
+msgstr ""
+"Когда порты созданы, им присваивается кодировка.  Обычный процесс "
+"определения\n"
+"начальной кодировки для порта --- получение значения флюида \n"
+"@code{%default-port-encoding}."
+
+#: /home/bear/work/guile/doc/guile/en/api-io.texi:261
+msgid ""
+"@defvr {Scheme Variable} %default-port-encoding\n"
+"A fluid containing name of the encoding to be used by default for newly\n"
+"created ports (@pxref{Fluids and Dynamic States}).  As a special case,\n"
+"the value @code{#f} is equivalent to @code{\"ISO-8859-1\"}.\n"
+"@end defvr"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-io.texi:266
+msgid ""
+"The @code{%default-port-encoding} itself defaults to the encoding\n"
+"appropriate for the current locale, if @code{setlocale} has been called.\n"
+"@xref{Locales}, for more on locales and when you might need to call\n"
+"@code{setlocale} explicitly."
+msgstr ""
+"@code{%default-port-encoding} по умолчанию использует кодировку,\n"
+"соответствующую текущей локали, если @code{setlocale} был вызван.\n"
+"@xref{Locales}, для получения дополнительной информации о локалях\n"
+"и когда вам может понадобитсья вызов @code{setlocale}."
+
+#: /home/bear/work/guile/doc/guile/en/api-io.texi:274
+msgid ""
+"Some port types have other ways of determining their initial locales.\n"
+"String ports, for example, default to the UTF-8 encoding, in order to be\n"
+"able to represent all characters regardless of the current locale.  File\n"
+"ports can optionally sniff their file for a @code{coding:} declaration;\n"
+"@xref{File Ports}.  Binary ports might be initialized to the ISO-8859-1\n"
+"encoding in which each codepoint between 0 and 255 corresponds to a byte\n"
+"with that value."
+msgstr ""
+"Некоторые порты имеют другой способ определения их начальных локалей.\n"
+"Строковые порты, например, по умолчанию используют кодировку UTF-8, \n"
+"чтобы иметь возможность представлять все символы независимо от текущей\n"
+"локали. Файловые порты могут опционально прослушивать свой файл для \n"
+"поиска объявления @code{coding:};\n"
+"@xref{File Ports}.  Двоичные порты могут быть инициализированы в кодировке\n"
+"ISO-8859-1 в которой каждая кодовая точка(codepoint) между 0 и 255 "
+"соответствует\n"
+"байту с этим значением."
+
+#: /home/bear/work/guile/doc/guile/en/api-io.texi:280
+msgid ""
+"Currently, the ports only work with @emph{non-modal} encodings.  Most\n"
+"encodings are non-modal, meaning that the conversion of bytes to a\n"
+"string doesn't depend on its context: the same byte sequence will always\n"
+"return the same string.  A couple of modal encodings are in common use,\n"
+"like ISO-2022-JP and ISO-2022-KR, and they are not yet supported."
+msgstr ""
+"В настоящее время порты работают с не модальными(@emph{non-modal}) "
+"кодировками.\n"
+"Большинство кодировок являются не модальными, это означают что "
+"преобразование\n"
+"байтов в строку не зависит от ее контекста: одна и таже последовательность "
+"байтов\n"
+"всегда возвращает одну и ту же строку.  Несколько модальных кодировок "
+"находятся в\n"
+"общем использовании, таке как ISO-2022-JP и ISO-2022-KR, и они еще не "
+"поддерживаются."
+
+#: /home/bear/work/guile/doc/guile/en/api-io.texi:292
+msgid ""
+"@cindex port conversion strategy\n"
+"@cindex conversion strategy, port\n"
+"@cindex decoding error\n"
+"@cindex encoding error\n"
+"Each port also has an associated conversion strategy, which determines\n"
+"what to do when a Guile character can't be converted to the port's\n"
+"encoded character representation for output.  There are three possible\n"
+"strategies: to raise an error, to replace the character with a hex\n"
+"escape, or to replace the character with a substitute character.  Port\n"
+"conversion strategies are also used when decoding characters from an\n"
+"input port."
+msgstr ""
+"@cindex port conversion strategy\n"
+"@cindex conversion strategy, port\n"
+"@cindex decoding error\n"
+"@cindex encoding error\n"
+"С каждым портом также связана стратегия конвертации, которая определяет, что "
+"делать,\n"
+"когда символьный знак Guile не может быть преобразован в закодированное "
+"представление \n"
+"символьных  знаков порта для вывода. Существует три возможных стратегии:\n"
+"выбросить ошибку, заменить символьный знак с помощью шестнадцатеричного "
+"экранирования,\n"
+"или заменить символьный знак замещающим символьным знаком. Стратегия "
+"преобразования порта\n"
+"также используется при декодировании символов из входного порта."
+
+#: /home/bear/work/guile/doc/guile/en/api-io.texi:297
+msgid ""
+"@deffn {Scheme Procedure} port-conversion-strategy port\n"
+"@deffnx {C Function} scm_port_conversion_strategy (port)\n"
+"Returns the behavior of the port when outputting a character that is not\n"
+"representable in the port's current encoding."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-io.texi:302
+msgid ""
+"If @var{port} is @code{#f}, then the current default behavior will be\n"
+"returned.  New ports will have this default behavior when they are\n"
+"created.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-io.texi:309
+msgid ""
+"@deffn {Scheme Procedure} set-port-conversion-strategy! port sym\n"
+"@deffnx {C Function} scm_set_port_conversion_strategy_x (port, sym)\n"
+"Sets the behavior of Guile when outputting a character that is not\n"
+"representable in the port's current encoding, or when Guile encounters a\n"
+"decoding error when trying to read a character.  @var{sym} can be either\n"
+"@code{error}, @code{substitute}, or @code{escape}."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-io.texi:314
+msgid ""
+"If @var{port} is an open port, the conversion error behavior is set for\n"
+"that port.  If it is @code{#f}, it is set as the default behavior for\n"
+"any future ports that get created in this thread.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-io.texi:317
+msgid ""
+"As with port encodings, there is a fluid which determines the initial\n"
+"conversion strategy for a port."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-io.texi:323
+msgid ""
+"@deffn {Scheme Variable} %default-port-conversion-strategy\n"
+"The fluid that defines the conversion strategy for newly created ports,\n"
+"and also for other conversion routines such as @code{scm_to_stringn},\n"
+"@code{scm_from_stringn}, @code{string->pointer}, and\n"
+"@code{pointer->string}."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-io.texi:326
+msgid ""
+"Its value must be one of the symbols described above, with the same\n"
+"semantics: @code{error}, @code{substitute}, or @code{escape}."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-io.texi:328
+msgid "When Guile starts, its value is @code{substitute}."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-io.texi:333
+msgid ""
+"Note that @code{(set-port-conversion-strategy! #f @var{sym})} is\n"
+"equivalent to @code{(fluid-set! %default-port-conversion-strategy\n"
+"@var{sym})}.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-io.texi:343
+msgid ""
+"As mentioned above, for an output port there are three possible port\n"
+"conversion strategies.  The @code{error} strategy will throw an error\n"
+"when a nonconvertible character is encountered.  The @code{substitute}\n"
+"strategy will replace nonconvertible characters with a question mark\n"
+"(@samp{?}).  Finally the @code{escape} strategy will print\n"
+"nonconvertible characters as a hex escape, using the escaping that is\n"
+"recognized by Guile's string syntax.  Note that if the port's encoding\n"
+"is a Unicode encoding, like @code{UTF-8}, then encoding errors are\n"
+"impossible."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-io.texi:351
+msgid ""
+"For an input port, the @code{error} strategy will cause Guile to throw\n"
+"an error if it encounters an invalid encoding, such as might happen if\n"
+"you tried to read @code{ISO-8859-1} as @code{UTF-8}.  The error is\n"
+"thrown before advancing the read position.  The @code{substitute}\n"
+"strategy will replace the bad bytes with a U+FFFD replacement character,\n"
+"in accordance with Unicode recommendations.  When reading from an input\n"
+"port, the @code{escape} strategy is treated as if it were @code{error}."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-io.texi:357
+msgid ""
+"@node Textual I/O\n"
+"@subsection Textual I/O\n"
+"@cindex textual input\n"
+"@cindex textual output"
+msgstr ""
+"@node Textual I/O\n"
+"@subsection Текстовый Ввод/Вывод(Textual I/O)\n"
+"@cindex textual input\n"
+"@cindex textual output"
+
+#: /home/bear/work/guile/doc/guile/en/api-io.texi:363
+msgid ""
+"This section describes Guile's core textual I/O operations on characters\n"
+"and strings.  @xref{Binary I/O}, for input and output of bytes and\n"
+"bytevectors.  @xref{Encoding}, for more on how characters relate to\n"
+"bytes.  To read general S-expressions from ports, @xref{Scheme Read}.\n"
+"@xref{Scheme Write}, for interfaces that write generic Scheme datums."
+msgstr ""
+"В этом разделе описываются основные текстовые операции ввода/вывода\n"
+"символьных знаков и строк Guile.  @xref{Binary I/O}, для ввода и вывода\n"
+"байтов и байтовых векторов.  @xref{Encoding}, для получения дополнительной\n"
+"информации о том как символьные знаки связаны с байтами. Чтения общих\n"
+"S-выражений из потортов, @xref{Scheme Read}.\n"
+"@xref{Scheme Write}, для интерфейсво которые записывают общие данные\n"
+"Scheme."
+
+#: /home/bear/work/guile/doc/guile/en/api-io.texi:365
+msgid "To use these routines, first include the textual I/O module:"
+msgstr ""
+"Чтобы использовать данные функции, сначала подключите модуль текстового\n"
+"ввода/вывода:"
+
+#: /home/bear/work/guile/doc/guile/en/api-io.texi:369
+msgid ""
+"@example\n"
+"(use-modules (ice-9 textual-ports))\n"
+"@end example"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-io.texi:373
+msgid ""
+"Note that although this module's name suggests that textual ports are\n"
+"some different kind of port, that's not the case: all ports in Guile are\n"
+"both binary and textual ports."
+msgstr ""
+"Обратите внимание, что хотя название модуля предполагает, что текстовые "
+"порты\n"
+"несколько отличаются от портов, это не так: все порты в Guile являются "
+"двоичными\n"
+"и текстовыми одновременно.."
+
+#: /home/bear/work/guile/doc/guile/en/api-io.texi:378
+msgid ""
+"@deffn {Scheme Procedure} get-char input-port\n"
+"Reads from @var{input-port}, blocking as necessary, until a\n"
+"complete character is available from @var{input-port},\n"
+"or until an end of file is reached."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-io.texi:384
+msgid ""
+"If a complete character is available before the next end of file,\n"
+"@code{get-char} returns that character and updates the input port to\n"
+"point past the character. If an end of file is reached before any\n"
+"character is read, @code{get-char} returns the end-of-file object.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-io.texi:389
+msgid ""
+"@deffn {Scheme Procedure} lookahead-char input-port\n"
+"The @code{lookahead-char} procedure is like @code{get-char}, but it does\n"
+"not update @var{input-port} to point past the character.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-io.texi:392
+msgid ""
+"In the same way that it's possible to \"unget\" a byte or bytes, it's\n"
+"possible to \"unget\" the bytes corresponding to an encoded character."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-io.texi:398
+msgid ""
+"@deffn {Scheme Procedure} unget-char port char\n"
+"Place character @var{char} in @var{port} so that it will be read by the\n"
+"next read operation.  If called multiple times, the unread characters\n"
+"will be read again in last-in first-out order.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-io.texi:405
+msgid ""
+"@deffn {Scheme Procedure} unget-string port str\n"
+"Place the string @var{str} in @var{port} so that its characters will\n"
+"be read from left-to-right as the next characters from @var{port}\n"
+"during subsequent read operations.  If called multiple times, the\n"
+"unread characters will be read again in last-in first-out order.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-io.texi:409
+msgid ""
+"Reading in a character at a time can be inefficient.  If it's possible\n"
+"to perform I/O over multiple characters at a time, via strings, that\n"
+"might be faster."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-io.texi:415
+msgid ""
+"@deffn {Scheme Procedure} get-string-n input-port count\n"
+"The @code{get-string-n} procedure reads from @var{input-port}, blocking\n"
+"as necessary, until @var{count} characters are available, or until an\n"
+"end of file is reached.  @var{count} must be an exact, non-negative\n"
+"integer, representing the number of characters to be read."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-io.texi:424
+msgid ""
+"If @var{count} characters are available before end of file,\n"
+"@code{get-string-n} returns a string consisting of those @var{count}\n"
+"characters. If fewer characters are available before an end of file, but\n"
+"one or more characters can be read, @code{get-string-n} returns a string\n"
+"containing those characters. In either case, the input port is updated\n"
+"to point just past the characters read. If no characters can be read\n"
+"before an end of file, the end-of-file object is returned.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-io.texi:431
+msgid ""
+"@deffn {Scheme Procedure} get-string-n! input-port string start count\n"
+"The @code{get-string-n!} procedure reads from @var{input-port} in the\n"
+"same manner as @code{get-string-n}.  @var{start} and @var{count} must be\n"
+"exact, non-negative integer objects, with @var{count} representing the\n"
+"number of characters to be read.  @var{string} must be a string with at\n"
+"least $@var{start} + @var{count}$ characters."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-io.texi:440
+msgid ""
+"If @var{count} characters are available before an end of file, they are\n"
+"written into @var{string} starting at index @var{start}, and @var{count}\n"
+"is returned. If fewer characters are available before an end of file,\n"
+"but one or more can be read, those characters are written into\n"
+"@var{string} starting at index @var{start} and the number of characters\n"
+"actually read is returned as an exact integer object. If no characters\n"
+"can be read before an end of file, the end-of-file object is returned.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-io.texi:444
+msgid ""
+"@deffn {Scheme Procedure} get-string-all input-port\n"
+"Reads from @var{input-port} until an end of file, decoding characters in\n"
+"the same manner as @code{get-string-n} and @code{get-string-n!}."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-io.texi:449
+msgid ""
+"If characters are available before the end of file, a string containing\n"
+"all the characters decoded from that data are returned. If no character\n"
+"precedes the end of file, the end-of-file object is returned.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-io.texi:454
+msgid ""
+"@deffn {Scheme Procedure} get-line input-port\n"
+"Reads from @var{input-port} up to and including the linefeed\n"
+"character or end of file, decoding characters in the same manner as\n"
+"@code{get-string-n} and @code{get-string-n!}."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-io.texi:463
+msgid ""
+"If a linefeed character is read, a string containing all of the text up\n"
+"to (but not including) the linefeed character is returned, and the port\n"
+"is updated to point just past the linefeed character. If an end of file\n"
+"is encountered before any linefeed character is read, but some\n"
+"characters have been read and decoded as characters, a string containing\n"
+"those characters is returned. If an end of file is encountered before\n"
+"any characters are read, the end-of-file object is returned.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-io.texi:466
+msgid ""
+"Finally, there are just two core procedures to write characters to a\n"
+"port."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-io.texi:471
+msgid ""
+"@deffn {Scheme Procedure} put-char port char\n"
+"Writes @var{char} to the port. The @code{put-char} procedure returns\n"
+"an unspecified value.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-io.texi:477
+msgid ""
+"@deffn {Scheme Procedure} put-string port string\n"
+"@deffnx {Scheme Procedure} put-string port string start\n"
+"@deffnx {Scheme Procedure} put-string port string start count\n"
+"Write the @var{count} characters of @var{string} starting at index\n"
+"@var{start} to the port."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-io.texi:482
+msgid ""
+"@var{start} and @var{count} must be non-negative exact integer objects.\n"
+"@var{string} must have a length of at least @math{@var{start} +\n"
+"@var{count}}.  @var{start} defaults to 0.  @var{count} defaults to\n"
+"@math{@code{(string-length @var{string})} - @var{start}}$."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-io.texi:487
+msgid ""
+"Calling @code{put-string} is equivalent in all respects to calling\n"
+"@code{put-char} on the relevant sequence of characters, except that it\n"
+"will attempt to write multiple characters to the port at a time, even if\n"
+"the port is unbuffered."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-io.texi:490
+msgid ""
+"The @code{put-string} procedure returns an unspecified value.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-io.texi:494
+msgid ""
+"Textual ports have a textual position associated with them: a line and a\n"
+"column.  Reading in characters or writing them out advances the line and\n"
+"the column appropriately."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-io.texi:501
+msgid ""
+"@deffn {Scheme Procedure} port-column port\n"
+"@deffnx {Scheme Procedure} port-line port\n"
+"@deffnx {C Function} scm_port_column (port)\n"
+"@deffnx {C Function} scm_port_line (port)\n"
+"Return the current column number or line number of @var{port}.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-io.texi:508
+msgid ""
+"Port lines and positions are represented as 0-origin integers, which is\n"
+"to say that the the first character of the first line is line 0, column\n"
+"0.  However, when you display a line number, for example in an error\n"
+"message, we recommend you add 1 to get 1-origin integers.  This is\n"
+"because lines numbers traditionally start with 1, and that is what\n"
+"non-programmers will find most natural."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-io.texi:515
+msgid ""
+"@deffn {Scheme Procedure} set-port-column! port column\n"
+"@deffnx {Scheme Procedure} set-port-line! port line\n"
+"@deffnx {C Function} scm_set_port_column_x (port, column)\n"
+"@deffnx {C Function} scm_set_port_line_x (port, line)\n"
+"Set the current column or line number of @var{port}.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-io.texi:518
+msgid ""
+"@node Simple Output\n"
+"@subsection Simple Textual Output"
+msgstr ""
+"@node Simple Output\n"
+"@subsection Простой Текстовый Вывод"
+
+#: /home/bear/work/guile/doc/guile/en/api-io.texi:521
+msgid ""
+"Guile exports a simple formatted output function, @code{simple-format}.\n"
+"For a more capable formatted output facility, @xref{Formatted Output}."
+msgstr ""
+"Guile экспортирует простую функцию форматированного вывода, @code{simple-"
+"format}.\n"
+"Для более мощного средства форматированого вывода, @xref{Formatted Output}."
+
+#: /home/bear/work/guile/doc/guile/en/api-io.texi:532
+msgid ""
+"@deffn {Scheme Procedure} simple-format destination message . args\n"
+"@deffnx {C Function} scm_simple_format (destination, message, args)\n"
+"Write @var{message} to @var{destination}, defaulting to the current\n"
+"output port.  @var{message} can contain @code{~A} and @code{~S} escapes.\n"
+"When printed, the escapes are replaced with corresponding members of\n"
+"@var{args}: @code{~A} formats using @code{display} and @code{~S} formats\n"
+"using @code{write}.  If @var{destination} is @code{#t}, then use the\n"
+"current output port, if @var{destination} is @code{#f}, then return a\n"
+"string containing the formatted text.  Does not add a trailing newline.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-io.texi:538
+msgid ""
+"Somewhat confusingly, Guile binds the @code{format} identifier to\n"
+"@code{simple-format} at startup.  Once @code{(ice-9 format)} loads, it\n"
+"actually replaces the core @code{format} binding, so depending on\n"
+"whether you or a module you use has loaded @code{(ice-9 format)}, you\n"
+"may be using the simple or the more capable version."
+msgstr ""
+"Несколько запутанно, Guile связывает идентификатор @code{format} с\n"
+"@code{simple-format} при запуске.  После загрузки @code{(ice-9 format)}, он\n"
+"фактически заменяет привязку @code{format}, поэтому в зависимости от того,\n"
+"загружаете ли вы модуль @code{(ice-9 format)}, вы можете польозваться "
+"простой\n"
+"или более мощной версией."
+
+#: /home/bear/work/guile/doc/guile/en/api-io.texi:542
+msgid ""
+"@node Buffering\n"
+"@subsection Buffering\n"
+"@cindex Port, buffering"
+msgstr ""
+"@node Buffering\n"
+"@subsection Буфферизация\n"
+"@cindex Port, buffering"
+
+#: /home/bear/work/guile/doc/guile/en/api-io.texi:554
+msgid ""
+"Every port has associated input and output buffers.  You can think of\n"
+"ports as being backed by some mutable store, and that store might be far\n"
+"away.  For example, ports backed by file descriptors have to go all the\n"
+"way to the kernel to read and write their data.  To avoid this\n"
+"round-trip cost, Guile usually reads in data from the mutable store in\n"
+"chunks, and then services small requests like @code{get-char} out of\n"
+"that intermediate buffer.  Similarly, small writes like\n"
+"@code{write-char} first go to a buffer, and are sent to the store when\n"
+"the buffer is full (or when port is flushed).  Buffered ports speed up\n"
+"your program by reducing the number of round-trips to the mutable store,\n"
+"and they do so in a way that is mostly transparent to the user."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-io.texi:558
+msgid ""
+"There are two major ways, however, in which buffering affects program\n"
+"semantics.  Building correct, performant programs requires understanding\n"
+"these situations."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-io.texi:571
+msgid ""
+"The first case is in random-access read/write ports (@pxref{Random\n"
+"Access}).  These ports, usually backed by a file, logically operate over\n"
+"the same mutable store when both reading and writing.  So, if you read a\n"
+"character, causing the buffer to fill, then write a character, the bytes\n"
+"you filled in your read buffer are now invalid.  Every time you switch\n"
+"between reading and writing, Guile has to flush any pending buffer.  If\n"
+"this happens frequently, the cost can be high.  In that case you should\n"
+"reduce the amount that you buffer, in both directions.  Similarly, Guile\n"
+"has to flush buffers before seeking.  None of these considerations apply\n"
+"to sockets, which don't logically read from and write to the same\n"
+"mutable store, and are not seekable.  Note also that sockets are\n"
+"unbuffered by default.  @xref{Network Sockets and Communication}."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-io.texi:584
+msgid ""
+"The second case is the more pernicious one.  If you write data to a\n"
+"buffered port, it probably doesn't go out to the mutable store directly.\n"
+"(This ``probably'' introduces some indeterminism in your program: what\n"
+"goes to the store, and when, depends on how full the buffer is.  It is\n"
+"something that the user needs to explicitly be aware of.)  The data is\n"
+"written to the store later -- when the buffer fills up due to another\n"
+"write, or when @code{force-output} is called, or when @code{close-port}\n"
+"is called, or when the program exits, or even when the garbage collector\n"
+"runs.  The salient point is, @emph{the errors are signalled then too}.\n"
+"Buffered writes defer error detection (and defer the side effects to the\n"
+"mutable store), perhaps indefinitely if the port type does not need to\n"
+"be closed at GC."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-io.texi:593
+msgid ""
+"One common heuristic that works well for textual ports is to flush\n"
+"output when a newline (@code{\\n}) is written.  This @dfn{line buffering}\n"
+"mode is on by default for TTY ports.  Most other ports are @dfn{block\n"
+"buffered}, meaning that once the output buffer reaches the block size,\n"
+"which depends on the port and its configuration, the output is flushed\n"
+"as a block, without regard to what is in the block.  Likewise reads are\n"
+"read in at the block size, though if there are fewer bytes available to\n"
+"read, the buffer may not be entirely filled."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-io.texi:598
+msgid ""
+"Note that binary reads or writes that are larger than the buffer size go\n"
+"directly to the mutable store without passing through the buffers.  If\n"
+"your access pattern involves many big reads or writes, buffering might\n"
+"not matter so much to you."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-io.texi:600
+msgid "To control the buffering behavior of a port, use @code{setvbuf}."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-io.texi:606
+msgid ""
+"@deffn {Scheme Procedure} setvbuf port mode [size]\n"
+"@deffnx {C Function} scm_setvbuf (port, mode, size)\n"
+"@cindex port buffering\n"
+"Set the buffering mode for @var{port}.  @var{mode} can be one of the\n"
+"following symbols:"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-io.texi:617
+msgid ""
+"@table @code\n"
+"@item none\n"
+"non-buffered\n"
+"@item line\n"
+"line buffered\n"
+"@item block\n"
+"block buffered, using a newly allocated buffer of @var{size} bytes.\n"
+"If @var{size} is omitted, a default size will be used.\n"
+"@end table\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-io.texi:621
+msgid ""
+"Another way to set the buffering, for file ports, is to open the file\n"
+"with @code{0} or @code{l} as part of the mode string, for unbuffered or\n"
+"line-buffered ports, respectively.  @xref{File Ports}, for more."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-io.texi:625
+msgid ""
+"Any buffered output data will be written out when the port is closed.\n"
+"To make sure to flush it at specific points in your program, use\n"
+"@code{force-otput}."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-io.texi:632
+msgid ""
+"@findex fflush\n"
+"@deffn {Scheme Procedure} force-output [port]\n"
+"@deffnx {C Function} scm_force_output (port)\n"
+"Flush the specified output port, or the current output port if\n"
+"@var{port} is omitted.  The current output buffer contents, if any, are\n"
+"passed to the underlying port implementation."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-io.texi:635
+msgid ""
+"The return value is unspecified.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-io.texi:641
+msgid ""
+"@deffn {Scheme Procedure} flush-all-ports\n"
+"@deffnx {C Function} scm_flush_all_ports ()\n"
+"Equivalent to calling @code{force-output} on all open output ports.  The\n"
+"return value is unspecified.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-io.texi:645
+msgid ""
+"Similarly, sometimes you might want to switch from using Guile's ports\n"
+"to working directly on file descriptors.  In that case, for input ports\n"
+"use @code{drain-input} to get any buffered input from that port."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-io.texi:651
+msgid ""
+"@deffn {Scheme Procedure} drain-input port\n"
+"@deffnx {C Function} scm_drain_input (port)\n"
+"This procedure clears a port's input buffers, similar\n"
+"to the way that force-output clears the output buffer.  The\n"
+"contents of the buffers are returned as a single string, e.g.,"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-io.texi:659
+msgid ""
+"@lisp\n"
+"(define p (open-input-file ...))\n"
+"(drain-input p) => empty string, nothing buffered yet.\n"
+"(unread-char (read-char p) p)\n"
+"(drain-input p) => initial chars from p, up to the buffer size.\n"
+"@end lisp\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-io.texi:665
+msgid ""
+"All of these considerations are very similar to those of streams in the\n"
+"C library, although Guile's ports are not built on top of C streams.\n"
+"Still, it is useful to read what other systems do.\n"
+"@xref{Streams,,,libc,The GNU C Library Reference Manual}, for more\n"
+"discussion on C streams."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-io.texi:671
+msgid ""
+"@node Random Access\n"
+"@subsection Random Access\n"
+"@cindex Random access, ports\n"
+"@cindex Port, random access"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-io.texi:681
+msgid ""
+"@deffn {Scheme Procedure} seek fd_port offset whence\n"
+"@deffnx {C Function} scm_seek (fd_port, offset, whence)\n"
+"Sets the current position of @var{fd_port} to the integer\n"
+"@var{offset}.  For a file port, @var{offset} is expressed\n"
+"as a number of bytes; for other types of ports, such as string\n"
+"ports, @var{offset} is an abstract representation of the\n"
+"position within the port's data, not necessarily expressed\n"
+"as a number of bytes.  @var{offset} is interpreted according to\n"
+"the value of @var{whence}."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-io.texi:695
+msgid ""
+"One of the following variables should be supplied for\n"
+"@var{whence}:\n"
+"@defvar SEEK_SET\n"
+"Seek from the beginning of the file.\n"
+"@end defvar\n"
+"@defvar SEEK_CUR\n"
+"Seek from the current position.\n"
+"@end defvar\n"
+"@defvar SEEK_END\n"
+"Seek from the end of the file.\n"
+"@end defvar\n"
+"If @var{fd_port} is a file descriptor, the underlying system\n"
+"call is @code{lseek}.  @var{port} may be a string port."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-io.texi:702
+msgid ""
+"The value returned is the new position in @var{fd_port}.  This means\n"
+"that the current position of a port can be obtained using:\n"
+"@lisp\n"
+"(seek port 0 SEEK_CUR)\n"
+"@end lisp\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-io.texi:707
+msgid ""
+"@deffn {Scheme Procedure} ftell fd_port\n"
+"@deffnx {C Function} scm_ftell (fd_port)\n"
+"Return an integer representing the current position of\n"
+"@var{fd_port}, measured from the beginning.  Equivalent to:"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-io.texi:712
+msgid ""
+"@lisp\n"
+"(seek port 0 SEEK_CUR)\n"
+"@end lisp\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-io.texi:720
+msgid ""
+"@findex truncate\n"
+"@findex ftruncate\n"
+"@deffn {Scheme Procedure} truncate-file file [length]\n"
+"@deffnx {C Function} scm_truncate_file (file, length)\n"
+"Truncate @var{file} to @var{length} bytes.  @var{file} can be a\n"
+"filename string, a port object, or an integer file descriptor.  The\n"
+"return value is unspecified."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-io.texi:724
+msgid ""
+"For a port or file descriptor @var{length} can be omitted, in which\n"
+"case the file is truncated at the current position (per @code{ftell}\n"
+"above)."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-io.texi:728
+msgid ""
+"On most systems a file can be extended by giving a length greater than\n"
+"the current size, but this is not mandatory in the POSIX standard.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-io.texi:733
+msgid ""
+"@node Line/Delimited\n"
+"@subsection Line Oriented and Delimited Text\n"
+"@cindex Line input/output\n"
+"@cindex Port, line input/output"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-io.texi:735
+msgid "The delimited-I/O module can be accessed with:"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-io.texi:739
+msgid ""
+"@lisp\n"
+"(use-modules (ice-9 rdelim))\n"
+"@end lisp"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-io.texi:742
+msgid ""
+"It can be used to read or write lines of text, or read text delimited by\n"
+"a specified set of characters."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-io.texi:747
+msgid ""
+"@deffn {Scheme Procedure} read-line [port] [handle-delim]\n"
+"Return a line of text from @var{port} if specified, otherwise from the\n"
+"value returned by @code{(current-input-port)}.  Under Unix, a line of text\n"
+"is terminated by the first end-of-line character or by end-of-file."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-io.texi:764
+msgid ""
+"If @var{handle-delim} is specified, it should be one of the following\n"
+"symbols:\n"
+"@table @code\n"
+"@item trim\n"
+"Discard the terminating delimiter.  This is the default, but it will\n"
+"be impossible to tell whether the read terminated with a delimiter or\n"
+"end-of-file.\n"
+"@item concat\n"
+"Append the terminating delimiter (if any) to the returned string.\n"
+"@item peek\n"
+"Push the terminating delimiter (if any) back on to the port.\n"
+"@item split\n"
+"Return a pair containing the string read from the port and the\n"
+"terminating delimiter or end-of-file object.\n"
+"@end table\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-io.texi:771
+msgid ""
+"@deffn {Scheme Procedure} read-line! buf [port]\n"
+"Read a line of text into the supplied string @var{buf} and return the\n"
+"number of characters added to @var{buf}.  If @var{buf} is filled, then\n"
+"@code{#f} is returned.  Read from @var{port} if specified, otherwise\n"
+"from the value returned by @code{(current-input-port)}.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-io.texi:779
+msgid ""
+"@deffn {Scheme Procedure} read-delimited delims [port] [handle-delim]\n"
+"Read text until one of the characters in the string @var{delims} is\n"
+"found or end-of-file is reached.  Read from @var{port} if supplied,\n"
+"otherwise from the value returned by @code{(current-input-port)}.\n"
+"@var{handle-delim} takes the same values as described for\n"
+"@code{read-line}.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-io.texi:783
+msgid ""
+"@c begin (scm-doc-string \"rdelim.scm\" \"read-delimited!\")\n"
+"@deffn {Scheme Procedure} read-delimited! delims buf [port] [handle-delim] "
+"[start] [end]\n"
+"Read text into the supplied string @var{buf}."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-io.texi:787
+msgid ""
+"If a delimiter was found, return the number of characters written,\n"
+"except if @var{handle-delim} is @code{split}, in which case the return\n"
+"value is a pair, as noted above."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-io.texi:791
+msgid ""
+"As a special case, if @var{port} was already at end-of-stream, the EOF\n"
+"object is returned. Also, if no characters were written because the\n"
+"buffer was full, @code{#f} is returned."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-io.texi:794
+msgid ""
+"It's something of a wacky interface, to be honest.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-io.texi:806
+msgid ""
+"@deffn {Scheme Procedure} %read-delimited! delims str gobble [port [start "
+"[end]]]\n"
+"@deffnx {C Function} scm_read_delimited_x (delims, str, gobble, port, start, "
+"end)\n"
+"Read characters from @var{port} into @var{str} until one of the\n"
+"characters in the @var{delims} string is encountered.  If\n"
+"@var{gobble} is true, discard the delimiter character;\n"
+"otherwise, leave it in the input stream for the next read.  If\n"
+"@var{port} is not specified, use the value of\n"
+"@code{(current-input-port)}.  If @var{start} or @var{end} are\n"
+"specified, store data only into the substring of @var{str}\n"
+"bounded by @var{start} and @var{end} (which default to the\n"
+"beginning and end of the string, respectively)."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-io.texi:813
+msgid ""
+" Return a pair consisting of the delimiter that terminated the\n"
+"string and the number of characters read.  If reading stopped\n"
+"at the end of file, the delimiter returned is the\n"
+"@var{eof-object}; if the string was filled without encountering\n"
+"a delimiter, this value is @code{#f}.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-io.texi:823
+msgid ""
+"@deffn {Scheme Procedure} %read-line [port]\n"
+"@deffnx {C Function} scm_read_line (port)\n"
+"Read a newline-terminated line from @var{port}, allocating storage as\n"
+"necessary.  The newline terminator (if any) is removed from the string,\n"
+"and a pair consisting of the line and its delimiter is returned.  The\n"
+"delimiter may be either a newline or the @var{eof-object}; if\n"
+"@code{%read-line} is called at the end of file, it returns the pair\n"
+"@code{(#<eof> . #<eof>)}.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-io.texi:828
+msgid ""
+"@node Default Ports\n"
+"@subsection Default Ports for Input, Output and Errors\n"
+"@cindex Default ports\n"
+"@cindex Port, default"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-io.texi:835
+msgid ""
+"@rnindex current-input-port\n"
+"@deffn {Scheme Procedure} current-input-port\n"
+"@deffnx {C Function} scm_current_input_port ()\n"
+"@cindex standard input\n"
+"Return the current input port.  This is the default port used\n"
+"by many input procedures."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-io.texi:839
+msgid ""
+"Initially this is the @dfn{standard input} in Unix and C terminology.\n"
+"When the standard input is a tty the port is unbuffered, otherwise\n"
+"it's fully buffered."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-io.texi:843
+msgid ""
+"Unbuffered input is good if an application runs an interactive\n"
+"subprocess, since any type-ahead input won't go into Guile's buffer\n"
+"and be unavailable to the subprocess."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-io.texi:848
+msgid ""
+"Note that Guile buffering is completely separate from the tty ``line\n"
+"discipline''.  In the usual cooked mode on a tty Guile only sees a\n"
+"line of input once the user presses @key{Return}.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-io.texi:855
+msgid ""
+"@rnindex current-output-port\n"
+"@deffn {Scheme Procedure} current-output-port\n"
+"@deffnx {C Function} scm_current_output_port ()\n"
+"@cindex standard output\n"
+"Return the current output port.  This is the default port used\n"
+"by many output procedures."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-io.texi:859
+msgid ""
+"Initially this is the @dfn{standard output} in Unix and C terminology.\n"
+"When the standard output is a tty this port is unbuffered, otherwise\n"
+"it's fully buffered."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-io.texi:866
+msgid ""
+"Unbuffered output to a tty is good for ensuring progress output or a\n"
+"prompt is seen.  But an application which always prints whole lines\n"
+"could change to line buffered, or an application with a lot of output\n"
+"could go fully buffered and perhaps make explicit @code{force-output}\n"
+"calls (@pxref{Buffering}) at selected points.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-io.texi:871
+msgid ""
+"@deffn {Scheme Procedure} current-error-port\n"
+"@deffnx {C Function} scm_current_error_port ()\n"
+"@cindex standard error output\n"
+"Return the port to which errors and warnings should be sent."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-io.texi:876
+msgid ""
+"Initially this is the @dfn{standard error} in Unix and C terminology.\n"
+"When the standard error is a tty this port is unbuffered, otherwise\n"
+"it's fully buffered.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-io.texi:887
+msgid ""
+"@deffn {Scheme Procedure} set-current-input-port port\n"
+"@deffnx {Scheme Procedure} set-current-output-port port\n"
+"@deffnx {Scheme Procedure} set-current-error-port port\n"
+"@deffnx {C Function} scm_set_current_input_port (port)\n"
+"@deffnx {C Function} scm_set_current_output_port (port)\n"
+"@deffnx {C Function} scm_set_current_error_port (port)\n"
+"Change the ports returned by @code{current-input-port},\n"
+"@code{current-output-port} and @code{current-error-port}, respectively,\n"
+"so that they use the supplied @var{port} for input or output.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-io.texi:895
+msgid ""
+"@deffn {Scheme Procedure} with-input-from-port port thunk\n"
+"@deffnx {Scheme Procedure} with-output-to-port port thunk\n"
+"@deffnx {Scheme Procedure} with-error-to-port port thunk\n"
+"Call @var{thunk} in a dynamic environment in which\n"
+"@code{current-input-port}, @code{current-output-port} or\n"
+"@code{current-error-port} is rebound to the given @var{port}.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-io.texi:903
+msgid ""
+"@deftypefn {C Function} void scm_dynwind_current_input_port (SCM port)\n"
+"@deftypefnx {C Function} void scm_dynwind_current_output_port (SCM port)\n"
+"@deftypefnx {C Function} void scm_dynwind_current_error_port (SCM port)\n"
+"These functions must be used inside a pair of calls to\n"
+"@code{scm_dynwind_begin} and @code{scm_dynwind_end} (@pxref{Dynamic\n"
+"Wind}).  During the dynwind context, the indicated port is set to\n"
+"@var{port}."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-io.texi:908
+msgid ""
+"More precisely, the current port is swapped with a `backup' value\n"
+"whenever the dynwind context is entered or left.  The backup value is\n"
+"initialized with the @var{port} argument.\n"
+"@end deftypefn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-io.texi:913
+msgid ""
+"@node Port Types\n"
+"@subsection Types of Port\n"
+"@cindex Types of ports\n"
+"@cindex Port, types"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-io.texi:922
+msgid ""
+"@menu\n"
+"* File Ports:: Ports on an operating system file.\n"
+"* Bytevector Ports:: Ports on a bytevector.\n"
+"* String Ports:: Ports on a Scheme string.\n"
+"* Custom Ports:: Ports whose implementation you control.\n"
+"* Soft Ports:: An older version of custom ports.\n"
+"* Void Ports:: Ports on nothing at all.\n"
+"@end menu"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-io.texi:928
+msgid ""
+"@node File Ports\n"
+"@subsubsection File Ports\n"
+"@cindex File port\n"
+"@cindex Port, file"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-io.texi:932
+msgid ""
+"The following procedures are used to open file ports.\n"
+"See also @ref{Ports and File Descriptors, open}, for an interface\n"
+"to the Unix @code{open} system call."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-io.texi:936
+msgid ""
+"All file access uses the ``LFS'' large file support functions when\n"
+"available, so files bigger than 2 Gbytes (@math{2^31} bytes) can be\n"
+"read and written on a 32-bit system."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-io.texi:940
+msgid ""
+"Most systems have limits on how many files can be open, so it's\n"
+"strongly recommended that file ports be closed explicitly when no\n"
+"longer required (@pxref{Ports})."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-io.texi:951
+msgid ""
+"@deffn {Scheme Procedure} open-file filename mode @\n"
+"                          [#:guess-encoding=#f] [#:encoding=#f]\n"
+"@deffnx {C Function} scm_open_file_with_encoding @\n"
+"                     (filename, mode, guess_encoding, encoding)\n"
+"@deffnx {C Function} scm_open_file (filename, mode)\n"
+"Open the file whose name is @var{filename}, and return a port\n"
+"representing that file.  The attributes of the port are\n"
+"determined by the @var{mode} string.  The way in which this is\n"
+"interpreted is similar to C stdio.  The first character must be\n"
+"one of the following:"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-io.texi:964
+msgid ""
+"@table @samp\n"
+"@item r\n"
+"Open an existing file for input.\n"
+"@item w\n"
+"Open a file for output, creating it if it doesn't already exist\n"
+"or removing its contents if it does.\n"
+"@item a\n"
+"Open a file for output, creating it if it doesn't already\n"
+"exist.  All writes to the port will go to the end of the file.\n"
+"The \"append mode\" can be turned off while the port is in use\n"
+"@pxref{Ports and File Descriptors, fcntl}\n"
+"@end table"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-io.texi:966
+msgid "The following additional characters can be appended:"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-io.texi:983
+msgid ""
+"@table @samp\n"
+"@item +\n"
+"Open the port for both input and output.  E.g., @code{r+}: open\n"
+"an existing file for both input and output.\n"
+"@item 0\n"
+"Create an \"unbuffered\" port.  In this case input and output\n"
+"operations are passed directly to the underlying port\n"
+"implementation without additional buffering.  This is likely to\n"
+"slow down I/O operations.  The buffering mode can be changed\n"
+"while a port is in use (@pxref{Buffering}).\n"
+"@item l\n"
+"Add line-buffering to the port.  The port output buffer will be\n"
+"automatically flushed whenever a newline character is written.\n"
+"@item b\n"
+"Use binary mode, ensuring that each byte in the file will be read as one\n"
+"Scheme character."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-io.texi:987
+msgid ""
+"To provide this property, the file will be opened with the 8-bit\n"
+"character encoding \"ISO-8859-1\", ignoring the default port encoding.\n"
+"@xref{Ports}, for more information on port encodings."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-io.texi:991
+msgid ""
+"Note that while it is possible to read and write binary data as\n"
+"characters or strings, it is usually better to treat bytes as octets,\n"
+"and byte sequences as bytevectors.  @xref{Binary I/O}, for more."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-io.texi:998
+msgid ""
+"This option had another historical meaning, for DOS compatibility: in\n"
+"the default (textual) mode, DOS reads a CR-LF sequence as one LF byte.\n"
+"The @code{b} flag prevents this from happening, adding @code{O_BINARY}\n"
+"to the underlying @code{open} call.  Still, the flag is generally useful\n"
+"because of its port encoding ramifications.\n"
+"@end table"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-io.texi:1008
+msgid ""
+"Unless binary mode is requested, the character encoding of the new port\n"
+"is determined as follows: First, if @var{guess-encoding} is true, the\n"
+"@code{file-encoding} procedure is used to guess the encoding of the file\n"
+"(@pxref{Character Encoding of Source Files}).  If @var{guess-encoding}\n"
+"is false or if @code{file-encoding} fails, @var{encoding} is used unless\n"
+"it is also false.  As a last resort, the default port encoding is used.\n"
+"@xref{Ports}, for more information on port encodings.  It is an error to\n"
+"pass a non-false @var{guess-encoding} or @var{encoding} if binary mode\n"
+"is requested."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-io.texi:1012
+msgid ""
+"If a file cannot be opened with the access requested, @code{open-file}\n"
+"throws an exception.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-io.texi:1016
+msgid ""
+"@rnindex open-input-file\n"
+"@deffn {Scheme Procedure} open-input-file filename @\n"
+"       [#:guess-encoding=#f] [#:encoding=#f] [#:binary=#f]"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-io.texi:1028
+msgid ""
+"Open @var{filename} for input.  If @var{binary} is true, open the port\n"
+"in binary mode, otherwise use text mode.  @var{encoding} and\n"
+"@var{guess-encoding} determine the character encoding as described above\n"
+"for @code{open-file}.  Equivalent to\n"
+"@lisp\n"
+"(open-file @var{filename}\n"
+"           (if @var{binary} \"rb\" \"r\")\n"
+"           #:guess-encoding @var{guess-encoding}\n"
+"           #:encoding @var{encoding})\n"
+"@end lisp\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-io.texi:1032
+msgid ""
+"@rnindex open-output-file\n"
+"@deffn {Scheme Procedure} open-output-file filename @\n"
+"       [#:encoding=#f] [#:binary=#f]"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-io.texi:1043
+msgid ""
+"Open @var{filename} for output.  If @var{binary} is true, open the port\n"
+"in binary mode, otherwise use text mode.  @var{encoding} specifies the\n"
+"character encoding as described above for @code{open-file}.  Equivalent\n"
+"to\n"
+"@lisp\n"
+"(open-file @var{filename}\n"
+"           (if @var{binary} \"wb\" \"w\")\n"
+"           #:encoding @var{encoding})\n"
+"@end lisp\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-io.texi:1055
+msgid ""
+"@deffn {Scheme Procedure} call-with-input-file filename proc @\n"
+"        [#:guess-encoding=#f] [#:encoding=#f] [#:binary=#f]\n"
+"@deffnx {Scheme Procedure} call-with-output-file filename proc @\n"
+"        [#:encoding=#f] [#:binary=#f]\n"
+"@rnindex call-with-input-file\n"
+"@rnindex call-with-output-file\n"
+"Open @var{filename} for input or output, and call @code{(@var{proc}\n"
+"port)} with the resulting port.  Return the value returned by\n"
+"@var{proc}.  @var{filename} is opened as per @code{open-input-file} or\n"
+"@code{open-output-file} respectively, and an error is signaled if it\n"
+"cannot be opened."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-io.texi:1061
+msgid ""
+"When @var{proc} returns, the port is closed.  If @var{proc} does not\n"
+"return (e.g.@: if it throws an error), then the port might not be\n"
+"closed automatically, though it will be garbage collected in the usual\n"
+"way if not otherwise referenced.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-io.texi:1076
+msgid ""
+"@deffn {Scheme Procedure} with-input-from-file filename thunk @\n"
+"        [#:guess-encoding=#f] [#:encoding=#f] [#:binary=#f]\n"
+"@deffnx {Scheme Procedure} with-output-to-file filename thunk @\n"
+"        [#:encoding=#f] [#:binary=#f]\n"
+"@deffnx {Scheme Procedure} with-error-to-file filename thunk @\n"
+"        [#:encoding=#f] [#:binary=#f]\n"
+"@rnindex with-input-from-file\n"
+"@rnindex with-output-to-file\n"
+"Open @var{filename} and call @code{(@var{thunk})} with the new port\n"
+"setup as respectively the @code{current-input-port},\n"
+"@code{current-output-port}, or @code{current-error-port}.  Return the\n"
+"value returned by @var{thunk}.  @var{filename} is opened as per\n"
+"@code{open-input-file} or @code{open-output-file} respectively, and an\n"
+"error is signaled if it cannot be opened."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-io.texi:1079
+msgid ""
+"When @var{thunk} returns, the port is closed and the previous setting\n"
+"of the respective current port is restored."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-io.texi:1084
+msgid ""
+"The current port setting is managed with @code{dynamic-wind}, so the\n"
+"previous value is restored no matter how @var{thunk} exits (eg.@: an\n"
+"exception), and if @var{thunk} is re-entered (via a captured\n"
+"continuation) then it's set again to the @var{filename} port."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-io.texi:1091
+msgid ""
+"The port is closed when @var{thunk} returns normally, but not when\n"
+"exited via an exception or new continuation.  This ensures it's still\n"
+"ready for use if @var{thunk} is re-entered by a captured continuation.\n"
+"Of course the port is always garbage collected and closed in the usual\n"
+"way when no longer referenced anywhere.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-io.texi:1099
+msgid ""
+"@deffn {Scheme Procedure} port-mode port\n"
+"@deffnx {C Function} scm_port_mode (port)\n"
+"Return the port modes associated with the open port @var{port}.\n"
+"These will not necessarily be identical to the modes used when\n"
+"the port was opened, since modes such as \"append\" which are\n"
+"used only during port creation are not retained.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-io.texi:1104
+msgid ""
+"@deffn {Scheme Procedure} port-filename port\n"
+"@deffnx {C Function} scm_port_filename (port)\n"
+"Return the filename associated with @var{port}, or @code{#f} if no\n"
+"filename is associated with the port."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-io.texi:1108
+msgid ""
+"@var{port} must be open; @code{port-filename} cannot be used once the\n"
+"port is closed.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-io.texi:1116
+msgid ""
+"@deffn {Scheme Procedure} set-port-filename! port filename\n"
+"@deffnx {C Function} scm_set_port_filename_x (port, filename)\n"
+"Change the filename associated with @var{port}, using the current input\n"
+"port if none is specified.  Note that this does not change the port's\n"
+"source of data, but only the value that is returned by\n"
+"@code{port-filename} and reported in diagnostic output.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-io.texi:1121
+msgid ""
+"@deffn {Scheme Procedure} file-port? obj\n"
+"@deffnx {C Function} scm_file_port_p (obj)\n"
+"Determine whether @var{obj} is a port that is related to a file.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-io.texi:1125
+msgid ""
+"@node Bytevector Ports\n"
+"@subsubsection Bytevector Ports"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-io.texi:1130
+msgid ""
+"@deffn {Scheme Procedure} open-bytevector-input-port bv [transcoder]\n"
+"@deffnx {C Function} scm_open_bytevector_input_port (bv, transcoder)\n"
+"Return an input port whose contents are drawn from bytevector @var{bv}\n"
+"(@pxref{Bytevectors})."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-io.texi:1134
+msgctxt "/home/bear/work/guile/doc/guile/en/api-io.texi:1134"
+msgid ""
+"@c FIXME: Update description when implemented.\n"
+"The @var{transcoder} argument is currently not supported.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-io.texi:1140
+msgid ""
+"@deffn {Scheme Procedure} open-bytevector-output-port [transcoder]\n"
+"@deffnx {C Function} scm_open_bytevector_output_port (transcoder)\n"
+"Return two values: a binary output port and a procedure.  The latter\n"
+"should be called with zero arguments to obtain a bytevector containing\n"
+"the data accumulated by the port, as illustrated below."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-io.texi:1148
+msgid ""
+"@lisp\n"
+"(call-with-values\n"
+"  (lambda ()\n"
+"    (open-bytevector-output-port))\n"
+"  (lambda (port get-bytevector)\n"
+"    (display \"hello\" port)\n"
+"    (get-bytevector)))"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-io.texi:1151
+msgid ""
+"@result{} #vu8(104 101 108 108 111)\n"
+"@end lisp"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-io.texi:1155
+msgctxt "/home/bear/work/guile/doc/guile/en/api-io.texi:1155"
+msgid ""
+"@c FIXME: Update description when implemented.\n"
+"The @var{transcoder} argument is currently not supported.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-io.texi:1161
+msgid ""
+"@node String Ports\n"
+"@subsubsection String Ports\n"
+"@cindex String port\n"
+"@cindex Port, string"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-io.texi:1168
+msgid ""
+"@deffn {Scheme Procedure} call-with-output-string proc\n"
+"@deffnx {C Function} scm_call_with_output_string (proc)\n"
+"Calls the one-argument procedure @var{proc} with a newly created output\n"
+"port.  When the function returns, the string composed of the characters\n"
+"written into the port is returned.  @var{proc} should not close the port.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-io.texi:1175
+msgid ""
+"@deffn {Scheme Procedure} call-with-input-string string proc\n"
+"@deffnx {C Function} scm_call_with_input_string (string, proc)\n"
+"Calls the one-argument procedure @var{proc} with a newly\n"
+"created input port from which @var{string}'s contents may be\n"
+"read.  The value yielded by the @var{proc} is returned.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-io.texi:1181
+msgid ""
+"@deffn {Scheme Procedure} with-output-to-string thunk\n"
+"Calls the zero-argument procedure @var{thunk} with the current output\n"
+"port set temporarily to a new string port.  It returns a string\n"
+"composed of the characters written to the current output.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-io.texi:1187
+msgid ""
+"@deffn {Scheme Procedure} with-input-from-string string thunk\n"
+"Calls the zero-argument procedure @var{thunk} with the current input\n"
+"port set temporarily to a string port opened on the specified\n"
+"@var{string}.  The value yielded by @var{thunk} is returned.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-io.texi:1195
+msgid ""
+"@deffn {Scheme Procedure} open-input-string str\n"
+"@deffnx {C Function} scm_open_input_string (str)\n"
+"Take a string and return an input port that delivers characters\n"
+"from the string. The port can be closed by\n"
+"@code{close-input-port}, though its storage will be reclaimed\n"
+"by the garbage collector if it becomes inaccessible.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-io.texi:1204
+msgid ""
+"@deffn {Scheme Procedure} open-output-string\n"
+"@deffnx {C Function} scm_open_output_string ()\n"
+"Return an output port that will accumulate characters for\n"
+"retrieval by @code{get-output-string}. The port can be closed\n"
+"by the procedure @code{close-output-port}, though its storage\n"
+"will be reclaimed by the garbage collector if it becomes\n"
+"inaccessible.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-io.texi:1210
+msgid ""
+"@deffn {Scheme Procedure} get-output-string port\n"
+"@deffnx {C Function} scm_get_output_string (port)\n"
+"Given an output port created by @code{open-output-string},\n"
+"return a string consisting of the characters that have been\n"
+"output to the port so far."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-io.texi:1214
+msgid ""
+"@code{get-output-string} must be used before closing @var{port}, once\n"
+"closed the string cannot be obtained.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-io.texi:1221
+msgid ""
+"With string ports, the port-encoding is treated differently than other\n"
+"types of ports.  When string ports are created, they do not inherit a\n"
+"character encoding from the current locale.  They are given a\n"
+"default locale that allows them to handle all valid string characters.\n"
+"Typically one should not modify a string port's character encoding\n"
+"away from its default.  @xref{Encoding}."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-io.texi:1225
+msgid ""
+"@node Custom Ports\n"
+"@subsubsection Custom Ports"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-io.texi:1231
+msgid ""
+"Custom ports allow the user to provide input and handle output via\n"
+"user-supplied procedures.  Guile currently only provides custom binary\n"
+"ports, not textual ports; for custom textual ports, @xref{Soft Ports}.\n"
+"We should add the R6RS custom textual port interfaces though.\n"
+"Contributions are appreciated."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-io.texi:1241
+msgid ""
+"@cindex custom binary input ports\n"
+"@deffn {Scheme Procedure} make-custom-binary-input-port id read! get-"
+"position set-position! close\n"
+"Return a new custom binary input port@footnote{This is similar in spirit\n"
+"to Guile's @dfn{soft ports} (@pxref{Soft Ports}).} named @var{id} (a\n"
+"string) whose input is drained by invoking @var{read!} and passing it a\n"
+"bytevector, an index where bytes should be written, and the number of\n"
+"bytes to read.  The @code{read!}  procedure must return an integer\n"
+"indicating the number of bytes read, or @code{0} to indicate the\n"
+"end-of-file."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-io.texi:1247
+msgid ""
+"Optionally, if @var{get-position} is not @code{#f}, it must be a thunk\n"
+"that will be called when @code{port-position} is invoked on the custom\n"
+"binary port and should return an integer indicating the position within\n"
+"the underlying data stream; if @var{get-position} was not supplied, the\n"
+"returned port does not support @code{port-position}."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-io.texi:1252
+msgid ""
+"Likewise, if @var{set-position!} is not @code{#f}, it should be a\n"
+"one-argument procedure.  When @code{set-port-position!} is invoked on the\n"
+"custom binary input port, @var{set-position!} is passed an integer\n"
+"indicating the position of the next byte is to read."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-io.texi:1255
+msgid ""
+"Finally, if @var{close} is not @code{#f}, it must be a thunk.  It is\n"
+"invoked when the custom binary input port is closed."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-io.texi:1258
+msgid ""
+"The returned port is fully buffered by default, but its buffering mode\n"
+"can be changed using @code{setvbuf} (@pxref{Buffering})."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-io.texi:1261
+msgid ""
+"Using a custom binary input port, the @code{open-bytevector-input-port}\n"
+"procedure (@pxref{Bytevector Ports}) could be implemented as follows:"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-io.texi:1266
+msgid ""
+"@lisp\n"
+"(define (open-bytevector-input-port source)\n"
+"  (define position 0)\n"
+"  (define length (bytevector-length source))"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-io.texi:1273
+msgid ""
+"  (define (read! bv start count)\n"
+"    (let ((count (min count (- length position))))\n"
+"      (bytevector-copy! source position\n"
+"                        bv start count)\n"
+"      (set! position (+ position count))\n"
+"      count))"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-io.texi:1275
+msgid "  (define (get-position) position)"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-io.texi:1278
+msgid ""
+"  (define (set-position! new-position)\n"
+"    (set! position new-position))"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-io.texi:1282
+msgid ""
+"  (make-custom-binary-input-port \"the port\" read!\n"
+"                                  get-position set-position!\n"
+"                                  #f))"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-io.texi:1287
+msgid ""
+"(read (open-bytevector-input-port (string->utf8 \"hello\")))\n"
+"@result{} hello\n"
+"@end lisp\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-io.texi:1297
+msgid ""
+"@cindex custom binary output ports\n"
+"@deffn {Scheme Procedure} make-custom-binary-output-port id write! get-"
+"position set-position! close\n"
+"Return a new custom binary output port named @var{id} (a string) whose\n"
+"output is sunk by invoking @var{write!} and passing it a bytevector, an\n"
+"index where bytes should be read from this bytevector, and the number of\n"
+"bytes to be ``written''.  The @code{write!}  procedure must return an\n"
+"integer indicating the number of bytes actually written; when it is\n"
+"passed @code{0} as the number of bytes to write, it should behave as\n"
+"though an end-of-file was sent to the byte sink."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-io.texi:1300
+msgid ""
+"The other arguments are as for @code{make-custom-binary-input-port}.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-io.texi:1313
+msgid ""
+"@cindex custom binary input/output ports\n"
+"@deffn {Scheme Procedure} make-custom-binary-input/output-port id read! "
+"write! get-position set-position! close\n"
+"Return a new custom binary input/output port named @var{id} (a string).\n"
+"The various arguments are the same as for The other arguments are as for\n"
+"@code{make-custom-binary-input-port} and\n"
+"@code{make-custom-binary-output-port}.  If buffering is enabled on the\n"
+"port, as is the case by default, input will be buffered in both\n"
+"directions; @xref{Buffering}.  If the @var{set-position!} function is\n"
+"provided and not @code{#f}, then the port will also be marked as\n"
+"random-access, causing the buffer to be flushed between reads and\n"
+"writes.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-io.texi:1318
+msgid ""
+"@node Soft Ports\n"
+"@subsubsection Soft Ports\n"
+"@cindex Soft port\n"
+"@cindex Port, soft"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-io.texi:1321
+msgid ""
+"A @dfn{soft port} is a port based on a vector of procedures capable of\n"
+"accepting or delivering characters.  It allows emulation of I/O ports."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-io.texi:1327
+msgid ""
+"@deffn {Scheme Procedure} make-soft-port pv modes\n"
+"Return a port capable of receiving or delivering characters as\n"
+"specified by the @var{modes} string (@pxref{File Ports,\n"
+"open-file}).  @var{pv} must be a vector of length 5 or 6.  Its\n"
+"components are as follows:"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-io.texi:1343
+msgid ""
+"@enumerate 0\n"
+"@item\n"
+"procedure accepting one character for output\n"
+"@item\n"
+"procedure accepting a string for output\n"
+"@item\n"
+"thunk for flushing output\n"
+"@item\n"
+"thunk for getting one character\n"
+"@item\n"
+"thunk for closing port (not by garbage collection)\n"
+"@item\n"
+"(if present and not @code{#f}) thunk for computing the number of\n"
+"characters that can be read from the port without blocking.\n"
+"@end enumerate"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-io.texi:1348
+msgid ""
+"For an output-only port only elements 0, 1, 2, and 4 need be\n"
+"procedures.  For an input-only port only elements 3 and 4 need\n"
+"be procedures.  Thunks 2 and 4 can instead be @code{#f} if\n"
+"there is no useful operation for them to perform."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-io.texi:1353
+msgid ""
+"If thunk 3 returns @code{#f} or an @code{eof-object}\n"
+"(@pxref{Input, eof-object?, ,r5rs, The Revised^5 Report on\n"
+"Scheme}) it indicates that the port has reached end-of-file.\n"
+"For example:"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-io.texi:1364
+msgid ""
+"@lisp\n"
+"(define stdout (current-output-port))\n"
+"(define p (make-soft-port\n"
+"           (vector\n"
+"            (lambda (c) (write c stdout))\n"
+"            (lambda (s) (display s stdout))\n"
+"            (lambda () (display \".\" stdout))\n"
+"            (lambda () (char-upcase (read-char)))\n"
+"            (lambda () (display \"@@\" stdout)))\n"
+"           \"rw\"))"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-io.texi:1368
+msgid ""
+"(write p p) @result{} #<input-output: soft 8081e20>\n"
+"@end lisp\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-io.texi:1374
+msgid ""
+"@node Void Ports\n"
+"@subsubsection Void Ports\n"
+"@cindex Void port\n"
+"@cindex Port, void"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-io.texi:1377
+msgid ""
+"This kind of port causes any data to be discarded when written to, and\n"
+"always returns the end-of-file object when read from."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-io.texi:1385
+msgid ""
+"@deffn {Scheme Procedure} %make-void-port mode\n"
+"@deffnx {C Function} scm_sys_make_void_port (mode)\n"
+"Create and return a new void port.  A void port acts like\n"
+"@file{/dev/null}.  The @var{mode} argument\n"
+"specifies the input/output modes for this port: see the\n"
+"documentation for @code{open-file} in @ref{File Ports}.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-io.texi:1389
+msgid ""
+"@node Venerable Port Interfaces\n"
+"@subsection Venerable Port Interfaces"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-io.texi:1399
+msgid ""
+"Over the 25 years or so that Guile has been around, its port system has\n"
+"evolved, adding many useful features.  At the same time there have been\n"
+"four major Scheme standards released in those 25 years, which also\n"
+"evolve the common Scheme understanding of what a port interface should\n"
+"be.  Alas, it would be too much to ask for all of these evolutionary\n"
+"branches to be consistent.  Some of Guile's original interfaces don't\n"
+"mesh with the later Scheme standards, and yet Guile can't just drop old\n"
+"interfaces.  Sadly as well, the R6RS and R7RS standards both part from a\n"
+"base of R5RS, but end up in different and somewhat incompatible designs."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-io.texi:1408
+msgid ""
+"Guile's approach is to pick a set of port primitives that make sense\n"
+"together.  We document that set of primitives, design our internal\n"
+"interfaces around them, and recommend them to users.  As the R6RS I/O\n"
+"system is the most capable standard that Scheme has yet produced in this\n"
+"domain, we mostly recommend that; @code{(ice-9 binary-ports)} and\n"
+"@code{(ice-9 textual-ports)} are wholly modelled on @code{(rnrs io\n"
+"ports)}.  Guile does not wholly copy R6RS, however; @xref{R6RS\n"
+"Incompatibilities}."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-io.texi:1415
+msgid ""
+"At the same time, we have many venerable port interfaces, lore handed\n"
+"down to us from our hacker ancestors.  Most of these interfaces even\n"
+"predate the expectation that Scheme should have modules, so they are\n"
+"present in the default environment.  In Guile we support them as well\n"
+"and we have no plans to remove them, but again we don't recommend them\n"
+"for new users."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-io.texi:1423
+msgid ""
+"@rnindex char-ready?\n"
+"@deffn {Scheme Procedure} char-ready? [port]\n"
+"Return @code{#t} if a character is ready on input @var{port}\n"
+"and return @code{#f} otherwise.  If @code{char-ready?} returns\n"
+"@code{#t} then the next @code{read-char} operation on\n"
+"@var{port} is guaranteed not to hang.  If @var{port} is a file\n"
+"port at end of file then @code{char-ready?} returns @code{#t}."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-io.texi:1432
+msgid ""
+"@code{char-ready?} exists to make it possible for a\n"
+"program to accept characters from interactive ports without\n"
+"getting stuck waiting for input.  Any input editors associated\n"
+"with such ports must make sure that characters whose existence\n"
+"has been asserted by @code{char-ready?} cannot be rubbed out.\n"
+"If @code{char-ready?} were to return @code{#f} at end of file,\n"
+"a port at end of file would be indistinguishable from an\n"
+"interactive port that has no ready characters."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-io.texi:1444
+msgid ""
+"Note that @code{char-ready?} only works reliably for terminals and\n"
+"sockets with one-byte encodings.  Under the hood it will return\n"
+"@code{#t} if the port has any input buffered, or if the file descriptor\n"
+"that backs the port polls as readable, indicating that Guile can fetch\n"
+"more bytes from the kernel.  However being able to fetch one byte\n"
+"doesn't mean that a full character is available; @xref{Encoding}.  Also,\n"
+"on many systems it's possible for a file descriptor to poll as readable,\n"
+"but then block when it comes time to read bytes.  Note also that on\n"
+"Linux kernels, all file ports backed by files always poll as readable.\n"
+"For non-file ports, this procedure always returns @code{#t}, except for\n"
+"soft ports, which have a @code{char-ready?} handler.  @xref{Soft Ports}."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-io.texi:1449
+msgid ""
+"In short, this is a legacy procedure whose semantics are hard to\n"
+"provide.  However it is a useful check to see if any input is buffered.\n"
+"@xref{Non-Blocking I/O}.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-io.texi:1455
+msgid ""
+"@rnindex read-char\n"
+"@deffn {Scheme Procedure} read-char [port]\n"
+"The same as @code{get-char}, except that @var{port} defaults to the\n"
+"current input port.  @xref{Textual I/O}.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-io.texi:1461
+msgid ""
+"@rnindex peek-char\n"
+"@deffn {Scheme Procedure} peek-char [port]\n"
+"The same as @code{lookahead-char}, except that @var{port} defaults to\n"
+"the current input port.  @xref{Textual I/O}.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-io.texi:1466
+msgid ""
+"@deffn {Scheme Procedure} unread-char cobj [port]\n"
+"The same as @code{unget-char}, except that @var{port} defaults to the\n"
+"current input port, and the arguments are swapped.  @xref{Textual I/O}.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-io.texi:1472
+msgid ""
+"@deffn {Scheme Procedure} unread-string str port\n"
+"@deffnx {C Function} scm_unread_string (str, port)\n"
+"The same as @code{unget-string}, except that @var{port} defaults to the\n"
+"current input port, and the arguments are swapped.  @xref{Textual I/O}.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-io.texi:1478
+msgid ""
+"@rnindex newline\n"
+"@deffn {Scheme Procedure} newline [port]\n"
+"Send a newline to @var{port}.  If @var{port} is omitted, send to the\n"
+"current output port.  Equivalent to @code{(put-char port #\\newline)}.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-io.texi:1484
+msgid ""
+"@rnindex write-char\n"
+"@deffn {Scheme Procedure} write-char chr [port]\n"
+"The same as @code{put-char}, except that @var{port} defaults to the\n"
+"current input port, and the arguments are swapped.  @xref{Textual I/O}.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-io.texi:1487
+msgid ""
+"@node Using Ports from C\n"
+"@subsection Using Ports from C"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-io.texi:1490
+msgid ""
+"Guile's C interfaces provides some niceties for sending and receiving\n"
+"bytes and characters in a way that works better with C."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-io.texi:1495
+msgid ""
+"@deftypefn {C Function} size_t scm_c_read (SCM port, void *buffer, size_t "
+"size)\n"
+"Read up to @var{size} bytes from @var{port} and store them in\n"
+"@var{buffer}.  The return value is the number of bytes actually read,\n"
+"which can be less than @var{size} if end-of-file has been reached."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-io.texi:1499
+msgid ""
+"Note that as this is a binary input procedure, this function does not\n"
+"update @code{port-line} and @code{port-column} (@pxref{Textual I/O}).\n"
+"@end deftypefn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-io.texi:1502
+msgid ""
+"@deftypefn {C Function} void scm_c_write (SCM port, const void *buffer, "
+"size_t size)\n"
+"Write @var{size} bytes at @var{buffer} to @var{port}."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-io.texi:1506
+msgid ""
+"Note that as this is a binary output procedure, this function does not\n"
+"update @code{port-line} and @code{port-column} (@pxref{Textual I/O}).\n"
+"@end deftypefn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-io.texi:1514
+msgid ""
+"@deftypefn {C Function} size_t scm_c_read_bytes (SCM port, SCM bv, size_t "
+"start, size_t count)\n"
+"@deftypefnx {C Function} void scm_c_write_bytes (SCM port, SCM bv, size_t "
+"start, size_t count)\n"
+"Like @code{scm_c_read} and @code{scm_c_write}, but reading into or\n"
+"writing from the bytevector @var{bv}.  @var{count} indicates the byte\n"
+"index at which to start in the bytevector, and the read or write will\n"
+"continue for @var{count} bytes.\n"
+"@end deftypefn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-io.texi:1521
+msgid ""
+"@deftypefn {C Function} void scm_unget_bytes (const unsigned char *buf, "
+"size_t len, SCM port)\n"
+"@deftypefnx {C Function} void scm_unget_byte (int c, SCM port)\n"
+"@deftypefnx {C Function} void scm_ungetc (scm_t_wchar c, SCM port)\n"
+"Like @code{unget-bytevector}, @code{unget-byte}, and @code{unget-char},\n"
+"respectively.  @xref{Textual I/O}.\n"
+"@end deftypefn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-io.texi:1529
+msgid ""
+"@deftypefn {C Function} void scm_c_put_latin1_chars (SCM port, const "
+"scm_t_uint8 *buf, size_t len)\n"
+"@deftypefnx {C Function} void scm_c_put_utf32_chars (SCM port, const "
+"scm_t_uint32 *buf, size_t len);\n"
+"Write a string to @var{port}.  In the first case, the\n"
+"@code{scm_t_uint8*} buffer is a string in the latin-1 encoding.  In the\n"
+"second, the @code{scm_t_uint32*} buffer is a string in the UTF-32\n"
+"encoding.  These routines will update the port's line and column.\n"
+"@end deftypefn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-io.texi:1532
+msgid ""
+"@node I/O Extensions\n"
+"@subsection Implementing New Port Types in C"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-io.texi:1543
+msgid ""
+"This section describes how to implement a new port type in C.  Although\n"
+"ports support many operations, as a data structure they present an\n"
+"opaque interface to the user.  To the port implementor, you have two\n"
+"pieces of information to work with: the port type, and the port's\n"
+"``stream''.  The port type is an opaque pointer allocated when defining\n"
+"your port type.  It is your key into the port API, and it helps you\n"
+"identify which ports are actually yours.  The ``stream'' is a pointer\n"
+"you control, and which you set when you create a port.  Get a stream\n"
+"from a port using the @code{SCM_STREAM} macro.  Note that your port\n"
+"methods are only ever called with ports of your type."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-io.texi:1547
+msgid ""
+"A port type is created by calling @code{scm_make_port_type}.  Once you\n"
+"have your port type, you can create ports with @code{scm_c_make_port},\n"
+"or @code{scm_c_make_port_with_encoding}."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-io.texi:1554
+msgid ""
+"@deftypefun scm_t_port_type* scm_make_port_type (char *name, size_t (*read) "
+"(SCM port, SCM dst, size_t start, size_t count), size_t (*write) (SCM port, "
+"SCM src, size_t start, size_t count))\n"
+"Define a new port type.  The @var{name}, @var{read} and @var{write}\n"
+"parameters are initial values for those port type fields, as described\n"
+"below.  The other fields are initialized with default values and can be\n"
+"changed later.\n"
+"@end deftypefun"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-io.texi:1565
+msgid ""
+"@deftypefun SCM scm_c_make_port_with_encoding (scm_t_port_type *type, "
+"unsigned long mode_bits, SCM encoding, SCM conversion_strategy, scm_t_bits "
+"stream)\n"
+"@deftypefunx SCM scm_c_make_port (scm_t_port_type *type, unsigned long "
+"mode_bits, scm_t_bits stream)\n"
+"Make a port with the given @var{type}.  The @var{stream} indicates the\n"
+"private data associated with the port, which your port implementation\n"
+"may later retrieve with @code{SCM_STREAM}.  The mode bits should include\n"
+"one or more of the flags @code{SCM_RDNG} or @code{SCM_WRTNG}, indicating\n"
+"that the port is an input and/or an output port, respectively.  The mode\n"
+"bits may also include @code{SCM_BUF0} or @code{SCM_BUFLINE}, indicating\n"
+"that the port should be unbuffered or line-buffered, respectively.  The\n"
+"default is that the port will be block-buffered.  @xref{Buffering}."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-io.texi:1572
+msgid ""
+"As you would imagine, @var{encoding} and @var{conversion_strategy}\n"
+"specify the port's initial textual encoding and conversion strategy.\n"
+"Both are symbols.  @code{scm_c_make_port} is the same as\n"
+"@code{scm_c_make_port_with_encoding}, except it uses the default port\n"
+"encoding and conversion strategy.\n"
+"@end deftypefun"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-io.texi:1576
+msgid ""
+"The port type has a number of associate procedures and properties which\n"
+"collectively implement the port's behavior.  Creating a new port type\n"
+"mostly involves writing these procedures."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-io.texi:1582
+msgid ""
+"@table @code\n"
+"@item name\n"
+"A pointer to a NUL terminated string: the name of the port type.  This\n"
+"property is initialized via the first argument to\n"
+"@code{scm_make_port_type}."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-io.texi:1588
+msgid ""
+"@item read\n"
+"A port's @code{read} implementation fills read buffers.  It should copy\n"
+"bytes to the supplied bytevector @code{dst}, starting at offset\n"
+"@code{start} and continuing for @code{count} bytes, returning the number\n"
+"of bytes read."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-io.texi:1595
+msgid ""
+"@item write\n"
+"A port's @code{write} implementation flushes write buffers to the\n"
+"mutable store.  A port's @code{read} implementation fills read buffers.\n"
+"It should write out bytes from the supplied bytevector @code{src},\n"
+"starting at offset @code{start} and continuing for @code{count} bytes,\n"
+"and return the number of bytes that were written."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-io.texi:1604
+msgid ""
+"@item read_wait_fd\n"
+"@itemx write_wait_fd\n"
+"If a port's @code{read} or @code{write} function returns @code{(size_t)\n"
+"-1}, that indicates that reading or writing would block.  In that case\n"
+"to preserve the illusion of a blocking read or write operation, Guile's\n"
+"C port run-time will @code{poll} on the file descriptor returned by\n"
+"either the port's @code{read_wait_fd} or @code{write_wait_fd} function.\n"
+"Set using"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-io.texi:1608
+msgid ""
+"@deftypefun void scm_set_port_read_wait_fd (scm_t_port_type *type, int "
+"(*wait_fd) (SCM port))\n"
+"@deftypefunx void scm_set_port_write_wait_fd (scm_t_port_type *type, int "
+"(*wait_fd) (SCM port))\n"
+"@end deftypefun"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-io.texi:1613
+msgid ""
+"Only a port type which implements the @code{read_wait_fd} or\n"
+"@code{write_wait_fd} port methods can usefully return @code{(size_t) -1}\n"
+"from a read or write function.  @xref{Non-Blocking I/O}, for more on\n"
+"non-blocking I/O in Guile."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-io.texi:1618
+msgid ""
+"@item print\n"
+"Called when @code{write} is called on the port, to print a port\n"
+"description.  For example, for a file port it may produce something\n"
+"like: @code{#<input: /etc/passwd 3>}.  Set using"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-io.texi:1623
+msgid ""
+"@deftypefun void scm_set_port_print (scm_t_port_type *type, int (*print) "
+"(SCM port, SCM dest_port, scm_print_state *pstate))\n"
+"The first argument @var{port} is the port being printed, the second\n"
+"argument @var{dest_port} is where its description should go.\n"
+"@end deftypefun"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-io.texi:1627
+msgid ""
+"@item close\n"
+"Called when the port is closed.  It should free any resources used by\n"
+"the port.  Set using"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-io.texi:1630
+msgid ""
+"@deftypefun void scm_set_port_close (scm_t_port_type *type, void (*close) "
+"(SCM port))\n"
+"@end deftypefun"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-io.texi:1636
+msgid ""
+"By default, ports that are garbage collected just go away without\n"
+"closing.  If your port type needs to release some external resource like\n"
+"a file descriptor, or needs to make sure that its internal buffers are\n"
+"flushed even if the port is collected while it was open, then mark the\n"
+"port type as needing a close on GC."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-io.texi:1639
+msgid ""
+"@deftypefun void scm_set_port_needs_close_on_gc (scm_t_port_type *type, int "
+"needs_close_p)\n"
+"@end deftypefun"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-io.texi:1643
+msgid ""
+"@item seek\n"
+"Set the current position of the port.  Guile will flush read and/or\n"
+"write buffers before seeking, as appropriate."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-io.texi:1646
+msgid ""
+"@deftypefun void scm_set_port_seek (scm_t_port_type *type, scm_t_off (*seek) "
+"(SCM port, scm_t_off offset, int whence))\n"
+"@end deftypefun"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-io.texi:1650
+msgid ""
+"@item truncate\n"
+"Truncate the port data to be specified length.  Guile will flush buffers\n"
+"before hand, as appropriate.  Set using"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-io.texi:1653
+msgid ""
+"@deftypefun void scm_set_port_truncate (scm_t_port_type *type, void "
+"(*truncate) (SCM port, scm_t_off length))\n"
+"@end deftypefun"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-io.texi:1656
+msgid ""
+"@item random_access_p\n"
+"Determine whether this port is a random-access port."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-io.texi:1664
+msgid ""
+"@cindex random access\n"
+"Seeking on a random-access port with buffered input, or switching to\n"
+"writing after reading, will cause the buffered input to be discarded and\n"
+"Guile will seek the port back the buffered number of bytes.  Likewise\n"
+"seeking on a random-access port with buffered output, or switching to\n"
+"reading after writing, will flush pending bytes with a call to the\n"
+"@code{write} procedure.  @xref{Buffering}."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-io.texi:1669
+msgid ""
+"Indicate to Guile that your port needs this behavior by returning a\n"
+"nonzero value from your @code{random_access_p} function.  The default\n"
+"implementation of this function returns nonzero if the port type\n"
+"supplies a seek implementation."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-io.texi:1672
+msgid ""
+"@deftypefun void scm_set_port_random_access_p (scm_t_port_type *type, int "
+"(*random_access_p) (SCM port));\n"
+"@end deftypefun"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-io.texi:1678
+msgid ""
+"@item get_natural_buffer_sizes\n"
+"Guile will internally attach buffers to ports.  An input port always has\n"
+"a read buffer and an output port always has a write buffer.\n"
+"@xref{Buffering}.  A port buffer consists of a bytevector, along with\n"
+"some cursors into that bytevector denoting where to get and put data."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-io.texi:1685
+msgid ""
+"Port implementations generally don't have to be concerned with\n"
+"buffering: a port type's @code{read} or @code{write} function will\n"
+"receive the buffer's bytevector as an argument, along with an offset and\n"
+"a length into that bytevector, and should then either fill or empty that\n"
+"bytevector.  However in some cases, port implementations may be able to\n"
+"provide an appropriate default buffer size to Guile."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-io.texi:1690
+msgid ""
+"@deftypefun void scm_set_port_get_natural_buffer_sizes @\n"
+"  (scm_t_port_type *type, void (*get_natural_buffer_sizes) (SCM, size_t "
+"*read_buf_size, size_t *write_buf_size))\n"
+"Fill in @var{read_buf_size} and @var{write_buf_size} with an appropriate "
+"buffer size for this port, if one is known.\n"
+"@end deftypefun"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-io.texi:1695
+msgid ""
+"File ports implement a @code{get_natural_buffer_sizes} to let the\n"
+"operating system inform Guile about the appropriate buffer sizes for the\n"
+"particular file opened by the port.\n"
+"@end table"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-io.texi:1702
+msgid ""
+"Note that calls to all of these methods can proceed in parallel and\n"
+"concurrently and from any thread up until the point that the port is\n"
+"closed.  The call to @code{close} will happen when no other method is\n"
+"running, and no method will be called after the @code{close} method is\n"
+"called.  If your port implementation needs mutual exclusion to prevent\n"
+"concurrency, it is responsible for locking appropriately."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-io.texi:1705
+msgid ""
+"@node Non-Blocking I/O\n"
+"@subsection Non-Blocking I/O"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-io.texi:1711
+msgid ""
+"Most ports in Guile are @dfn{blocking}: when you try to read a character\n"
+"from a port, Guile will block on the read until a character is ready, or\n"
+"end-of-stream is detected.  Likewise whenever Guile goes to write\n"
+"(possibly buffered) data to an output port, Guile will block until all\n"
+"the data is written."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-io.texi:1715
+msgid ""
+"Interacting with ports in blocking mode is very convenient: you can\n"
+"write straightforward, sequential algorithms whose code flow reflects\n"
+"the flow of data.  However, blocking I/O has two main limitations."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-io.texi:1724
+msgid ""
+"The first is that it's easy to get into a situation where code is\n"
+"waiting on data.  Time spent waiting on data when code could be doing\n"
+"something else is wasteful and prevents your program from reaching its\n"
+"peak throughput.  If you implement a web server that sequentially\n"
+"handles requests from clients, it's very easy for the server to end up\n"
+"waiting on a client to finish its HTTP request, or waiting on it to\n"
+"consume the response.  The end result is that you are able to serve\n"
+"fewer requests per second than you'd like to serve."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-io.texi:1731
+msgid ""
+"The second limitation is related: a blocking parser over user-controlled\n"
+"input is a denial-of-service vulnerability.  Indeed the so-called ``slow\n"
+"loris'' attack of the early 2010s was just that: an attack on common web\n"
+"servers that drip-fed HTTP requests, one character at a time.  All it\n"
+"took was a handful of slow loris connections to occupy an entire web\n"
+"server."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-io.texi:1735
+msgid ""
+"In Guile we would like to preserve the ability to write straightforward\n"
+"blocking networking processes of all kinds, but under the hood to allow\n"
+"those processes to suspend their requests if they would block."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-io.texi:1741
+msgid ""
+"To do this, the first piece is to allow Guile ports to declare\n"
+"themselves as being nonblocking.  This is currently supported only for\n"
+"file ports, which also includes sockets, terminals, or any other port\n"
+"that is backed by a file descriptor.  To do that, we use an arcane UNIX\n"
+"incantation:"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-io.texi:1746
+msgid ""
+"@example\n"
+"(let ((flags (fcntl socket F_GETFL)))\n"
+"  (fcntl socket F_SETFL (logior O_NONBLOCK flags)))\n"
+"@end example"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-io.texi:1753
+msgid ""
+"Now the file descriptor is open in non-blocking mode.  If Guile tries to\n"
+"read or write from this file and the read or write returns a result\n"
+"indicating that more data can only be had by doing a blocking read or\n"
+"write, Guile will block by polling on the socket's @code{read-wait-fd}\n"
+"or @code{write-wait-fd}, to preserve the illusion of a blocking read or\n"
+"write.  @xref{I/O Extensions} for more on those internal interfaces."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-io.texi:1759
+msgid ""
+"So far we have just reproduced the status quo: the file descriptor is\n"
+"non-blocking, but the operations on the port do block.  To go farther,\n"
+"it would be nice if we could suspend the ``thread'' using delimited\n"
+"continuations, and only resume the thread once the file descriptor is\n"
+"readable or writable.  (@xref{Prompts})."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-io.texi:1764
+msgid ""
+"But here we run into a difficulty.  The ports code is implemented in C,\n"
+"which means that although we can suspend the computation to some outer\n"
+"prompt, we can't resume it because Guile can't resume delimited\n"
+"continuations that capture the C stack."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-io.texi:1768
+msgid ""
+"To overcome this difficulty we have created a compatible but entirely\n"
+"parallel implementation of port operations.  To use this implementation,\n"
+"do the following:"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-io.texi:1773
+msgid ""
+"@example\n"
+"(use-modules (ice-9 suspendable-ports))\n"
+"(install-suspendable-ports!)\n"
+"@end example"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-io.texi:1787
+msgid ""
+"This will replace the core I/O primitives like @code{get-char} and\n"
+"@code{put-bytevector} with new versions that are exactly the same as the\n"
+"ones in the standard library, but with two differences.  One is that\n"
+"when a read or a write would block, the suspendable port operations call\n"
+"out the value of the @code{current-read-waiter} or\n"
+"@code{current-write-waiter} parameter, as appropriate.\n"
+"@xref{Parameters}.  The default read and write waiters do the same thing\n"
+"that the C read and write waiters do, which is to poll.  User code can\n"
+"parameterize the waiters, though, enabling the computation to suspend\n"
+"and allow the program to process other I/O operations.  Because the new\n"
+"suspendable ports implementation is written in Scheme, that suspended\n"
+"computation can resume again later when it is able to make progress.\n"
+"Success!"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-io.texi:1794
+msgid ""
+"The other main difference is that because the new ports implementation\n"
+"is written in Scheme, it is slower than C, currently by a factor of 3 or\n"
+"4, though it depends on many factors.  For this reason we have to keep\n"
+"the C implementations as the default ones.  One day when Guile's\n"
+"compiler is better, we can close this gap and have only one port\n"
+"operation implementation again."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-io.texi:1803
+msgid ""
+"Note that Guile does not currently include an implementation of the\n"
+"facility to suspend the current thread and schedule other threads in the\n"
+"meantime.  Before adding such a thing, we want to make sure that we're\n"
+"providing the right primitives that can be used to build schedulers and\n"
+"other user-space concurrency patterns, and that the patterns that we\n"
+"settle on are the right patterns.  In the meantime, have a look at 8sync\n"
+"(@url{https://gnu.org/software/8sync}) for a prototype of an\n"
+"asynchronous I/O and concurrency facility."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-io.texi:1809
+msgid ""
+"@deffn {Scheme Procedure} install-suspendable-ports!\n"
+"Replace the core ports implementation with suspendable ports, as\n"
+"described above.  This will mutate the values of the bindings like\n"
+"@code{get-char}, @code{put-u8}, and so on in place.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-io.texi:1814
+msgid ""
+"@deffn {Scheme Procedure} uninstall-suspendable-ports!\n"
+"Restore the original core ports implementation, un-doing the effect of\n"
+"@code{install-suspendable-ports!}.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-io.texi:1823
+msgid ""
+"@deffn {Scheme Parameter} current-read-waiter\n"
+"@deffnx {Scheme Parameter} current-write-waiter\n"
+"Parameters whose values are procedures of one argument, called when a\n"
+"suspendable port operation would block on a port while reading or\n"
+"writing, respectively.  The default values of these parameters do a\n"
+"blocking @code{poll} on the port's file descriptor.  The procedures are\n"
+"passed the port in question as their one argument.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-io.texi:1829
+msgid ""
+"@node BOM Handling\n"
+"@subsection Handling of Unicode Byte Order Marks\n"
+"@cindex BOM\n"
+"@cindex byte order mark"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-io.texi:1836
+msgid ""
+"This section documents the finer points of Guile's handling of Unicode\n"
+"byte order marks (BOMs).  A byte order mark (U+FEFF) is typically found\n"
+"at the start of a UTF-16 or UTF-32 stream, to allow readers to reliably\n"
+"determine the byte order.  Occasionally, a BOM is found at the start of\n"
+"a UTF-8 stream, but this is much less common and not generally\n"
+"recommended."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-io.texi:1843
+msgid ""
+"Guile attempts to handle BOMs automatically, and in accordance with the\n"
+"recommendations of the Unicode Standard, when the port encoding is set\n"
+"to @code{UTF-8}, @code{UTF-16}, or @code{UTF-32}.  In brief, Guile\n"
+"automatically writes a BOM at the start of a UTF-16 or UTF-32 stream,\n"
+"and automatically consumes one from the start of a UTF-8, UTF-16, or\n"
+"UTF-32 stream."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-io.texi:1850
+msgid ""
+"As specified in the Unicode Standard, a BOM is only handled specially at\n"
+"the start of a stream, and only if the port encoding is set to\n"
+"@code{UTF-8}, @code{UTF-16} or @code{UTF-32}.  If the port encoding is\n"
+"set to @code{UTF-16BE}, @code{UTF-16LE}, @code{UTF-32BE}, or\n"
+"@code{UTF-32LE}, then BOMs are @emph{not} handled specially, and none of\n"
+"the special handling described in this section applies."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-io.texi:1857
+msgid ""
+"@itemize @bullet\n"
+"@item\n"
+"To ensure that Guile will properly detect the byte order of a UTF-16 or\n"
+"UTF-32 stream, you must perform a textual read before any writes, seeks,\n"
+"or binary I/O.  Guile will not attempt to read a BOM unless a read is\n"
+"explicitly requested at the start of the stream."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-io.texi:1865
+msgid ""
+"@item\n"
+"If a textual write is performed before the first read, then an arbitrary\n"
+"byte order will be chosen.  Currently, big endian is the default on all\n"
+"platforms, but that may change in the future.  If you wish to explicitly\n"
+"control the byte order of an output stream, set the port encoding to\n"
+"@code{UTF-16BE}, @code{UTF-16LE}, @code{UTF-32BE}, or @code{UTF-32LE},\n"
+"and explicitly write a BOM (@code{#\\xFEFF}) if desired."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-io.texi:1873
+msgid ""
+"@item\n"
+"If @code{set-port-encoding!} is called in the middle of a stream, Guile\n"
+"treats this as a new logical ``start of stream'' for purposes of BOM\n"
+"handling, and will forget about any BOMs that had previously been seen.\n"
+"Therefore, it may choose a different byte order than had been used\n"
+"previously.  This is intended to support multiple logical text streams\n"
+"embedded within a larger binary stream."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-io.texi:1878
+msgid ""
+"@item\n"
+"Binary I/O operations are not guaranteed to update Guile's notion of\n"
+"whether the port is at the ``start of the stream'', nor are they\n"
+"guaranteed to produce or consume BOMs."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-io.texi:1885
+msgid ""
+"@item\n"
+"For ports that support seeking (e.g. normal files), the input and output\n"
+"streams are considered linked: if the user reads first, then a BOM will\n"
+"be consumed (if appropriate), but later writes will @emph{not} produce a\n"
+"BOM.  Similarly, if the user writes first, then later reads will\n"
+"@emph{not} consume a BOM."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-io.texi:1893
+msgid ""
+"@item\n"
+"For ports that are not random access (e.g. pipes, sockets, and\n"
+"terminals), the input and output streams are considered\n"
+"@emph{independent} for purposes of BOM handling: the first read will\n"
+"consume a BOM (if appropriate), and the first write will @emph{also}\n"
+"produce a BOM (if appropriate).  However, the input and output streams\n"
+"will always use the same byte order."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-io.texi:1902
+msgid ""
+"@item\n"
+"Seeks to the beginning of a file will set the ``start of stream'' flags.\n"
+"Therefore, a subsequent textual read or write will consume or produce a\n"
+"BOM.  However, unlike @code{set-port-encoding!}, if a byte order had\n"
+"already been chosen for the port, it will remain in effect after a seek,\n"
+"and cannot be changed by the presence of a BOM.  Seeks anywhere other\n"
+"than the beginning of a file clear the ``start of stream'' flags.\n"
+"@end itemize"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-io.texi:1905
+msgid ""
+"@c Local Variables:\n"
+"@c TeX-master: \"guile.texi\"\n"
+"@c End:"
+msgstr ""

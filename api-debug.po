@@ -1,0 +1,2380 @@
+#. extracted from /home/bear/work/guile/doc/guile/en/api-debug.texi
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2018-05-07 12:36+0300\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Generator: Translate Toolkit 2.2.5\n"
+
+#: /home/bear/work/guile/doc/guile/en/api-debug.texi:6
+msgid ""
+"@c -*-texinfo-*-\n"
+"@c This is part of the GNU Guile Reference Manual.\n"
+"@c Copyright (C)  1996, 1997, 2000, 2001, 2002, 2003, 2004, 2007, 2010, "
+"2011, 2012, 2013, 2014\n"
+"@c   Free Software Foundation, Inc.\n"
+"@c See the file guile.texi for copying conditions."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-debug.texi:9
+msgid ""
+"@node Debugging\n"
+"@section Debugging Infrastructure"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-debug.texi:16
+msgid ""
+"@cindex Debugging\n"
+"In order to understand Guile's debugging facilities, you first need to\n"
+"understand a little about how Guile represent the Scheme control stack.\n"
+"With that in place we explain the low level trap calls that the virtual\n"
+"machine can be configured to make, and the trap and breakpoint\n"
+"infrastructure that builds on top of those calls."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-debug.texi:24
+msgid ""
+"@menu\n"
+"* Evaluation Model::            Evaluation and the Scheme stack.\n"
+"* Source Properties::           From expressions to source locations.\n"
+"* Programmatic Error Handling::  Debugging when an error occurs.\n"
+"* Traps::                       Breakpoints, tracepoints, oh my!\n"
+"* GDB Support::                 C-level debugging with GDB.\n"
+"@end menu"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-debug.texi:27
+msgid ""
+"@node Evaluation Model\n"
+"@subsection Evaluation and the Scheme Stack"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-debug.texi:34
+msgid ""
+"The idea of the Scheme stack is central to a lot of debugging.  The\n"
+"Scheme stack is a reified representation of the pending function returns\n"
+"in an expression's continuation.  As Guile implements function calls\n"
+"using a stack, this reification takes the form of a number of nested\n"
+"stack frames, each of which corresponds to the application of a\n"
+"procedure to a set of arguments."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-debug.texi:41
+msgid ""
+"A Scheme stack always exists implicitly, and can be summoned into\n"
+"concrete existence as a first-class Scheme value by the\n"
+"@code{make-stack} call, so that an introspective Scheme program -- such\n"
+"as a debugger -- can present it in some way and allow the user to query\n"
+"its details. The first thing to understand, therefore, is how Guile's\n"
+"function call convention creates the stack."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-debug.texi:48
+msgid ""
+"Broadly speaking, Guile represents all control flow on a stack. Calling\n"
+"a function involves pushing an empty frame on the stack, then evaluating\n"
+"the procedure and its arguments, then fixing up the new frame so that it\n"
+"points to the old one. Frames on the stack are thus linked together. A\n"
+"tail call is the same, except it reuses the existing frame instead of\n"
+"pushing on a new one."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-debug.texi:53
+msgid ""
+"In this way, the only frames that are on the stack are ``active''\n"
+"frames, frames which need to do some work before the computation is\n"
+"complete. On the other hand, a function that has tail-called another\n"
+"function will not be on the stack, as it has no work left to do."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-debug.texi:61
+msgid ""
+"Therefore, when an error occurs in a running program, or the program\n"
+"hits a breakpoint, or in fact at any point that the programmer chooses,\n"
+"its state at that point can be represented by a @dfn{stack} of all the\n"
+"procedure applications that are logically in progress at that time, each\n"
+"of which is known as a @dfn{frame}.  The programmer can learn more about\n"
+"the program's state at that point by inspecting the stack and its\n"
+"frames."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-debug.texi:67
+msgid ""
+"@menu\n"
+"* Stack Capture::               Reifying a continuation.\n"
+"* Stacks::                      Accessors for the stack data type.\n"
+"* Frames::                      Likewise, accessors for stack frames.\n"
+"@end menu"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-debug.texi:70
+msgid ""
+"@node Stack Capture\n"
+"@subsubsection Stack Capture"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-debug.texi:74
+msgid ""
+"A Scheme program can use the @code{make-stack} primitive anywhere in its\n"
+"code, with first arg @code{#t}, to construct a Scheme value that\n"
+"describes the Scheme stack at that point."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-debug.texi:80
+msgid ""
+"@lisp\n"
+"(make-stack #t)\n"
+"@result{}\n"
+"#<stack 25205a0>\n"
+"@end lisp"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-debug.texi:83
+msgid ""
+"Use @code{start-stack} to limit the stack extent captured by future\n"
+"@code{make-stack} calls."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-debug.texi:90
+msgid ""
+"@deffn {Scheme Procedure} make-stack obj arg @dots{}\n"
+"@deffnx {C Function} scm_make_stack (obj, args)\n"
+"Create a new stack. If @var{obj} is @code{#t}, the current\n"
+"evaluation stack is used for creating the stack frames,\n"
+"otherwise the frames are taken from @var{obj} (which must be\n"
+"a continuation or a frame object)."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-debug.texi:93
+msgid ""
+"@var{arg} @dots{} can be any combination of integer, procedure, address\n"
+"range, and prompt tag values."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-debug.texi:98
+msgid ""
+"These values specify various ways of cutting away uninteresting stack\n"
+"frames from the top and bottom of the stack that @code{make-stack}\n"
+"returns.  They come in pairs like this:  @code{(@var{inner_cut_1}\n"
+"@var{outer_cut_1} @var{inner_cut_2} @var{outer_cut_2} @dots{})}."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-debug.texi:107
+msgid ""
+"Each @var{inner_cut_i} can be an integer, a procedure, an address range,\n"
+"or a prompt tag.  An integer means to cut away exactly that number of\n"
+"frames.  A procedure means to cut away all frames up to but excluding\n"
+"the frame whose procedure matches the specified one.  An address range\n"
+"is a pair of integers indicating the low and high addresses of a\n"
+"procedure's code, and is the same as cutting away to a procedure (though\n"
+"with less work).  Anything else is interpreted as a prompt tag which\n"
+"cuts away all frames that are inside a prompt with the given tag."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-debug.texi:115
+msgid ""
+"Each @var{outer_cut_i} can likewise be an integer, a procedure, an\n"
+"address range, or a prompt tag.  An integer means to cut away that\n"
+"number of frames.  A procedure means to cut away frames down to but\n"
+"excluding the frame whose procedure matches the specified one.  An\n"
+"address range is the same, but with the procedure's code specified as an\n"
+"address range.  Anything else is taken to be a prompt tag, which cuts\n"
+"away all frames that are outside a prompt with the given tag."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-debug.texi:119
+msgid ""
+"If the @var{outer_cut_i} of the last pair is missing, it is taken as 0.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-debug.texi:127
+msgid ""
+"@deffn {Scheme Syntax} start-stack id exp\n"
+"Evaluate @var{exp} on a new calling stack with identity @var{id}.  If\n"
+"@var{exp} is interrupted during evaluation, backtraces will not display\n"
+"frames farther back than @var{exp}'s top-level form.  This macro is a\n"
+"way of artificially limiting backtraces and stack procedures, largely as\n"
+"a convenience to the user.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-debug.texi:131
+msgid ""
+"@node Stacks\n"
+"@subsubsection Stacks"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-debug.texi:136
+msgid ""
+"@deffn {Scheme Procedure} stack? obj\n"
+"@deffnx {C Function} scm_stack_p (obj)\n"
+"Return @code{#t} if @var{obj} is a calling stack.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-debug.texi:141
+msgid ""
+"@deffn {Scheme Procedure} stack-id stack\n"
+"@deffnx {C Function} scm_stack_id (stack)\n"
+"Return the identifier given to @var{stack} by @code{start-stack}.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-debug.texi:146
+msgid ""
+"@deffn {Scheme Procedure} stack-length stack\n"
+"@deffnx {C Function} scm_stack_length (stack)\n"
+"Return the length of @var{stack}.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-debug.texi:151
+msgid ""
+"@deffn {Scheme Procedure} stack-ref stack index\n"
+"@deffnx {C Function} scm_stack_ref (stack, index)\n"
+"Return the @var{index}'th frame from @var{stack}.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-debug.texi:164
+msgid ""
+"@deffn {Scheme Procedure} display-backtrace stack port [first [depth "
+"[highlights]]]\n"
+"@deffnx {C Function} scm_display_backtrace_with_highlights (stack, port, "
+"first, depth, highlights)\n"
+"@deffnx {C Function} scm_display_backtrace (stack, port, first, depth)\n"
+"Display a backtrace to the output port @var{port}.  @var{stack}\n"
+"is the stack to take the backtrace from, @var{first} specifies\n"
+"where in the stack to start and @var{depth} how many frames\n"
+"to display.  @var{first} and @var{depth} can be @code{#f},\n"
+"which means that default values will be used.\n"
+"If @var{highlights} is given it should be a list; the elements\n"
+"of this list will be highlighted wherever they appear in the\n"
+"backtrace.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-debug.texi:168
+msgid ""
+"@node Frames\n"
+"@subsubsection Frames"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-debug.texi:173
+msgid ""
+"@deffn {Scheme Procedure} frame? obj\n"
+"@deffnx {C Function} scm_frame_p (obj)\n"
+"Return @code{#t} if @var{obj} is a stack frame.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-debug.texi:179
+msgid ""
+"@deffn {Scheme Procedure} frame-previous frame\n"
+"@deffnx {C Function} scm_frame_previous (frame)\n"
+"Return the previous frame of @var{frame}, or @code{#f} if\n"
+"@var{frame} is the first frame in its stack.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-debug.texi:185
+msgid ""
+"@deffn {Scheme Procedure} frame-procedure-name frame\n"
+"@deffnx {C Function} scm_frame_procedure_name (frame)\n"
+"Return the name of the procedure being applied in @var{frame}, as a\n"
+"symbol, or @code{#f} if the procedure has no name.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-debug.texi:190
+msgid ""
+"@deffn {Scheme Procedure} frame-arguments frame\n"
+"@deffnx {C Function} scm_frame_arguments (frame)\n"
+"Return the arguments of @var{frame}.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-debug.texi:198
+msgid ""
+"@deffn {Scheme Procedure} frame-address frame\n"
+"@deffnx {Scheme Procedure} frame-instruction-pointer frame\n"
+"@deffnx {Scheme Procedure} frame-stack-pointer frame\n"
+"Accessors for the three VM registers associated with this frame: the\n"
+"frame pointer (fp), instruction pointer (ip), and stack pointer (sp),\n"
+"respectively. @xref{VM Concepts}, for more information.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-debug.texi:206
+msgid ""
+"@deffn {Scheme Procedure} frame-dynamic-link frame\n"
+"@deffnx {Scheme Procedure} frame-return-address frame\n"
+"@deffnx {Scheme Procedure} frame-mv-return-address frame\n"
+"Accessors for the three saved VM registers in a frame: the previous\n"
+"frame pointer, the single-value return address, and the multiple-value\n"
+"return address.  @xref{Stack Layout}, for more information.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-debug.texi:211
+msgid ""
+"@deffn {Scheme Procedure} frame-bindings frame\n"
+"Return a list of binding records indicating the local variables that are\n"
+"live in a frame.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-debug.texi:216
+msgid ""
+"@deffn {Scheme Procedure} frame-lookup-binding frame var\n"
+"Fetch the bindings in @var{frame}, and return the first one whose name\n"
+"is @var{var}, or @code{#f} otherwise.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-debug.texi:226
+msgid ""
+"@deffn {Scheme Procedure} binding-index binding\n"
+"@deffnx {Scheme Procedure} binding-name binding\n"
+"@deffnx {Scheme Procedure} binding-slot binding\n"
+"@deffnx {Scheme Procedure} binding-representation binding\n"
+"Accessors for the various fields in a binding.  The implicit ``callee''\n"
+"argument is index 0, the first argument is index 1, and so on to the end\n"
+"of the arguments.  After that are temporary variables.  Note that if a\n"
+"variable is dead, it might not be available.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-debug.texi:231
+msgid ""
+"@deffn {Scheme Procedure} binding-ref binding\n"
+"@deffnx {Scheme Procedure} binding-set! binding val\n"
+"Accessors for the values of local variables in a frame.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-debug.texi:238
+msgid ""
+"@deffn {Scheme Procedure} display-application frame [port [indent]]\n"
+"@deffnx {C Function} scm_display_application (frame, port, indent)\n"
+"Display a procedure application @var{frame} to the output port\n"
+"@var{port}. @var{indent} specifies the indentation of the\n"
+"output.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-debug.texi:243
+msgid ""
+"Additionally, the @code{(system vm frame)} module defines a number of\n"
+"higher-level introspective procedures, for example to retrieve the names\n"
+"of local variables, and the source location to correspond to a\n"
+"frame. See its source code for more details."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-debug.texi:247
+msgid ""
+"@node Source Properties\n"
+"@subsection Source Properties"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-debug.texi:257
+msgid ""
+"@cindex source properties\n"
+"As Guile reads in Scheme code from file or from standard input, it\n"
+"remembers the file name, line number and column number where each\n"
+"expression begins. These pieces of information are known as the\n"
+"@dfn{source properties} of the expression. Syntax expanders and the\n"
+"compiler propagate these source properties to compiled procedures, so\n"
+"that, if an error occurs when evaluating the transformed expression,\n"
+"Guile's debugger can point back to the file and location where the\n"
+"expression originated."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-debug.texi:263
+msgid ""
+"The way that source properties are stored means that Guile cannot\n"
+"associate source properties with individual symbols, keywords,\n"
+"characters, booleans, or small integers.  This can be seen by typing\n"
+"@code{(xxx)} and @code{xxx} at the Guile prompt (where the variable\n"
+"@code{xxx} has not been defined):"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-debug.texi:268
+msgid ""
+"@example\n"
+"scheme@@(guile-user)> (xxx)\n"
+"<unnamed port>:4:1: In procedure module-lookup:\n"
+"<unnamed port>:4:1: Unbound variable: xxx"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-debug.texi:273
+msgid ""
+"scheme@@(guile-user)> xxx\n"
+"ERROR: In procedure module-lookup:\n"
+"ERROR: Unbound variable: xxx\n"
+"@end example"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-debug.texi:277
+msgid ""
+"@noindent\n"
+"In the latter case, no source properties were stored, so the error\n"
+"doesn't have any source information."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-debug.texi:283
+msgid ""
+"@deffn {Scheme Procedure} supports-source-properties? obj\n"
+"@deffnx {C Function} scm_supports_source_properties_p (obj)\n"
+"Return #t if source properties can be associated with @var{obj},\n"
+"otherwise return #f.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-debug.texi:287
+msgid ""
+"The recording of source properties is controlled by the read option\n"
+"named ``positions'' (@pxref{Scheme Read}).  This option is switched\n"
+"@emph{on} by default."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-debug.texi:290
+msgid ""
+"The following procedures can be used to access and set the source\n"
+"properties of read expressions."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-debug.texi:296
+msgid ""
+"@deffn {Scheme Procedure} set-source-properties! obj alist\n"
+"@deffnx {C Function} scm_set_source_properties_x (obj, alist)\n"
+"Install the association list @var{alist} as the source property\n"
+"list for @var{obj}.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-debug.texi:302
+msgid ""
+"@deffn {Scheme Procedure} set-source-property! obj key datum\n"
+"@deffnx {C Function} scm_set_source_property_x (obj, key, datum)\n"
+"Set the source property of object @var{obj}, which is specified by\n"
+"@var{key} to @var{datum}.  Normally, the key will be a symbol.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-debug.texi:307
+msgid ""
+"@deffn {Scheme Procedure} source-properties obj\n"
+"@deffnx {C Function} scm_source_properties (obj)\n"
+"Return the source property association list of @var{obj}.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-debug.texi:313
+msgid ""
+"@deffn {Scheme Procedure} source-property obj key\n"
+"@deffnx {C Function} scm_source_property (obj, key)\n"
+"Return the property specified by @var{key} from @var{obj}'s source\n"
+"properties.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-debug.texi:317
+msgid ""
+"If the @code{positions} reader option is enabled, supported expressions\n"
+"will have values set for the @code{filename}, @code{line} and\n"
+"@code{column} properties."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-debug.texi:322
+msgid ""
+"Source properties are also associated with syntax objects.  Procedural\n"
+"macros can get at the source location of their input using the\n"
+"@code{syntax-source} accessor.  @xref{Syntax Transformer Helpers}, for\n"
+"more."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-debug.texi:325
+msgid ""
+"Guile also defines a couple of convenience macros built on\n"
+"@code{syntax-source}:"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-debug.texi:330
+msgid ""
+"@deffn {Scheme Syntax} current-source-location\n"
+"Expands to the source properties corresponding to the location of the\n"
+"@code{(current-source-location)} form.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-debug.texi:336
+msgid ""
+"@deffn {Scheme Syntax} current-filename\n"
+"Expands to the current filename: the filename that the\n"
+"@code{(current-filename)} form appears in.  Expands to @code{#f} if this\n"
+"information is unavailable.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-debug.texi:340
+msgid ""
+"If you're stuck with defmacros (@pxref{Defmacros}), and want to preserve\n"
+"source information, the following helper function might be useful to\n"
+"you:"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-debug.texi:347
+msgid ""
+"@deffn {Scheme Procedure} cons-source xorig x y\n"
+"@deffnx {C Function} scm_cons_source (xorig, x, y)\n"
+"Create and return a new pair whose car and cdr are @var{x} and @var{y}.\n"
+"Any source properties associated with @var{xorig} are also associated\n"
+"with the new pair.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-debug.texi:351
+msgid ""
+"@node Programmatic Error Handling\n"
+"@subsection Programmatic Error Handling"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-debug.texi:356
+msgid ""
+"For better or for worse, all programs have bugs, and dealing with bugs\n"
+"is part of programming. This section deals with that class of bugs that\n"
+"causes an exception to be raised -- from your own code, from within a\n"
+"library, or from Guile itself."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-debug.texi:364
+msgid ""
+"@menu\n"
+"* Catching Exceptions::    Handling errors after the stack is unwound.\n"
+"* Capturing Stacks::       Capturing the stack at the time of error.\n"
+"* Pre-Unwind Debugging::   Debugging before the exception is thrown.\n"
+"* Stack Overflow::         Detecting and handling runaway recursion.\n"
+"* Debug Options::          A historical interface to debugging.\n"
+"@end menu"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-debug.texi:367
+msgid ""
+"@node Catching Exceptions\n"
+"@subsubsection Catching Exceptions"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-debug.texi:377
+msgid ""
+"A common requirement is to be able to show as much useful context as\n"
+"possible when a Scheme program hits an error.  The most immediate\n"
+"information about an error is the kind of error that it is -- such as\n"
+"``division by zero'' -- and any parameters that the code which signalled\n"
+"the error chose explicitly to provide.  This information originates with\n"
+"the @code{error} or @code{throw} call (or their C code equivalents, if\n"
+"the error is detected by C code) that signals the error, and is passed\n"
+"automatically to the handler procedure of the innermost applicable\n"
+"@code{catch} or @code{with-throw-handler} expression."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-debug.texi:383
+msgid ""
+"Therefore, to catch errors that occur within a chunk of Scheme code, and\n"
+"to intercept basic information about those errors, you need to execute\n"
+"that code inside the dynamic context of a @code{catch} or\n"
+"@code{with-throw-handler} expression, or the equivalent in C. In Scheme,\n"
+"this means you need something like this:"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-debug.texi:395
+msgid ""
+"@lisp\n"
+"(catch #t\n"
+"       (lambda ()\n"
+"         ;; Execute the code in which\n"
+"         ;; you want to catch errors here.\n"
+"         ...)\n"
+"       (lambda (key . parameters)\n"
+"         ;; Put the code which you want\n"
+"         ;; to handle an error here.\n"
+"         ...))\n"
+"@end lisp"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-debug.texi:400
+msgid ""
+"@noindent\n"
+"The @code{catch} here can also be @code{with-throw-handler}; see\n"
+"@ref{Throw Handlers} for information on the when you might want to use\n"
+"@code{with-throw-handler} instead of @code{catch}."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-debug.texi:403
+msgid ""
+"For example, to print out a message and return #f when an error occurs,\n"
+"you might use:"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-debug.texi:412
+msgid ""
+"@smalllisp\n"
+"(define (catch-all thunk)\n"
+"  (catch #t\n"
+"    thunk\n"
+"    (lambda (key . parameters)\n"
+"      (format (current-error-port)\n"
+"              \"Uncaught throw to '~a: ~a\\n"
+"\" key parameters)\n"
+"      #f)))"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-debug.texi:418
+msgid ""
+"(catch-all\n"
+" (lambda () (error \"Not a vegetable: tomato\")))\n"
+"@print{} Uncaught throw to 'misc-error: (#f ~A (Not a vegetable: tomato) #f)"
+"\n"
+"@result{} #f\n"
+"@end smalllisp"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-debug.texi:423
+msgid ""
+"The @code{#t} means that the catch is applicable to all kinds of error.\n"
+"If you want to restrict your catch to just one kind of error, you can\n"
+"put the symbol for that kind of error instead of @code{#t}. The\n"
+"equivalent to this in C would be something like this:"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-debug.texi:431
+msgctxt "/home/bear/work/guile/doc/guile/en/api-debug.texi:431"
+msgid ""
+"@lisp\n"
+"SCM my_body_proc (void *body_data)\n"
+"@{\n"
+"  /* Execute the code in which\n"
+"     you want to catch errors here. */\n"
+"  ...\n"
+"@}"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-debug.texi:440
+msgid ""
+"SCM my_handler_proc (void *handler_data,\n"
+"                     SCM key,\n"
+"                     SCM parameters)\n"
+"@{\n"
+"  /* Put the code which you want\n"
+"     to handle an error here. */\n"
+"  ...\n"
+"@}"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-debug.texi:450
+msgid ""
+"@{\n"
+"  ...\n"
+"  scm_c_catch (SCM_BOOL_T,\n"
+"               my_body_proc, body_data,\n"
+"               my_handler_proc, handler_data,\n"
+"               NULL, NULL);\n"
+"  ...\n"
+"@}\n"
+"@end lisp"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-debug.texi:455
+msgid ""
+"@noindent\n"
+"Again, as with the Scheme version, @code{scm_c_catch} could be replaced\n"
+"by @code{scm_c_with_throw_handler}, and @code{SCM_BOOL_T} could instead\n"
+"be the symbol for a particular kind of error."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-debug.texi:458
+msgid ""
+"@node Capturing Stacks\n"
+"@subsubsection Capturing the full error stack"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-debug.texi:465
+msgid ""
+"The other interesting information about an error is the full Scheme\n"
+"stack at the point where the error occurred; in other words what\n"
+"innermost expression was being evaluated, what was the expression that\n"
+"called that one, and so on.  If you want to write your code so that it\n"
+"captures and can display this information as well, there are a couple\n"
+"important things to understand."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-debug.texi:479
+msgid ""
+"Firstly, the stack at the point of the error needs to be explicitly\n"
+"captured by a @code{make-stack} call (or the C equivalent\n"
+"@code{scm_make_stack}).  The Guile library does not do this\n"
+"``automatically'' for you, so you will need to write code with a\n"
+"@code{make-stack} or @code{scm_make_stack} call yourself.  (We emphasise\n"
+"this point because some people are misled by the fact that the Guile\n"
+"interactive REPL code @emph{does} capture and display the stack\n"
+"automatically.  But the Guile interactive REPL is itself a Scheme\n"
+"program@footnote{In effect, it is the default program which is run when\n"
+"no commands or script file are specified on the Guile command line.}\n"
+"running on top of the Guile library, and which uses @code{catch} and\n"
+"@code{make-stack} in the way we are about to describe to capture the\n"
+"stack when an error occurs.)"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-debug.texi:490
+msgid ""
+"And secondly, in order to capture the stack effectively at the point\n"
+"where the error occurred, the @code{make-stack} call must be made before\n"
+"Guile unwinds the stack back to the location of the prevailing catch\n"
+"expression. This means that the @code{make-stack} call must be made\n"
+"within the handler of a @code{with-throw-handler} expression, or the\n"
+"optional \"pre-unwind\" handler of a @code{catch}. (For the full story of\n"
+"how these alternatives differ from each other, see @ref{Exceptions}. The\n"
+"main difference is that @code{catch} terminates the error, whereas\n"
+"@code{with-throw-handler} only intercepts it temporarily and then allow\n"
+"it to continue propagating up to the next innermost handler.)"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-debug.texi:495
+msgid ""
+"So, here are some examples of how to do all this in Scheme and in C.\n"
+"For the purpose of these examples we assume that the captured stack\n"
+"should be stored in a variable, so that it can be displayed or\n"
+"arbitrarily processed later on.  In Scheme:"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-debug.texi:518
+msgid ""
+"@lisp\n"
+"(let ((captured-stack #f))\n"
+"  (catch #t\n"
+"         (lambda ()\n"
+"           ;; Execute the code in which\n"
+"           ;; you want to catch errors here.\n"
+"           ...)\n"
+"         (lambda (key . parameters)\n"
+"           ;; Put the code which you want\n"
+"           ;; to handle an error after the\n"
+"           ;; stack has been unwound here.\n"
+"           ...)\n"
+"         (lambda (key . parameters)\n"
+"           ;; Capture the stack here:\n"
+"           (set! captured-stack (make-stack #t))))\n"
+"  ...\n"
+"  (if captured-stack\n"
+"      (begin\n"
+"        ;; Display or process the captured stack.\n"
+"        ...))\n"
+"  ...)\n"
+"@end lisp"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-debug.texi:521
+msgid ""
+"@noindent\n"
+"And in C:"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-debug.texi:529
+msgctxt "/home/bear/work/guile/doc/guile/en/api-debug.texi:529"
+msgid ""
+"@lisp\n"
+"SCM my_body_proc (void *body_data)\n"
+"@{\n"
+"  /* Execute the code in which\n"
+"     you want to catch errors here. */\n"
+"  ...\n"
+"@}"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-debug.texi:539
+msgid ""
+"SCM my_handler_proc (void *handler_data,\n"
+"                     SCM key,\n"
+"                     SCM parameters)\n"
+"@{\n"
+"  /* Put the code which you want\n"
+"     to handle an error after the\n"
+"     stack has been unwound here. */\n"
+"  ...\n"
+"@}"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-debug.texi:547
+msgid ""
+"SCM my_preunwind_proc (void *handler_data,\n"
+"                       SCM key,\n"
+"                       SCM parameters)\n"
+"@{\n"
+"  /* Capture the stack here: */\n"
+"  *(SCM *)handler_data = scm_make_stack (SCM_BOOL_T, SCM_EOL);\n"
+"@}"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-debug.texi:564
+msgid ""
+"@{\n"
+"  SCM captured_stack = SCM_BOOL_F;\n"
+"  ...\n"
+"  scm_c_catch (SCM_BOOL_T,\n"
+"               my_body_proc, body_data,\n"
+"               my_handler_proc, handler_data,\n"
+"               my_preunwind_proc, &captured_stack);\n"
+"  ...\n"
+"  if (captured_stack != SCM_BOOL_F)\n"
+"  @{\n"
+"    /* Display or process the captured stack. */\n"
+"    ...\n"
+"  @}\n"
+"  ...\n"
+"@}\n"
+"@end lisp"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-debug.texi:569
+msgid ""
+"Once you have a captured stack, you can interrogate and display its\n"
+"details in any way that you want, using the @code{stack-@dots{}} and\n"
+"@code{frame-@dots{}} API described in @ref{Stacks} and\n"
+"@ref{Frames}."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-debug.texi:574
+msgid ""
+"If you want to print out a backtrace in the same format that the Guile\n"
+"REPL does, you can use the @code{display-backtrace} procedure to do so.\n"
+"You can also use @code{display-application} to display an individual\n"
+"frame in the Guile REPL format."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-debug.texi:577
+msgid ""
+"@node Pre-Unwind Debugging\n"
+"@subsubsection Pre-Unwind Debugging"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-debug.texi:581
+msgid ""
+"Instead of saving a stack away and waiting for the @code{catch} to\n"
+"return, you can handle errors directly, from within the pre-unwind\n"
+"handler."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-debug.texi:584
+msgid ""
+"For example, to show a backtrace when an error is thrown, you might want\n"
+"to use a procedure like this:"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-debug.texi:592
+msgid ""
+"@lisp\n"
+"(define (with-backtrace thunk)\n"
+"  (with-throw-handler #t\n"
+"                      thunk\n"
+"                      (lambda args (backtrace))))\n"
+"(with-backtrace (lambda () (error \"Not a vegetable: tomato\")))\n"
+"@end lisp"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-debug.texi:597
+msgid ""
+"Since we used @code{with-throw-handler} here, we didn't actually catch\n"
+"the error. @xref{Throw Handlers}, for more information. However, we did\n"
+"print out a context at the time of the error, using the built-in\n"
+"procedure, @code{backtrace}."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-debug.texi:605
+msgid ""
+"@deffn {Scheme Procedure} backtrace [highlights]\n"
+"@deffnx {C Function} scm_backtrace_with_highlights (highlights)\n"
+"@deffnx {C Function} scm_backtrace ()\n"
+"Display a backtrace of the current stack to the current output port.  If\n"
+"@var{highlights} is given it should be a list; the elements of this list\n"
+"will be highlighted wherever they appear in the backtrace.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-debug.texi:610
+msgid ""
+"The Guile REPL code (in @file{system/repl/repl.scm} and related files)\n"
+"uses a @code{catch} with a pre-unwind handler to capture the stack when\n"
+"an error occurs in an expression that was typed into the REPL, and debug\n"
+"that stack interactively in the context of the error."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-debug.texi:613
+msgid ""
+"These procedures are available for use by user programs, in the\n"
+"@code{(system repl error-handling)} module."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-debug.texi:617
+msgid ""
+"@lisp\n"
+"(use-modules (system repl error-handling))\n"
+"@end lisp"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-debug.texi:624
+msgid ""
+"@deffn {Scheme Procedure} call-with-error-handling thunk @\n"
+"       [#:on-error on-error='debug] [#:post-error post-error='catch] @\n"
+"       [#:pass-keys pass-keys='(quit)] @\n"
+"       [#:report-keys report-keys='(stack-overflow)] @\n"
+"       [#:trap-handler trap-handler='debug]\n"
+"Call a thunk in a context in which errors are handled."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-debug.texi:626
+msgid "There are five keyword arguments:"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-debug.texi:630
+msgid ""
+"@table @var\n"
+"@item on-error\n"
+"Specifies what to do before the stack is unwound."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-debug.texi:634
+msgid ""
+"Valid options are @code{debug} (the default), which will enter a\n"
+"debugger; @code{pass}, in which case nothing is done, and the exception\n"
+"is rethrown; or a procedure, which will be the pre-unwind handler."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-debug.texi:637
+msgid ""
+"@item post-error\n"
+"Specifies what to do after the stack is unwound."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-debug.texi:642
+msgid ""
+"Valid options are @code{catch} (the default), which will silently catch\n"
+"errors, returning the unspecified value; @code{report}, which prints out\n"
+"a description of the error (via @code{display-error}), and then returns\n"
+"the unspecified value; or a procedure, which will be the catch handler."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-debug.texi:645
+msgid ""
+"@item trap-handler\n"
+"Specifies a trap handler: what to do when a breakpoint is hit."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-debug.texi:649
+msgid ""
+"Valid options are @code{debug}, which will enter the debugger;\n"
+"@code{pass}, which does nothing; or @code{disabled}, which disables\n"
+"traps entirely.  @xref{Traps}, for more information."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-debug.texi:652
+msgid ""
+"@item pass-keys\n"
+"A set of keys to ignore, as a list."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-debug.texi:658
+msgid ""
+"@item report-keys\n"
+"A set of keys to always report even if the post-error handler is\n"
+"@code{catch}, as a list.\n"
+"@end table\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-debug.texi:661
+msgid ""
+"@node Stack Overflow\n"
+"@subsubsection Stack Overflow"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-debug.texi:670
+msgid ""
+"@cindex overflow, stack\n"
+"@cindex stack overflow\n"
+"Every time a Scheme program makes a call that is not in tail position,\n"
+"it pushes a new frame onto the stack.  Returning a value from a function\n"
+"pops the top frame off the stack.  Stack frames take up memory, and as\n"
+"nobody has an infinite amount of memory, deep recursion could cause\n"
+"Guile to run out of memory.  Running out of stack memory is called\n"
+"@dfn{stack overflow}."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-debug.texi:672
+msgid "@subsubheading Stack Limits"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-debug.texi:680
+msgid ""
+"Most languages have a terrible stack overflow story.  For example, in C,\n"
+"if you use too much stack, your program will exhibit ``undefined\n"
+"behavior'', which if you are lucky means that it will crash.  It's\n"
+"especially bad in C, as you neither know ahead of time how much stack\n"
+"your functions use, nor the stack limit imposed by the user's system,\n"
+"and the stack limit is often quite small relative to the total memory\n"
+"size."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-debug.texi:685
+msgid ""
+"Managed languages like Python have a better error story, as they are\n"
+"defined to raise an exception on stack overflow -- but like C, Python\n"
+"and most dynamic languages still have a fixed stack size limit that is\n"
+"usually much smaller than the heap."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-debug.texi:689
+msgid ""
+"Arbitrary stack limits would have an unfortunate effect on Guile\n"
+"programs.  For example, the following implementation of the inner loop\n"
+"of @code{map} is clean and elegant:"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-debug.texi:697
+msgid ""
+"@example\n"
+"(define (map f l)\n"
+"  (if (pair? l)\n"
+"      (cons (f (car l))\n"
+"            (map f (cdr l)))\n"
+"      '()))\n"
+"@end example"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-debug.texi:701
+msgid ""
+"However, if there were a stack limit, that would limit the size of lists\n"
+"that can be processed with this @code{map}.  Eventually, you would have\n"
+"to rewrite it to use iteration with an accumulator:"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-debug.texi:709
+msgid ""
+"@example\n"
+"(define (map f l)\n"
+"  (let lp ((l l) (out '()))\n"
+"    (if (pair? l)\n"
+"        (lp (cdr l) (cons (f (car l)) out))\n"
+"        (reverse out))))\n"
+"@end example"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-debug.texi:717
+msgid ""
+"This second version is sadly not as clear, and it also allocates more\n"
+"heap memory (once to build the list in reverse, and then again to\n"
+"reverse the list).  You would be tempted to use the destructive\n"
+"@code{reverse!} to save memory and time, but then your code would not be\n"
+"continuation-safe -- if @var{f} returned again after the map had\n"
+"finished, it would see an @var{out} list that had already been\n"
+"reversed.  The recursive @code{map} has none of these problems."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-debug.texi:727
+msgid ""
+"Guile has no stack limit for Scheme code.  When a thread makes its first\n"
+"Guile call, a small stack is allocated -- just one page of memory.\n"
+"Whenever that memory limit would be reached, Guile arranges to grow the\n"
+"stack by a factor of two.  When garbage collection happens, Guile\n"
+"arranges to return the unused part of the stack to the operating system,\n"
+"but without causing the stack to shrink.  In this way, the stack can\n"
+"grow to consume up to all memory available to the Guile process, and\n"
+"when the recursive computation eventually finishes, that stack memory is\n"
+"returned to the system."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-debug.texi:729
+msgid "@subsubheading Exceptional Situations"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-debug.texi:733
+msgid ""
+"Of course, it's still possible to run out of stack memory.  The most\n"
+"common cause of this is program bugs that cause unbounded recursion, as\n"
+"in:"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-debug.texi:740
+msgid ""
+"@example\n"
+"(define (faulty-map f l)\n"
+"  (if (pair? l)\n"
+"      (cons (f (car l)) (faulty-map f l))\n"
+"      '()))\n"
+"@end example"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-debug.texi:749
+msgid ""
+"Did you spot the bug?  The recursive call to @code{faulty-map} recursed\n"
+"on @var{l}, not @code{(cdr @var{l})}.  Running this program would cause\n"
+"Guile to use up all memory in your system, and eventually Guile would\n"
+"fail to grow the stack.  At that point you have a problem: Guile needs\n"
+"to raise an exception to unwind the stack and return memory to the\n"
+"system, but the user might have throw handlers in place (@pxref{Throw\n"
+"Handlers}) that want to run before the stack is unwound, and we don't\n"
+"have any stack in which to run them."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-debug.texi:754
+msgid ""
+"Therefore in this case, Guile throws an unwind-only exception that does\n"
+"not run pre-unwind handlers.  Because this is such an odd case, Guile\n"
+"prints out a message on the console, in case the user was expecting to\n"
+"be able to get a backtrace from any pre-unwind handler."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-debug.texi:756
+msgid "@subsubheading Runaway Recursion"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-debug.texi:763
+msgid ""
+"Still, this failure mode is not so nice.  If you are running an\n"
+"environment in which you are interactively building a program while it\n"
+"is running, such as at a REPL, you might want to impose an artificial\n"
+"stack limit on the part of your program that you are building to detect\n"
+"accidental runaway recursion.  For that purpose, there is\n"
+"@code{call-with-stack-overflow-handler}, from @code{(system vm vm)}."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-debug.texi:767
+msgid ""
+"@example\n"
+"(use-module (system vm vm))\n"
+"@end example"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-debug.texi:775
+msgid ""
+"@deffn {Scheme Procedure} call-with-stack-overflow-handler limit thunk "
+"handler\n"
+"Call @var{thunk} in an environment in which the stack limit has been\n"
+"reduced to @var{limit} additional words.  If the limit is reached,\n"
+"@var{handler} (a thunk) will be invoked in the dynamic environment of\n"
+"the error.  For the extent of the call to @var{handler}, the stack limit\n"
+"and handler are restored to the values that were in place when\n"
+"@code{call-with-stack-overflow-handler} was called."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-debug.texi:780
+msgid ""
+"Usually, @var{handler} should raise an exception or abort to an outer\n"
+"prompt.  However if @var{handler} does return, it should return a number\n"
+"of additional words of stack space to allow to the inner environment.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-debug.texi:787
+msgid ""
+"A stack overflow handler may only ever ``credit'' the inner thunk with\n"
+"stack space that was available when the handler was instated.  When\n"
+"Guile first starts, there is no stack limit in place, so the outer\n"
+"handler may allow the inner thunk an arbitrary amount of space, but any\n"
+"nested stack overflow handler will not be able to consume more than its\n"
+"limit."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-debug.texi:795
+msgid ""
+"Unlike the unwind-only exception that is thrown if Guile is unable to\n"
+"grow its stack, any exception thrown by a stack overflow handler might\n"
+"invoke pre-unwind handlers.  Indeed, the stack overflow handler is\n"
+"itself a pre-unwind handler of sorts.  If the code imposing the stack\n"
+"limit wants to protect itself against malicious pre-unwind handlers from\n"
+"the inner thunk, it should abort to a prompt of its own making instead\n"
+"of throwing an exception that might be caught by the inner thunk."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-debug.texi:797
+msgid "@subsubheading C Stack Usage"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-debug.texi:804
+msgid ""
+"It is also possible for Guile to run out of space on the C stack.  If\n"
+"you call a primitive procedure which then calls a Scheme procedure in a\n"
+"loop, you will consume C stack space.  Guile tries to detect excessive\n"
+"consumption of C stack space, throwing an error when you have hit 80% of\n"
+"the process' available stack (as allocated by the operating system), or\n"
+"160 kilowords in the absence of a strict limit."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-debug.texi:807
+msgid ""
+"For example, looping through @code{call-with-vm}, a primitive that calls\n"
+"a thunk, gives us the following:"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-debug.texi:813
+msgid ""
+"@lisp\n"
+"scheme@@(guile-user)> (use-modules (system vm vm))\n"
+"scheme@@(guile-user)> (let lp () (call-with-vm lp))\n"
+"ERROR: Stack overflow\n"
+"@end lisp"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-debug.texi:817
+msgid ""
+"Unfortunately, that's all the information we get.  Overrunning the C\n"
+"stack will throw an unwind-only exception, because it's not safe to\n"
+"do very much when you are close to the C stack limit."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-debug.texi:821
+msgid ""
+"If you get an error like this, you can either try rewriting your code to\n"
+"use less stack space, or increase the maximum stack size.  To increase\n"
+"the maximum stack size, use @code{debug-set!}, for example:"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-debug.texi:825
+msgid ""
+"@lisp\n"
+"(debug-set! stack 200000)\n"
+"@end lisp"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-debug.texi:829
+msgid ""
+"The next section describes @code{debug-set!} more thoroughly.  Of course\n"
+"the best thing is to have your code operate without so much resource\n"
+"consumption by avoiding loops through C trampolines."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-debug.texi:833
+msgid ""
+"@node Debug Options\n"
+"@subsubsection Debug options"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-debug.texi:836
+msgid ""
+"The behavior of the @code{backtrace} procedure and of the default error\n"
+"handler can be parameterized via the debug options."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-debug.texi:845
+msgid ""
+"@cindex options - debug\n"
+"@cindex debug options\n"
+"@deffn {Scheme Procedure} debug-options [setting]\n"
+"Display the current settings of the debug options.  If @var{setting} is\n"
+"omitted, only a short form of the current read options is printed.\n"
+"Otherwise if @var{setting} is the symbol @code{help}, a complete options\n"
+"description is displayed.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-debug.texi:848
+msgid ""
+"The set of available options, and their default values, may be had by\n"
+"invoking @code{debug-options} at the prompt."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-debug.texi:862
+msgid ""
+"@smallexample\n"
+"scheme@@(guile-user)>\n"
+"backwards       no      Display backtrace in anti-chronological order.\n"
+"width           79      Maximal width of backtrace.\n"
+"depth           20      Maximal length of printed backtrace.\n"
+"backtrace       yes     Show backtrace on error.\n"
+"stack           1048576 Stack size limit (measured in words;\n"
+"                        0 = no check). \n"
+"show-file-name  #t      Show file names and line numbers in backtraces\n"
+"                        when not `#f'.  A value of `base' displays only\n"
+"                        base names, while `#t' displays full names. \n"
+"warn-deprecated no      Warn when deprecated features are used.\n"
+"@end smallexample"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-debug.texi:866
+msgid ""
+"The boolean options may be toggled with @code{debug-enable} and\n"
+"@code{debug-disable}. The non-boolean options must be set using\n"
+"@code{debug-set!}."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-debug.texi:872
+msgid ""
+"@deffn {Scheme Procedure} debug-enable option-name\n"
+"@deffnx {Scheme Procedure} debug-disable option-name\n"
+"@deffnx {Scheme Syntax} debug-set! option-name value\n"
+"Modify the debug options.  @code{debug-enable} should be used with boolean\n"
+"options and switches them on, @code{debug-disable} switches them off."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-debug.texi:877
+msgid ""
+"@code{debug-set!} can be used to set an option to a specific value.  Due\n"
+"to historical oddities, it is a macro that expects an unquoted option\n"
+"name.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-debug.texi:881
+msgid ""
+"@node Traps\n"
+"@subsection Traps"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-debug.texi:891
+msgid ""
+"@cindex Traps\n"
+"@cindex VM hooks\n"
+"@cindex Breakpoints\n"
+"@cindex Trace\n"
+"@cindex Tracing\n"
+"@cindex Code coverage\n"
+"@cindex Profiling\n"
+"Guile's virtual machine can be configured to call out at key points to\n"
+"arbitrary user-specified procedures."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-debug.texi:895
+msgid ""
+"In principle, these @dfn{hooks} allow Scheme code to implement any model\n"
+"it chooses for examining the evaluation stack as program execution\n"
+"proceeds, and for suspending execution to be resumed later."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-debug.texi:901
+msgid ""
+"VM hooks are very low-level, though, and so Guile also has a library of\n"
+"higher-level @dfn{traps} on top of the VM hooks. A trap is an execution\n"
+"condition that, when fulfilled, will fire a handler. For example, Guile\n"
+"defines a trap that fires when control reaches a certain source\n"
+"location."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-debug.texi:908
+msgid ""
+"Finally, Guile also defines a third level of abstractions: per-thread\n"
+"@dfn{trap states}. A trap state exists to give names to traps, and to\n"
+"hold on to the set of traps so that they can be enabled, disabled, or\n"
+"removed. The trap state infrastructure defines the most useful\n"
+"abstractions for most cases. For example, Guile's REPL uses trap state\n"
+"functions to set breakpoints and tracepoints."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-debug.texi:912
+msgid ""
+"The following subsections describe all this in detail, for both the\n"
+"user wanting to use traps, and the developer interested in\n"
+"understanding how the interface hangs together."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-debug.texi:922
+msgid ""
+"@menu\n"
+"* VM Hooks::                Modifying Guile's virtual machine.\n"
+"* Trap Interface::          Traps are on or off.\n"
+"* Low-Level Traps::         The various kinds of low-level traps.\n"
+"* Tracing Traps::           Traps to trace procedure calls and returns.\n"
+"* Trap States::             One state (per thread) to bind them.\n"
+"* High-Level Traps::        The highest-level trap interface. Use this.\n"
+"@end menu"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-debug.texi:926
+msgid ""
+"@node VM Hooks\n"
+"@subsubsection VM Hooks"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-debug.texi:930
+msgid ""
+"Everything that runs in Guile runs on its virtual machine, a C program\n"
+"that defines a number of operations that Scheme programs can\n"
+"perform."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-debug.texi:935
+msgid ""
+"Note that there are multiple VM ``engines'' for Guile. Only some of them\n"
+"have support for hooks compiled in. Normally the deal is that you get\n"
+"hooks if you are running interactively, and otherwise they are disabled,\n"
+"as they do have some overhead (about 10 or 20 percent)."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-debug.texi:940
+msgid ""
+"To ensure that you are running with hooks, pass @code{--debug} to Guile\n"
+"when running your program, or otherwise use the @code{call-with-vm} and\n"
+"@code{set-vm-engine!}  procedures to ensure that you are running in a VM\n"
+"with the @code{debug} engine."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-debug.texi:944
+msgid ""
+"To digress, Guile's VM has 6 different hooks (@pxref{Hooks}) that can be\n"
+"fired at different times, which may be accessed with the following\n"
+"procedures."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-debug.texi:950
+msgid ""
+"The first argument of calls to these hooks is the frame in question.\n"
+"@xref{Frames}.  Some hooks may call their procedures with more\n"
+"arguments.  Since these hooks may be fired very frequently, Guile does a\n"
+"terrible thing: it allocates the frames on the C stack instead of the\n"
+"garbage-collected heap."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-debug.texi:954
+msgid ""
+"The upshot here is that the frames are only valid within the dynamic\n"
+"extent of the call to the hook. If a hook procedure keeps a reference to\n"
+"the frame outside the extent of the hook, bad things will happen."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-debug.texi:956
+msgid "The interface to hooks is provided by the @code{(system vm vm)} module:"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-debug.texi:960
+msgid ""
+"@example\n"
+"(use-modules (system vm vm))\n"
+"@end example"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-debug.texi:964
+msgid ""
+"@noindent\n"
+"All of these functions implicitly act on the VM for the current thread\n"
+"only."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-debug.texi:969
+msgid ""
+"@deffn {Scheme Procedure} vm-next-hook\n"
+"The hook that will be fired before an instruction is retired (and\n"
+"executed).\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-debug.texi:975
+msgid ""
+"@deffn {Scheme Procedure} vm-push-continuation-hook\n"
+"The hook that will be fired after preparing a new frame. Fires just\n"
+"before applying a procedure in a non-tail context, just before the\n"
+"corresponding apply-hook.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-debug.texi:978
+msgid ""
+"@deffn {Scheme Procedure} vm-pop-continuation-hook\n"
+"The hook that will be fired before returning from a frame."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-debug.texi:982
+msgid ""
+"This hook fires with a variable number of arguments, corresponding to\n"
+"the values that the frame returns to its continuation.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-debug.texi:986
+msgid ""
+"@deffn {Scheme Procedure} vm-apply-hook\n"
+"The hook that will be fired before a procedure is applied. The frame's\n"
+"procedure will have already been set to the new procedure."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-debug.texi:993
+msgid ""
+"Note that procedure application is somewhat orthogonal to continuation\n"
+"pushes and pops. A non-tail call to a procedure will result first in a\n"
+"firing of the push-continuation hook, then this application hook,\n"
+"whereas a tail call will run without having fired a push-continuation\n"
+"hook.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-debug.texi:997
+msgid ""
+"@deffn {Scheme Procedure} vm-abort-continuation-hook\n"
+"The hook that will be called after aborting to a\n"
+"prompt.  @xref{Prompts}."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-debug.texi:1002
+msgid ""
+"Like the pop-continuation hook, this hook fires with a variable number\n"
+"of arguments, corresponding to the values that returned to the\n"
+"continuation.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-debug.texi:1008
+msgid ""
+"@deffn {Scheme Procedure} vm-restore-continuation-hook\n"
+"The hook that will be called after restoring an undelimited\n"
+"continuation. Unfortunately it's not currently possible to introspect on\n"
+"the values that were given to the continuation.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-debug.texi:1015
+msgid ""
+"@cindex VM trace level\n"
+"These hooks do impose a performance penalty, if they are on. Obviously,\n"
+"the @code{vm-next-hook} has quite an impact, performance-wise. Therefore\n"
+"Guile exposes a single, heavy-handed knob to turn hooks on or off, the\n"
+"@dfn{VM trace level}. If the trace level is positive, hooks run;\n"
+"otherwise they don't."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-debug.texi:1020
+msgid ""
+"For convenience, when the VM fires a hook, it does so with the trap\n"
+"level temporarily set to 0.  That way the hooks don't fire while you're\n"
+"handling a hook.  The trace level is restored to whatever it was once the "
+"hook\n"
+"procedure finishes."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-debug.texi:1025
+msgid ""
+"@deffn {Scheme Procedure} vm-trace-level\n"
+"Retrieve the ``trace level'' of the VM. If positive, the trace hooks\n"
+"associated with @var{vm} will be run. The initial trace level is 0.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-debug.texi:1029
+msgid ""
+"@deffn {Scheme Procedure} set-vm-trace-level! level\n"
+"Set the ``trace level'' of the VM.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-debug.texi:1032
+msgid ""
+"@xref{A Virtual Machine for Guile}, for more information on Guile's\n"
+"virtual machine."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-debug.texi:1035
+msgid ""
+"@node Trap Interface\n"
+"@subsubsection Trap Interface"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-debug.texi:1038
+msgid ""
+"The capabilities provided by hooks are great, but hooks alone rarely\n"
+"correspond to what users want to do."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-debug.texi:1046
+msgid ""
+"For example, if a user wants to break when and if control reaches a\n"
+"certain source location, how do you do it?  If you install a ``next''\n"
+"hook, you get unacceptable overhead for the execution of the entire\n"
+"program. It would be possible to install an ``apply'' hook, then if the\n"
+"procedure encompasses those source locations, install a ``next'' hook,\n"
+"but already you're talking about one concept that might be implemented\n"
+"by a varying number of lower-level concepts."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-debug.texi:1049
+msgid ""
+"It's best to be clear about things and define one abstraction for all\n"
+"such conditions: the @dfn{trap}."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-debug.texi:1055
+msgid ""
+"Considering the myriad capabilities offered by the hooks though, there\n"
+"is only a minimum of functionality shared by all traps. Guile's current\n"
+"take is to reduce this to the absolute minimum, and have the only\n"
+"standard interface of a trap be ``turn yourself on'' or ``turn yourself\n"
+"off''."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-debug.texi:1063
+msgid ""
+"This interface sounds a bit strange, but it is useful to procedurally\n"
+"compose higher-level traps from lower-level building blocks. For\n"
+"example, Guile defines a trap that calls one handler when control enters\n"
+"a procedure, and another when control leaves the procedure. Given that\n"
+"trap, one can define a trap that adds to the next-hook only when within\n"
+"a given procedure. Building further, one can define a trap that fires\n"
+"when control reaches particular instructions within a procedure."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-debug.texi:1070
+msgid ""
+"Or of course you can stop at any of these intermediate levels. For\n"
+"example, one might only be interested in calls to a given procedure. But\n"
+"the point is that a simple enable/disable interface is all the\n"
+"commonality that exists between the various kinds of traps, and\n"
+"furthermore that such an interface serves to allow ``higher-level''\n"
+"traps to be composed from more primitive ones."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-debug.texi:1075
+msgid ""
+"Specifically, a trap, in Guile, is a procedure. When a trap is created,\n"
+"by convention the trap is enabled; therefore, the procedure that is the\n"
+"trap will, when called, disable the trap, and return a procedure that\n"
+"will enable the trap, and so on."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-debug.texi:1079
+msgid ""
+"Trap procedures take one optional argument: the current frame. (A trap\n"
+"may want to add to different sets of hooks depending on the frame that\n"
+"is current at enable-time.)"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-debug.texi:1086
+msgid ""
+"If this all sounds very complicated, it's because it is. Some of it is\n"
+"essential, but probably most of it is not. The advantage of using this\n"
+"minimal interface is that composability is more lexically apparent than\n"
+"when, for example, using a stateful interface based on GOOPS. But\n"
+"perhaps this reflects the cognitive limitations of the programmer who\n"
+"made the current interface more than anything else."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-debug.texi:1089
+msgid ""
+"@node Low-Level Traps\n"
+"@subsubsection Low-Level Traps"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-debug.texi:1092
+msgid ""
+"To summarize the last sections, traps are enabled or disabled, and when\n"
+"they are enabled, they add to various VM hooks."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-debug.texi:1099
+msgid ""
+"Note, however, that @emph{traps do not increase the VM trace level}. So\n"
+"if you create a trap, it will be enabled, but unless something else\n"
+"increases the VM's trace level (@pxref{VM Hooks}), the trap will not\n"
+"fire.  It turns out that getting the VM trace level right is tricky\n"
+"without a global view of what traps are enabled.  @xref{Trap States},\n"
+"for Guile's answer to this problem."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-debug.texi:1103
+msgid ""
+"Traps are created by calling procedures. Most of these procedures share\n"
+"a set of common keyword arguments, so rather than document them\n"
+"separately, we discuss them all together here:"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-debug.texi:1112
+msgid ""
+"@table @code\n"
+"@item #:vm\n"
+"The VM to instrument. Defaults to the current thread's VM.\n"
+"@item #:current-frame\n"
+"For traps that enable more hooks depending on their dynamic context,\n"
+"this argument gives the current frame that the trap is running in.\n"
+"Defaults to @code{#f}.\n"
+"@end table"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-debug.texi:1115
+msgid ""
+"To have access to these procedures, you'll need to have imported the\n"
+"@code{(system vm traps)} module:"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-debug.texi:1119
+msgid ""
+"@lisp\n"
+"(use-modules (system vm traps))\n"
+"@end lisp"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-debug.texi:1124
+msgid ""
+"@deffn {Scheme Procedure} trap-at-procedure-call proc handler @\n"
+"       [#:vm]\n"
+"A trap that calls @var{handler} when @var{proc} is applied.\n"
+"@end deffn                "
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-debug.texi:1129
+msgid ""
+"@deffn {Scheme Procedure} trap-in-procedure proc @\n"
+"       enter-handler exit-handler [#:current-frame] [#:vm]\n"
+"A trap that calls @var{enter-handler} when control enters @var{proc},\n"
+"and @var{exit-handler} when control leaves @var{proc}."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-debug.texi:1139
+msgid ""
+"Control can enter a procedure via:\n"
+"@itemize\n"
+"@item\n"
+"A procedure call.\n"
+"@item\n"
+"A return to a procedure's frame on the stack.\n"
+"@item\n"
+"A continuation returning directly to an application of this procedure.\n"
+"@end itemize"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-debug.texi:1152
+msgid ""
+"Control can leave a procedure via:\n"
+"@itemize\n"
+"@item\n"
+"A normal return from the procedure.\n"
+"@item\n"
+"An application of another procedure.\n"
+"@item\n"
+"An invocation of a continuation.\n"
+"@item\n"
+"An abort.\n"
+"@end itemize\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-debug.texi:1158
+msgid ""
+"@deffn {Scheme Procedure} trap-instructions-in-procedure proc @\n"
+"       next-handler exit-handler [#:current-frame] [#:vm]\n"
+"A trap that calls @var{next-handler} for every instruction executed in\n"
+"@var{proc}, and @var{exit-handler} when execution leaves @var{proc}.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-debug.texi:1166
+msgid ""
+"@deffn {Scheme Procedure} trap-at-procedure-ip-in-range proc range @\n"
+"       handler [#:current-frame] [#:vm]\n"
+"A trap that calls @var{handler} when execution enters a range of\n"
+"instructions in @var{proc}. @var{range} is a simple of pairs,\n"
+"@code{((@var{start} . @var{end}) ...)}. The @var{start} addresses are\n"
+"inclusive, and @var{end} addresses are exclusive.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-debug.texi:1173
+msgid ""
+"@deffn {Scheme Procedure} trap-at-source-location file user-line handler @\n"
+"       [#:current-frame] [#:vm]\n"
+"A trap that fires when control reaches a given source location.  The\n"
+"@var{user-line} parameter is one-indexed, as a user counts lines,\n"
+"instead of zero-indexed, as Guile counts lines.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-debug.texi:1181
+msgid ""
+"@deffn {Scheme Procedure} trap-frame-finish frame @\n"
+"       return-handler abort-handler [#:vm]\n"
+"A trap that fires when control leaves the given frame. @var{frame}\n"
+"should be a live frame in the current continuation. @var{return-handler}\n"
+"will be called on a normal return, and @var{abort-handler} on a nonlocal\n"
+"exit.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-debug.texi:1187
+msgid ""
+"@deffn {Scheme Procedure} trap-in-dynamic-extent proc @\n"
+"       enter-handler return-handler abort-handler [#:vm]\n"
+"A more traditional dynamic-wind trap, which fires @var{enter-handler}\n"
+"when control enters @var{proc}, @var{return-handler} on a normal return,\n"
+"and @var{abort-handler} on a nonlocal exit."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-debug.texi:1190
+msgid ""
+"Note that rewinds are not handled, so there is no rewind handler.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-debug.texi:1197
+msgid ""
+"@deffn {Scheme Procedure} trap-calls-in-dynamic-extent proc @\n"
+"       apply-handler return-handler [#:current-frame] [#:vm]\n"
+"A trap that calls @var{apply-handler} every time a procedure is applied,\n"
+"and @var{return-handler} for returns, but only during the dynamic extent\n"
+"of an application of @var{proc}.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-debug.texi:1203
+msgid ""
+"@deffn {Scheme Procedure} trap-instructions-in-dynamic-extent proc @\n"
+"       next-handler [#:current-frame] [#:vm]\n"
+"A trap that calls @var{next-handler} for all retired instructions within\n"
+"the dynamic extent of a call to @var{proc}.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-debug.texi:1209
+msgid ""
+"@deffn {Scheme Procedure} trap-calls-to-procedure proc @\n"
+"       apply-handler return-handler [#:vm]\n"
+"A trap that calls @var{apply-handler} whenever @var{proc} is applied,\n"
+"and @var{return-handler} when it returns, but with an additional\n"
+"argument, the call depth."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-debug.texi:1213
+msgid ""
+"That is to say, the handlers will get two arguments: the frame in\n"
+"question, and the call depth (a non-negative integer).\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-debug.texi:1219
+msgid ""
+"@deffn {Scheme Procedure} trap-matching-instructions frame-pred handler "
+"[#:vm]\n"
+"A trap that calls @var{frame-pred} at every instruction, and if\n"
+"@var{frame-pred} returns a true value, calls @var{handler} on the\n"
+"frame.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-debug.texi:1222
+msgid ""
+"@node Tracing Traps\n"
+"@subsubsection Tracing Traps"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-debug.texi:1228
+msgid ""
+"The @code{(system vm trace)} module defines a number of traps for\n"
+"tracing of procedure applications.  When a procedure is @dfn{traced}, it\n"
+"means that every call to that procedure is reported to the user during a\n"
+"program run.  The idea is that you can mark a collection of procedures\n"
+"for tracing, and Guile will subsequently print out a line of the form"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-debug.texi:1232
+msgid ""
+"@lisp\n"
+"|  |  (@var{procedure} @var{args} @dots{})\n"
+"@end lisp"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-debug.texi:1236
+msgid ""
+"whenever a marked procedure is about to be applied to its arguments.\n"
+"This can help a programmer determine whether a function is being called\n"
+"at the wrong time or with the wrong set of arguments."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-debug.texi:1241
+msgid ""
+"In addition, the indentation of the output is useful for demonstrating\n"
+"how the traced applications are or are not tail recursive with respect\n"
+"to each other.  Thus, a trace of a non-tail recursive factorial\n"
+"implementation looks like this:"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-debug.texi:1258
+msgid ""
+"@lisp\n"
+"scheme@@(guile-user)> (define (fact1 n) \n"
+"                       (if (zero? n) 1\n"
+"                           (* n (fact1 (1- n)))))\n"
+"scheme@@(guile-user)> ,trace (fact1 4)\n"
+"trace: (fact1 4)\n"
+"trace: |  (fact1 3)\n"
+"trace: |  |  (fact1 2)\n"
+"trace: |  |  |  (fact1 1)\n"
+"trace: |  |  |  |  (fact1 0)\n"
+"trace: |  |  |  |  1\n"
+"trace: |  |  |  1\n"
+"trace: |  |  2\n"
+"trace: |  6\n"
+"trace: 24\n"
+"@end lisp"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-debug.texi:1260
+msgid ""
+"While a typical tail recursive implementation would look more like this:"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-debug.texi:1275
+msgid ""
+"@lisp\n"
+"scheme@@(guile-user)> (define (facti acc n)\n"
+"                       (if (zero? n) acc\n"
+"                           (facti (* n acc) (1- n))))\n"
+"scheme@@(guile-user)> (define (fact2 n) (facti 1 n))\n"
+"scheme@@(guile-user)> ,trace (fact2 4)\n"
+"trace: (fact2 4)\n"
+"trace: (facti 1 4)\n"
+"trace: (facti 4 3)\n"
+"trace: (facti 12 2)\n"
+"trace: (facti 24 1)\n"
+"trace: (facti 24 0)\n"
+"trace: 24\n"
+"@end lisp"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-debug.texi:1278
+msgid ""
+"The low-level traps below (@pxref{Low-Level Traps}) share some common\n"
+"options:"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-debug.texi:1290
+msgid ""
+"@table @code\n"
+"@item #:width\n"
+"The maximum width of trace output. Trace printouts will try not to\n"
+"exceed this column, but for highly nested procedure calls, it may be\n"
+"unavoidable. Defaults to 80.\n"
+"@item #:vm\n"
+"The VM on which to add the traps. Defaults to the current thread's VM.\n"
+"@item #:prefix\n"
+"A string to print out before each trace line. As seen above in the\n"
+"examples, defaults to @code{\"trace: \"}.\n"
+"@end table"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-debug.texi:1293
+msgid ""
+"To have access to these procedures, you'll need to have imported the\n"
+"@code{(system vm trace)} module:"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-debug.texi:1297
+msgid ""
+"@lisp\n"
+"(use-modules (system vm trace))\n"
+"@end lisp"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-debug.texi:1302
+msgid ""
+"@deffn {Scheme Procedure} trace-calls-to-procedure proc @\n"
+"       [#:width] [#:vm] [#:prefix]\n"
+"Print a trace at applications of and returns from @var{proc}.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-debug.texi:1308
+msgid ""
+"@deffn {Scheme Procedure} trace-calls-in-procedure proc @\n"
+"       [#:width] [#:vm] [#:prefix]\n"
+"Print a trace at all applications and returns within the dynamic extent\n"
+"of calls to @var{proc}.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-debug.texi:1313
+msgid ""
+"@deffn {Scheme Procedure} trace-instructions-in-procedure proc [#:width] "
+"[#:vm]\n"
+"Print a trace at all instructions executed in the dynamic extent of\n"
+"calls to @var{proc}.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-debug.texi:1316
+msgid ""
+"In addition, Guile defines a procedure to call a thunk, tracing all\n"
+"procedure calls and returns within the thunk."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-debug.texi:1321
+msgid ""
+"@deffn {Scheme Procedure} call-with-trace thunk [#:calls?=#t] @\n"
+"                          [#:instructions?=#f] @\n"
+"                          [#:width=80]\n"
+"Call @var{thunk}, tracing all execution within its dynamic extent."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-debug.texi:1324
+msgid ""
+"If @var{calls?} is true, Guile will print a brief report at each\n"
+"procedure call and return, as given above."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-debug.texi:1328
+msgid ""
+"If @var{instructions?} is true, Guile will also print a message each\n"
+"time an instruction is executed.  This is a lot of output, but it is\n"
+"sometimes useful when doing low-level optimization."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-debug.texi:1332
+msgid ""
+"Note that because this procedure manipulates the VM trace level\n"
+"directly, it doesn't compose well with traps at the REPL.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-debug.texi:1334
+msgid "@xref{Profile Commands}, for more information on tracing at the REPL."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-debug.texi:1337
+msgid ""
+"@node Trap States\n"
+"@subsubsection Trap States"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-debug.texi:1341
+msgid ""
+"When multiple traps are present in a system, we begin to have a\n"
+"bookkeeping problem. How are they named? How does one disable, enable,\n"
+"or delete them?"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-debug.texi:1346
+msgid ""
+"Guile's answer to this is to keep an implicit per-thread @dfn{trap\n"
+"state}. The trap state object is not exposed to the user; rather, API\n"
+"that works on trap states fetches the current trap state from the\n"
+"dynamic environment."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-debug.texi:1349
+msgid ""
+"Traps are identified by integers. A trap can be enabled, disabled, or\n"
+"removed, and can have an associated user-visible name."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-debug.texi:1351
+msgid "These procedures have their own module:"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-debug.texi:1355
+msgctxt "/home/bear/work/guile/doc/guile/en/api-debug.texi:1355"
+msgid ""
+"@lisp\n"
+"(use-modules (system vm trap-state))\n"
+"@end lisp"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-debug.texi:1359
+msgid ""
+"@deffn {Scheme Procedure} add-trap! trap name\n"
+"Add a trap to the current trap state, associating the given @var{name}\n"
+"with it. Returns a fresh trap identifier (an integer)."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-debug.texi:1363
+msgid ""
+"Note that usually the more specific functions detailed in\n"
+"@ref{High-Level Traps} are used in preference to this one.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-debug.texi:1368
+msgid ""
+"@deffn {Scheme Procedure} list-traps\n"
+"List the current set of traps, both enabled and disabled. Returns a list\n"
+"of integers.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-debug.texi:1373
+msgid ""
+"@deffn {Scheme Procedure} trap-name idx\n"
+"Returns the name associated with trap @var{idx}, or @code{#f} if there\n"
+"is no such trap.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-debug.texi:1378
+msgid ""
+"@deffn {Scheme Procedure} trap-enabled? idx\n"
+"Returns @code{#t} if trap @var{idx} is present and enabled, or @code{#f}\n"
+"otherwise.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-debug.texi:1382
+msgid ""
+"@deffn {Scheme Procedure} enable-trap! idx\n"
+"Enables trap @var{idx}.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-debug.texi:1386
+msgid ""
+"@deffn {Scheme Procedure} disable-trap! idx\n"
+"Disables trap @var{idx}.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-debug.texi:1390
+msgid ""
+"@deffn {Scheme Procedure} delete-trap! idx\n"
+"Removes trap @var{idx}, disabling it first, if necessary.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-debug.texi:1393
+msgid ""
+"@node High-Level Traps\n"
+"@subsubsection High-Level Traps"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-debug.texi:1400
+msgid ""
+"The low-level trap API allows one to make traps that call procedures,\n"
+"and the trap state API allows one to keep track of what traps are\n"
+"there.  But neither of these APIs directly helps you when you want to\n"
+"set a breakpoint, because it's unclear what to do when the trap fires.\n"
+"Do you enter a debugger, or mail a summary of the situation to your\n"
+"great-aunt, or what?"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-debug.texi:1404
+msgid ""
+"So for the common case in which you just want to install breakpoints,\n"
+"and then have them all result in calls to one parameterizable procedure,\n"
+"we have the high-level trap interface."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-debug.texi:1409
+msgid ""
+"Perhaps we should have started this section with this interface, as it's\n"
+"clearly the one most people should use.  But as its capabilities and\n"
+"limitations proceed from the lower layers, we felt that the\n"
+"character-building exercise of building a mental model might be helpful."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-debug.texi:1411
+msgid "These procedures share a module with trap states:"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-debug.texi:1415
+msgctxt "/home/bear/work/guile/doc/guile/en/api-debug.texi:1415"
+msgid ""
+"@lisp\n"
+"(use-modules (system vm trap-state))\n"
+"@end lisp"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-debug.texi:1419
+msgid ""
+"@deffn {Scheme Procedure} with-default-trap-handler handler thunk\n"
+"Call @var{thunk} in a dynamic context in which @var{handler} is the\n"
+"current trap handler."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-debug.texi:1423
+msgid ""
+"Additionally, during the execution of @var{thunk}, the VM trace level\n"
+"(@pxref{VM Hooks}) is set to the number of enabled traps. This ensures\n"
+"that traps will in fact fire."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-debug.texi:1427
+msgid ""
+"@var{handler} may be @code{#f}, in which case VM hooks are not enabled\n"
+"as they otherwise would be, as there is nothing to handle the traps.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-debug.texi:1432
+msgid ""
+"The trace-level-setting behavior of @code{with-default-trap-handler} is\n"
+"one of its more useful aspects, but if you are willing to forgo that,\n"
+"and just want to install a global trap handler, there's a function for\n"
+"that too:"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-debug.texi:1436
+msgid ""
+"@deffn {Scheme Procedure} install-trap-handler! handler\n"
+"Set the current thread's trap handler to @var{handler}.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-debug.texi:1441
+msgid ""
+"Trap handlers are called when traps installed by procedures from this\n"
+"module fire.  The current ``consumer'' of this API is Guile's REPL, but\n"
+"one might easily imagine other trap handlers being used to integrate\n"
+"with other debugging tools."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-debug.texi:1446
+msgid ""
+"@cindex Breakpoints\n"
+"@cindex Setting breakpoints\n"
+"@deffn {Scheme Procedure} add-trap-at-procedure-call! proc\n"
+"Install a trap that will fire when @var{proc} is called."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-debug.texi:1449
+msgid ""
+"This is a breakpoint.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-debug.texi:1455
+msgid ""
+"@cindex Tracepoints\n"
+"@cindex Setting tracepoints\n"
+"@deffn {Scheme Procedure} add-trace-at-procedure-call! proc\n"
+"Install a trap that will print a tracing message when @var{proc} is\n"
+"called. @xref{Tracing Traps}, for more information."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-debug.texi:1458
+msgid ""
+"This is a tracepoint.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-debug.texi:1463
+msgid ""
+"@deffn {Scheme Procedure} add-trap-at-source-location! file user-line\n"
+"Install a trap that will fire when control reaches the given source\n"
+"location. @var{user-line} is one-indexed, as users count lines, instead\n"
+"of zero-indexed, as Guile counts lines."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-debug.texi:1466
+msgid ""
+"This is a source breakpoint.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-debug.texi:1471
+msgid ""
+"@deffn {Scheme Procedure} add-ephemeral-trap-at-frame-finish! frame handler\n"
+"Install a trap that will call @var{handler} when @var{frame} finishes\n"
+"executing. The trap will be removed from the trap state after firing, or\n"
+"on nonlocal exit."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-debug.texi:1474
+msgid ""
+"This is a finish trap, used to implement the ``finish'' REPL command.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-debug.texi:1479
+msgid ""
+"@deffn {Scheme Procedure} add-ephemeral-stepping-trap! frame handler "
+"[#:into?] [#:instruction?]\n"
+"Install a trap that will call @var{handler} after stepping to a\n"
+"different source line or instruction.  The trap will be removed from the\n"
+"trap state after firing, or on nonlocal exit."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-debug.texi:1483
+msgid ""
+"If @var{instruction?} is false (the default), the trap will fire when\n"
+"control reaches a new source line. Otherwise it will fire when control\n"
+"reaches a new instruction."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-debug.texi:1488
+msgid ""
+"Additionally, if @var{into?} is false (not the default), the trap will\n"
+"only fire for frames at or prior to the given frame. If @var{into?} is\n"
+"true (the default), the trap may step into nested procedure\n"
+"invocations."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-debug.texi:1492
+msgid ""
+"This is a stepping trap, used to implement the ``step'', ``next'',\n"
+"``step-instruction'', and ``next-instruction'' REPL commands.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-debug.texi:1495
+msgid ""
+"@node GDB Support\n"
+"@subsection GDB Support"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-debug.texi:1497
+msgid "@cindex GDB support"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-debug.texi:1502
+msgid ""
+"Sometimes, you may find it necessary to debug Guile applications at the\n"
+"C level.  Doing so can be tedious, in particular because the debugger is\n"
+"oblivious to Guile's @code{SCM} type, and thus unable to display\n"
+"@code{SCM} values in any meaningful way:"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-debug.texi:1507
+msgid ""
+"@example\n"
+"(gdb) frame\n"
+"#0  scm_display (obj=0xf04310, port=0x6f9f30) at print.c:1437\n"
+"@end example"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-debug.texi:1511
+msgid ""
+"To address that, Guile comes with an extension of the GNU Debugger (GDB)\n"
+"that contains a ``pretty-printer'' for @code{SCM} values.  With this GDB\n"
+"extension, the C frame in the example above shows up like this:"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-debug.texi:1516
+msgid ""
+"@example\n"
+"(gdb) frame\n"
+"#0  scm_display (obj=(\"hello\" GDB!), port=#<port file 6f9f30>) at print.c:"
+"1437\n"
+"@end example"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-debug.texi:1520
+msgid ""
+"@noindent\n"
+"Here GDB was able to decode the list pointed to by @var{obj}, and to\n"
+"print it using Scheme's read syntax."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-debug.texi:1529
+msgid ""
+"That extension is a @code{.scm} file installed alongside the\n"
+"@file{libguile} shared library.  When GDB 7.8 or later is installed and\n"
+"compiled with support for extensions written in Guile, the extension is\n"
+"automatically loaded when debugging a program linked against\n"
+"@file{libguile} (@pxref{Auto-loading,,, gdb, Debugging with GDB}).  Note\n"
+"that the directory where @file{libguile} is installed must be among\n"
+"GDB's auto-loading ``safe directories'' (@pxref{Auto-loading safe\n"
+"path,,, gdb, Debugging with GDB})."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-debug.texi:1533
+msgid ""
+"@c Local Variables:\n"
+"@c TeX-master: \"guile.texi\"\n"
+"@c End:"
+msgstr ""

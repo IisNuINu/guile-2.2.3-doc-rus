@@ -1,0 +1,1376 @@
+@c -*-texinfo-*-
+@c This is part of the GNU Guile Reference Manual.
+@c Copyright (C)  2008-2016
+@c   Free Software Foundation, Inc.
+@c See the file guile.texi for copying conditions.
+
+@node Compiling to the Virtual Machine
+@section Компиляция в код Виртуальной Машины
+
+Компиляторы!  Само слово вызывает волнение и срах даже среди опытных
+практиков. Но компилятор - это просто программа: черезвычайно хакерская
+вещь. Эта секция направлена на то, чтобы описать компилятор Guile
+таким образом, чтобы заинтересованные Scheme хакеры могли чувствовать
+себя удобно при чтении и расширении его.
+
+@xref{Read/Load/Eval/Compile}, если вы потерялись, и вы просто хотите
+знать, как скомпилировать ваш @code{.scm} файл.
+
+@menu
+* Compiler Tower::                   
+* The Scheme Compiler::                   
+* Tree-IL::                 
+* Continuation-Passing Style::                 
+* Bytecode::                
+* Writing New High-Level Languages::
+* Extending the Compiler::
+@end menu
+
+@node Compiler Tower
+@subsection Башня Компилятора
+
+Guile компилятор довольно прост -- это компиляторы @emph{compilers}, если 
+выражаться более точно. Guile определяет башню языков, начиная со Scheme и
+постепенно упрощая до языков которые напоминают набор инструкций ВМ
+(@pxref{Instruction Set}).
+
+Каждый язык знает, как скомпилировать до следующего, поэтому каждый
+шаг прост и понятен.  Кроме того, этот набор языков не жестко закодирован
+в Guile, поэтому можно пользователю добавлять новые языки высокого уровня,
+новые проходы, или даже раличные цели компиляции.
+
+Языки зарегистрированы в модуле, @code{(system base language)}:
+
+@example
+(use-modules (system base language))
+@end example
+
+Они зарегистрированы в форме @code{define-language}.
+
+@deffn {Scheme Syntax} define-language @
+                       [#:name] [#:title] [#:reader] [#:printer] @
+                       [#:parser=#f] [#:compilers='()] @
+                       [#:decompilers='()] [#:evaluator=#f] @
+                       [#:joiner=#f] [#:for-humans?=#t] @
+                       [#:make-default-environment=make-fresh-user-module]
+Определяет язык.
+
+Этот синтаксис определяет объект @code{<language>}, связаный с именем @var{name}
+в текущй среде. Кроме того, язык будет добавлен в глобальный набор языков. 
+Например, это определения языка для Scheme:
+
+@example
+(define-language scheme
+  #:title	"Scheme"
+  #:reader      (lambda (port env) ...)
+  #:compilers   `((tree-il . ,compile-tree-il))
+  #:decompilers `((tree-il . ,decompile-tree-il))
+  #:evaluator	(lambda (x module) (primitive-eval x))
+  #:printer	write
+  #:make-default-environment (lambda () ...))
+@end example
+@end deffn
+
+Интересная вещь заключается в том, что языки определены таким образом,
+что они представляют единый интерфейс к циклу read-eval-print loop.  
+Это позволяет пользователю изменять текущий язык REPL:
+
+@example
+scheme@@(guile-user)> ,language tree-il
+Happy hacking with Tree Intermediate Language!  To switch back, type `,L scheme'.
+tree-il@@(guile-user)> ,L scheme
+Happy hacking with Scheme!  To switch back, type `,L tree-il'.
+scheme@@(guile-user)> 
+@end example
+
+Язык можно найти по имени, так как показано выше.
+
+@deffn {Scheme Procedure} lookup-language name
+Ищет язык по имени @var{name}, автоматически загружая его, если необходимо.
+
+Язык автоматически загружается путем поиска пермеменной с именем
+@var{name} в модуле с именем @code{(language @var{name} spec)}.
+
+Объект языка будет возвращен, или @code{#f} если не существует языка
+с таким именем.
+@end deffn
+
+Определение языков таким образом позволяет нам программно определять
+необходимые шаги для компиляции кода с одного языка на другой.
+
+@deffn {Scheme Procedure} lookup-compilation-order from to
+Рекурсивно пересекает множество языков, с которыми можно компилировать
+ища в глубину, и возвращает первый путь, который может преобразовывать
+@var{from} в @var{to}. Возвращает @code{#f} если путь не найден.
+
+Эта функция запоминает свои результаты в кеше, который становиться
+недействительным последующими вызовами @code{define-language}, поэтому
+он должен быть доволно быстрым.
+@end deffn
+
+Существует понятие ``текущего языка(current language)'', который
+содержиться в параметре @code{current-language}, определенном 
+в ядре модуля @code{(guile)}. Этот язык обычно представляет собой
+Scheme, и может быть переустановлен пользователем. Интерфейс
+компиляции во время выполнения (@pxref{Read/Load/Eval/Compile}) 
+так же позволяет выбирать другие языки источника и цели.
+
+
+Обычная башня языков при компиляции Scheme выглядит следующим образом:
+
+@itemize
+@item Scheme
+@item Tree Intermediate Language (Tree-IL)
+@item Continuation-Passing Style (CPS)
+@item Bytecode
+@end itemize
+
+Как обсуждалось ранее (@pxref{Object File Format}), байт-код(bytecode)
+находиться в формате ELF, готовый к сериализации(последовательной записи)
+на диск.  Но при компиляции Scheme во время выполнения, вам требуется
+значение Scheme: например, при компиляции процедуры. По этой причине, 
+чтобы не сломать абстракцию, Guile определяет фальшивый язык в 
+нижней части башни языков:
+
+@itemize
+@item Value
+@end itemize
+
+Компиляция в язык @code{value} загружает байткод в процедуру, превращает
+холодные байты в горячий код.
+
+Возможно, эту странность можно объяснить примером: 
+@code{compile-file} по умолчанию компилирует в байт-код(bytecode), потому
+что он создает объектный код который должен жить в бесплодном мире
+вне времени выполнения Guile; но фукция @code{compile} по умолчанию
+компилирут в @code{value}, послкольку этот результат возвращается в мир
+Guile.
+
+@c FIXME: This doesn't work anymore :(  Should we add some kind of
+@c special GC pass, or disclaim this kind of code, or what?
+
+Действительно, процесс компиляции ожет распространяться через эти
+разные миры на неопределенный срок, как показано в следующем
+quine(прогр. выдающая на выход точную копию своего исходного текста):
+
+@example
+((lambda (x) ((compile x) x)) '(lambda (x) ((compile x) x)))
+@end example
+
+@node The Scheme Compiler
+@subsection Компилятор Scheme
+
+Задача компилятора Scheme состоит в том, чтобы развернуть все макросы
+и все конструкции Scheme до самых примитивных выражений. Определение
+``примитивного выражения'' дается инвентаризацией конструкций, 
+предоставлеямых Tree-IL, целевом языке компилятора Scheme: вызовы процедур,
+условные выражения, лексические ссылки и т.д. Они описаны более подробно
+в следующем разделе.
+
+Сложная и интересная вещь о компиляторе Scheme-to-Tree-IL заключается
+в том, что он полностью реализует расширение(развертку) макросов.
+Поскольку расширитель макросов должен пробегать по всему исходному
+коду для расширения макросов, он мог бы также провести анализ в это же
+время, непосредственно формируя выражения Tree-IL.
+
+Поскольку этот компилятор фактически является расширителем макросов,
+он расширяем! Любой макрос, который записывает пользователь, становиться
+частью компилятора.
+
+Макрорасширитель Scheme-to-Tree-IL может быть вызван с ипользованием
+общей процедуры компиляции @code{compile}:
+
+@lisp
+(compile '(+ 1 2) #:from 'scheme #:to 'tree-il)
+@result{}
+#<tree-il (call (toplevel +) (const 1) (const 2))>
+@end lisp
+
+@code{(compile @var{foo} #:from 'scheme #:to 'tree-il)} полностью эквивалентен
+вызову макрорасширителя  @code{(macroexpand @var{foo}
+'c '(compile load eval))}.  @xref{Macro Expansion}.
+@code{compile-tree-il}, это процедура используемая в @code{compile} для 
+получения @code{'tree-il}, представляет собой обертку вокруг @code{macroexpand},
+чтобы его вызов соответствовал общей форме процедур компилятора в языковой
+башне Guile.
+
+Процедуры компиляции принимают три аргумента: выражение, среду(окружение) и
+как опцию список ключевых слов. Они возвращают три значения: скомпилированное
+выражение, соответствующее среде целевого языка, и ``среда продолжения 
+(continuation environment)''. Скомпилированное выражение и среда будут
+служить в качестве входных данных для компилятора языка следущего уровня.
+``Среда продолжения'' может быть использована для компиляции другого
+выражения из того же языка источника внутри одного модуля.
+
+Например, вы можете скомпилировать выражение, @code{(define-module
+(foo))}. Это приведет построению вражения и среды на языке Tree-IL.
+Но если вы компилируете второе(и последующие) выражения, вы хотели 
+бы получить  эффект от компиляции предыдущего выражения учитываемый 
+во время компиляции, результат которой пользователь помещает в модуль 
+@code{(foo)}. 
+Это и есть назначение ``среды продолжения(continuation environment)''; вы должны 
+передать ее в качестве среды при компиляции последующих выражений.
+
+Для Scheme, среда представляет собой модуль. По умолчанию, процедуры
+@code{compile} и @code{compile-file} компилирутся в новом модуле,
+так что связанные переменные и макросы введенные в выражении
+компилируются отдельно:
+
+@example
+(eq? (current-module) (compile '(current-module)))
+@result{} #f
+
+(compile '(define hello 'world))
+(defined? 'hello)
+@result{} #f
+
+(define / *)
+(eq? (compile '/) /)
+@result{} #f
+@end example
+
+Аналогично, измения @code{current-reader} fluid (@pxref{Loading,
+@code{current-reader}}) изолированы:
+
+@example
+(compile '(fluid-set! current-reader (lambda args 'fail)))
+(fluid-ref current-reader)
+@result{} #f
+@end example
+
+Тем не менее, имея компилятор и @dfn{compilee}, общее
+пространство имен может быть достигнуто явной передачей @code{(current-module)}
+в качестве среды компиляции:
+
+@example
+(define hello 'world)
+(compile 'hello #:env (current-module))
+@result{} world
+@end example
+
+@node Tree-IL
+@subsection Tree-IL
+
+Tree Intermediate Language (Tree-IL) это структурированный промежуточный
+язык, который близок к выразительной способности  Scheme. Это развернутая,
+предварительно проанализированная Scheme.
+
+Tree-IL является ``структурированным(structured)'' в том смысле, что
+его представление основано на записях,  а не S-выражениях.
+Это дает жесткость языку, которые обеспечивает компиляцию на язык
+нижнего уровня, требуя ограниченного набора преобразований. Например,
+тип Tree-IL @code{<const>} это запись с двумя полями @code{src} и
+@code{exp}. Экземпляры этого типа созданы с помощью @code{make-const}.
+Поля этого типа доступны через процедуры @code{const-src} и
+@code{const-exp}. Существует также предикат, @code{const?}.
+@xref{Records}, для дальнейшей информации о записях.
+
+@c alpha renaming
+
+Все типы Tree-IL имеют слот @code{src}, который содержит информацию
+о местоположении источника для выражения. Эта информаия, если она 
+присутствует, будет оставлена в скомпилированом объектном коде,
+позволяя трассировщику вызовов показывать информацию об исходном 
+коде процедур. Формат @code{src} такой же, как и возвращаемый
+функцией Guile @code{source-properties}. @xref{Source
+Properties}, для получения дополнительной информации.
+
+Хотя объекты Tree-IL представлены внутренне с использованием записей,
+сущетствует также эквивалент S-выражений внешнего представления для
+каждого типа Tree-IL. Например, S-выражение представления выражения
+@code{#<const src: #f exp: 3>} был бы:
+
+@example
+(const 3)
+@end example
+
+Пользоватеи могут запрограммировать этот формат непосредственно
+на REPL:
+
+@example
+scheme@@(guile-user)> ,language tree-il
+Happy hacking with Tree Intermediate Language!  To switch back, type `,L scheme'.
+tree-il@@(guile-user)> (call (primitive +) (const 32) (const 10))
+@result{} 42
+@end example
+
+Поля @code{src} остаются вне внешнего представления.
+
+Можно создавать объекты Tree-IL из своих внешних представлений посредством
+вызова @code{parse-tree-il}, читателя для  Tree-IL. Если подключить
+какую либо исходную информацию  вводимого S-выражения, она будет распространена
+на результирующее выражение Tree-IL. Это вероятно, самый простой способ
+скомпилировать выражение в Tree-IL: просто сделайте соответствующее внешнее
+представление в формате S-выражения, и пусть @code{parse-tree-il}
+позаботиться об остальном.
+
+@deftp {Scheme Variable} <void> src
+@deftpx {External Representation} (void)
+Пустое выражение.  На практике, оно эквивалентно выражению Scheme @code{(if #f
+#f)}.
+@end deftp
+
+@deftp {Scheme Variable} <const> src exp
+@deftpx {External Representation} (const @var{exp})
+Константа.
+@end deftp
+
+@deftp {Scheme Variable} <primitive-ref> src name
+@deftpx {External Representation} (primitive @var{name})
+Ссылка на ``примитив(primitive)''.  Примитив - это процедура, которая
+при компиляции превращается в код операции(open-coded).  Например, 
+выражения @code{cons} обычно распознаются как примитивные, так что 
+скомпилируются до одной инструкции.
+
+Компиляция Tree-IL обычно начинается с прохода, кторый разрешает некоторые
+выражения @code{<module-ref>} и @code{<toplevel-ref>} в выражения
+@code{<primitive-ref>}.  Фактический проход компиляции имеет особые случаи
+для интерпретации некотоырых вызов  в определенные примитивы, например
+подобные @code{apply} или @code{cons}.
+@end deftp
+
+@deftp {Scheme Variable} <lexical-ref> src name gensym
+@deftpx {External Representation} (lexical @var{name} @var{gensym})
+Ссылка на лексически связанную переменную. Имя(@var{name}) это оригинальное
+имя переменной в исходной программе. @var{gensym} это уникальный идентификатор
+для этой переменной.
+@end deftp
+
+@deftp {Scheme Variable} <lexical-set> src name gensym exp
+@deftpx {External Representation} (set! (lexical @var{name} @var{gensym}) @var{exp})
+Выполняет лексическое связывание переменной.
+@end deftp
+
+@deftp {Scheme Variable} <module-ref> src mod name public?
+@deftpx {External Representation} (@@ @var{mod} @var{name})
+@deftpx {External Representation} (@@@@ @var{mod} @var{name})
+Ссылка на переменную в определенном(указанном) модуле. @var{mod} 
+должна быть именем модуля, например: @code{(guile-user)}.
+
+Если @var{public?} истинно, переменная с именем @var{name} будет
+видна в открытом(внешнем) интерфейся модуля @var{mod}, и сериализована
+с помощью @code{@@}; иначеона будет рассматриваться как внутренняя
+связанная переменная и сериализироваться с помощью @code{@@@@}.
+@end deftp
+
+@deftp {Scheme Variable} <module-set> src mod name public? exp
+@deftpx {External Representation} (set! (@@ @var{mod} @var{name}) @var{exp})
+@deftpx {External Representation} (set! (@@@@ @var{mod} @var{name}) @var{exp})
+Установка переменной в указанном модуле.
+@end deftp
+
+@deftp {Scheme Variable} <toplevel-ref> src name
+@deftpx {External Representation} (toplevel @var{name})
+Ссылка на переменную(верхнего уровня) из текущей процедуры модуля.
+@end deftp
+
+@deftp {Scheme Variable} <toplevel-set> src name exp
+@deftpx {External Representation} (set! (toplevel @var{name}) @var{exp})
+Устанавливает(связывает с выржением выдающим значение) переменную(верхнего
+ уровня) в текущей процедуре модуля.
+@end deftp
+
+@deftp {Scheme Variable} <toplevel-define> src name exp
+@deftpx {External Representation} (define @var{name} @var{exp})
+Определяет новую переменную верхнего уровня в текущей процедуре
+модуля.
+@end deftp
+
+@deftp {Scheme Variable} <conditional> src test then else
+@deftpx {External Representation} (if @var{test} @var{then} @var{else})
+Условие. Обратите внимание что @var{else} является обязательным.
+@end deftp
+
+@deftp {Scheme Variable} <call> src proc args
+@deftpx {External Representation} (call @var{proc} . @var{args})
+Вызов процедуры.
+@end deftp
+
+@deftp {Scheme Variable} <primcall> src name args
+@deftpx {External Representation} (primcall @var{name} . @var{args})
+Вызов примитива  Эквивалент  @code{(call (primitive @var{name})
+. @var{args})}.  Эту конструкцию более удобно создавать и анализировать,
+чем @code{<call>}.
+
+В рамках процесса компиляции экземпляры @code{(call (primitive
+@var{name}) . @var{args})} преобразуются в  primcalls.
+@end deftp
+
+@deftp {Scheme Variable} <seq> src head tail
+@deftpx {External Representation} (seq @var{head} @var{tail})
+Последовательность. Семантика заключается в том, что сначала вычисляется
+@var{head}(голова) и любые результирующие значения игнорируются. Затем
+вычисляется @var{tail}(хвост), указанный в позиции tail.
+@end deftp
+
+@deftp {Scheme Variable} <lambda> src meta body
+@deftpx {External Representation} (lambda @var{meta} @var{body})
+Замыкание.  @var{meta} это ассоциированный список свойств(значения с именами)
+для процедуры.  @var{body} это одиночное выражение Tree-IL типа @code{<lambda-case>}.
+Поскольку предложение @code{<lambda-case>} может быть альтернативной цепочкой 
+предложений, это означает, что у Tree-IL's @code{<lambda>} есть выразительность
+языка Scheme  @code{case-lambda}.
+@end deftp
+
+@deftp {Scheme Variable} <lambda-case> req opt rest kw inits gensyms body alternate
+@deftpx {External Representation} @
+  (lambda-case ((@var{req} @var{opt} @var{rest} @var{kw} @var{inits} @var{gensyms})@
+                @var{body})@
+               [@var{alternate}])
+Единичное предложение @code{case-lambda}.  Лямбда(@code{lambda}) выражение на
+Scheme рассматривается как @code{case-lambda} с одним предложением.
+
+@var{req} - это список необходимых процедуре аргуменов, как символов
+@var{opt} - это список необязательных аргументовis, или @code{#f} если нет
+необязательных аргументов. @var{rest} это имя остальных аргументов, или
+@code{#f}.
+
+@var{kw} это список формы, @code{(@var{allow-other-keys?}
+(@var{keyword} @var{name} @var{var}) ...)}, где @var{keyword} это ключевое
+слово соответствующее аргументу с именем  @var{name}, и соответствующим
+gensym значением @var{var}.  @var{inits} это выражения tree-il  соответствующие
+всем необязательным или ключевым аргументам, вычисляемых для связи переменных
+со значениями которые не предоставляются вызывающей процедурой.
+Каждое выражение @var{init} вычисляется в лексическом контексте ранее 
+связанных переменных, с лева на право.
+
+@var{gensyms} список gensyms соответствующий всем аргументам:
+сначала все необходимые аргументы, затем необязательные, если они есть
+затем все аргументы ключевые слова.
+
+@var{body} это тело предложения.  Если процедура вызывается с
+соответствующим числом аргументов, тело( @var{body}) вычисляется в 
+хвостовой позиции. В противном случае , если есть  @var{alternate},
+оно должно быть выражением @code{<lambda-case>}, представляющим
+следующее предложение которое надо попробовать вычислить.
+Если нет @var{alternate}, вызывается сигнал ошибки
+ wrong-number-of-arguments.
+@end deftp
+
+@deftp {Scheme Variable} <let> src names gensyms vals exp
+@deftpx {External Representation} (let @var{names} @var{gensyms} @var{vals} @var{exp})
+Лексическое связывание, как и в Scheme @code{let}.  @var{names} это оригинальные
+именя привязываемых имен, @var{gensyms} это gensyms соответствующие именам @var{names},
+и @var{vals} это выражения Tree-IL для получения значений.
+@var{exp} это единичное выражение Tree-IL.
+@end deftp
+
+@deftp {Scheme Variable} <letrec> in-order? src names gensyms vals exp
+@deftpx {External Representation} (letrec @var{names} @var{gensyms} @var{vals} @var{exp})
+@deftpx {External Representation} (letrec* @var{names} @var{gensyms} @var{vals} @var{exp})
+Версия @code{<let>} которая создает рекурсивные связи, подобые
+Scheme @code{letrec}, или @code{letrec*} если @var{in-order?} истинно.
+@end deftp
+
+@deftp {Scheme Variable} <prompt> escape-only? tag body handler
+@deftpx {External Representation} (prompt @var{escape-only?} @var{tag} @var{body} @var{handler})
+Динамический запрос.  Вставляет подсказку именуемую @var{tag}(являющуюся выражением),
+продолжающуюся выполнением @var{body}(также выражение).
+Если в этом запросе произойдет внезапное прерывание, управление передается
+процедуре @var{handler}(также выражение, которое должно быть процедурой). 
+Первым аргументом процедуры handler будут захваченные продолжения, последующие
+все значения переданные в abort.  Если @var{escape-only?} истинно, обработчк handler
+должен быть @code{<lambda>} с единственным выражением тела @code{<lambda-case>}
+без необязательных аргументов или аргументов ключевых слов, и не альтернативой,
+и чей первый аргумент не указан.  @xref{Prompts}, для получения дополнительной
+информацией.
+@end deftp
+
+@deftp {Scheme Variable} <abort> tag args tail
+@deftpx {External Representation} (abort @var{tag} @var{args} @var{tail})
+Отмена до ближайшего prompt с именем @var{tag}(являющеимся выражением).
+@var{args} должен быть списком выражений для передачи обработчику handler
+указанному в prompt, и @var{tail} должен быть выражением которое будет
+вычислять(обрабатывать) список дополнительных аргументов.  abort сохраняет
+части продолжения, которые позже могут быть востановлены, что приведет
+к вычислению в выражении @code{<abort>} нeкоторого количества значений.
+@end deftp
+
+Существуют две конструкции Tree-IL, которые обычно не генерируются
+высоко-уровневым компилятором, но вместо этого генерирутся во время
+оптимизации source-to-source и прохождения анализа, что и делает
+компилятор Tree-IL.  Пользователи не должны генерировать эти 
+выражения напрямую, если только не чувствуют себя очень умными, 
+поскольку прохождение анализа по умолчанию будет генерировать их
+по мере необходимости.
+
+@deftp {Scheme Variable} <let-values> src names gensyms exp body
+@deftpx {External Representation} (let-values @var{names} @var{gensyms} @var{exp} @var{body})
+Подобно Scheme's @code{receive} -- привязывает значения возвращаемые путем
+вычисления @code{exp} @code{lambda}-подобной связи описанной в @var{gensyms}.
+То есть, @var{gensyms} может быть неправильным списком.
+
+@code{<let-values>} - это оптимизация вызова @code{<call>} для примитива,
+@code{call-with-values}.
+@end deftp
+
+@deftp {Scheme Variable} <fix> src names gensyms vals body
+@deftpx {External Representation} (fix @var{names} @var{gensyms} @var{vals} @var{body})
+Как и @code{<letrec>}, но только для @var{vals}, котрые не заданы @code{lambda} выражениями.
+
+@code{fix} это оптимизация of @code{letrec} (and @code{let}).
+@end deftp
+
+Tree-IL - это удобная цель компиляции из исходных языков. Это может
+быть удобно как средство оптимизации, хотя CPS обычно лучше. Сила
+Tree-IL что он не фиксирует порядок вычислений, поэтому немного
+облегчает движение кода.
+
+Выполнение оптимизационного прохода в Tree-IL включает:
+
+@itemize
+@item Open-coding (превращение toplevel-refs в primitive-refs,
+и вызов примитивов primcalls)
+@item Частичное вычислениеn (включая вложения, copy propagation, и
+constant folding)
+@end itemize
+
+@node Continuation-Passing Style
+@subsection Continuation-Passing Style
+
+@cindex CPS
+Continuation-passing style (CPS) в Guile является основным промежуточным
+языком, преодолевающим разрыв между языками для людей и языками для машин.
+CPS дает имя каждой части программы: каждой контрольной точке и каждому
+промежуточному значению. Это создает отличную среду  для рассуждения о
+программах, которая является основной задачей компилятора.
+
+@menu
+* An Introduction to CPS::
+* CPS in Guile::
+* Building CPS::
+* CPS Soup::
+* Compiling CPS::
+@end menu
+
+@node An Introduction to CPS
+@subsubsection Введение в CPS
+
+Рассмотрим следующее выражение Scheme:
+
+@lisp
+(begin
+  (display "The sum of 32 and 10 is: ")
+  (display 42)
+  (newline))
+@end lisp
+
+Выделим все подвыражения в этом выражении, анотируя их уникальнми
+метками.
+
+@lisp
+(begin
+  (display "The sum of 32 and 10 is: ")
+  |k1      k2
+  k0
+  (display 42)
+  |k4      k5
+  k3
+  (newline))
+  |k7
+  k6
+@end lisp
+
+Каждая из этих меток идентифицирует точку в программе. Одна метка
+может быть продолжением другой метки. Например, продолжение @code{k7}
+это @code{k6}.  Это связано с тем, что после вычисления значения
+@code{newline}, выполняемое выражением помеченным @code{k7}, мы
+продолжим применять его в @code{k6}.
+
+Какое выражение имеет @code{k0} в качестве продолжения?  Это либо
+выражение помеченное как @code{k1} либо выражение помеченное как @code{k2}.
+Scheme не имеет фиксированного порядка вычисления аргументов. Хотя она
+гарантирует, что они будут вычисляться в определенном порядке. В отличи
+от общей Scheme, continuation-passing style(стиль продолжене-передача) 
+делает порядок вычисления явным. В Guile, этот выбор делают компиляторы
+языков более высокого-уровня.
+
+Предположим, что порядок вычисления слева направо. В этом случае
+продолжением @code{k1} будет @code{k2}, и продолжением @code{k2}
+будет @code{k0}.
+
+Для выбранного примера, мы готовы привести пример CPS в
+Scheme:
+
+@smalllisp
+(lambda (ktail)
+  (let ((k1 (lambda ()
+              (let ((k2 (lambda (proc)
+                          (let ((k0 (lambda (arg0)
+                                      (proc k4 arg0))))
+                            (k0 "The sum of 32 and 10 is: ")))))
+                (k2 display))))
+        (k4 (lambda _
+              (let ((k5 (lambda (proc)
+                          (let ((k3 (lambda (arg0)
+                                      (proc k7 arg0))))
+                            (k3 42)))))
+                (k5 display))))
+        (k7 (lambda _
+              (let ((k6 (lambda (proc)
+                          (proc ktail))))
+                (k6 newline)))))
+    (k1))
+@end smalllisp
+
+Взрыв Священного кода, Бэтман!  Что со всеми лямбдами?  Действительно, CPS
+по своей природе гораздо более подробный, чем промежуточные языки 
+``прямого-стиля'' подобные Tree-IL.  В тоже время, CPS проще, чем
+полная Scheme, потому что он делает вещи более явными.
+
+В исходной программе, выражение помеченное@code{k0} является фактически
+контекстом. Любые возвращаемые значения игнорируются. В Scheme, этот
+факт не выражен явно. В CPS, мы видим это явно, отмечая что продолжение
+@code{k4}, принимает любое количество значений и игнорирует их.
+Сравнивая его с @code{k2}, которое принимает одно значение, мы можем
+сказать что @code{k1} является ``значением'' контекста.  Аналогично
+@code{k6} находится в хвостовом(конечном) контексте относительно всего
+представленного выражения, поскольку его продолжение это хвостовое
+продолжение, @code{ktail}.  CPS делает эти детали очевидными и дает
+им имена.
+
+@node CPS in Guile
+@subsubsection CPS в Guile
+
+@cindex continuation, CPS
+Язык CPS Guile  состоит из  продолжений(@dfn{continuations}). Продолжение
+это снабженная меткой точка программы. Если вы привыкли к традиционным 
+компиляторам, думайте о продолжении как о тривиальном базовом блоке.
+Программм представляет собой ``суп'' из продолжений, представляемый в виде
+карты меток к продолжениям.
+
+@cindex term, CPS
+@cindex expression, CPS
+Подобно базовым блокам, каждое продолжение осущетсвляет только одну функцию.
+Некоторые продолжения являются специальными, такие как продолжения 
+соответствующие точке входа в функцию, или продолжения представляющие
+хвост функции.  Другие содержат термы(@dfn{term}).  Терм содержит выражение
+(@dfn{expression}), которое вычисляет ноль или больше значений. Терм
+также описывает продолжение, которому он будет передавать свои значения.
+Некоторые термы, такие как условные ветви, могут продожиться в одно
+из некоторого числа продолжений.
+
+Метки продолжений представляют собой малые целые числа.  Это упрощает сортировку
+и группировку их в множества. Всякий раз, когда терм ссылается на продолжение, он
+делает это по имения, просто записывая метку продолжения. Метки продолжений
+уникальны среди множества меток в программе.
+
+Переменные также именуются малыми целыми числами.  Имена переменных уникальны
+среди множетсва переменных в программе.
+
+Например, простое продолжение, которое получает два значения и
+объединяет их, такое как это, использует форму @code{match} из
+модуля @code{(ice-9 match)}:
+
+@smallexample
+(match cont
+  (($ $kargs (x-name y-name) (x-var y-var)
+      ($ $continue k src ($ $primcall '+ (x-var y-var))))
+   (format #t "Add ~a and ~a and pass the result to label ~a"
+           x-var y-var k)))
+@end smallexample
+
+Здесь мы видим наиболее распространенный вид продолжения,@code{$kargs}, 
+который привязывает некоторое число значений к переменным, а завем
+вычисляет терм.
+
+@deftp {CPS Continuation} $kargs names vars term
+Связь входных значений с переменными @var{vars}, с оригинальными
+именами @var{names}, и вычисление  @var{term}.
+@end deftp
+
+Имена(@var{names}) @code{$kargs} предназначены только для отладки и
+в конечном итоге будут оставлены в объектном файле для использования
+отладчиком.
+
+Выражение @var{term} в @code{$kargs} всегда продолжение(@code{$continue}), которое
+вычисляется как выражение и продолжает продолжение.
+
+@deftp {CPS Term} $continue k src exp
+Вычисление выражения @var{exp} и передача полученных значений (если они
+есть) в продолжение с меткой @var{k}.  Исходная информация связанная с
+выражением, может быть найдена в @var{src}, который является ассоциативным
+списком(alist), как в @code{source-properties} или быть @code{#f} если
+нет связанного источника.
+@end deftp
+
+Существует несколько видов выражений. Выше вы видите пример
+@code{$primcall}.
+
+@deftp {CPS Expression} $primcall name args
+Perform the primitive operation identified by @code{name}, a well-known
+symbol, passing it the arguments @var{args}, and pass all resulting
+values to the continuation.  The set of available primitives includes
+all primitives known to Tree-IL and then some more; see the source code
+for details.
+@end deftp
+
+@cindex dominate, CPS
+Переменные, которые использует @code{$primcall}, или любое другое
+выражение, должны быть определены перед вычислением выражения. 
+Эквивалентным способом сказать это является то, что предшествующее
+@code{$kargs} продолжение, которое связывает переменные используемые
+выражением должны доминировать@dfn{dominate} над продолжением, которое
+использует выражение: определения преобладают в использовании.
+Это условие тривиально удовлетворены в примере выше, но в целом для
+определения набора переменных, которые находятся в ``области'' для
+доступа данного термина, вам нужно провести анализ потока, чтобы увидеть,
+какие продолжения доминируют термин. Переменные, которые входят в область
+охвата, - это те переменные, которые определены в продолжениях, которые
+доминируют над термином.
+
+Вот список видов выражений в языке CPS Guile, кроме того @code{$primcall}
+который уже описан.
+Напомним, что все выражения завернуты в @code{$continue}, который указывает
+их продолжение.
+
+@deftp {CPS Expression} $const val
+Продолжение с постоянным значением @var{val}.
+@end deftp
+
+@deftp {CPS Expression} $prim name
+Продолжение процедуры, которая реализует примитивную операцию
+названную @var{name}.
+@end deftp
+
+@deftp {CPS Expression} $call proc args
+Вызвать @var{proc} с аргументами @var{args}, и передать все значения в
+продолжение.  @var{proc} и элементы списка @var{args} должны быть именами
+переменных.  Продолжение идентифицируемое термином @var{k} должно быть
+@code{$kreceive} или экземпляром @code{$ktail}.
+@end deftp
+
+@deftp {CPS Expression} $values args
+Передача значений, указанных в списке @var{args} в продолжение.
+@end deftp
+
+@deftp {CPS Expression} $branch kt exp
+Вычисление выражения ветвления @var{exp}, и продолжение @var{kt}
+с нулевым значением если тест возвращает истину.  В противном случае
+продолжается продолжение с именем @code{$continue} во внешнем терме.
+
+Только определенные выражения действительны в @var{$branch}.  Компиляция
+@code{$branch} исключает выделение пространства для тестовой переменной,
+поэтому выражение должно быть вычислено без временного значения.  На практике
+это условие верно для @code{$primcall} для @code{null?}, @code{=},
+и аналогичных примитивов, которые имеют соответствующие операции 
+ВМ @code{br-if-@var{foo}}; см исходный код для полной информации. Если есть
+сомнения, привяжите тестовое выражение к переменной и ветвь в выражение
+@code{$values}, ссылающееся на эту переменную. Оптимизатор должен вставить
+ссылку, если это возможно.
+@end deftp
+
+@deftp {CPS Expression} $prompt escape? tag handler
+Помещает приглашение в стек идентифицируемое именем переменной @var{tag},
+выйти из которого можно только если @var{escape?} равно истине, и продлжиться
+с нулевым значением. Если тело выполниния программы прервано этим запросом,
+управление продолжиться в обработчике с меткой @var{handler}, который должен
+быть продолжением @code{$kreceive}.  Само приглашение выдается позже
+вызовом primcalls @code{pop-prompt}.
+@end deftp
+
+@cindex higher-order CPS
+@cindex CPS, higher-order
+@cindex first-order CPS
+@cindex CPS, first-order
+Существуют два подязыка CPS, высокоуровневый @dfn{higher-order CPS} и
+первого порядка @dfn{first-order CPS}.  Различие их в том, что в 
+высокоуровневом CPS существуют выражения @code{$fun} и @code{$rec},
+которые связывают функции или взаимно-рекурсивные функции в неявной
+области их использования. Трансформация Guile высокоуровневого CPS в
+CPS первого порядка путем @dfn{closure conversion}, которое выбирает
+представление для всех замыканий и которое организует доступ к свободным
+переменным через неявный закрытый параметр, который передается каждому
+вызову функции.
+
+@deftp {CPS Expression} $fun body
+Продолжение с процедурой.  Имя @var{body} это точка входа функции, которая
+должна быть @code{$kfun}.  Этот вид выражения действителен только в 
+высокоуровневом CPS, которым является язык CPS до вызова closure
+conversion.
+@end deftp
+
+@deftp {CPS Expression} $rec names vars funs
+Продолжение с набором взаимно-рекурсивных процедур, обозначеных именами
+@var{names}, @var{vars}, и @var{funs}.  @var{names} это список символов,
+@var{vars} это список имен переменных (уникальные целые числа), и
+@var{funs} это список значений @code{$fun}.  Заметим, что продолжение
+@code{$kargs} также должно определять связки @var{names}/@var{vars}.
+@end deftp
+
+Проход contification попытается преобразовать функции, объявленные в 
+@code{$rec} в локальные продолжения.  Любые оставшиеся экземпляры
+@code{$fun} позже удаляются проходом closure conversion.  По умолчанию,
+замыкание представлено как объект построенный выражением @code{$closure}.
+
+@deftp {CPS Expression} $closure label nfree
+Создает замыкание, которое присоединятся к коду в продолжении
+с именем @var{label} с пространством имен свободных переменных @var{nfree}.
+Переменные будут инициализированные позже через вызов primcalls @code{free-set!}.
+Этот вид выражения является частью CPS первого порядка.
+@end deftp
+
+Если для замыкания можно доказать что оно никогда не выходит за пределы
+своей области, тогда может быть выбрано другое более легковесное
+представление. Кроме того, если известны все точки вызова, closure conversion
+принудительно преобразует вызовы в низкоуровневые, опустив @code{$call} до
+@code{$callk}.
+
+@deftp {CPS Expression} $callk label proc args
+Как и @code{$call}, но для случая, когда цель вызова, известно
+находитьсяв томже компилируемом модуле. @var{label} должно означать 
+продолжение @code{$kfun} в программе.  В этом случае @var{proc}
+является просто дополнительным аргуменом, поскольку он не используется
+для определения цели вызова во время выполнения.
+@end deftp
+
+На этом этапе мы описали термины, выражения и наиболее распространенные
+виды продолжений, @code{$kargs}.  @code{$kargs} используется, когда 
+предшествующие продолжения могут передать значения, в которых требуется
+их продолжение. Например, если @code{$kargs} продолжение @var{k} 
+связывает переменную @var{v}, и компилятор решает выделить @var{v} 
+слот 6, все предшественники @var{k} должны помещать значение для @var{v} 
+в слот 6 перед переходом к @var{k}.  Одна ситуация, в которой это не возможно
+это получение значения из вызова функции.  Guile имеет соглашение о вызовах
+функций, которое в настоящее время помещает возвращаемые значения в стек.
+Продолжение вызова должно проверить, что количество значений возвращаемых 
+функцией, соответствует ожидаемому числу значений и затем необходимо перетасовать
+или собрать эти значения для именованных переменных.  @code{$kreceive} обозначает
+этот вид продолжения.
+
+@deftp {CPS Continuation} $kreceive arity k
+Получает значения в стеке. Разбирает их в соответствии с арностью(@var{arity}),
+а затем приступает к разбору значений @code{$kargs} продолжения помеченного
+@var{k}.  В качестве ограничения, характерного для @code{$kreceive},
+арность(@var{arity}) может содержать только необходимые и остальные
+аргументы.
+@end deftp
+
+@code{$arity} это вспомогательная структура данных, используемая @code{$kreceive},
+а также @code{$kclause}, описанная ниже.
+
+@deftp {CPS Data} $arity req opt rest kw allow-other-keys?
+Тип данных, обявляющий арность(arity).  @var{req} и @var{opt} - списки
+имен источников требуемых и необязательных аргументов, соответственно.
+@var{rest} являетс либо либо исходным именем переменной rest, либо @code{#f},
+если эта арность(arity) не принимает дополнительные значения. @var{kw} - это
+список форм вида @code{((@var{keyword} @var{name} @var{var}) ...)}, описывающий
+аргументы ключевого слова.  @var{allow-other-keys?} установлено в истину если
+другие ключевые слова разрешены, иначе ложь.
+
+Обратите внимание, что все эти имена, за исключением @var{var} в списке
+@var{kw}, являются исходными именами, а не уникальными именами переменных.
+@end deftp
+
+Кроме того, сущетсвтуют три вида продолжений, которые используются только
+в внутри функций.
+
+@deftp {CPS Continuation} $kfun src meta self tail clauses
+Объявляет точку входа в функцию.  @var{src} является исходной
+информацией для объявления процедуры, а @var{meta} это ассоциативный
+список(alist) метаданных, как описано выше в Tree-IL's @code{<lambda>}.
+@var{self} это переменная связанная с названной процедурой и которая
+может испольоваться для ссылки на саму себя. @var{tail} это метка
+@code{$ktail} для данной функции, соответствующая продолжению реализующему
+хвост.  @var{clause} это метка первого @code{$kclause} для первого
+предложения @code{case-lambda} в функции или иначе @code{#f}.
+@end deftp
+
+@deftp {CPS Continuation} $ktail
+Хвост(окончание) продолжения.
+@end deftp
+
+@deftp {CPS Continuation} $kclause arity cont alternate
+Предложение функции с заданной арностью(arity). Применение функции с 
+совместимым набором фактичеких аргументов будет продолжаться до
+продолжения с меткой @var{cont}, а экземпляр @code{$kargs} пердставляет
+тело предложения.  Если аргументы не совместимы, переходит к альтернативе
+(@var{alternate}), которая представляет собой @code{$kclause}  для следующего
+предложения, или @code{#f}, если нет следующего предложения.
+@end deftp
+
+@node Building CPS
+@subsubsection Построение CPS
+
+В отличии от Tree-IL, язык CPS построен, чтобы быть сконструированным
+и деконструированным с абстратными макросами, а не через процедурные
+конструкторы или аксессоры, или вместо вычисления S-выражений.
+
+Деконструкция и сопоставление обрабатываются надлежащим образом формой
+@code{match} из модуля @code{(ice-9 match)}.  @xref{Pattern Matching}.
+Конструкция обрабатывается набором взаимосвязанных макросов:
+@code{build-term}, @code{build-cont}, и @code{build-exp}.
+
+В следующих определениях интерфейсов рассматриваются термы(@code{term})
+и выражения(@code{exp}), которые будут построены @code{build-term} или
+@code{build-exp}, соответственно.  Рассмотрим любое другое имя, которое
+будет вычисленно как выражение Scheme.  Многие из этих форм распознают
+@code{unquote} в некоторых контекстах, чтобы объединять с ранее построенным
+значением; см. спецификации ниже для получения полной информации.
+
+@deffn {Scheme Syntax} build-term ,val
+@deffnx {Scheme Syntax} build-term ($continue k src exp)
+@deffnx {Scheme Syntax} build-exp ,val
+@deffnx {Scheme Syntax} build-exp ($const val)
+@deffnx {Scheme Syntax} build-exp ($prim name)
+@deffnx {Scheme Syntax} build-exp ($branch kt exp)
+@deffnx {Scheme Syntax} build-exp ($fun kentry)
+@deffnx {Scheme Syntax} build-exp ($rec names syms funs)
+@deffnx {Scheme Syntax} build-exp ($closure k nfree)
+@deffnx {Scheme Syntax} build-exp ($call proc (arg ...))
+@deffnx {Scheme Syntax} build-exp ($call proc args)
+@deffnx {Scheme Syntax} build-exp ($callk k proc (arg ...))
+@deffnx {Scheme Syntax} build-exp ($callk k proc args)
+@deffnx {Scheme Syntax} build-exp ($primcall name (arg ...))
+@deffnx {Scheme Syntax} build-exp ($primcall name args)
+@deffnx {Scheme Syntax} build-exp ($values (arg ...))
+@deffnx {Scheme Syntax} build-exp ($values args)
+@deffnx {Scheme Syntax} build-exp ($prompt escape? tag handler)
+@deffnx {Scheme Syntax} build-cont ,val
+@deffnx {Scheme Syntax} build-cont ($kargs (name ...) (sym ...) term)
+@deffnx {Scheme Syntax} build-cont ($kargs names syms term)
+@deffnx {Scheme Syntax} build-cont ($kreceive req rest kargs)
+@deffnx {Scheme Syntax} build-cont ($kfun src meta self ktail kclause)
+@deffnx {Scheme Syntax} build-cont ($kclause ,arity kbody kalt)
+@deffnx {Scheme Syntax} build-cont ($kclause (req opt rest kw aok?) kbody)
+Создают CPS термы(term), выражения, или продолжения(continuation).
+@end deffn
+
+Есть еще несколько различных интерфейсов
+
+@deffn {Scheme Procedure} make-arity req opt rest kw allow-other-keywords?
+Процедурный конструктор для арных(@code{$arity}) объектов.
+@end deffn
+
+@deffn {Scheme Syntax} rewrite-term val (pat term) ...
+@deffnx {Scheme Syntax} rewrite-exp val (pat exp) ...
+@deffnx {Scheme Syntax} rewrite-cont val (pat cont) ...
+Сопоставляет @var{val} с серией шаблонов @var{pat...}, используя
+@code{match}.  Тело соответствия должно быть шаблоном в синтаксисе
+@code{build-term}, @code{build-exp}, или @code{build-cont},
+соответственно.
+@end deffn
+
+@node CPS Soup
+@subsubsection Суп CPS
+
+Мы описываем программы на языке CPS Guile как своего рода ``суп''
+потому что все продолжения в программе смешиваются в один и тот же
+``банк'', так сказать, без явных указаний относительно того, какая
+есть функции или области действия. Программа в CPS это карта из
+помеченных продолжений к значениям продолжений.  Как обсуждалось
+во введении, метка продолжения это целое число. Никакая метка не
+может быть отритцательной.
+
+В качестве условного обозначения, метка 0 должна отображать продолжение
+@code{$kfun} на точку входа в программу, которая должна быть функцией
+без аргументов. Тело функции состоит из помеченных продолжений, доступных
+из точки входа в функцию. Программа может ссылаться на другие функции,
+либо через @code{$fun} и @code{$rec} в CPS высокого порядка, либо через
+@code{$closure} и @code{$callk} CPS первого порядка.  Программа логически
+содержит все продолжения всех функций достижимых из входной функции.  
+Проход компилятора может оставить недостижимые продолжения в программе;
+последующие проходы компилятора должны гарантировать, что их преобразвания
+и анализ учитывают только достижимые продолжения.  Это нормально, хотя
+если трансформация пробегает все продолжения, если включение недостижимых
+продолжений не влияет на преобразования живых продолжений.
+
+@cindex intmap
+Сам ``суп'' реализован как @dfn{intmap}, функциональный массив, специализированный
+для сопоставления целых ключей.  Intmaps связывает целые со значениями
+любого типа.  В настоящее время intmaps частная структура данных, используемая
+только фазой компилятора  CPS.  Чтобы работать с intmaps, загрузиет модуль
+@code{(language cps intmap)}:
+
+@example
+(use-modules (language cps intmap))
+@end example
+
+Intmaps это функциональная структура данных, поэтому у нее нет конструктора
+как такового: можно просто начать с пустой intmap и добавлять в нее
+записи.
+
+@example
+(intmap? empty-intmap) @result{} #t
+(define x (intmap-add empty-intmap 42 "hi"))
+(intmap? x) @result{} #t
+(intmap-ref x 42) @result{} "hi"
+(intmap-ref x 43) @result{} @i{error: 43 not present}
+(intmap-ref x 43 (lambda (k) "yo!")) @result{} "yo"
+(intmap-add x 42 "hej") @result{} @i{error: 42 already present}
+@end example
+
+@code{intmap-ref} и @code{intmap-add} являются ядром интерфейса intmap.
+Есть также @code{intmap-replace}, которая заменяет значение связанное с
+данным ключом, требует что бы ключ уже присутствовал в intmap, и 
+@code{intmap-remove}, который удаляет ключ из intmap.
+
+Intmaps имеет древовидную структуру, которая хорошо подходит для операций
+с множествами такими как объединение и пересечение, поэтому существуют
+также двоичные процедуры @code{intmap-union} и @code{intmap-intersect}.
+Если результат эквивалентен любому аргументу, этот аргумент возвращается
+как есть; таким образом, можно определить, вызвала ли заданная операция
+новый езультат просто выполнив проверку с помощью @code{eq?}.  Это делает
+полезным intmaps при вычислении фиксированных точек(fixed points).
+
+Если ключ присутствует в обоих intmaps и связанные значения не совпадают
+в смысле @code{eq?}, результирующее значение определяется процедурой
+``meet'', которая является необязательным последним аргументом 
+@code{intmap-union}, @code{intmap-intersect}, а также
+@code{intmap-add}, @code{intmap-replace}, и аналогичных функций. Процедура
+meet будет вызываться с двумя значениями и должна возвращать пересекающеся
+или объединенное значение определяемое домен-специвфичным способом. Если
+нет соответствующей процедуры, имеющаяся по умолчанию процедура meet 
+вызывает ошибку.
+
+Чтобы пройти по набору значений в intmap, есть процедуры @code{intmap-next}
+и @code{intmap-prev}.  Например, если intmap @var{x} имеет одно отображение
+записи 42 для нескольких значений, мы бы получили:
+
+@example
+(intmap-next x) @result{} 42
+(intmap-next x 0) @result{} 42
+(intmap-next x 42) @result{} 42
+(intmap-next x 43) @result{} #f
+(intmap-prev x) @result{} 42
+(intmap-prev x 42) @result{} 42
+(intmap-prev x 41) @result{} #f
+@end example
+
+Существует также процедура @code{intmap-fold}, которая складывает(folds)
+по ключам и значениям в intmap от минимального до максимального значения, и
+@code{intmap-fold-right} делающая тоже самое в противоположном направлении.
+Эти процедуры могут принимать 3 начальных значений.  Количество значений,
+которые складываются процедурой возвращаются как количество начальных
+значений.
+
+@example
+(define q (intmap-add (intmap-add empty-intmap 1 2) 3 4))
+(intmap-fold acons q '()) @result{} ((3 . 4) (1 . 2))
+(intmap-fold-right acons q '()) @result{} ((1 . 2) (3 . 4))
+@end example
+
+Когда запись в intmap обновляется (удаляется, добавляется или изменяется),
+новый intmap создает разделяемую структуру с исходным intmap.
+Эта операция гарантирует, что результат существующих вычислений не зависит
+от будущих вычислений: никаких изменений невидимых для пользовательского
+кода.  Это отличное свойство в структуре данных компилятора, поскольку
+оно позволяет удерживать копию программы перед преобразованием и использовать
+ее, пока мы строим пост-преобразование программы. Обновление intmap это операция
+порядка O(log @var{n}) от размера intmap.
+
+Однако, затраты на размещение O(log @var{n}) иногда слишком велики, 
+особенно в тех случаях, когда мы знаем, что мы можем просто обновить
+intmap на месте.  В качестве примера, скажем у нас есть intmap отображающий
+целые числа от 1 до 100 в целые числа от 42 до 141. Предполжим, что мы хотим
+преобразовать это отображение, добавив 1 к каждому значению.  Уже существует
+эффективная процедура @code{intmap-map} в модуле @code{(language cps utils}),
+но если бы мы не знали об этом, мы могли бы делать так:
+
+@example
+(define (intmap-increment map)
+  (let lp ((k 0) (map map))
+    (let ((k (intmap-next map k)))
+      (if k
+          (let ((v (intmap-ref map k)))
+            (lp (1+ k) (intmap-replace map k (1+ v))))
+          map))))
+@end example
+
+@cindex intmap, transient
+@cindex transient intmaps
+Обратите внимание, что промежуточные значения, созданные методом
+@code{intmap-replace}, полностью невидимы в программе -- нужен только
+последний результат значения @code{intmap-replace}.  rest может совместно
+использовать состояние с последним, чтобы мы могли обновить его.  Guile
+позволяет этот вид интерфейса через @dfn{transient intmaps}, вдохновленный
+переходным интерфейсом Замыканий. (@uref{http://clojure.org/transients}).
+
+Процедуры @code{intmap-add!} и @code{intmap-replace!} изменяющие входные 
+данные возвращают переходный intmaps.  Если одна из этих процедур изменяющих
+входные данные вызывается с постоянным intmap, создается новый переходный 
+intmap is.  Это операция O(1).  Во всех других отношениях интерфейс подобен
+их постоянной копии, @code{intmap-add} и @code{intmap-replace}.
+Если процедура меняющая входные данные вызывается с переходным  intmap, intmap
+изменяется на месте и возвращается одно и тоже значение(значение изменных входных
+данных).
+
+Если на временном intmap вызывается сохраняющая входные данные операция,
+такая как @code{intmap-add}, изменяемая субструктура затем помечается как
+постояная, и @code{intmap-add} запускается на новой постоянной структуре
+intmap совместного использования, не имеющей пометки переходного
+состояния. Изменение перходного состояния приводит к необходимому копированию,
+чтобы обеспечить это изменение, но если часть его подструктуры уже 
+``принадлежит'' им, копирование этой структуры больше требуется.
+
+Мы можем использовать переходные initmap чтобы сделать @code{intmap-increment}
+более эффективным. Они изменяют элементы имеющие пометки @strong{следующим образом}.
+
+@example
+(define (intmap-increment map)
+  (let lp ((k 0) (map map))
+    (let ((k (intmap-next map k)))
+      (if k
+          (let ((v (intmap-ref map k)))
+            (lp (1+ k) (@strong{intmap-replace!} map k (1+ v))))
+          (@strong{persistent-intmap} map)))))
+@end example
+
+Обязательно пометьте результат как постоянный, используя процедуру
+@code{persistent-intmap}, чтобы предотвратить утечку памяти в другой
+части программы.  Для дополнительной паранои, вы можете вызывать
+@code{persistent-intmap} для входной initmap, чтобы убедиться, что
+если она уже была временной, изменения в теле @code{intmap-increment}
+не повлияют на входящее значение.
+
+Таким образом, программы в CPS представляют собой intmaps, значения которого
+являются продолжениями.
+См. исходный код @code{(language cps utils)} для ряда полезных возможностей
+для работы со значениями  CPS.
+
+@node Compiling CPS
+@subsubsection Компиляция CPS
+
+Компиляция CPS в Guile состоит из трех этапов: преобразование, оптимзация, и
+генерация кода.
+
+Преобразование CPS это процесс взятия высокоуровнего языка и
+компиляция его в  CPS.  Исходные языки могут делать это напрямую, или 
+они могут преобразовываться в Tree-IL (что, вероятно проще) и позже
+Tree-IL преобразуется в CPS. Переход через Tree-IL имеет преимущество
+выполнения оптимзационного этапа, как частичного выполнения.  Кроме того,
+компилятор из Tree-IL в CPS обрабатывает преобразование присваивания, в котором
+назначаются локальные переменные (в Tree-IL, локальные переменные, которые
+являются @code{<lexical-set>}) преобразуются в значения указанные в куче.
+ @xref{Variables and the VM}.
+
+После преобразования CPS, Guile запускает некоторые проходы оптимизации
+над CPS. Большинство оптимизаций в Guile делается на языке CPS. Одним из
+основных исключений является частичное выполнение, которое по историческим
+причинам сделано  на Tree-IL.
+
+Основная оптимизация, выполняемая на CPS это contification, в котором
+функции, которые всегда вызываются с тем же продолжением, включаются
+непосредственно в тело функции. Это открывает пространство для большей
+оптимизации и превращает вызовы процедур в @code{goto}.  Оно может 
+также делать петли из гнезд рекурсивных функций. Guile также уничтожает
+мертвый код, устраняет код общегоподвыражения, пилинг(peeling) цикла и
+инвариантного кода, а также диапазон и тип вывода.
+
+Остальная часть проходов оптимизации это очистка и канонизация
+(canonicalizations). CPS заполняет разрыв между языками высокого уровня
+и байт-кодом низкого уровня, что позволяет выразить процесс компиляции 
+как трансформацию исходного кода в исходный код.  Таков случай для 
+преобразования замыкания, в котором ссылки на переменные, свободные
+в функции, преобразуютя в ссылки замыкания, и в которых функция
+преобразуется в замыкание. Есть еще несколько проходов, чтобы гарантировать,
+что единственные primcalls, оставшиеся в термах, это те, которые имеют
+соответствующие инструкции на виртуальной машине, и что их продолжения
+ожидают правильное количество значений.
+
+Наконец, в завершении компилятор CPS выдает байт-код для каждой функции,
+одной за другой.  Для этого он определяет набор живых переменных во всех
+точках функции. Използуя эту информацию, он выделяет слоты в стеке для
+каждой переменной, так что переменная может жить в одном слоте все время
+своей жизни, без перетасовки(перемещения). (Конечно, переменные с 
+непересекающимся временем жизни могут использовать совместно слот) Наконец
+в завершении, генерируется код, как правило, только для одной виртуальной
+машины, для каждого продолжения в функции.
+
+@node Bytecode
+@subsection Байт Код
+
+Как упоминалось ранее, Guile компилирует весь код в байт-код и что
+байт код содержиться в ELF образе.  @xref{Object File Format}, для
+дополнительной информации о использовании в Guile формата ELF.
+
+Чтобы создать образ байт-кода, Guile предоставляет ассемблер и 
+компоновщик.
+
+Ассемблер, определяется в модуле @code{(system vm assembler)}, он имеет
+относительно прямолинейную струкуру внешнего императивного интерфейса.
+Он предоставляет функцию @code{make-assembler} для создания экземпляра
+ассемблера и набор процедур @code{emit-@var{inst}} для генерации инструкций
+каждого типа.
+
+Процедуры @code{emit-@var{inst}} фактически генерируются во время 
+компиляции из машино-читаемого описания ВМ.  За некоторыми исключениями
+ для определенных типов операндов каждый опперанд генерирующей процедуры
+соответствует операнду соответствующей инструкции.
+
+Рассмотрим @code{vector-length}, из @pxref{Miscellaneous Instructions}.
+Она задокументирована как:
+
+@deftypefn Instruction {} vector-length u12:@var{dst} u12:@var{src}
+@end deftypefn
+
+Поэтому генерирующая процедура имеет вид:
+
+@deffn {Scheme Procedure} emit-vector-length asm dst src
+@end deffn
+
+Все генерирующие процедуры получают ассемблер в качестве первого аргумента
+и не возвращают никакого полезного значения.
+
+Типы аргументов зависят от типов операндов.  @xref{Instruction Set}.
+Большинство из них представляют собой целые числа в ограниченном диапазоне,
+хотя метки обычно выражаются как непрозрачные символы.
+
+Есть также несколько макрокоманд.
+
+@deffn {Scheme Procedure} emit-label asm label
+Определяет метку в текущей программной точке.
+@end deffn
+
+@deffn {Scheme Procedure} emit-source asm source
+Связывает исходный код(@var{source}) с текущей точкой программы.
+@end deffn
+
+@deffn {Scheme Procedure} emit-cache-current-module! asm module scope
+@deffnx {Scheme Procedure} emit-cached-toplevel-box asm dst scope sym bound?
+@deffnx {Scheme Procedure} emit-cached-module-box asm dst module-name sym public? bound?
+Макро инструкции реализующие кэширование переменных верхнего уровня. Первая
+принимает текущий модуль, слоте  @var{module}, и связывает его с указанным
+местоположением кэша в переменной @var{scope}.  Вторая принимает
+@var{scope}, и разрешает(находит) переменную.  @xref{Top-Level Environment
+Instructions}.  Последней не требуется модуль кэширования, вместо этого она
+получает имя модуля напрямую.
+@end deffn
+
+@deffn {Scheme Procedure} emit-load-constant asm dst constant
+Загружает исходные константы @var{constant} Scheme в @var{dst}.
+@end deffn
+
+@deffn {Scheme Procedure} emit-begin-program asm label properties
+@deffnx {Scheme Procedure} emit-end-program asm
+Отмечает границы процедуры, с указанной меткой @var{label} и мета
+данными @var{properties}.
+@end deffn
+
+@deffn {Scheme Procedure} emit-load-static-procedure asm dst label
+Загружает процедуру с указанной меткой @var{label} в локальную переменную
+@var{dst}.  Данная макро-инструкция должна использоваться только для процедур
+без свободных переменных --- т.е процдур не являющихся замыканиями.
+@end deffn
+
+@deffn {Scheme Procedure} emit-begin-standard-arity asm req nlocals alternate
+@deffnx {Scheme Procedure} emit-begin-opt-arity asm req opt rest nlocals alternate
+@deffnx {Scheme Procedure} emit-begin-kw-arity asm req opt rest kw-indices allow-other-keys? nlocals alternate
+@deffnx {Scheme Procedure} emit-end-arity asm
+Разделительные предложения процедуры.
+@end deffn
+
+@deffn {Scheme Procedure} emit-br-if-symbol asm slot invert? label
+@deffnx {Scheme Procedure} emit-br-if-variable asm slot invert? label
+@deffnx {Scheme Procedure} emit-br-if-vector asm slot invert? label
+@deffnx {Scheme Procedure} emit-br-if-string asm slot invert? label
+@deffnx {Scheme Procedure} emit-br-if-bytevector asm slot invert? label
+@deffnx {Scheme Procedure} emit-br-if-bitvector asm slot invert? label
+TC7-специфичные инструкции для тестирования и ветвления.  TC7 это 
+7-битный код который является частью типов объектов кучи.  
+@xref{The SCM Type in Guile}.  Также см, @xref{Branch Instructions}.
+@end deffn
+
+Линкер - сложный зверь. Хакеры, заинтересованные в том, чтобы узнать как
+он работает, читайте серию статей Ian Lance Taylor о линкерах.
+Поиск в интернете должен найти их без труда. С точки зрения пользователя,
+есть только один признак для контроля: будет ли получен результирующий
+образ для записи в файл или нет.  Если пользователь передает 
+@code{#:to-file? #t} как опцию компилятора (@pxref{The Scheme
+Compiler}), компоновщик будет выравнивать результирующие сегменты на
+границах страниц, в противном случае - нет.
+
+@deffn {Scheme Procedure} link-assembly asm #:page-aligned?=#t
+Связывает ELF образ, и возвращает байт-вектор.  Если @var{page-aligned?}
+установлено в истину, Guile будет выравнивать сегменты с разными разрешениями
+на границах размера страниц, чтобы максимизировать совместное разделение кода
+между различными процессами. В противном случае заполнение минимизируется,
+для минимизации использования адресного пространства.
+@end deffn
+
+Для записи на диск, просто используйте @code{put-bytevector} из
+@code{(ice-9 binary-ports)}.
+
+Компиляция объектного кода на фальшивый язык, @code{value}, выполняется
+путем загрузки объектного кода(objcode) в программу, а затем выполняет
+его относительно среды компиляции. Обычно среда передается через компилятор
+прозрачно, но пользователи могут также указать среду компиляции как модуль.
+Процедуры загрузки образов можно найти в модуле  @code{(system vm loader)}:
+
+@lisp
+(use-modules (system vm loader))
+@end lisp
+
+@deffn {Scheme Variable} load-thunk-from-file file
+@deffnx {C Function} scm_load_thunk_from_file (file)
+Загружает объектный код из файла с именем @var{file}. Файл будет отображаться
+в паметь через функцию @code{mmap}, так что это очень быстрая операция.
+@end deffn
+
+@deffn {Scheme Variable} load-thunk-from-memory bv
+@deffnx {C Function} scm_load_thunk_from_memory (bv)
+Загрузка объектного кода из байт-вектора.  Данные будут скопированы из
+байтового вектора в порядке обечивающем правильное выравнивание встроенных
+значений Scheme.
+@end deffn
+
+Кроме того, есть процедуры для поиска ELF образа для заданного
+указателя, или списка всех отображенных(загруженных) ELF образов:
+
+@deffn {Scheme Variable} find-mapped-elf-image ptr
+Учитывая целочисленное значение @var{ptr}, ищет и возвращает ELF образ
+который содержит укзазатель, как байтовый вектор. Если изобржение не найдено,
+возвращает @code{#f}.  Эта процедура в основном используется отладчиком и другими
+интроспективными инструментами.
+@end deffn
+
+@deffn {Scheme Variable} all-mapped-elf-images
+Возвращает все отображенные(загруженные) ELF образы, как список
+байт-векторов.
+@end deffn
+
+@node Writing New High-Level Languages
+@subsection Написание Новых Высоко-Уровневых Языков.
+
+Чтобы интегрировать новый язык @var{lang} в систему компилятора Guile,
+нужно создать модуль @code{(language @var{lang} spec)} содержащий
+определение языка и ссылающийся на анализатор, компилятор и другие
+процедуры обрабатывающие его. Иерархия модулей в 
+@code{(language brainfuck)} определяет очень базовую реализацию
+Brainfuck предназначенную для того чтобы служить легко понятным
+примером о том как это сделать. См. например @url{http://en.wikipedia.org/wiki/Brainfuck}
+для дополнительной информации о языке Brainfuck.
+
+@node Extending the Compiler
+@subsection Расширение Компилятора
+
+В этот момент мы отходим от безличного тона остальной части руководства.
+Признайте это: если вы внимательно изучили руководство по внутреннему
+компилятору, вы являетесь наркоманом! Возможно курс в вашем университете
+оставил вас без внимания, или, возможно, вы всегда испытывали желание
+взломать святость компьютерных наук: компилятор! Хорошо, что вы в хорошей
+компании и в хорошем положении. Компилятор Guile нуждается в вашей помощи.
+
+Существует множество возможностей для улучшения компилятора Guile.
+Вероятно, наиболее важное улучшение, по скорости, будет представлять
+собой некоторую форму нативной компиляции, как просто во время выполнения,
+так и предварительной. Это можно сделать разными способами. Вероятно
+самая простая стратегия была бы расширить скомпилированную процедуру
+структурой включающей указатель на вектор исполняемого кода, и скомпилировать
+из байт кода исполняемый код во время выполнения, после того как
+процедура вызывается определенное количество раз.
+
+Название игры сбор урожая низкорослых фруктов на основе профилирования
+программы, запуск программы представляющих интерес под профилировщиком
+системного уровня определение того, какие улучшения даст самый удачный
+buck. Это действительно доходит до того, что нативная компиляция - следующий
+шаг.
+
+Компилятору также нужна помощь на верхнем уровне, улучшая Scheme 
+которая, как известно, также понимает R6RS, и добавляя новые
+компиляторы высокого уровня. У нас есть JavaScript и Emacs Lisp
+в основном завершены,  Lua тоже бы неплохо, да любой язык поразивший
+ваше воображение, тоже будет приветствоваться.
+
+Компиляторы предназначены для взлома, а не для восхищения или жалоб.
+Доберитесь до него!

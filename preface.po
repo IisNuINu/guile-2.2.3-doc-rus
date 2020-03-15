@@ -1,0 +1,213 @@
+#
+# Gagin <mikhail-gagin@yandex.ru>, 2018.
+#
+#. extracted from /home/bear/work/guile/doc/guile/en/preface.texi
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2018-05-07 12:37+0300\n"
+"PO-Revision-Date: 2018-05-10 08:06+0300\n"
+"Last-Translator: Gagin <mikhail-gagin@yandex.ru>\n"
+"Language-Team: Russian <mikhail-gagin@yandex.ru>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Generator: Gtranslator 2.91.7\n"
+"Plural-Forms: nplurals=5; plural=n==1 ? 0 : n==2 ? 1 : n<7 ? 2 : n<11 ? 3 : "
+"4;\n"
+
+#: /home/bear/work/guile/doc/guile/en/preface.texi:6
+msgid ""
+"@c -*-texinfo-*-\n"
+"@c This is part of the GNU Guile Reference Manual.\n"
+"@c Copyright (C)  1996, 1997, 2000, 2001, 2002, 2003, 2004, 2010, 2011\n"
+"@c   Free Software Foundation, Inc.\n"
+"@c See the file guile.texi for copying conditions."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/preface.texi:9
+msgid ""
+"@node Preface\n"
+"@unnumbered Preface"
+msgstr ""
+"@node Preface\n"
+"@unnumbered Предисловие"
+
+#: /home/bear/work/guile/doc/guile/en/preface.texi:13
+msgid ""
+"This manual describes how to use Guile, GNU's Ubiquitous Intelligent\n"
+"Language for Extensions.  It relates particularly to Guile version\n"
+"@value{VERSION}."
+msgstr ""
+"В этом руководстве описывается, как использовать Guile, GNU's Ubiquitous \n"
+"Intelligent Language for Extensions.  Оно относится, в частности к\n"
+"Guile версии @value{VERSION}."
+
+#: /home/bear/work/guile/doc/guile/en/preface.texi:18
+msgid ""
+"@menu\n"
+"* Contributors::                \n"
+"* Guile License::               \n"
+"@end menu"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/preface.texi:21
+msgid ""
+"@node Contributors\n"
+"@unnumberedsec Contributors to this Manual"
+msgstr ""
+"@node Contributors\n"
+"@unnumberedsec Авторы данного руководства"
+
+#: /home/bear/work/guile/doc/guile/en/preface.texi:26
+msgid ""
+"Like Guile itself, the Guile reference manual is a living entity, cared\n"
+"for by many people over a long period of time.  As such, it is hard to\n"
+"identify individuals of whom to say ``yes, this person, she wrote the\n"
+"manual.''"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/preface.texi:32
+msgid ""
+"Still, among the many contributions, some caretakers stand out.  First\n"
+"among them is Neil Jerram, who has been working on this document for ten\n"
+"years now.  Neil's attention both to detail and to the big picture have\n"
+"made a real difference in the understanding of a generation of Guile\n"
+"hackers."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/preface.texi:37
+msgid ""
+"Next we should note Marius Vollmer's effect on this document.  Marius\n"
+"maintained Guile during a period in which Guile's API was\n"
+"clarified---put to the fire, so to speak---and he had the good sense to\n"
+"effect the same change on the manual."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/preface.texi:43
+msgid ""
+"Martin Grabmueller made substantial contributions throughout the manual\n"
+"in preparation for the Guile 1.6 release, including filling out a lot of\n"
+"the documentation of Scheme data types, control mechanisms and\n"
+"procedures.  In addition, he wrote the documentation for Guile's SRFI\n"
+"modules and modules associated with the Guile REPL."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/preface.texi:50
+msgid ""
+"Ludovic Court@`es and Andy Wingo, the Guile maintainers at the time of\n"
+"this writing (late 2010), have also made their dent in the manual,\n"
+"writing documentation for new modules and subsystems in Guile 2.0.  They\n"
+"are also responsible for ensuring that the existing text retains its\n"
+"relevance as Guile evolves.  @xref{Reporting Bugs}, for more information\n"
+"on reporting problems in this manual."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/preface.texi:56
+msgid ""
+"The content for the first versions of this manual incorporated and was\n"
+"inspired by documents from Aubrey Jaffer, author of the SCM system on\n"
+"which Guile was based, and from Tom Lord, Guile's first maintainer.\n"
+"Although most of this text has been rewritten, all of it was important,\n"
+"and some of the structure remains."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/preface.texi:61
+msgid ""
+"The manual for the first versions of Guile were largely written, edited,\n"
+"and compiled by Mark Galassi and Jim Blandy.  In particular, Jim wrote\n"
+"the original tutorial on Guile's data representation and the C API for\n"
+"accessing Guile objects."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/preface.texi:68
+msgid ""
+"Significant portions were also contributed by Thien-Thi Nguyen, Kevin\n"
+"Ryde, Mikael Djurfeldt, Christian Lynbech, Julian Graham, Gary Houston,\n"
+"Tim Pierce, and a few dozen more.  You, reader, are most welcome to join\n"
+"their esteemed ranks.  Visit Guile's web site at\n"
+"@uref{http://www.gnu.org/software/guile/} to find out how to get\n"
+"involved."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/preface.texi:76
+msgid ""
+"@node Guile License\n"
+"@unnumberedsec The Guile License\n"
+"@cindex copying\n"
+"@cindex GPL\n"
+"@cindex LGPL\n"
+"@cindex license"
+msgstr ""
+"@node Guile License\n"
+"@unnumberedsec Лицензия Guile\n"
+"@cindex copying\n"
+"@cindex GPL\n"
+"@cindex LGPL\n"
+"@cindex license"
+
+#: /home/bear/work/guile/doc/guile/en/preface.texi:81
+msgid ""
+"Guile is Free Software.  Guile is copyrighted, not public domain, and\n"
+"there are restrictions on its distribution or redistribution, but\n"
+"these restrictions are designed to permit everything a cooperating\n"
+"person would want to do."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/preface.texi:87
+msgid ""
+"@itemize @bullet\n"
+"@item\n"
+"The Guile library (libguile) and supporting files are published under\n"
+"the terms of the GNU Lesser General Public License version 3 or later.\n"
+"See the files @file{COPYING.LESSER} and @file{COPYING}."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/preface.texi:91
+msgid ""
+"@item\n"
+"The Guile readline module is published under the terms of the GNU\n"
+"General Public License version 3 or later.  See the file @file{COPYING}."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/preface.texi:96
+msgid ""
+"@item\n"
+"The manual you're now reading is published under the terms of the GNU\n"
+"Free Documentation License (@pxref{GNU Free Documentation License}).\n"
+"@end itemize"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/preface.texi:100
+msgid ""
+"C code linking to the Guile library is subject to terms of that\n"
+"library.  Basically such code may be published on any terms, provided\n"
+"users can re-link against a new or modified version of Guile."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/preface.texi:103
+msgid ""
+"C code linking to the Guile readline module is subject to the terms of\n"
+"that module.  Basically such code must be published on Free terms."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/preface.texi:107
+msgid ""
+"Scheme level code written to be run by Guile (but not derived from\n"
+"Guile itself) is not restricted in any way, and may be published on any\n"
+"terms.  We encourage authors to publish on Free terms."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/preface.texi:110
+msgid ""
+"You must be aware there is no warranty whatsoever for Guile.  This is\n"
+"described in full in the licenses."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/preface.texi:114
+msgid ""
+"@c Local Variables:\n"
+"@c TeX-master: \"guile.texi\"\n"
+"@c End:"
+msgstr ""

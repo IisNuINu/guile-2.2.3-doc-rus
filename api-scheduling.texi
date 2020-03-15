@@ -1,0 +1,984 @@
+@c -*-texinfo-*-
+@c This is part of the GNU Guile Reference Manual.
+@c Copyright (C)  1996, 1997, 2000, 2001, 2002, 2003, 2004, 2007, 2009, 2010, 2012, 2013
+@c   Free Software Foundation, Inc.
+@c See the file guile.texi for copying conditions.
+
+@node Scheduling
+@section Threads, Mutexes, Asyncs and Dynamic Roots
+
+@menu
+* Threads::                     Multiple threads of execution.
+* Thread Local Variables::      Some fluids are thread-local.
+* Asyncs::                      Asynchronous interrupts.
+* Atomics::                     Atomic references.
+* Mutexes and Condition Variables:: Synchronization primitives.
+* Blocking::                    How to block properly in guile mode.
+* Futures::                     Fine-grain parallelism.
+* Parallel Forms::              Parallel execution of forms.
+@end menu
+
+@node Threads
+@subsection Threads
+@cindex threads
+@cindex Guile threads
+@cindex POSIX threads
+
+Guile supports POSIX threads, unless it was configured with
+@code{--without-threads} or the host lacks POSIX thread support.  When
+thread support is available, the @code{threads} feature is provided
+(@pxref{Feature Manipulation, @code{provided?}}).
+
+The procedures below manipulate Guile threads, which are wrappers around
+the system's POSIX threads.  For application-level parallelism, using
+higher-level constructs, such as futures, is recommended
+(@pxref{Futures}).
+
+To use these facilities, load the @code{(ice-9 threads)} module.
+
+@example
+(use-modules (ice-9 threads))
+@end example
+
+@deffn {Scheme Procedure} all-threads
+@deffnx {C Function} scm_all_threads ()
+Return a list of all threads.
+@end deffn
+
+@deffn {Scheme Procedure} current-thread
+@deffnx {C Function} scm_current_thread ()
+Return the thread that called this function.
+@end deffn
+
+@deffn {Scheme Procedure} call-with-new-thread thunk [handler]
+Call @code{thunk} in a new thread and with a new dynamic state,
+returning the new thread.  The procedure @var{thunk} is called via
+@code{with-continuation-barrier}.
+
+When @var{handler} is specified, then @var{thunk} is called from
+within a @code{catch} with tag @code{#t} that has @var{handler} as its
+handler.  This catch is established inside the continuation barrier.
+
+Once @var{thunk} or @var{handler} returns, the return value is made
+the @emph{exit value} of the thread and the thread is terminated.
+@end deffn
+
+@deftypefn {C Function} SCM scm_spawn_thread (scm_t_catch_body body, void *body_data, scm_t_catch_handler handler, void *handler_data)
+Call @var{body} in a new thread, passing it @var{body_data}, returning
+the new thread.  The function @var{body} is called via
+@code{scm_c_with_continuation_barrier}.
+
+When @var{handler} is non-@code{NULL}, @var{body} is called via
+@code{scm_internal_catch} with tag @code{SCM_BOOL_T} that has
+@var{handler} and @var{handler_data} as the handler and its data.  This
+catch is established inside the continuation barrier.
+
+Once @var{body} or @var{handler} returns, the return value is made the
+@emph{exit value} of the thread and the thread is terminated.
+@end deftypefn
+
+@deffn {Scheme Procedure} thread? obj
+@deffnx {C Function} scm_thread_p (obj)
+Return @code{#t} ff @var{obj} is a thread; otherwise, return
+@code{#f}.
+@end deffn
+
+@deffn {Scheme Procedure} join-thread thread [timeout [timeoutval]]
+@deffnx {C Function} scm_join_thread (thread)
+@deffnx {C Function} scm_join_thread_timed (thread, timeout, timeoutval)
+Wait for @var{thread} to terminate and return its exit value.  Only
+threads that were created with @code{call-with-new-thread} or
+@code{scm_spawn_thread} can be joinable; attempting to join a foreign
+thread will raise an error.
+
+When @var{timeout} is given, it specifies a point in time where the
+waiting should be aborted.  It can be either an integer as returned by
+@code{current-time} or a pair as returned by @code{gettimeofday}.  When
+the waiting is aborted, @var{timeoutval} is returned (if it is
+specified; @code{#f} is returned otherwise).
+@end deffn
+
+@deffn {Scheme Procedure} thread-exited? thread
+@deffnx {C Function} scm_thread_exited_p (thread)
+Return @code{#t} if @var{thread} has exited, or @code{#f} otherwise.
+@end deffn
+
+@deffn {Scheme Procedure} yield
+@deffnx {C Function} scm_yield (thread)
+If one or more threads are waiting to execute, calling yield forces an
+immediate context switch to one of them. Otherwise, yield has no effect.
+@end deffn
+
+@deffn {Scheme Procedure} cancel-thread thread . values
+@deffnx {C Function} scm_cancel_thread (thread)
+Asynchronously interrupt @var{thread} and ask it to terminate.
+@code{dynamic-wind} post thunks will run, but throw handlers will not.
+If @var{thread} has already terminated or been signaled to terminate,
+this function is a no-op.  Calling @code{join-thread} on the thread will
+return the given @var{values}, if the cancel succeeded.
+
+Under the hood, thread cancellation uses @code{system-async-mark} and
+@code{abort-to-prompt}.  @xref{Asyncs} for more on asynchronous
+interrupts.
+@end deffn
+
+@deffn macro make-thread proc arg @dots{}
+Apply @var{proc} to @var{arg} @dots{} in a new thread formed by
+@code{call-with-new-thread} using a default error handler that display
+the error to the current error port.  The @var{arg} @dots{}
+expressions are evaluated in the new thread.
+@end deffn
+
+@deffn macro begin-thread expr1 expr2 @dots{}
+Evaluate forms @var{expr1} @var{expr2} @dots{} in a new thread formed by
+@code{call-with-new-thread} using a default error handler that display
+the error to the current error port.
+@end deffn
+
+One often wants to limit the number of threads running to be
+proportional to the number of available processors.  These interfaces
+are therefore exported by (ice-9 threads) as well.
+
+@deffn {Scheme Procedure} total-processor-count
+@deffnx {C Function} scm_total_processor_count ()
+Return the total number of processors of the machine, which
+is guaranteed to be at least 1.  A ``processor'' here is a
+thread execution unit, which can be either:
+
+@itemize
+@item an execution core in a (possibly multi-core) chip, in a
+  (possibly multi- chip) module, in a single computer, or
+@item a thread execution unit inside a core in the case of
+  @dfn{hyper-threaded} CPUs.
+@end itemize
+
+Which of the two definitions is used, is unspecified.
+@end deffn
+
+@deffn {Scheme Procedure} current-processor-count
+@deffnx {C Function} scm_current_processor_count ()
+Like @code{total-processor-count}, but return the number of
+processors available to the current process.  See
+@code{setaffinity} and @code{getaffinity} for more
+information.
+@end deffn
+
+@node Thread Local Variables
+@subsection Thread-Local Variables
+
+Sometimes you want to establish a variable binding that is only valid
+for a given thread: a ``thread-local variable''.
+
+You would think that fluids or parameters would be Guile's answer for
+thread-local variables, since establishing a new fluid binding doesn't
+affect bindings in other threads.  @xref{Fluids and Dynamic States}, or
+@xref{Parameters}.  However, new threads inherit the fluid bindings that
+were in place in their creator threads.  In this way, a binding
+established using a fluid (or a parameter) in a thread can escape to
+other threads, which might not be what you want.  Or, it might escape
+via explicit reification via @code{current-dynamic-state}.
+
+Of course, this dynamic scoping might be exactly what you want; that's
+why fluids and parameters work this way, and is what you want for for
+many common parameters such as the current input and output ports, the
+current locale conversion parameters, and the like.  Perhaps this is the
+case for most parameters, even.  If your use case for thread-local
+bindings comes from a desire to isolate a binding from its setting in
+unrelated threads, then fluids and parameters apply nicely.
+
+On the other hand, if your use case is to prevent concurrent access to a
+value from multiple threads, then using vanilla fluids or parameters is
+not appropriate.  For this purpose, Guile has @dfn{thread-local fluids}.
+A fluid created with @code{make-thread-local-fluid} won't be captured by
+@code{current-dynamic-state} and won't be propagated to new threads.
+
+@deffn {Scheme Procedure} make-thread-local-fluid [dflt]
+@deffnx {C Function} scm_make_thread_local_fluid (dflt)
+Return a newly created fluid, whose initial value is @var{dflt}, or
+@code{#f} if @var{dflt} is not given.  Unlike fluids made with
+@code{make-fluid}, thread local fluids are not captured by
+@code{make-dynamic-state}.  Similarly, a newly spawned child thread does
+not inherit thread-local fluid values from the parent thread.
+@end deffn
+
+@deffn {Scheme Procedure} fluid-thread-local? fluid
+@deffnx {C Function} scm_fluid_thread_local_p (fluid)
+Return @code{#t} if the fluid @var{fluid} is is thread-local, or
+@code{#f} otherwise.
+@end deffn
+
+For example:
+
+@example
+(define %thread-local (make-thread-local-fluid))
+
+(with-fluids ((%thread-local (compute-data)))
+  ... (fluid-ref %thread-local) ...)
+@end example
+
+You can also make a thread-local parameter out of a thread-local fluid
+using the normal @code{fluid->parameter}:
+
+@example
+(define param (fluid->parameter (make-thread-local-fluid)))
+
+(parameterize ((param (compute-data)))
+  ... (param) ...)
+@end example
+
+@node Asyncs
+@subsection Asynchronous Interrupts
+
+@cindex asyncs
+@cindex asynchronous interrupts
+@cindex interrupts
+
+Every Guile thread can be interrupted.  Threads running Guile code will
+periodically check if there are pending interrupts and run them if
+necessary.  To interrupt a thread, call @code{system-async-mark} on that
+thread.
+
+@deffn {Scheme Procedure} system-async-mark proc [thread]
+@deffnx {C Function} scm_system_async_mark (proc)
+@deffnx {C Function} scm_system_async_mark_for_thread (proc, thread)
+Enqueue @var{proc} (a procedure with zero arguments) for future
+execution in @var{thread}.  When @var{proc} has already been enqueued
+for @var{thread} but has not been executed yet, this call has no effect.
+When @var{thread} is omitted, the thread that called
+@code{system-async-mark} is used.
+@end deffn
+
+Note that @code{scm_system_async_mark_for_thread} is not
+``async-signal-safe'' and so cannot be called from a C signal handler.
+(Indeed in general, @code{libguile} functions are not safe to call from
+C signal handlers.)
+
+Though an interrupt procedure can have any side effect permitted to
+Guile code, asynchronous interrupts are generally used either for
+profiling or for prematurely cancelling a computation.  The former case
+is mostly transparent to the program being run, by design, but the
+latter case can introduce bugs.  Like finalizers (@pxref{Foreign Object
+Memory Management}), asynchronous interrupts introduce concurrency in a
+program.  An asyncronous interrupt can run in the middle of some
+mutex-protected operation, for example, and potentially corrupt the
+program's state.
+
+If some bit of Guile code needs to temporarily inhibit interrupts, it
+can use @code{call-with-blocked-asyncs}.  This function works by
+temporarily increasing the @emph{async blocking level} of the current
+thread while a given procedure is running.  The blocking level starts
+out at zero, and whenever a safe point is reached, a blocking level
+greater than zero will prevent the execution of queued asyncs.
+
+Analogously, the procedure @code{call-with-unblocked-asyncs} will
+temporarily decrease the blocking level of the current thread.  You
+can use it when you want to disable asyncs by default and only allow
+them temporarily.
+
+In addition to the C versions of @code{call-with-blocked-asyncs} and
+@code{call-with-unblocked-asyncs}, C code can use
+@code{scm_dynwind_block_asyncs} and @code{scm_dynwind_unblock_asyncs}
+inside a @dfn{dynamic context} (@pxref{Dynamic Wind}) to block or
+unblock asyncs temporarily.
+
+@deffn {Scheme Procedure} call-with-blocked-asyncs proc
+@deffnx {C Function} scm_call_with_blocked_asyncs (proc)
+Call @var{proc} and block the execution of asyncs by one level for the
+current thread while it is running.  Return the value returned by
+@var{proc}.  For the first two variants, call @var{proc} with no
+arguments; for the third, call it with @var{data}.
+@end deffn
+
+@deftypefn {C Function} {void *} scm_c_call_with_blocked_asyncs (void * (*proc) (void *data), void *data)
+The same but with a C function @var{proc} instead of a Scheme thunk.
+@end deftypefn
+
+@deffn {Scheme Procedure} call-with-unblocked-asyncs proc
+@deffnx {C Function} scm_call_with_unblocked_asyncs (proc)
+Call @var{proc} and unblock the execution of asyncs by one level for the
+current thread while it is running.  Return the value returned by
+@var{proc}.  For the first two variants, call @var{proc} with no
+arguments; for the third, call it with @var{data}.
+@end deffn
+
+@deftypefn {C Function} {void *} scm_c_call_with_unblocked_asyncs (void *(*proc) (void *data), void *data)
+The same but with a C function @var{proc} instead of a Scheme thunk.
+@end deftypefn
+
+@deftypefn {C Function} void scm_dynwind_block_asyncs ()
+During the current dynwind context, increase the blocking of asyncs by
+one level.  This function must be used inside a pair of calls to
+@code{scm_dynwind_begin} and @code{scm_dynwind_end} (@pxref{Dynamic
+Wind}).
+@end deftypefn
+
+@deftypefn {C Function} void scm_dynwind_unblock_asyncs ()
+During the current dynwind context, decrease the blocking of asyncs by
+one level.  This function must be used inside a pair of calls to
+@code{scm_dynwind_begin} and @code{scm_dynwind_end} (@pxref{Dynamic
+Wind}).
+@end deftypefn
+
+Sometimes you want to interrupt a thread that might be waiting for
+something to happen, for example on a file descriptor or a condition
+variable.  In that case you can inform Guile of how to interrupt that
+wait using the following procedures:
+
+@deftypefn {C Function} int scm_c_prepare_to_wait_on_fd (int fd)
+Inform Guile that the current thread is about to sleep, and that if an
+asynchronous interrupt is signalled on this thread, Guile should wake up
+the thread by writing a zero byte to @var{fd}.  Returns zero if the
+prepare succeeded, or nonzero if the thread already has a pending async
+and that it should avoid waiting.
+@end deftypefn
+
+@deftypefn {C Function} int scm_c_prepare_to_wait_on_cond (scm_i_pthread_mutex_t *mutex, scm_i_pthread_cond_t *cond)
+Inform Guile that the current thread is about to sleep, and that if an
+asynchronous interrupt is signalled on this thread, Guile should wake up
+the thread by acquiring @var{mutex} and signalling @var{cond}.  The
+caller must already hold @var{mutex} and only drop it as part of the
+@code{pthread_cond_wait} call.  Returns zero if the prepare succeeded,
+or nonzero if the thread already has a pending async and that it should
+avoid waiting.
+@end deftypefn
+
+@deftypefn {C Function} void scm_c_wait_finished (void)
+Inform Guile that the current thread has finished waiting, and that
+asynchronous interrupts no longer need any special wakeup action; the
+current thread will periodically poll its internal queue instead.
+@end deftypefn
+
+Guile's own interface to @code{sleep}, @code{wait-condition-variable},
+@code{select}, and so on all call the above routines as appropriate.
+
+Finally, note that threads can also be interrupted via POSIX signals.
+@xref{Signals}.  As an implementation detail, signal handlers will
+effectively call @code{system-async-mark} in a signal-safe way,
+eventually running the signal handler using the same async mechanism.
+In this way you can temporarily inhibit signal handlers from running
+using the above interfaces.
+
+@node Atomics
+@subsection Atomics
+
+When accessing data in parallel from multiple threads, updates made by
+one thread are not generally guaranteed to be visible by another thread.
+It could be that your hardware requires special instructions to be
+emitted to propagate a change from one CPU core to another.  Or, it
+could be that your hardware updates values with a sequence of
+instructions, and a parallel thread could see a value that is in the
+process of being updated but not fully updated.
+
+Atomic references solve this problem.  Atomics are a standard, primitive
+facility to allow for concurrent access and update of mutable variables
+from multiple threads with guaranteed forward-progress and well-defined
+intermediate states.
+
+Atomic references serve not only as a hardware memory barrier but also
+as a compiler barrier.  Normally a compiler might choose to reorder or
+elide certain memory accesses due to optimizations like common
+subexpression elimination.  Atomic accesses however will not be
+reordered relative to each other, and normal memory accesses will not be
+reordered across atomic accesses.
+
+As an implementation detail, currently all atomic accesses and updates
+use the sequential consistency memory model from C11.  We may relax this
+in the future to the acquire/release semantics, which still issues a
+memory barrier so that non-atomic updates are not reordered across
+atomic accesses or updates.
+
+To use Guile's atomic operations, load the @code{(ice-9 atomic)} module:
+
+@example
+(use-modules (ice-9 atomic))
+@end example
+
+@deffn {Scheme Procedure} make-atomic-box init
+Return an atomic box initialized to value @var{init}.
+@end deffn
+
+@deffn {Scheme Procedure} atomic-box? obj
+Return @code{#t} if @var{obj} is an atomic-box object, else
+return @code{#f}.
+@end deffn
+
+@deffn {Scheme Procedure} atomic-box-ref box
+Fetch the value stored in the atomic box @var{box} and return it.
+@end deffn
+
+@deffn {Scheme Procedure} atomic-box-set! box  val
+Store @var{val} into the atomic box @var{box}.
+@end deffn
+
+@deffn {Scheme Procedure} atomic-box-swap! box val
+Store @var{val} into the atomic box @var{box}, and return the value that
+was previously stored in the box.
+@end deffn
+
+@deffn {Scheme Procedure} atomic-box-compare-and-swap! box expected desired
+If the value of the atomic box @var{box} is the same as, @var{expected}
+(in the sense of @code{eq?}), replace the contents of the box with
+@var{desired}.  Otherwise does not update the box.  Returns the previous
+value of the box in either case, so you can know if the swap worked by
+checking if the return value is @code{eq?} to @var{expected}.
+@end deffn
+
+@node Mutexes and Condition Variables
+@subsection Mutexes and Condition Variables
+@cindex mutex
+@cindex condition variable
+
+Mutexes are low-level primitives used to coordinate concurrent access to
+mutable data.  Short for ``mutual exclusion'', the name ``mutex''
+indicates that only one thread at a time can acquire access to data that
+is protected by a mutex -- threads are excluded from accessing data at
+the same time.  If one thread has locked a mutex, then another thread
+attempting to lock that same mutex will wait until the first thread is
+done.
+
+Mutexes can be used to build robust multi-threaded programs that take
+advantage of multiple cores.  However, they provide very low-level
+functionality and are somewhat dangerous; usually you end up wanting to
+acquire multiple mutexes at the same time to perform a multi-object
+access, but this can easily lead to deadlocks if the program is not
+carefully written.  For example, if objects A and B are protected by
+associated mutexes M and N, respectively, then to access both of them
+then you need to acquire both mutexes.  But what if one thread acquires
+M first and then N, at the same time that another thread acquires N them
+M?  You can easily end up in a situation where one is waiting for the
+other.
+
+There's no easy way around this problem on the language level.  A
+function A that uses mutexes does not necessarily compose nicely with a
+function B that uses mutexes.  For this reason we suggest using atomic
+variables when you can (@pxref{Atomics}), as they do not have this problem.
+
+Still, if you as a programmer are responsible for a whole system, then
+you can use mutexes as a primitive to provide safe concurrent
+abstractions to your users.  (For example, given all locks in a system,
+if you establish an order such that M is consistently acquired before N,
+you can avoid the ``deadly-embrace'' deadlock described above.  The
+problem is enumerating all mutexes and establishing this order from a
+system perspective.)  Guile gives you the low-level facilities to build
+such systems.
+
+In Guile there are additional considerations beyond the usual ones in
+other programming languages: non-local control flow and asynchronous
+interrupts.  What happens if you hold a mutex, but somehow you cause an
+exception to be thrown?  There is no one right answer.  You might want
+to keep the mutex locked to prevent any other code from ever entering
+that critical section again.  Or, your critical section might be fine if
+you unlock the mutex ``on the way out'', via a catch handler or
+@code{dynamic-wind}.  @xref{Catch}, and @xref{Dynamic Wind}.
+
+But if you arrange to unlock the mutex when leaving a dynamic extent via
+@code{dynamic-wind}, what to do if control re-enters that dynamic extent
+via a continuation invocation?  Surely re-entering the dynamic extent
+without the lock is a bad idea, so there are two options on the table:
+either prevent re-entry via @code{with-continuation-barrier} or similar,
+or reacquire the lock in the entry thunk of a @code{dynamic-wind}.
+
+You might think that because you don't use continuations, that you don't
+have to think about this, and you might be right.  If you control the
+whole system, you can reason about continuation use globally.  Or, if
+you know all code that can be called in a dynamic extent, and none of
+that code can call continuations, then you don't have to worry about
+re-entry, and you might not have to worry about early exit either.
+
+However, do consider the possibility of asynchronous interrupts
+(@pxref{Asyncs}).  If the user interrupts your code interactively, that
+can cause an exception; or your thread might be cancelled, which does
+the same; or the user could be running your code under some pre-emptive
+system that periodically causes lightweight task switching.  (Guile does
+not currently include such a system, but it's possible to implement as a
+library.)  Probably you also want to defer asynchronous interrupt
+processing while you hold the mutex, and probably that also means that
+you should not hold the mutex for very long.
+
+All of these additional Guile-specific considerations mean that from a
+system perspective, you would do well to avoid these hazards if you can
+by not requiring mutexes.  Instead, work with immutable data that can be
+shared between threads without hazards, or use persistent data
+structures with atomic updates based on the atomic variable library
+(@pxref{Atomics}).
+
+There are three types of mutexes in Guile: ``standard'', ``recursive'',
+and ``unowned''.
+
+Calling @code{make-mutex} with no arguments makes a standard mutex.  A
+standard mutex can only be locked once.  If you try to lock it again
+from the thread that locked it to begin with (the "owner" thread), it
+throws an error.  It can only be unlocked from the thread that locked it
+in the first place.
+
+Calling @code{make-mutex} with the symbol @code{recursive} as the
+argument, or calling @code{make-recursive-mutex}, will give you a
+recursive mutex.  A recursive mutex can be locked multiple times by its
+owner.  It then has to be unlocked the corresponding number of times,
+and like standard mutexes can only be unlocked by the owner thread.
+
+Finally, calling @code{make-mutex} with the symbol
+@code{allow-external-unlock} creates an unowned mutex.  An unowned mutex
+is like a standard mutex, except that it can be unlocked by any thread.
+A corollary of this behavior is that a thread's attempt to lock a mutex
+that it already owns will block instead of signalling an error, as it
+could be that some other thread unlocks the mutex, allowing the owner
+thread to proceed.  This kind of mutex is a bit strange and is here for
+use by SRFI-18.
+
+The mutex procedures in Guile can operate on all three kinds of mutexes.
+
+To use these facilities, load the @code{(ice-9 threads)} module.
+
+@example
+(use-modules (ice-9 threads))
+@end example
+
+@sp 1
+@deffn {Scheme Procedure} make-mutex [kind]
+@deffnx {C Function} scm_make_mutex ()
+@deffnx {C Function} scm_make_mutex_with_kind (SCM kind)
+Return a new mutex.  It will be a standard non-recursive mutex, unless
+the @code{recursive} symbol is passed as the optional @var{kind}
+argument, in which case it will be recursive.  It's also possible to
+pass @code{unowned} for semantics tailored to SRFI-18's use case; see
+above for details.
+@end deffn
+
+@deffn {Scheme Procedure} mutex? obj
+@deffnx {C Function} scm_mutex_p (obj)
+Return @code{#t} if @var{obj} is a mutex; otherwise, return
+@code{#f}.
+@end deffn
+
+@deffn {Scheme Procedure} make-recursive-mutex
+@deffnx {C Function} scm_make_recursive_mutex ()
+Create a new recursive mutex.  It is initially unlocked.  Calling this
+function is equivalent to calling @code{make-mutex} with the
+@code{recursive} kind.
+@end deffn
+
+@deffn {Scheme Procedure} lock-mutex mutex [timeout]
+@deffnx {C Function} scm_lock_mutex (mutex)
+@deffnx {C Function} scm_timed_lock_mutex (mutex, timeout)
+Lock @var{mutex} and return @code{#t}.  If the mutex is already locked,
+then block and return only when @var{mutex} has been acquired.
+
+When @var{timeout} is given, it specifies a point in time where the
+waiting should be aborted.  It can be either an integer as returned
+by @code{current-time} or a pair as returned by @code{gettimeofday}.
+When the waiting is aborted, @code{#f} is returned.
+
+For standard mutexes (@code{make-mutex}), an error is signalled if the
+thread has itself already locked @var{mutex}.
+
+For a recursive mutex (@code{make-recursive-mutex}), if the thread has
+itself already locked @var{mutex}, then a further @code{lock-mutex}
+call increments the lock count.  An additional @code{unlock-mutex}
+will be required to finally release.
+
+When an asynchronous interrupt (@pxref{Asyncs}) is scheduled for a
+thread blocked in @code{lock-mutex}, Guile will interrupt the wait, run
+the interrupts, and then resume the wait.
+@end deffn
+
+@deftypefn {C Function} void scm_dynwind_lock_mutex (SCM mutex)
+Arrange for @var{mutex} to be locked whenever the current dynwind
+context is entered and to be unlocked when it is exited.
+@end deftypefn
+
+@deffn {Scheme Procedure} try-mutex mx
+@deffnx {C Function} scm_try_mutex (mx)
+Try to lock @var{mutex} and return @code{#t} if successful, or @code{#f}
+otherwise.  This is like calling @code{lock-mutex} with an expired
+timeout.
+@end deffn
+
+@deffn {Scheme Procedure} unlock-mutex mutex
+@deffnx {C Function} scm_unlock_mutex (mutex)
+Unlock @var{mutex}.  An error is signalled if @var{mutex} is not locked.
+
+``Standard'' and ``recursive'' mutexes can only be unlocked by the
+thread that locked them; Guile detects this situation and signals an
+error.  ``Unowned'' mutexes can be unlocked by any thread.
+@end deffn
+
+@deffn {Scheme Procedure} mutex-owner mutex
+@deffnx {C Function} scm_mutex_owner (mutex)
+Return the current owner of @var{mutex}, in the form of a thread or
+@code{#f} (indicating no owner).  Note that a mutex may be unowned but
+still locked.
+@end deffn
+
+@deffn {Scheme Procedure} mutex-level mutex
+@deffnx {C Function} scm_mutex_level (mutex)
+Return the current lock level of @var{mutex}.  If @var{mutex} is
+currently unlocked, this value will be 0; otherwise, it will be the
+number of times @var{mutex} has been recursively locked by its current
+owner.
+@end deffn
+
+@deffn {Scheme Procedure} mutex-locked? mutex
+@deffnx {C Function} scm_mutex_locked_p (mutex)
+Return @code{#t} if @var{mutex} is locked, regardless of ownership;
+otherwise, return @code{#f}.
+@end deffn
+
+@deffn {Scheme Procedure} make-condition-variable
+@deffnx {C Function} scm_make_condition_variable ()
+Return a new condition variable.
+@end deffn
+
+@deffn {Scheme Procedure} condition-variable? obj
+@deffnx {C Function} scm_condition_variable_p (obj)
+Return @code{#t} if @var{obj} is a condition variable; otherwise,
+return @code{#f}.
+@end deffn
+
+@deffn {Scheme Procedure} wait-condition-variable condvar mutex [time]
+@deffnx {C Function} scm_wait_condition_variable (condvar, mutex, time)
+Wait until @var{condvar} has been signalled.  While waiting,
+@var{mutex} is atomically unlocked (as with @code{unlock-mutex}) and
+is locked again when this function returns.  When @var{time} is given,
+it specifies a point in time where the waiting should be aborted.  It
+can be either a integer as returned by @code{current-time} or a pair
+as returned by @code{gettimeofday}.  When the waiting is aborted,
+@code{#f} is returned.  When the condition variable has in fact been
+signalled, @code{#t} is returned.  The mutex is re-locked in any case
+before @code{wait-condition-variable} returns.
+
+When an async is activated for a thread that is blocked in a call to
+@code{wait-condition-variable}, the waiting is interrupted, the mutex is
+locked, and the async is executed.  When the async returns, the mutex is
+unlocked again and the waiting is resumed.  When the thread block while
+re-acquiring the mutex, execution of asyncs is blocked.
+@end deffn
+
+@deffn {Scheme Procedure} signal-condition-variable condvar
+@deffnx {C Function} scm_signal_condition_variable (condvar)
+Wake up one thread that is waiting for @var{condvar}.
+@end deffn
+
+@deffn {Scheme Procedure} broadcast-condition-variable condvar
+@deffnx {C Function} scm_broadcast_condition_variable (condvar)
+Wake up all threads that are waiting for @var{condvar}.
+@end deffn
+
+Guile also includes some higher-level abstractions for working with
+mutexes.
+
+@deffn macro with-mutex mutex body1 body2 @dots{}
+Lock @var{mutex}, evaluate the body @var{body1} @var{body2} @dots{},
+then unlock @var{mutex}.  The return value is that returned by the last
+body form.
+
+The lock, body and unlock form the branches of a @code{dynamic-wind}
+(@pxref{Dynamic Wind}), so @var{mutex} is automatically unlocked if an
+error or new continuation exits the body, and is re-locked if
+the body is re-entered by a captured continuation.
+@end deffn
+
+@deffn macro monitor body1 body2 @dots{}
+Evaluate the body form @var{body1} @var{body2} @dots{} with a mutex
+locked so only one thread can execute that code at any one time.  The
+return value is the return from the last body form.
+
+Each @code{monitor} form has its own private mutex and the locking and
+evaluation is as per @code{with-mutex} above.  A standard mutex
+(@code{make-mutex}) is used, which means the body must not
+recursively re-enter the @code{monitor} form.
+
+The term ``monitor'' comes from operating system theory, where it
+means a particular bit of code managing access to some resource and
+which only ever executes on behalf of one process at any one time.
+@end deffn
+
+@node Blocking
+@subsection Blocking in Guile Mode
+
+Up to Guile version 1.8, a thread blocked in guile mode would prevent
+the garbage collector from running.  Thus threads had to explicitly
+leave guile mode with @code{scm_without_guile ()} before making a
+potentially blocking call such as a mutex lock, a @code{select ()}
+system call, etc.  The following functions could be used to temporarily
+leave guile mode or to perform some common blocking operations in a
+supported way.
+
+Starting from Guile 2.0, blocked threads no longer hinder garbage
+collection.  Thus, the functions below are not needed anymore.  They can
+still be used to inform the GC that a thread is about to block, giving
+it a (small) optimization opportunity for ``stop the world'' garbage
+collections, should they occur while the thread is blocked.
+
+@deftypefn {C Function} {void *} scm_without_guile (void *(*func) (void *), void *data)
+Leave guile mode, call @var{func} on @var{data}, enter guile mode and
+return the result of calling @var{func}.
+
+While a thread has left guile mode, it must not call any libguile
+functions except @code{scm_with_guile} or @code{scm_without_guile} and
+must not use any libguile macros.  Also, local variables of type
+@code{SCM} that are allocated while not in guile mode are not
+protected from the garbage collector.
+
+When used from non-guile mode, calling @code{scm_without_guile} is
+still allowed: it simply calls @var{func}.  In that way, you can leave
+guile mode without having to know whether the current thread is in
+guile mode or not.
+@end deftypefn
+
+@deftypefn {C Function} int scm_pthread_mutex_lock (pthread_mutex_t *mutex)
+Like @code{pthread_mutex_lock}, but leaves guile mode while waiting for
+the mutex.
+@end deftypefn
+
+@deftypefn  {C Function} int scm_pthread_cond_wait (pthread_cond_t *cond, pthread_mutex_t *mutex)
+@deftypefnx {C Function} int scm_pthread_cond_timedwait (pthread_cond_t *cond, pthread_mutex_t *mutex, struct timespec *abstime)
+Like @code{pthread_cond_wait} and @code{pthread_cond_timedwait}, but
+leaves guile mode while waiting for the condition variable.
+@end deftypefn
+
+@deftypefn {C Function} int scm_std_select (int nfds, fd_set *readfds, fd_set *writefds, fd_set *exceptfds, struct timeval *timeout)
+Like @code{select} but leaves guile mode while waiting.  Also, the
+delivery of an async causes this function to be interrupted with error
+code @code{EINTR}.
+@end deftypefn
+
+@deftypefn {C Function} {unsigned int} scm_std_sleep ({unsigned int} seconds)
+Like @code{sleep}, but leaves guile mode while sleeping.  Also, the
+delivery of an async causes this function to be interrupted.
+@end deftypefn
+
+@deftypefn {C Function} {unsigned long} scm_std_usleep ({unsigned long} usecs)
+Like @code{usleep}, but leaves guile mode while sleeping.  Also, the
+delivery of an async causes this function to be interrupted.
+@end deftypefn
+
+@node Futures
+@subsection Futures
+@cindex futures
+@cindex fine-grain parallelism
+@cindex parallelism
+
+The @code{(ice-9 futures)} module provides @dfn{futures}, a construct
+for fine-grain parallelism.  A future is a wrapper around an expression
+whose computation may occur in parallel with the code of the calling
+thread, and possibly in parallel with other futures.  Like promises,
+futures are essentially proxies that can be queried to obtain the value
+of the enclosed expression:
+
+@lisp
+(touch (future (+ 2 3)))
+@result{} 5
+@end lisp
+
+However, unlike promises, the expression associated with a future may be
+evaluated on another CPU core, should one be available.  This supports
+@dfn{fine-grain parallelism}, because even relatively small computations
+can be embedded in futures.  Consider this sequential code:
+
+@lisp
+(define (find-prime lst1 lst2)
+  (or (find prime? lst1)
+      (find prime? lst2)))
+@end lisp
+
+The two arms of @code{or} are potentially computation-intensive.  They
+are independent of one another, yet, they are evaluated sequentially
+when the first one returns @code{#f}.  Using futures, one could rewrite
+it like this:
+
+@lisp
+(define (find-prime lst1 lst2)
+  (let ((f (future (find prime? lst2))))
+    (or (find prime? lst1)
+        (touch f))))
+@end lisp
+
+This preserves the semantics of @code{find-prime}.  On a multi-core
+machine, though, the computation of @code{(find prime? lst2)} may be
+done in parallel with that of the other @code{find} call, which can
+reduce the execution time of @code{find-prime}.
+
+Futures may be nested: a future can itself spawn and then @code{touch}
+other futures, leading to a directed acyclic graph of futures.  Using
+this facility, a parallel @code{map} procedure can be defined along
+these lines:
+
+@lisp
+(use-modules (ice-9 futures) (ice-9 match))
+
+(define (par-map proc lst)
+  (match lst
+    (()
+     '())
+    ((head tail ...)
+     (let ((tail (future (par-map proc tail)))
+           (head (proc head)))
+       (cons head (touch tail))))))
+@end lisp
+
+Note that futures are intended for the evaluation of purely functional
+expressions.  Expressions that have side-effects or rely on I/O may
+require additional care, such as explicit synchronization
+(@pxref{Mutexes and Condition Variables}).
+
+Guile's futures are implemented on top of POSIX threads
+(@pxref{Threads}).  Internally, a fixed-size pool of threads is used to
+evaluate futures, such that offloading the evaluation of an expression
+to another thread doesn't incur thread creation costs.  By default, the
+pool contains one thread per available CPU core, minus one, to account
+for the main thread.  The number of available CPU cores is determined
+using @code{current-processor-count} (@pxref{Processes}).
+
+When a thread touches a future that has not completed yet, it processes
+any pending future while waiting for it to complete, or just waits if
+there are no pending futures.  When @code{touch} is called from within a
+future, the execution of the calling future is suspended, allowing its
+host thread to process other futures, and resumed when the touched
+future has completed.  This suspend/resume is achieved by capturing the
+calling future's continuation, and later reinstating it (@pxref{Prompts,
+delimited continuations}).
+
+@deffn {Scheme Syntax} future exp
+Return a future for expression @var{exp}.  This is equivalent to:
+
+@lisp
+(make-future (lambda () exp))
+@end lisp
+@end deffn
+
+@deffn {Scheme Procedure} make-future thunk
+Return a future for @var{thunk}, a zero-argument procedure.
+
+This procedure returns immediately.  Execution of @var{thunk} may begin
+in parallel with the calling thread's computations, if idle CPU cores
+are available, or it may start when @code{touch} is invoked on the
+returned future.
+
+If the execution of @var{thunk} throws an exception, that exception will
+be re-thrown when @code{touch} is invoked on the returned future.
+@end deffn
+
+@deffn {Scheme Procedure} future? obj
+Return @code{#t} if @var{obj} is a future.
+@end deffn
+
+@deffn {Scheme Procedure} touch f
+Return the result of the expression embedded in future @var{f}.
+
+If the result was already computed in parallel, @code{touch} returns
+instantaneously.  Otherwise, it waits for the computation to complete,
+if it already started, or initiates it.  In the former case, the calling
+thread may process other futures in the meantime.
+@end deffn
+
+@node Parallel Forms
+@subsection Parallel forms
+@cindex parallel forms
+
+The functions described in this section are available from
+
+@example
+(use-modules (ice-9 threads))
+@end example
+
+They provide high-level parallel constructs.  The following functions
+are implemented in terms of futures (@pxref{Futures}).  Thus they are
+relatively cheap as they re-use existing threads, and portable, since
+they automatically use one thread per available CPU core.
+
+@deffn syntax parallel expr @dots{}
+Evaluate each @var{expr} expression in parallel, each in its own thread.
+Return the results of @var{n} expressions as a set of @var{n} multiple
+values (@pxref{Multiple Values}).
+@end deffn
+
+@deffn syntax letpar ((var expr) @dots{}) body1 body2 @dots{}
+Evaluate each @var{expr} in parallel, each in its own thread, then bind
+the results to the corresponding @var{var} variables, and then evaluate
+@var{body1} @var{body2} @enddots{}
+
+@code{letpar} is like @code{let} (@pxref{Local Bindings}), but all the
+expressions for the bindings are evaluated in parallel.
+@end deffn
+
+@deffn {Scheme Procedure} par-map proc lst1 lst2 @dots{}
+@deffnx {Scheme Procedure} par-for-each proc lst1 lst2 @dots{}
+Call @var{proc} on the elements of the given lists.  @code{par-map}
+returns a list comprising the return values from @var{proc}.
+@code{par-for-each} returns an unspecified value, but waits for all
+calls to complete.
+
+The @var{proc} calls are @code{(@var{proc} @var{elem1} @var{elem2}
+@dots{})}, where each @var{elem} is from the corresponding @var{lst} .
+Each @var{lst} must be the same length.  The calls are potentially made
+in parallel, depending on the number of CPU cores available.
+
+These functions are like @code{map} and @code{for-each} (@pxref{List
+Mapping}), but make their @var{proc} calls in parallel.
+@end deffn
+
+Unlike those above, the functions described below take a number of
+threads as an argument.  This makes them inherently non-portable since
+the specified number of threads may differ from the number of available
+CPU cores as returned by @code{current-processor-count}
+(@pxref{Processes}).  In addition, these functions create the specified
+number of threads when they are called and terminate them upon
+completion, which makes them quite expensive.
+
+Therefore, they should be avoided.
+
+@deffn {Scheme Procedure} n-par-map n proc lst1 lst2 @dots{}
+@deffnx {Scheme Procedure} n-par-for-each n proc lst1 lst2 @dots{}
+Call @var{proc} on the elements of the given lists, in the same way as
+@code{par-map} and @code{par-for-each} above, but use no more than
+@var{n} threads at any one time.  The order in which calls are
+initiated within that threads limit is unspecified.
+
+These functions are good for controlling resource consumption if
+@var{proc} calls might be costly, or if there are many to be made.  On
+a dual-CPU system for instance @math{@var{n}=4} might be enough to
+keep the CPUs utilized, and not consume too much memory.
+@end deffn
+
+@deffn {Scheme Procedure} n-for-each-par-map n sproc pproc lst1 lst2 @dots{}
+Apply @var{pproc} to the elements of the given lists, and apply
+@var{sproc} to each result returned by @var{pproc}.  The final return
+value is unspecified, but all calls will have been completed before
+returning.
+
+The calls made are @code{(@var{sproc} (@var{pproc} @var{elem1} @dots{}
+@var{elemN}))}, where each @var{elem} is from the corresponding
+@var{lst}.  Each @var{lst} must have the same number of elements.
+
+The @var{pproc} calls are made in parallel, in separate threads.  No more
+than @var{n} threads are used at any one time.  The order in which
+@var{pproc} calls are initiated within that limit is unspecified.
+
+The @var{sproc} calls are made serially, in list element order, one at
+a time.  @var{pproc} calls on later elements may execute in parallel
+with the @var{sproc} calls.  Exactly which thread makes each
+@var{sproc} call is unspecified.
+
+This function is designed for individual calculations that can be done
+in parallel, but with results needing to be handled serially, for
+instance to write them to a file.  The @var{n} limit on threads
+controls system resource usage when there are many calculations or
+when they might be costly.
+
+It will be seen that @code{n-for-each-par-map} is like a combination
+of @code{n-par-map} and @code{for-each},
+
+@example
+(for-each sproc (n-par-map n pproc lst1 ... lstN))
+@end example
+
+@noindent
+But the actual implementation is more efficient since each @var{sproc}
+call, in turn, can be initiated once the relevant @var{pproc} call has
+completed, it doesn't need to wait for all to finish.
+@end deffn
+
+@c Local Variables:
+@c TeX-master: "guile.texi"
+@c End:

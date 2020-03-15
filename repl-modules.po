@@ -1,0 +1,408 @@
+#. extracted from /home/bear/work/guile/doc/guile/en/repl-modules.texi
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2018-05-07 12:37+0300\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Generator: Translate Toolkit 2.2.5\n"
+
+#: /home/bear/work/guile/doc/guile/en/repl-modules.texi:6
+msgid ""
+"@c -*-texinfo-*-\n"
+"@c This is part of the GNU Guile Reference Manual.\n"
+"@c Copyright (C)  1996, 1997, 2000, 2001, 2002, 2003, 2004, 2010, 2011\n"
+"@c   Free Software Foundation, Inc.\n"
+"@c See the file guile.texi for copying conditions."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/repl-modules.texi:9
+msgid ""
+"@node Readline Support\n"
+"@section Readline Support"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/repl-modules.texi:11
+msgctxt "/home/bear/work/guile/doc/guile/en/repl-modules.texi:11"
+msgid "@c FIXME::martin: Review me!"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/repl-modules.texi:21
+msgid ""
+"@cindex readline\n"
+"@cindex command line history\n"
+"Guile comes with an interface module to the readline library\n"
+"(@pxref{Top,,, readline, GNU Readline Library}).  This\n"
+"makes interactive use much more convenient, because of the command-line\n"
+"editing features of readline.  Using @code{(ice-9 readline)}, you can\n"
+"navigate through the current input line with the cursor keys, retrieve\n"
+"older command lines from the input history and even search through the\n"
+"history entries."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/repl-modules.texi:27
+msgid ""
+"@menu\n"
+"* Loading Readline Support::    How to load readline support into Guile.\n"
+"* Readline Options::            How to modify readline's behaviour.\n"
+"* Readline Functions::          Programming with readline.\n"
+"@end menu"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/repl-modules.texi:31
+msgid ""
+"@node Loading Readline Support\n"
+"@subsection Loading Readline Support"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/repl-modules.texi:34
+msgid ""
+"The module is not loaded by default and so has to be loaded and\n"
+"activated explicitly.  This is done with two simple lines of code:"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/repl-modules.texi:39
+msgid ""
+"@lisp\n"
+"(use-modules (ice-9 readline))\n"
+"(activate-readline)\n"
+"@end lisp"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/repl-modules.texi:41
+msgctxt "/home/bear/work/guile/doc/guile/en/repl-modules.texi:41"
+msgid "@c FIXME::martin: Review me!"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/repl-modules.texi:46
+msgid ""
+"The first line will load the necessary code, and the second will\n"
+"activate readline's features for the REPL.  If you plan to use this\n"
+"module often, you should save these to lines to your @file{.guile}\n"
+"personal startup file."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/repl-modules.texi:56
+msgid ""
+"You will notice that the REPL's behaviour changes a bit when you have\n"
+"loaded the readline module.  For example, when you press Enter before\n"
+"typing in the closing parentheses of a list, you will see the\n"
+"@dfn{continuation} prompt, three dots: @code{...}  This gives you a nice\n"
+"visual feedback when trying to match parentheses.  To make this even\n"
+"easier, @dfn{bouncing parentheses} are implemented.  That means that\n"
+"when you type in a closing parentheses, the cursor will jump to the\n"
+"corresponding opening parenthesis for a short time, making it trivial to "
+"make\n"
+"them match."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/repl-modules.texi:61
+msgid ""
+"Once the readline module is activated, all lines entered interactively\n"
+"will be stored in a history and can be recalled later using the\n"
+"cursor-up and -down keys.  Readline also understands the Emacs keys for\n"
+"navigating through the command line and history."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/repl-modules.texi:68
+msgid ""
+"@cindex @file{.guile_history}\n"
+"When you quit your Guile session by evaluating @code{(quit)} or pressing\n"
+"Ctrl-D, the history will be saved to the file @file{.guile_history} and\n"
+"read in when you start Guile for the next time.  Thus you can start a\n"
+"new Guile session and still have the (probably long-winded) definition\n"
+"expressions available."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/repl-modules.texi:77
+msgid ""
+"@cindex @env{GUILE_HISTORY}\n"
+"@cindex @file{.inputrc}\n"
+"You can specify a different history file by setting the environment\n"
+"variable @env{GUILE_HISTORY}.  And you can make Guile specific\n"
+"customizations to your @file{.inputrc} by testing for application\n"
+"@samp{Guile} (@pxref{Conditional Init Constructs,,, readline, GNU\n"
+"Readline Library}).  For instance to define a key inserting a matched\n"
+"pair of parentheses,"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/repl-modules.texi:83
+msgid ""
+"@example\n"
+"$if Guile\n"
+"  \"\\C-o\": \"()\\C-b\"\n"
+"$endif\n"
+"@end example"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/repl-modules.texi:86
+msgid ""
+"@node Readline Options\n"
+"@subsection Readline Options"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/repl-modules.texi:92
+msgid ""
+"@cindex readline options\n"
+"The readline interface module can be tweaked in a few ways to better\n"
+"suit the user's needs.  Configuration is done via the readline module's\n"
+"options interface, in a similar way to the evaluator and debugging\n"
+"options (@pxref{Runtime Options})."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/repl-modules.texi:101
+msgid ""
+"@deffn {Scheme Procedure} readline-options\n"
+"@deffnx {Scheme Procedure} readline-enable option-name\n"
+"@deffnx {Scheme Procedure} readline-disable option-name\n"
+"@deffnx {Scheme Syntax} readline-set! option-name value\n"
+"Accessors for the readline options.  Note that unlike the enable/disable\n"
+"procedures, @code{readline-set!} is syntax, which expects an unquoted\n"
+"option name.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/repl-modules.texi:105
+msgid ""
+"Here is the list of readline options generated by typing\n"
+"@code{(readline-options 'help)} in Guile.  You can also see the\n"
+"default values."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/repl-modules.texi:114
+msgid ""
+"@smalllisp\n"
+"history-file    yes     Use history file.\n"
+"history-length  200     History length.\n"
+"bounce-parens   500     Time (ms) to show matching opening parenthesis\n"
+"                        (0 = off).\n"
+"bracketed-paste yes     Disable interpretation of control characters\n"
+"                        in pastes.\n"
+"@end smalllisp"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/repl-modules.texi:117
+msgid ""
+"The readline options interface can only be used @emph{after} loading\n"
+"the readline module, because it is defined in that module."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/repl-modules.texi:120
+msgid ""
+"@node Readline Functions\n"
+"@subsection Readline Functions"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/repl-modules.texi:122
+msgid "The following functions are provided by"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/repl-modules.texi:126
+msgid ""
+"@example\n"
+"(use-modules (ice-9 readline))\n"
+"@end example"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/repl-modules.texi:130
+msgid ""
+"There are two ways to use readline from Scheme code, either make calls\n"
+"to @code{readline} directly to get line by line input, or use the\n"
+"readline port below with all the usual reading functions."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/repl-modules.texi:135
+msgid ""
+"@defun readline [prompt]\n"
+"Read a line of input from the user and return it as a string (without\n"
+"a newline at the end).  @var{prompt} is the prompt to show, or the\n"
+"default is the string set in @code{set-readline-prompt!} below."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/repl-modules.texi:140
+msgid ""
+"@example\n"
+"(readline \"Type something: \") @result{} \"hello\"\n"
+"@end example\n"
+"@end defun"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/repl-modules.texi:146
+msgid ""
+"@defun set-readline-input-port! port\n"
+"@defunx set-readline-output-port! port\n"
+"Set the input and output port the readline function should read from\n"
+"and write to.  @var{port} must be a file port (@pxref{File Ports}),\n"
+"and should usually be a terminal."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/repl-modules.texi:152
+msgid ""
+"The default is the @code{current-input-port} and\n"
+"@code{current-output-port} (@pxref{Default Ports}) when @code{(ice-9\n"
+"readline)} loads, which in an interactive user session means the Unix\n"
+"``standard input'' and ``standard output''.\n"
+"@end defun"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/repl-modules.texi:154
+msgid "@subsubsection Readline Port"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/repl-modules.texi:160
+msgid ""
+"@defun readline-port\n"
+"Return a buffered input port (@pxref{Buffered Input}) which calls the\n"
+"@code{readline} function above to get input.  This port can be used\n"
+"with all the usual reading functions (@code{read}, @code{read-char},\n"
+"etc), and the user gets the interactive editing features of readline."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/repl-modules.texi:165
+msgid ""
+"There's only a single readline port created.  @code{readline-port}\n"
+"creates it when first called, and on subsequent calls just returns\n"
+"what it previously made.\n"
+"@end defun"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/repl-modules.texi:171
+msgid ""
+"@defun activate-readline\n"
+"If the @code{current-input-port} is a terminal (@pxref{Terminals and\n"
+"Ptys,, @code{isatty?}}) then enable readline for all reading from\n"
+"@code{current-input-port} (@pxref{Default Ports}) and enable readline\n"
+"features in the interactive REPL (@pxref{The REPL})."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/repl-modules.texi:176
+msgid ""
+"@example\n"
+"(activate-readline)\n"
+"(read-char)\n"
+"@end example"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/repl-modules.texi:182
+msgid ""
+"@code{activate-readline} enables readline on @code{current-input-port}\n"
+"simply by a @code{set-current-input-port} to the @code{readline-port}\n"
+"above.  An application can do that directly if the extra REPL features\n"
+"that @code{activate-readline} adds are not wanted.\n"
+"@end defun"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/repl-modules.texi:187
+msgid ""
+"@defun set-readline-prompt! prompt1 [prompt2]\n"
+"Set the prompt string to print when reading input.  This is used when\n"
+"reading through @code{readline-port}, and is also the default prompt\n"
+"for the @code{readline} function above."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/repl-modules.texi:192
+msgid ""
+"@var{prompt1} is the initial prompt shown.  If a user might enter an\n"
+"expression across multiple lines, then @var{prompt2} is a different\n"
+"prompt to show further input required.  In the Guile REPL for instance\n"
+"this is an ellipsis (@samp{...})."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/repl-modules.texi:197
+msgid ""
+"See @code{set-buffered-input-continuation?!} (@pxref{Buffered Input})\n"
+"for an application to indicate the boundaries of logical expressions\n"
+"(assuming of course an application has such a notion).\n"
+"@end defun"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/repl-modules.texi:199
+msgid "@subsubsection Completion"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/repl-modules.texi:204
+msgid ""
+"@defun with-readline-completion-function completer thunk\n"
+"Call @code{(@var{thunk})} with @var{completer} as the readline tab\n"
+"completion function to be used in any readline calls within that\n"
+"@var{thunk}.  @var{completer} can be @code{#f} for no completion."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/repl-modules.texi:212
+msgid ""
+"@var{completer} will be called as @code{(@var{completer} text state)},\n"
+"as described in (@pxref{How Completing Works,,, readline, GNU Readline\n"
+"Library}).  @var{text} is a partial word to be completed, and each\n"
+"@var{completer} call should return a possible completion string or\n"
+"@code{#f} when no more.  @var{state} is @code{#f} for the first call\n"
+"asking about a new @var{text} then @code{#t} while getting further\n"
+"completions of that @var{text}."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/repl-modules.texi:216
+msgid ""
+"Here's an example @var{completer} for user login names from the\n"
+"password file (@pxref{User Information}), much like readline's own\n"
+"@code{rl_username_completion_function},"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/repl-modules.texi:232
+msgid ""
+"@example\n"
+"(define (username-completer-function text state)\n"
+"  (if (not state)\n"
+"      (setpwent))  ;; new, go to start of database\n"
+"  (let more ((pw (getpwent)))\n"
+"    (if pw\n"
+"        (if (string-prefix? text (passwd:name pw))\n"
+"            (passwd:name pw)     ;; this name matches, return it\n"
+"            (more (getpwent)))   ;; doesn't match, look at next\n"
+"        (begin\n"
+"          ;; end of database, close it and return #f\n"
+"          (endpwent)\n"
+"          #f))))\n"
+"@end example\n"
+"@end defun"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/repl-modules.texi:241
+msgid ""
+"@defun apropos-completion-function text state\n"
+"A completion function offering completions for Guile functions and\n"
+"variables (all @code{define}s).  This is the default completion\n"
+"function.\n"
+"@c\n"
+"@c  FIXME: Cross reference the ``apropos'' stuff when it's documented.\n"
+"@c\n"
+"@end defun"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/repl-modules.texi:247
+msgid ""
+"@defun filename-completion-function text state\n"
+"A completion function offering filename completions.  This is\n"
+"readline's @code{rl_filename_completion_function} (@pxref{Completion\n"
+"Functions,,, readline, GNU Readline Library}).\n"
+"@end defun"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/repl-modules.texi:252
+msgid ""
+"@defun make-completion-function string-list\n"
+"Return a completion function which offers completions from the\n"
+"possibilities in @var{string-list}.  Matching is case-sensitive.\n"
+"@end defun"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/repl-modules.texi:256
+msgid ""
+"@c Local Variables:\n"
+"@c TeX-master: \"guile.texi\"\n"
+"@c End:"
+msgstr ""

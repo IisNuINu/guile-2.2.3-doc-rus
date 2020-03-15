@@ -1,0 +1,143 @@
+#
+# Gagin <mikhail-gagin@yandex.ru>, 2018.
+#
+#. extracted from /home/bear/work/guile/doc/guile/en/indices.texi
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2018-05-07 12:37+0300\n"
+"PO-Revision-Date: 2018-05-14 16:06+0300\n"
+"Last-Translator: Gagin <mikhail-gagin@yandex.ru>\n"
+"Language-Team: Russian <mikhail-gagin@yandex.ru>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Generator: Gtranslator 2.91.7\n"
+"Plural-Forms: nplurals=5; plural=n==1 ? 0 : n==2 ? 1 : n<7 ? 2 : n<11 ? 3 : "
+"4;\n"
+
+#: /home/bear/work/guile/doc/guile/en/indices.texi:6
+msgid ""
+"@c -*-texinfo-*-\n"
+"@c This is part of the GNU Guile Reference Manual.\n"
+"@c Copyright (C)  1996, 1997, 2000, 2001, 2002, 2003, 2004\n"
+"@c   Free Software Foundation, Inc.\n"
+"@c See the file guile.texi for copying conditions."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/indices.texi:10
+msgid ""
+"@page\n"
+"@node Concept Index\n"
+"@unnumbered Concept Index"
+msgstr ""
+"@page\n"
+"@node Concept Index\n"
+"@unnumbered Concept Index"
+
+#: /home/bear/work/guile/doc/guile/en/indices.texi:13
+msgid ""
+"This index contains concepts, keywords and non-Schemey names for several\n"
+"features, to make it easier to locate the desired sections."
+msgstr ""
+"Этот индекс содержит понятия, ключевые слова и не-Scheme имена для\n"
+"некоторых функций, чтобы упростить поиск нужных разделов"
+
+#: /home/bear/work/guile/doc/guile/en/indices.texi:15
+msgid "@printindex cp"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/indices.texi:20
+msgid ""
+"@page\n"
+"@node Procedure Index\n"
+"@unnumbered Procedure Index"
+msgstr ""
+"@page\n"
+"@node Procedure Index\n"
+"@unnumbered Procedure Index"
+
+#: /home/bear/work/guile/doc/guile/en/indices.texi:22
+msgctxt "/home/bear/work/guile/doc/guile/en/indices.texi:22"
+msgid "@c FIXME::martin: Review me!"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/indices.texi:25
+msgid ""
+"This is an alphabetical list of all the procedures and macros in Guile.\n"
+"It also includes Guile's Autoconf macros."
+msgstr ""
+"Этот алфавитный список всех процедур и макросов в Guile. Он также \n"
+"включает макросы Autoconf Guile."
+
+#: /home/bear/work/guile/doc/guile/en/indices.texi:30
+msgid ""
+"When looking for a particular procedure, please look under its Scheme\n"
+"name as well as under its C name.  The C name can be constructed from\n"
+"the Scheme names by a simple transformation described in the section\n"
+"@xref{API Overview}."
+msgstr ""
+"При поиске конкретной процедуры, пожалуйста смотрие ее Scheme имя, \n"
+"а также ее Си имя. Имя Си может быть построено из имени Scheme простым\n"
+"преобразованием описанным в разделе @xref{API Overview}."
+
+#: /home/bear/work/guile/doc/guile/en/indices.texi:32
+msgid "@printindex fn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/indices.texi:37
+msgid ""
+"@page\n"
+"@node Variable Index\n"
+"@unnumbered Variable Index"
+msgstr ""
+"@page\n"
+"@node Variable Index\n"
+"@unnumbered Variable Index"
+
+#: /home/bear/work/guile/doc/guile/en/indices.texi:39
+msgctxt "/home/bear/work/guile/doc/guile/en/indices.texi:39"
+msgid "@c FIXME::martin: Review me!"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/indices.texi:42
+msgid ""
+"This is an alphabetical list of all the important variables and\n"
+"constants in Guile."
+msgstr "Этот алфавитный список всех важных переменных и констатн в Guile."
+
+#: /home/bear/work/guile/doc/guile/en/indices.texi:47
+msgid ""
+"When looking for a particular variable or constant, please look under\n"
+"its Scheme name as well as under its C name.  The C name can be\n"
+"constructed from the Scheme names by a simple transformation described\n"
+"in the section @xref{API Overview}."
+msgstr ""
+"При поиске определенной перменной или константы, пожалуйста посмотрите\n"
+"ее имя Scheme, а также ее имя в Си. Имя Си может быть получено по\n"
+"имени Scheme простым преобразованием, описанным в разделе @xref{API "
+"Overview}."
+
+#: /home/bear/work/guile/doc/guile/en/indices.texi:49
+msgid "@printindex vr"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/indices.texi:54
+msgid ""
+"@page\n"
+"@node Type Index\n"
+"@unnumbered Type Index"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/indices.texi:57
+msgid ""
+"This is an alphabetical list of all the important data types defined in\n"
+"the Guile Programmers Manual."
+msgstr ""
+"Это алфавитный укзатель всех важных типов данных, определенных в \n"
+"Справочном Руководстве Guile."
+
+#: /home/bear/work/guile/doc/guile/en/indices.texi:59
+msgid "@printindex tp"
+msgstr ""

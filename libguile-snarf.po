@@ -1,0 +1,301 @@
+#
+# Gagin <mikhail-gagin@yandex.ru>, 2018.
+#
+#. extracted from /home/bear/work/guile/doc/guile/en/libguile-snarf.texi
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2018-05-07 12:37+0300\n"
+"PO-Revision-Date: 2018-07-05 15:03+0300\n"
+"Last-Translator: Gagin <mikhail-gagin@yandex.ru>\n"
+"Language-Team: Russian <mikhail-gagin@yandex.ru>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Generator: Gtranslator 2.91.7\n"
+"Plural-Forms: nplurals=5; plural=n==1 ? 0 : n==2 ? 1 : n<7 ? 2 : n<11 ? 3 : "
+"4;\n"
+
+#: /home/bear/work/guile/doc/guile/en/libguile-snarf.texi:6
+msgid ""
+"@c -*-texinfo-*-\n"
+"@c This is part of the GNU Guile Reference Manual.\n"
+"@c Copyright (C)  1996, 1997, 2000, 2001, 2002, 2003, 2004, 2012, 2014\n"
+"@c   Free Software Foundation, Inc.\n"
+"@c See the file guile.texi for copying conditions."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/libguile-snarf.texi:9
+msgid ""
+"@node Function Snarfing\n"
+"@section Function Snarfing"
+msgstr ""
+"@node Function Snarfing\n"
+"@section Функция Snarfing"
+
+#: /home/bear/work/guile/doc/guile/en/libguile-snarf.texi:16
+msgid ""
+"When writing C code for use with Guile, you typically define a set of\n"
+"C functions, and then make some of them visible to the Scheme world by\n"
+"calling @code{scm_c_define_gsubr} or related functions.  If you have\n"
+"many functions to publish, it can sometimes be annoying to keep the\n"
+"list of calls to @code{scm_c_define_gsubr} in sync with the list of\n"
+"function definitions."
+msgstr ""
+"При написании кода Си для использования с Guile, вы обычно определяете\n"
+"набор Си функций, а затем делаете некоторые из них видимыми для мира\n"
+"Scheme вызывая @code{scm_c_define_gsubr} или связанные функции. Если\n"
+"у вас много функций для публикации, иногда бывает достадно держать\n"
+"список вызовов в  @code{scm_c_define_gsubr} в синхронизации со списком\n"
+"определений функций."
+
+#: /home/bear/work/guile/doc/guile/en/libguile-snarf.texi:23
+msgid ""
+"Guile provides the @code{guile-snarf} program to manage this problem.\n"
+"Using this tool, you can keep all the information needed to define the\n"
+"function alongside the function definition itself; @code{guile-snarf}\n"
+"will extract this information from your source code, and automatically\n"
+"generate a file of calls to @code{scm_c_define_gsubr} which you can\n"
+"@code{#include} into an initialization function."
+msgstr ""
+"Guile предоставляет программу @code{guile-snarf} для решения этой проблемы.\n"
+"Используя этот инструмент, вы можете хранить всю информацию, необходимую\n"
+"для определения функций наряду с определением самой функции; @code{guile-"
+"snarf}\n"
+"будет извлекать эту инфромацию из вашего исходного кода и автоматически\n"
+"сгенерирует файл вызовов @code{scm_c_define_gsubr} который вы можете "
+"включить\n"
+"@code{#include} в функцию инициализации."
+
+#: /home/bear/work/guile/doc/guile/en/libguile-snarf.texi:27
+msgid ""
+"The snarfing mechanism works for many kind of initialization actions,\n"
+"not just for collecting calls to @code{scm_c_define_gsubr}.  For a\n"
+"full list of what can be done, @xref{Snarfing Macros}."
+msgstr ""
+"Механизм snarfing''а работает для многих видов действий по инициализации,\n"
+"а не только для сбора вызовов @code{scm_c_define_gsubr}.  Полный список\n"
+"того, что можно сделать см., @xref{Snarfing Macros}."
+
+#: /home/bear/work/guile/doc/guile/en/libguile-snarf.texi:30
+msgid ""
+"@cindex guile-snarf invocation\n"
+"@cindex guile-snarf example"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/libguile-snarf.texi:32
+msgid "The @code{guile-snarf} program is invoked like this:"
+msgstr "Программа @code{guile-snarf} вызывается следующим образом:"
+
+#: /home/bear/work/guile/doc/guile/en/libguile-snarf.texi:36
+msgid ""
+"@smallexample\n"
+"guile-snarf [-o @var{outfile}] [@var{cpp-args} ...]\n"
+"@end smallexample"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/libguile-snarf.texi:42
+msgid ""
+"This command will extract initialization actions to @var{outfile}.\n"
+"When no @var{outfile} has been specified or when @var{outfile} is\n"
+"@code{-}, standard output will be used.  The C preprocessor is called\n"
+"with @var{cpp-args} (which usually include an input file) and the\n"
+"output is filtered to extract the initialization actions."
+msgstr ""
+"Эта команда будет извлекать операции инициализации в @var{outfile}.\n"
+"Когда никакой внешний файл @var{outfile} не указан или когда\n"
+"@var{outfile} является @code{-}, будет использоваться стандартный\n"
+"вывод.  Препроцессор Си вызывается с  @var{cpp-args} (который обычно\n"
+"включает входной файл) и выход фильтруется для извлечения операций\n"
+"по инициализации."
+
+#: /home/bear/work/guile/doc/guile/en/libguile-snarf.texi:45
+msgid ""
+"If there are errors during processing, @var{outfile} is deleted and the\n"
+"program exits with non-zero status."
+msgstr ""
+"Если во время обработки есть ошибки, @var{outfile} удаляется и программа\n"
+"выходит с ненулевым статусом."
+
+#: /home/bear/work/guile/doc/guile/en/libguile-snarf.texi:49
+msgid ""
+"During snarfing, the pre-processor macro @code{SCM_MAGIC_SNARFER} is\n"
+"defined.  You could use this to avoid including snarfer output files\n"
+"that don't yet exist by writing code like this:"
+msgstr ""
+"Во время snarfing''а, определяется препроцессорный макрос\n"
+"@code{SCM_MAGIC_SNARFER}.  Вы можете использовать его, чтобы избежать\n"
+"включения выходных файлов snarfer, которые еще не существуют, написав\n"
+"код следующим образом:"
+
+#: /home/bear/work/guile/doc/guile/en/libguile-snarf.texi:55
+msgid ""
+"@smallexample\n"
+"#ifndef SCM_MAGIC_SNARFER\n"
+"#include \"foo.x\"\n"
+"#endif\n"
+"@end smallexample"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/libguile-snarf.texi:58
+msgid ""
+"Here is how you might define the Scheme function @code{clear-image},\n"
+"implemented by the C function @code{clear_image}:"
+msgstr ""
+"Вот как вы можете определить функцию Scheme @code{clear-image},\n"
+"реализованную Си функцией @code{clear_image}:"
+
+#: /home/bear/work/guile/doc/guile/en/libguile-snarf.texi:62
+msgid ""
+"@example\n"
+"@group\n"
+"#include <libguile.h>"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/libguile-snarf.texi:69
+msgid ""
+"SCM_DEFINE (clear_image, \"clear-image\", 1, 0, 0,\n"
+"            (SCM image),\n"
+"            \"Clear the image.\")\n"
+"@{\n"
+"  /* C code to clear the image in @code{image}... */\n"
+"@}"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/libguile-snarf.texi:77
+msgid ""
+"void\n"
+"init_image_type ()\n"
+"@{\n"
+"#include \"image-type.x\"\n"
+"@}\n"
+"@end group\n"
+"@end example"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/libguile-snarf.texi:84
+msgid ""
+"The @code{SCM_DEFINE} declaration says that the C function\n"
+"@code{clear_image} implements a Scheme function called\n"
+"@code{clear-image}, which takes one required argument (of type\n"
+"@code{SCM} and named @code{image}), no optional arguments, and no rest\n"
+"argument.  The string @code{\"Clear the image.\"} provides a short help\n"
+"text for the function, it is called a @dfn{docstring}."
+msgstr ""
+"Объявление @code{SCM_DEFINE} говорит, что функция Си @code{clear_image}\n"
+"реализует функцию Scheme называемую @code{clear-image}, которая принимает\n"
+"один требуемый аргумент (типа @code{SCM} и именуемый @code{image}), \n"
+"необязательный аргумент и завершающий аргумент. Строка @code{\"Clear the "
+"image.\"} \n"
+"предоставляет короткий текст справки для функции, он называется "
+"@dfn{docstring}."
+
+#: /home/bear/work/guile/doc/guile/en/libguile-snarf.texi:89
+msgid ""
+"@code{SCM_DEFINE} macro also defines a static array of characters\n"
+"initialized to the Scheme name of the function.  In this case,\n"
+"@code{s_clear_image} is set to the C string, \"clear-image\".  You might\n"
+"want to use this symbol when generating error messages."
+msgstr ""
+"Макрос @code{SCM_DEFINE} также определяет статический массив символов,\n"
+"инициализированной на Scheme имени функции.  В этом случае,\n"
+"@code{s_clear_image} устанавливается в Си строку, \"clear-image\".  Вы\n"
+"можете использовать этот символ при создании сообщений об ошибках."
+
+#: /home/bear/work/guile/doc/guile/en/libguile-snarf.texi:93
+msgid ""
+"Assuming the text above lives in a file named @file{image-type.c}, you\n"
+"will need to execute the following command to prepare this file for\n"
+"compilation:"
+msgstr ""
+"Предполагая, что текст выше живет в файле с именем @file{image-type.c}, \n"
+"вам нужно будет выполнить следующую команду для подготовки этого файла\n"
+"для компиляции:"
+
+#: /home/bear/work/guile/doc/guile/en/libguile-snarf.texi:97
+msgid ""
+"@example\n"
+"guile-snarf -o image-type.x image-type.c\n"
+"@end example"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/libguile-snarf.texi:100
+msgid ""
+"This scans @file{image-type.c} for @code{SCM_DEFINE}\n"
+"declarations, and writes to @file{image-type.x} the output:"
+msgstr ""
+"Здесь сканируется файл @file{image-type.c} для объявления @code{SCM_DEFINE}\n"
+"и записывается в выходной файл @file{image-type.x}:"
+
+#: /home/bear/work/guile/doc/guile/en/libguile-snarf.texi:104
+msgid ""
+"@example\n"
+"scm_c_define_gsubr (\"clear-image\", 1, 0, 0, (SCM (*)() ) clear_image);\n"
+"@end example"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/libguile-snarf.texi:107
+msgid ""
+"When compiled normally, @code{SCM_DEFINE} is a macro which expands to\n"
+"the function header for @code{clear_image}."
+msgstr ""
+"При компиляции обычно, @code{SCM_DEFINE} представляет собой макрос, который\n"
+"расширяется до заголовка функции @code{clear_image}."
+
+#: /home/bear/work/guile/doc/guile/en/libguile-snarf.texi:113
+msgid ""
+"Note that the output file name matches the @code{#include} from the\n"
+"input file.  Also, you still need to provide all the same information\n"
+"you would if you were using @code{scm_c_define_gsubr} yourself, but you\n"
+"can place the information near the function definition itself, so it is\n"
+"less likely to become incorrect or out-of-date."
+msgstr ""
+"Обратите внимание, что имя выходного файла соответствует @code{#include}\n"
+"из входного файла. Кроме того, вам все еще необходимо предоставить всю ту\n"
+"же информацию, которую вы бы использовали  для @code{scm_c_define_gsubr},\n"
+"но вы можете разместить эту информацию рядом с определением функции, "
+"поэтому\n"
+"она менее вероятно станет неправильной или устаревшей."
+
+#: /home/bear/work/guile/doc/guile/en/libguile-snarf.texi:116
+msgid ""
+"If you have many files that @code{guile-snarf} must process, you should\n"
+"consider using a fragment like the following in your Makefile:"
+msgstr ""
+"Если у вас есть много файлов, которые должна обрабаывать @code{guile-"
+"snarf}, \n"
+"вам следует рассмотреть возможность использования фрагмента в вашем Makefile:"
+
+#: /home/bear/work/guile/doc/guile/en/libguile-snarf.texi:123
+msgid ""
+"@example\n"
+"snarfcppopts = $(DEFS) $(INCLUDES) $(CPPFLAGS) $(CFLAGS)\n"
+".SUFFIXES: .x\n"
+".c.x:\n"
+"\tguile-snarf -o $@@ $< $(snarfcppopts)\n"
+"@end example"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/libguile-snarf.texi:126
+msgid ""
+"This tells make to run @code{guile-snarf} to produce each needed\n"
+"@file{.x} file from the corresponding @file{.c} file."
+msgstr ""
+"Здесь говориться make запускать @code{guile-snarf} для создания каждого\n"
+"необходимого файла @file{.x} из соответствующего файла @file{.c}."
+
+#: /home/bear/work/guile/doc/guile/en/libguile-snarf.texi:131
+msgid ""
+"The program @code{guile-snarf} passes its command-line arguments\n"
+"directly to the C preprocessor, which it uses to extract the\n"
+"information it needs from the source code. this means you can pass\n"
+"normal compilation flags to @code{guile-snarf} to define preprocessor\n"
+"symbols, add header file directories, and so on."
+msgstr ""
+"Программа @code{guile-snarf} передает свои аргументы командной строки\n"
+"непосредственно в препроцессор Си, который использует  их для извлечения\n"
+"необходимой ему информации из исходного кода. это означает что вы можете\n"
+"передать нормальные флаги компиляции для @code{guile-snarf}, чтобы "
+"определить\n"
+"символы препроцессора, добавить заголовочные файлы и т.д."

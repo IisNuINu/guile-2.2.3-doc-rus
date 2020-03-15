@@ -1,0 +1,62 @@
+#. extracted from /home/bear/work/guile/doc/guile/en/goops-tutorial.texi
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2018-05-07 12:40+0300\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Generator: Translate Toolkit 2.2.5\n"
+
+#: /home/bear/work/guile/doc/guile/en/goops-tutorial.texi:6
+msgid ""
+"@c -*-texinfo-*-\n"
+"@c This is part of the GNU Guile Reference Manual.\n"
+"@c Copyright (C)  2008, 2009\n"
+"@c   Free Software Foundation, Inc.\n"
+"@c See the file guile.texi for copying conditions."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/goops-tutorial.texi:8
+msgid "@c Original attribution:"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/goops-tutorial.texi:22
+msgid ""
+"@c\n"
+"@c STk Reference manual (Appendix: An Introduction to STklos)\n"
+"@c\n"
+"@c Copyright . 1993-1999 Erick Gallesio - I3S-CNRS/ESSI <eg@unice.fr>\n"
+"@c Permission to use, copy, modify, distribute,and license this\n"
+"@c software and its documentation for any purpose is hereby granted,\n"
+"@c provided that existing copyright notices are retained in all\n"
+"@c copies and that this notice is included verbatim in any\n"
+"@c distributions.  No written agreement, license, or royalty fee is\n"
+"@c required for any of the authorized uses.\n"
+"@c This software is provided ``AS IS'' without express or implied\n"
+"@c warranty.\n"
+"@c"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/goops-tutorial.texi:24
+msgid "@c Adapted for use in Guile with the authors permission"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/goops-tutorial.texi:28
+msgid ""
+"@c @macro goops                    @c was {\\stklos}\n"
+"@c GOOPS\n"
+"@c @end macro"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/goops-tutorial.texi:31
+msgid ""
+"@c @macro guile                    @c was {\\stk}\n"
+"@c Guile\n"
+"@c @end macro"
+msgstr ""

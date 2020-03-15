@@ -1,0 +1,228 @@
+#. extracted from /home/bear/work/guile/doc/guile/en/slib.texi
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2018-05-07 12:37+0300\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Generator: Translate Toolkit 2.2.5\n"
+
+#: /home/bear/work/guile/doc/guile/en/slib.texi:6
+msgid ""
+"@c -*-texinfo-*-\n"
+"@c This is part of the GNU Guile Reference Manual.\n"
+"@c Copyright (C)  1996, 1997, 2000, 2001, 2002, 2003, 2004, 2007\n"
+"@c   Free Software Foundation, Inc.\n"
+"@c See the file guile.texi for copying conditions."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/slib.texi:10
+msgid ""
+"@node SLIB\n"
+"@section SLIB\n"
+"@cindex SLIB"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/slib.texi:16
+msgid ""
+"SLIB is a portable library of Scheme packages which can be used with\n"
+"Guile and other Scheme implementations.  SLIB is not included in the\n"
+"Guile distribution, but can be installed separately (@pxref{SLIB\n"
+"installation}).  It is available from\n"
+"@url{http://people.csail.mit.edu/jaffer/SLIB.html}."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/slib.texi:19
+msgid ""
+"After SLIB is installed, the following Scheme expression must be\n"
+"executed before the SLIB facilities can be used:"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/slib.texi:23
+msgid ""
+"@lisp\n"
+"(use-modules (ice-9 slib))\n"
+"@end lisp"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/slib.texi:28
+msgid ""
+"@findex require\n"
+"@noindent\n"
+"@code{require} can then be used in the usual way (@pxref{Require,,,\n"
+"slib, The SLIB Manual}).  For example,"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/slib.texi:35
+msgid ""
+"@example\n"
+"(use-modules (ice-9 slib))\n"
+"(require 'primes)\n"
+"(prime? 13)\n"
+"@result{} #t\n"
+"@end example"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/slib.texi:41
+msgid ""
+"A few Guile core functions are overridden by the SLIB setups; for\n"
+"example the SLIB version of @code{delete-file} returns a boolean\n"
+"indicating success or failure, whereas the Guile core version throws\n"
+"an error for failure.  In general (and as might be expected) when SLIB\n"
+"is loaded it's the SLIB specifications that are followed."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/slib.texi:46
+msgid ""
+"@menu\n"
+"* SLIB installation::\n"
+"* JACAL::\n"
+"@end menu"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/slib.texi:49
+msgid ""
+"@node SLIB installation\n"
+"@subsection SLIB installation"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/slib.texi:53
+msgid ""
+"The following procedure works, e.g., with SLIB version 3a3\n"
+"(@pxref{Installation, SLIB installation,, slib, The SLIB Portable Scheme\n"
+"Library}):"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/slib.texi:60
+msgid ""
+"@enumerate\n"
+"@item\n"
+"Unpack SLIB and install it using @code{make install} from its directory.\n"
+"By default, this will install SLIB in @file{/usr/local/lib/slib/}.\n"
+"Running @code{make install-info} installs its documentation, by default\n"
+"under @file{/usr/local/info/}."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/slib.texi:63
+msgid ""
+"@item\n"
+"Define the @code{SCHEME_LIBRARY_PATH} environment variable:"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/slib.texi:68
+msgid ""
+"@example\n"
+"$ SCHEME_LIBRARY_PATH=/usr/local/lib/slib/\n"
+"$ export SCHEME_LIBRARY_PATH\n"
+"@end example"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/slib.texi:71
+msgid ""
+"Alternatively, you can create a symlink in the Guile directory to SLIB,\n"
+"e.g.:"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/slib.texi:75
+msgid ""
+"@example\n"
+"ln -s /usr/local/lib/slib /usr/local/share/guile/@value{EFFECTIVE-VERSION}/"
+"slib\n"
+"@end example"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/slib.texi:78
+msgid ""
+"@item\n"
+"Use Guile to create the catalog file, e.g.,:"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/slib.texi:85
+msgid ""
+"@example\n"
+"# guile\n"
+"guile> (use-modules (ice-9 slib))\n"
+"guile> (require 'new-catalog)\n"
+"guile> (quit)\n"
+"@end example"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/slib.texi:88
+msgid ""
+"The catalog data should now be in\n"
+"@file{/usr/local/share/guile/@value{EFFECTIVE-VERSION}/slibcat}."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/slib.texi:90
+msgid "If instead you get an error such as:"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/slib.texi:94
+msgid ""
+"@example\n"
+"Unbound variable: scheme-implementation-type\n"
+"@end example"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/slib.texi:98
+msgid ""
+"then a solution is to get a newer version of Guile,\n"
+"or to modify @file{ice-9/slib.scm} to use @code{define-public} for the\n"
+"offending variables."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/slib.texi:100
+msgid "@end enumerate"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/slib.texi:104
+msgid ""
+"@node JACAL\n"
+"@subsection JACAL\n"
+"@cindex JACAL"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/slib.texi:110
+msgid ""
+"@cindex Jaffer, Aubrey\n"
+"@cindex symbolic math\n"
+"@cindex math -- symbolic\n"
+"Jacal is a symbolic math package written in Scheme by Aubrey Jaffer.\n"
+"It is usually installed as an extra package in SLIB."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/slib.texi:112
+msgid "You can use Guile's interface to SLIB to invoke Jacal:"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/slib.texi:118
+msgid ""
+"@lisp\n"
+"(use-modules (ice-9 slib))\n"
+"(slib:load \"math\")\n"
+"(math)\n"
+"@end lisp"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/slib.texi:124
+msgid ""
+"@noindent\n"
+"For complete documentation on Jacal, please read the Jacal manual.  If\n"
+"it has been installed on line, you can look at @ref{Top, , Jacal, jacal,\n"
+"JACAL Symbolic Mathematics System}.  Otherwise you can find it on the web "
+"at\n"
+"@url{http://www-swiss.ai.mit.edu/~jaffer/JACAL.html}"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/slib.texi:128
+msgid ""
+"@c Local Variables:\n"
+"@c TeX-master: \"guile.texi\"\n"
+"@c End:"
+msgstr ""

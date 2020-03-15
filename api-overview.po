@@ -1,0 +1,246 @@
+#
+# NuINu <don't@send.my>, 2018.
+#
+#. extracted from /home/bear/work/guile/doc/guile/en/api-overview.texi
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2018-05-07 12:36+0300\n"
+"PO-Revision-Date: 2018-12-21 09:42+0300\n"
+"Last-Translator: NuINu <don't@send.my>\n"
+"Language-Team: Russian <don't@send.my>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Generator: Gtranslator 2.91.7\n"
+"Plural-Forms: nplurals=5; plural=n==1 ? 0 : n==2 ? 1 : n<7 ? 2 : n<11 ? 3 : "
+"4;\n"
+
+#: /home/bear/work/guile/doc/guile/en/api-overview.texi:6
+msgid ""
+"@c -*-texinfo-*-\n"
+"@c This is part of the GNU Guile Reference Manual.\n"
+"@c Copyright (C)  1996, 1997, 2000, 2001, 2002, 2003, 2004\n"
+"@c   Free Software Foundation, Inc.\n"
+"@c See the file guile.texi for copying conditions."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-overview.texi:9
+msgid ""
+"@node API Overview\n"
+"@section Overview of the Guile API"
+msgstr ""
+"@node API Overview\n"
+"@section Обзор Guile API"
+
+#: /home/bear/work/guile/doc/guile/en/api-overview.texi:15
+msgid ""
+"Guile's application programming interface (@dfn{API}) makes\n"
+"functionality available that an application developer can use in either\n"
+"C or Scheme programming.  The interface consists of @dfn{elements} that\n"
+"may be macros, functions or variables in C, and procedures, variables,\n"
+"syntax or other types of object in Scheme."
+msgstr ""
+"Интерфейс прикладного программирования(@dfn{API}) Guile обеспечивает\n"
+"доступную функциональность которую разработчик приложения может "
+"использовать\n"
+"в программировании на Си или Scheme.  Интерфейс состоит из элементов "
+"@dfn{elements}\n"
+"которые могут быть маросами, функциями или переменными в Си, а также "
+"процедур,\n"
+"переменных, синтаксиса или других типов объектов в Scheme."
+
+#: /home/bear/work/guile/doc/guile/en/api-overview.texi:20
+msgid ""
+"Many elements are available to both Scheme and C, in a form that is\n"
+"appropriate.  For example, the @code{assq} Scheme procedure is also\n"
+"available as @code{scm_assq} to C code.  These elements are documented\n"
+"only once, addressing both the Scheme and C aspects of them."
+msgstr ""
+"Многие элементы доступны как в Scheme так и для Си, в соответствующей "
+"форме.\n"
+"Например, процедура Scheme @code{assq}  также доступна как @code{scm_assq} \n"
+"для языка Си.  Эти элементы документируются только один раз, описывая их \n"
+"аспекты как в Scheme так и в Си."
+
+#: /home/bear/work/guile/doc/guile/en/api-overview.texi:23
+msgid ""
+"The Scheme name of an element is related to its C name in a regular\n"
+"way.  Also, a C function takes its parameters in a systematic way."
+msgstr ""
+"Имя элемента Scheme регулярно связано с именем в Си.  Кроме того,\n"
+"Си функция принимает свои параметры систематическим образом."
+
+#: /home/bear/work/guile/doc/guile/en/api-overview.texi:26
+msgid ""
+"Normally, the name of a C function can be derived given its Scheme name,\n"
+"using some simple textual transformations:"
+msgstr ""
+"Как правило, имя Си функции может быть получено по ее имени в Scheme,\n"
+"использованием некоторых простых текстовых преобразований:"
+
+#: /home/bear/work/guile/doc/guile/en/api-overview.texi:28
+msgid "@itemize @bullet"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-overview.texi:31
+msgid ""
+"@item\n"
+"Replace @code{-} (hyphen) with @code{_} (underscore)."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-overview.texi:34
+msgid ""
+"@item\n"
+"Replace @code{?} (question mark) with @code{_p}."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-overview.texi:37
+msgid ""
+"@item\n"
+"Replace @code{!} (exclamation point) with @code{_x}."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-overview.texi:40
+msgid ""
+"@item\n"
+"Replace internal @code{->} with @code{_to_}."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-overview.texi:43
+msgid ""
+"@item\n"
+"Replace @code{<=} (less than or equal) with @code{_leq}."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-overview.texi:46
+msgid ""
+"@item\n"
+"Replace @code{>=} (greater than or equal) with @code{_geq}."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-overview.texi:49
+msgid ""
+"@item\n"
+"Replace @code{<} (less than) with @code{_less}."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-overview.texi:52
+msgid ""
+"@item\n"
+"Replace @code{>} (greater than) with @code{_gr}."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-overview.texi:55
+msgid ""
+"@item\n"
+"Prefix with @code{scm_}."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-overview.texi:57
+msgid "@end itemize"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-overview.texi:60
+msgid ""
+"@c Here is an Emacs Lisp command that prompts for a Scheme function name "
+"and\n"
+"@c inserts the corresponding C function name into the buffer."
+msgstr ""
+"@c Here is an Emacs Lisp command that prompts for a Scheme function name "
+"and\n"
+"@c inserts the corresponding C function name into the buffer."
+
+#: /home/bear/work/guile/doc/guile/en/api-overview.texi:88
+msgid ""
+"@c @example\n"
+"@c (defun insert-scheme-to-C (name &optional use-gh)\n"
+"@c   \"Transforms Scheme NAME, a string, to its C counterpart, and inserts "
+"it.\n"
+"@c Prefix arg non-nil means use \\\"gh_\\\" prefix, otherwise use \\\"scm_\\"
+"\" prefix.\"\n"
+"@c   (interactive \"sScheme name: \\nP\")\n"
+"@c   (let ((transforms '((\"-\"  . \"_\")\n"
+"@c                       (\"?\"  . \"_p\")\n"
+"@c                       (\"!\"  . \"_x\")\n"
+"@c                       (\"->\" . \"_to_\")\n"
+"@c                       (\"<=\" . \"_leq\")\n"
+"@c                       (\">=\" . \"_geq\")\n"
+"@c                       (\"<\"  . \"_less\")\n"
+"@c                       (\">\"  . \"_gr\")\n"
+"@c                       (\"@@\"  . \"at\"))))\n"
+"@c     (while transforms\n"
+"@c       (let ((trigger (concat \"\\\\(.*\\\\)\"\n"
+"@c                              (regexp-quote (caar transforms))\n"
+"@c                              \"\\\\(.*\\\\)\"))\n"
+"@c             (sub (cdar transforms))\n"
+"@c             (m nil))\n"
+"@c         (while (setq m (string-match trigger name))\n"
+"@c           (setq name (concat (match-string 1 name)\n"
+"@c                              sub\n"
+"@c                              (match-string 2 name)))))\n"
+"@c       (setq transforms (cdr transforms))))\n"
+"@c   (insert (if use-gh \"gh_\" \"scm_\") name))\n"
+"@c @end example"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/api-overview.texi:92
+msgid ""
+"A C function always takes a fixed number of arguments of type\n"
+"@code{SCM}, even when the corresponding Scheme function takes a\n"
+"variable number."
+msgstr ""
+"Функция Си всегда принимает фиксированное количество аргументов типа\n"
+"@code{SCM}, даже если соответствующая функция Scheme принимает переменное\n"
+"количество."
+
+#: /home/bear/work/guile/doc/guile/en/api-overview.texi:100
+msgid ""
+"For some Scheme functions, some last arguments are optional; the\n"
+"corresponding C function must always be invoked with all optional\n"
+"arguments specified.  To get the effect as if an argument has not been\n"
+"specified, pass @code{SCM_UNDEFINED} as its value.  You can not do\n"
+"this for an argument in the middle; when one argument is\n"
+"@code{SCM_UNDEFINED} all the ones following it must be\n"
+"@code{SCM_UNDEFINED} as well."
+msgstr ""
+"Для некоторых функций Scheme некоторые последние аргументы являются "
+"необязательными;\n"
+"соответствующая Си функция должна вызываться с указанием всех необязательных "
+"аргументов.\n"
+"Для получения эффекта вызова, при котором аргумент не был бы укзана, "
+"передавайте\n"
+"@code{SCM_UNDEFINED} как его значение.  Вы не можете использовать этот "
+"аргумент в середине;\n"
+"когда один аргумент является @code{SCM_UNDEFINED} все последующие аргументы "
+"должны быть\n"
+"@code{SCM_UNDEFINED}."
+
+#: /home/bear/work/guile/doc/guile/en/api-overview.texi:105
+msgid ""
+"Some Scheme functions take an arbitrary number of @emph{rest}\n"
+"arguments; the corresponding C function must be invoked with a list of\n"
+"all these arguments.  This list is always the last argument of the C\n"
+"function."
+msgstr ""
+"Некоторые функции Scheme принимают произвольное количество @emph{rest}"
+"(остальных)\n"
+"аргументов; соответстувющая Си функция должна вызываться со списком всех "
+"этих аргуметов.\n"
+"Этот список всегда последний аргумент Си функции."
+
+#: /home/bear/work/guile/doc/guile/en/api-overview.texi:107
+msgid "These two variants can also be combined."
+msgstr "Эти два вариантаа также могут быть объединены."
+
+#: /home/bear/work/guile/doc/guile/en/api-overview.texi:111
+msgid ""
+"The type of the return value of a C function that corresponds to a\n"
+"Scheme function is always @code{SCM}.  In the descriptions below,\n"
+"types are therefore often omitted but for the return value and for the\n"
+"arguments."
+msgstr ""
+"Тип возвращаемого значения функции Си, которая соответствует функции\n"
+"Scheme всегда @code{SCM}.  Поэтому в описанниях ниже типы значений часто\n"
+"опускаются, как для возвращаемого значения так и для аргументов."

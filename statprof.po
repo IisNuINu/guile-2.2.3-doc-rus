@@ -1,0 +1,410 @@
+#. extracted from /home/bear/work/guile/doc/guile/en/statprof.texi
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2018-05-07 12:37+0300\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Generator: Translate Toolkit 2.2.5\n"
+
+#: /home/bear/work/guile/doc/guile/en/statprof.texi:5
+msgid ""
+"@c -*-texinfo-*-\n"
+"@c This is part of the GNU Guile Reference Manual.\n"
+"@c Copyright (C) 2013, 2015, 2017 Free Software Foundation, Inc.\n"
+"@c See the file guile.texi for copying conditions."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/statprof.texi:8
+msgid ""
+"@node Statprof\n"
+"@section Statprof"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/statprof.texi:10
+msgid "Statprof is a statistical profiler for Guile."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/statprof.texi:12
+msgid "A simple use of statprof would look like this:"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/statprof.texi:19
+msgid ""
+"@example\n"
+"(use-modules (statprof))\n"
+"(statprof (lambda ()\n"
+"            (map 1+ (iota 1000000))\n"
+"            #f))\n"
+"@end example"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/statprof.texi:22
+msgid ""
+"This would run the thunk with statistical profiling, finally displaying\n"
+"a flat table of statistics which could look something like this:"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/statprof.texi:34
+msgid ""
+"@example\n"
+"%     cumulative   self\n"
+"time   seconds     seconds  procedure\n"
+" 57.14  39769.73      0.07  ice-9/boot-9.scm:249:5:map1\n"
+" 28.57      0.04      0.04  ice-9/boot-9.scm:1165:0:iota\n"
+" 14.29      0.02      0.02  1+\n"
+"  0.00      0.12      0.00  <current input>:2:10\n"
+"---\n"
+"Sample count: 7\n"
+"Total time: 0.123490713 seconds (0.201983993 seconds in GC)\n"
+"@end example"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/statprof.texi:39
+msgid ""
+"All of the numerical data with the exception of the calls column is\n"
+"statistically approximate. In the following column descriptions, and in\n"
+"all of statprof, ``time'' refers to execution time (both user and\n"
+"system), not wall clock time."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/statprof.texi:44
+msgid ""
+"The @code{% time} column indicates the percentage of the run-time time\n"
+"spent inside the procedure itself (not counting children).  It is\n"
+"calculated as @code{self seconds}, measuring the amount of time spent in\n"
+"the procedure, divided by the total run-time."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/statprof.texi:49
+msgid ""
+"@code{cumulative seconds} also counts time spent in children of a\n"
+"function.  For recursive functions, this can exceed the total time, as\n"
+"in our example above, because each activation on the stack adds to the\n"
+"cumulative time."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/statprof.texi:58
+msgid ""
+"Finally, the GC time measures the time spent in the garbage collector.\n"
+"On systems with multiple cores, this time can be larger than the run\n"
+"time, because it counts time spent in all threads, and will run the\n"
+"``marking'' phase of GC in parallel.  If GC time is a significant\n"
+"fraction of the run time, that means that most time in your program is\n"
+"spent allocating objects and cleaning up after those allocations.  To\n"
+"speed up your program, one good place to start would be to look at how\n"
+"to reduce the allocation rate."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/statprof.texi:63
+msgid ""
+"Statprof's main mode of operation is as a statistical profiler.  However\n"
+"statprof can also run in a ``precise'' mode as well.  Pass the\n"
+"@code{#:count-calls? #t} keyword argument to @code{statprof} to record\n"
+"all calls:"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/statprof.texi:71
+msgid ""
+"@example\n"
+"(use-modules (statprof))\n"
+"(statprof (lambda ()\n"
+"            (map 1+ (iota 1000000))\n"
+"            #f)\n"
+"          #:count-calls? #t)\n"
+"@end example"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/statprof.texi:73
+msgid "The result has an additional @code{calls} column:"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/statprof.texi:85
+msgid ""
+"@example\n"
+"%     cumulative   self             \n"
+"time   seconds    seconds   calls   procedure\n"
+" 82.26      0.73      0.73 1000000  1+\n"
+" 11.29 420925.80      0.10 1000001  ice-9/boot-9.scm:249:5:map1\n"
+"  4.84      0.06      0.04       1  ice-9/boot-9.scm:1165:0:iota\n"
+"[...]\n"
+"---\n"
+"Sample count: 62\n"
+"Total time: 0.893098065 seconds (1.222796536 seconds in GC)\n"
+"@end example"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/statprof.texi:91
+msgid ""
+"As you can see, the profile is perturbed: @code{1+} ends up on top,\n"
+"whereas it was not marked as hot in the earlier profile.  This is\n"
+"because the overhead of call-counting unfairly penalizes calls.  Still,\n"
+"this precise mode can be useful at times to do algorithmic optimizations\n"
+"based on the precise call counts."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/statprof.texi:93
+msgid "@heading Implementation notes"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/statprof.texi:100
+msgid ""
+"The profiler works by setting the unix profiling signal\n"
+"@code{ITIMER_PROF} to go off after the interval you define in the call\n"
+"to @code{statprof-reset}.  When the signal fires, a sampling routine\n"
+"runs which crawls up the stack, recording all instruction pointers into\n"
+"a buffer.  After the sample is complete, the profiler resets profiling\n"
+"timer to fire again after the appropriate interval."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/statprof.texi:105
+msgid ""
+"Later, when profiling stops, that log buffer is analyzed to produce the\n"
+"``self seconds'' and ``cumulative seconds'' statistics.  A procedure at\n"
+"the top of the stack counts toward ``self'' samples, and everything on\n"
+"the stack counts towards ``cumulative'' samples."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/statprof.texi:111
+msgid ""
+"While the profiler is running it measures how much CPU time (system and\n"
+"user -- which is also what @code{ITIMER_PROF} tracks) has elapsed while\n"
+"code has been executing within the profiler.  Only run time counts\n"
+"towards the profile, not wall-clock time.  For example, sleeping and\n"
+"waiting for input or output do not cause the timer clock to advance."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/statprof.texi:113
+msgid "@heading Usage"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/statprof.texi:120
+msgid ""
+"@deffn {Scheme Procedure} statprof thunk @\n"
+"       [#:loop loop=1] [#:hz hz=100] @\n"
+"       [#:port port=(current-output-port)] @\n"
+"       [#:count-calls? count-calls?=#f] @\n"
+"       [#:display-style display-style='flat]\n"
+"Profile the execution of @var{thunk}, and return its return values."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/statprof.texi:123
+msgid ""
+"The stack will be sampled @var{hz} times per second, and the thunk\n"
+"itself will be called @var{loop} times."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/statprof.texi:126
+msgid ""
+"If @var{count-calls?} is true, all procedure calls will be recorded.\n"
+"This operation is somewhat expensive."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/statprof.texi:131
+msgid ""
+"After the @var{thunk} has been profiled, print out a profile to\n"
+"@var{port}.  If @var{display-style} is @code{flat}, the results will be\n"
+"printed as a flat profile.  Otherwise if @var{display-style} is\n"
+"@code{tree}, print the results as a tree profile."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/statprof.texi:136
+msgid ""
+"Note that @code{statprof} requires a working profiling timer. Some\n"
+"platforms do not support profiling timers.  @code{(provided?\n"
+"'ITIMER_PROF)} can be used to check for support of profiling timers.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/statprof.texi:138
+msgid "Profiling can also be enabled and disabled manually."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/statprof.texi:143
+msgid ""
+"@deffn {Scheme Procedure} statprof-active?\n"
+"Returns @code{#t} if @code{statprof-start} has been called more times\n"
+"than @code{statprof-stop}, @code{#f} otherwise.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/statprof.texi:148
+msgid ""
+"@deffn {Scheme Procedure} statprof-start\n"
+"@deffnx {Scheme Procedure} statprof-stop\n"
+"Start or stop the profiler.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/statprof.texi:155
+msgid ""
+"@deffn {Scheme Procedure} statprof-reset sample-seconds sample-microseconds "
+"count-calls?\n"
+"Reset the profiling sample interval to @var{sample-seconds} and\n"
+"@var{sample-microseconds}.  If @var{count-calls?} is true, arrange to\n"
+"instrument procedure calls as well as collecting statistical profiling\n"
+"data.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/statprof.texi:161
+msgid ""
+"If you use the manual @code{statprof-start}/@code{statprof-stop}\n"
+"interface, an implicit statprof state will persist starting from the\n"
+"last call to @code{statprof-reset}, or the first call to\n"
+"@code{statprof-start}.  There are a number of accessors to fetch\n"
+"statistics from this implicit state."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/statprof.texi:165
+msgid ""
+"@deffn {Scheme Procedure} statprof-accumulated-time \n"
+"Returns the time accumulated during the last statprof run.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/statprof.texi:169
+msgid ""
+"@deffn {Scheme Procedure} statprof-sample-count \n"
+"Returns the number of samples taken during the last statprof run.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/statprof.texi:173
+msgid ""
+"@deffn {Scheme Procedure} statprof-fold-call-data proc init\n"
+"Fold @var{proc} over the call-data accumulated by statprof.  This\n"
+"procedure cannot be called while statprof is active."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/statprof.texi:177
+msgid ""
+"@var{proc} will be called with arguments, @var{call-data} and\n"
+"@var{prior-result}.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/statprof.texi:182
+msgid ""
+"@deffn {Scheme Procedure} statprof-proc-call-data proc\n"
+"Returns the call-data associated with @var{proc}, or @code{#f} if none\n"
+"is available.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/statprof.texi:189
+msgid ""
+"@deffn {Scheme Procedure} statprof-call-data-name cd\n"
+"@deffnx {Scheme Procedure} statprof-call-data-calls cd\n"
+"@deffnx {Scheme Procedure} statprof-call-data-cum-samples cd\n"
+"@deffnx {Scheme Procedure} statprof-call-data-self-samples cd\n"
+"Accessors for the fields in a statprof call-data object.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/statprof.texi:193
+msgid ""
+"@deffn {Scheme Procedure} statprof-call-data->stats call-data\n"
+"Returns an object of type @code{statprof-stats}.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/statprof.texi:203
+msgid ""
+"@deffn {Scheme Procedure} statprof-stats-proc-name stats\n"
+"@deffnx {Scheme Procedure} statprof-stats-%-time-in-proc stats\n"
+"@deffnx {Scheme Procedure} statprof-stats-cum-secs-in-proc stats\n"
+"@deffnx {Scheme Procedure} statprof-stats-self-secs-in-proc stats\n"
+"@deffnx {Scheme Procedure} statprof-stats-calls stats\n"
+"@deffnx {Scheme Procedure} statprof-stats-self-secs-per-call stats\n"
+"@deffnx {Scheme Procedure} statprof-stats-cum-secs-per-call stats\n"
+"Accessors for the fields in a @code{statprof-stats} object.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/statprof.texi:208
+msgid ""
+"@deffn {Scheme Procedure} statprof-display @\n"
+"       [port=(current-output-port)] [#:style style=flat]\n"
+"Displays a summary of the statistics collected.  Possible values for\n"
+"@var{style} include:"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/statprof.texi:218
+msgid ""
+"@table @code\n"
+"@item flat\n"
+"Display a traditional gprof-style flat profile.\n"
+"@item anomalies\n"
+"Find statistical anomalies in the data.\n"
+"@item tree\n"
+"Display a tree profile.\n"
+"@end table\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/statprof.texi:223
+msgid ""
+"@deffn {Scheme Procedure} statprof-fetch-stacks \n"
+"Returns a list of stacks, as they were captured since the last call to\n"
+"@code{statprof-reset}.\n"
+"@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/statprof.texi:227
+msgid ""
+"@deffn {Scheme Procedure} statprof-fetch-call-tree [#:precise precise?=#f]\n"
+"@verbatim \n"
+"Return a call tree for the previous statprof run."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/statprof.texi:232
+msgid ""
+"The return value is a list of nodes.  A node is a list of the form:\n"
+"@code\n"
+" node ::= (@var{proc} @var{count} . @var{nodes})\n"
+"@end code"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/statprof.texi:240
+msgid ""
+"The @var{proc} is a printable representation of a procedure, as a\n"
+"string.  If @var{precise?} is false, which is the default, then a node\n"
+"corresponds to a procedure invocation.  If it is true, then a node\n"
+"corresponds to a return point in a procedure.  Passing @code{#:precise?\n"
+"#t} allows a user to distinguish different source lines in a procedure,\n"
+"but usually it is too much detail, so it is off by default.\n"
+"@end verbatim"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/statprof.texi:242
+msgid "@end deffn"
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/statprof.texi:246
+msgid ""
+"@deffn {Scheme Procedure} gcprof thunk [#:loop]\n"
+"Like the @code{statprof} procedure, but instead of profiling CPU time,\n"
+"we profile garbage collection."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/statprof.texi:250
+msgid ""
+"The stack will be sampled soon after every garbage collection during the\n"
+"evaluation of @var{thunk}, yielding an approximate idea of what is\n"
+"causing allocation in your program."
+msgstr ""
+
+#: /home/bear/work/guile/doc/guile/en/statprof.texi:254
+msgid ""
+"Since GC does not occur very frequently, you may need to use the\n"
+"@var{loop} parameter, to cause @var{thunk} to be called @var{loop}\n"
+"times.\n"
+"@end deffn"
+msgstr ""
